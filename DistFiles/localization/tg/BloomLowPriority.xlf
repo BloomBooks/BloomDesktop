@@ -784,6 +784,16 @@
         <target xml:lang="tg" state="needs-translation">Remove Object</target>
         <note>ID: AiImageEditor.Tool.remove_object.Title</note>
       </trans-unit>
+      <trans-unit id="Errors.FileAccessCheck.Blocked" translate="no">
+        <source xml:lang="en">Windows is not letting Bloom change files in this collection.</source>
+        <target xml:lang="tg" state="needs-translation">Windows is not letting Bloom change files in this collection.</target>
+        <note>ID: Errors.FileAccessCheck.Blocked</note>
+      </trans-unit>
+      <trans-unit id="Errors.FileAccessCheck.BlockedLonger" translate="no">
+        <source xml:lang="en">Windows is not letting Bloom create, change, rename or delete files in the folder where this collection is stored. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see "{0}".</source>
+        <target xml:lang="tg" state="needs-translation">Windows is not letting Bloom create, change, rename or delete files in the folder where this collection is stored. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see "{0}".</target>
+        <note>ID: Errors.FileAccessCheck.BlockedLonger</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
