@@ -783,6 +783,59 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
 }
 
 /**
+ * Wait until the Edit tab first reports that it is editing `pageId`, and return how many
+ * milliseconds that came after `startedAt` (a performance.now() reading). That is the moment the
+ * page takes input, so it is the time a user waits. Polls every 100 ms, so a measurement is that
+ * much coarse at most; more often would add work to the Bloom being timed.
+ *
+ * It does not wait for the page to finish announcing itself; call waitForEditTabSettled before
+ * asking the Edit tab for anything else.
+ */
+export async function msUntilEditing(
+    page: Page,
+    pageId: string,
+    startedAt: number,
+    timeoutMs = 90000,
+): Promise<number> {
+    await expect
+        .poll(
+            async () => {
+                const now = await apiGetJson<IEditTabState>(
+                    page,
+                    "e2e/editState",
+                );
+                return now.visible && now.state === "Editing"
+                    ? now.pageId
+                    : `${now.state} (${now.visible ? "showing" : "not showing"})`;
+            },
+            {
+                intervals: [100],
+                timeout: timeoutMs,
+                message: `The Edit tab never started editing page ${pageId}.`,
+            },
+        )
+        .toBe(pageId);
+    return performance.now() - startedAt;
+}
+
+/**
+ * Change to another page in the Edit tab, as goToPage does, and return how long the change took:
+ * from asking for it until the Edit tab was editing the new page (see msUntilEditing). The Edit
+ * tab is settled again when this returns, but that last wait is not part of the time.
+ */
+export async function goToPageTimed(
+    page: Page,
+    pageId: string,
+): Promise<number> {
+    await waitForEditTabSettled(page);
+    const startedAt = performance.now();
+    await apiPost(page, "editView/jumpToPage", pageId, "text/plain");
+    const ms = await msUntilEditing(page, pageId, startedAt);
+    await waitForEditTabSettled(page);
+    return ms;
+}
+
+/**
  * Click in one language's box of one translation group on the page being shown, so that it has the
  * focus, the way a person starts editing it. `groupSelector` picks the group, e.g. ".bookTitle" for
  * the cover title; when the page has several groups that match, `groupIndex` says which one, in
