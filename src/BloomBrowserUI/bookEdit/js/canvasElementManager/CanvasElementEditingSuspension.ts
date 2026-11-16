@@ -8,8 +8,7 @@ export type ComicEditingSuspendedState =
     | "none"
     | "forDrag"
     | "forTool"
-    | "forJqueryResize"
-    | "forGamePlayMode";
+    | "forJqueryResize";
 
 export interface ICanvasElementEditingSuspensionHost {
     getIsCanvasElementEditingOn: () => boolean;
@@ -33,12 +32,16 @@ export class CanvasElementEditingSuspension {
     // Notes that comic editing either has not been suspended...isComicEditingOn might be true or false...
     // or that it was suspended because of a drag in progress that might affect page layout
     // (current example: mouse is down over an origami splitter), or because some longer running
-    // process that affects layout is happening (current example: origami layout tool is active),
-    // or because we're testing a bloom game.
+    // process that affects layout is happening (current example: origami layout tool is active).
     // When in one of the latter states, it may be inferred that isComicEditingOn was true when
     // suspendComicEditing was called, that it is now false, and that resumeComicEditing should
     // turn it on again.
     private suspendedState: ComicEditingSuspendedState = "none";
+    // Whether comic editing is suspended because we're testing a bloom game (its Play tab). This is
+    // kept apart from suspendedState because a game page can be played with any tool open, so Play
+    // mode and a tool's suspension (the Talking Book tool showing image descriptions, say) overlap,
+    // in either order, and neither may end the other. Editing is on only when neither holds.
+    private inGamePlayMode = false;
 
     private splitterResizeObservers: ResizeObserver[] = [];
     private draggingSplitter = false;
@@ -48,7 +51,7 @@ export class CanvasElementEditingSuspension {
     }
 
     public isSuspended = (): boolean => {
-        return this.suspendedState !== "none";
+        return this.suspendedState !== "none" || this.inGamePlayMode;
     };
 
     public startDraggingSplitter = (): void => {
@@ -112,31 +115,29 @@ export class CanvasElementEditingSuspension {
     public suspendComicEditing = (
         forWhat: "forDrag" | "forTool" | "forGamePlayMode" | "forJqueryResize",
     ): void => {
+        if (forWhat === "forGamePlayMode") {
+            this.startGamePlayMode();
+            return;
+        }
         if (!this.host.getIsCanvasElementEditingOn()) {
+            // Already off. If that is for Play mode, a tool's suspension must still outlast it; a
+            // drag's is over before Play mode could end.
+            if (this.inGamePlayMode && forWhat === "forTool") {
+                this.suspendedState = "forTool";
+            }
             return;
         }
         this.host.turnOffCanvasElementEditing();
         if (forWhat === "forDrag" || forWhat === "forJqueryResize") {
             this.startDraggingSplitter();
         }
-
-        if (forWhat === "forGamePlayMode") {
-            const allCanvasElements = Array.from(
-                document.getElementsByClassName(kCanvasElementClass),
-            );
-            allCanvasElements.forEach((element) => {
-                const editables = Array.from(
-                    element.getElementsByClassName("bloom-editable"),
-                );
-                editables.forEach((editable) => {
-                    editable.removeAttribute("contenteditable");
-                });
-            });
-        }
-
         this.suspendedState = forWhat;
     };
 
+    // Resume comic editing after a suspension for anything but a game's Play mode, which only the
+    // game's tab control may end (endGamePlayModeSuspension). A game page can be played with any tool
+    // open, so a tool that suspended editing for itself and now resumes it (the Talking Book tool,
+    // image descriptions) may find the page in Play mode, and editing then stays off until Play ends.
     public resumeComicEditing = (): void => {
         if (this.suspendedState === "none") {
             return;
@@ -150,22 +151,54 @@ export class CanvasElementEditingSuspension {
         if (this.suspendedState === "forTool") {
             this.setupSplitterEventHandling();
         }
-        if (this.suspendedState === "forGamePlayMode") {
-            const allCanvasElements = Array.from(
-                document.getElementsByClassName(kCanvasElementClass),
-            );
-            allCanvasElements.forEach((element) => {
-                const editables = Array.from(
-                    element.getElementsByClassName("bloom-editable"),
-                );
-                editables.forEach((editable) => {
-                    editable.setAttribute("contenteditable", "true");
-                });
-            });
-            this.host.setupControlFrame();
-        }
         this.suspendedState = "none";
-        this.host.turnOnCanvasElementEditing();
+        if (!this.inGamePlayMode) {
+            this.host.turnOnCanvasElementEditing();
+        }
+    };
+
+    private startGamePlayMode = (): void => {
+        if (this.inGamePlayMode || !this.isSuspendedOrEditingOn()) {
+            return;
+        }
+        this.inGamePlayMode = true;
+        this.setCanvasEditablesEditable(false);
+        if (this.host.getIsCanvasElementEditingOn()) {
+            this.host.turnOffCanvasElementEditing();
+        }
+    };
+
+    // End the suspension of comic editing for a game's Play mode. If a tool still has editing
+    // suspended, it stays suspended for that.
+    public endGamePlayModeSuspension = (): void => {
+        if (!this.inGamePlayMode) {
+            return;
+        }
+        this.inGamePlayMode = false;
+        this.setCanvasEditablesEditable(true);
+        if (this.suspendedState === "none") {
+            this.host.setupControlFrame();
+            this.host.turnOnCanvasElementEditing();
+        }
+    };
+
+    // Comic editing is something to suspend: it is on, or suspended already for something else.
+    private isSuspendedOrEditingOn = (): boolean =>
+        this.suspendedState !== "none" ||
+        this.host.getIsCanvasElementEditingOn();
+
+    // Play mode makes the text in canvas elements uneditable, so that a tester's clicks and drags
+    // play the game instead of editing it.
+    private setCanvasEditablesEditable = (editable: boolean): void => {
+        document
+            .querySelectorAll(`.${kCanvasElementClass} .bloom-editable`)
+            .forEach((bloomEditable) => {
+                if (editable) {
+                    bloomEditable.setAttribute("contenteditable", "true");
+                } else {
+                    bloomEditable.removeAttribute("contenteditable");
+                }
+            });
     };
 
     private dividerMouseDown = (_ev: Event) => {

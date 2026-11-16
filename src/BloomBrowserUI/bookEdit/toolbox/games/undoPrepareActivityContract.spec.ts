@@ -4,9 +4,8 @@ import { prepareActivity, undoPrepareActivity } from "bloom-player";
 // What the game tool's save path needs from bloom-player, pinned here because getting it wrong is
 // invisible from Bloom's side until a user loses work.
 //
-// GameTool.removeToolMarkup is handed a CLONE of the page when Bloom gathers the page to save it,
-// and the live page when the tool is detached. It calls undoPrepareActivity on whichever it is
-// given, and needs two things of it:
+// gamePlayMode.ts calls undoPrepareActivity on a CLONE of the page when Bloom gathers the page to
+// save it, and on the live page when the page leaves play mode. It needs two things of it:
 //
 //   * the element it is given comes out with the draggables where the AUTHOR put them, because
 //     that element is what gets written into the book; and

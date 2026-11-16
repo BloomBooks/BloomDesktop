@@ -3193,8 +3193,14 @@ export class CanvasElementManager {
         );
     }
 
+    // Ends any suspension of comic editing except one for a game's Play mode.
     public resumeComicEditing() {
         this.editingSuspension.resumeComicEditing();
+    }
+
+    // Ends the suspension of comic editing for a game's Play mode, and no other.
+    public endGamePlayModeSuspension() {
+        this.editingSuspension.endGamePlayModeSuspension();
     }
 
     public adjustAfterOrigamiDoubleClick() {

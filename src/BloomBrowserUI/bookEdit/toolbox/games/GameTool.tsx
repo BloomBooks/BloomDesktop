@@ -27,11 +27,10 @@ import {
     classSetter,
     getTarget,
     playInitialElements,
-    prepareActivity,
     setDefaultSoundUrls,
     shuffle,
-    undoPrepareActivity,
 } from "bloom-player";
+import { preparePageForPlay, takePageOutOfPlayMode } from "./gamePlayMode";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import {
     getWithPromise,
@@ -1833,8 +1832,8 @@ export class GameTool extends ToolboxToolReactAdaptor {
 
         const pageId = page.getAttribute("id") ?? "";
         if (pageId === this.lastPageId) {
-            // reinitialize for the current tab. This is especially important in Play mode,
-            // because detachFromPage() undoes some of the initialization for that tab.
+            // reinitialize for the current tab, so that the tab control and this tool agree on it.
+            // (If the page is already in play mode, this leaves it be: see preparePageForPlay.)
             const currentTab = getActiveDragActivityTab();
             getToolboxBundleExports()?.setActiveDragActivityTab(currentTab);
         } else {
@@ -1855,13 +1854,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
         }
     }
 
-    // On the Play tab, prepareActivity() has put the page into play mode, which must not be saved.
-    // undoPrepareActivity changes only the element it is given, so a saved clone gets the
-    // draggables where the author put them while the live page goes on being played (bloom-player's
-    // tests cover that guarantee).
-    public removeToolMarkup(pageOrClone: HTMLElement): void {
-        undoPrepareActivity(pageOrClone);
-    }
+    // No removeToolMarkup override: play mode is the game tabs', not this tool's (gamePlayMode.ts).
 }
 export function playSound(
     newSoundId: string,
@@ -2016,48 +2009,13 @@ export function setActiveDragActivityTab(tab: number) {
         canvasElementManager!.suspendComicEditing("forGamePlayMode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
-        prepareActivity(page, (_next) => {
-            /* nothing to do */
-        });
-        playInitialElements(page, true);
-
-        // Follow image hyperlinks to external sites.
-        // Bloom player has its own image hyperlink handling and follows both links to external sites and links to other
-        // pages and books, which we can't do here in the Edit tab.
-        const imagesWithLinks = Array.from(
-            page.querySelectorAll("[data-href]"),
-        ).filter((elt: HTMLElement) => {
-            return (
-                elt.classList.contains("bloom-imageContainer") &&
-                !elt.closest(kDraggableIdAttribute)
-            );
-        });
-        imagesWithLinks.forEach((elt: HTMLElement) => {
-            elt.addEventListener("click", (e: MouseEvent) => {
-                const linkElement = (e.target as HTMLElement).closest(
-                    "[href], [data-href]",
-                ) as HTMLElement;
-                if (!linkElement) return;
-
-                const href: string | undefined =
-                    (linkElement.getAttribute("href") ||
-                        linkElement.getAttribute("data-href")) ??
-                    undefined;
-                if (!href) return;
-                if (href.startsWith("http://") || href.startsWith("https://")) {
-                    // This is a generic external link. We open it in a new window or tab.
-                    // (The host possibly could intercept this and open a browser to handle it.)
-                    e.preventDefault();
-                    e.stopPropagation();
-                    postString("link", href);
-                    return;
-                }
-            });
-        });
+        if (preparePageForPlay(page)) {
+            setUpPlayOnPreparedPage(page);
+        }
         //Slider: wrapper?.removeEventListener("click", designTimeClickOnSlider);
     } else {
-        undoPrepareActivity(page);
-        canvasElementManager?.resumeComicEditing();
+        takePageOutOfPlayMode(page);
+        canvasElementManager?.endGamePlayModeSuspension();
         canvasElementManager?.checkActiveElementIsVisible();
         //Slider: wrapper?.addEventListener("click", designTimeClickOnSlider);
     }
@@ -2081,6 +2039,47 @@ export function setActiveDragActivityTab(tab: number) {
     // selection state, even if copied by external runtime code paths.
     removeBloomSelectedFromTargets(page);
     scheduleRemoveBloomSelectedFromTargets(page);
+}
+
+// The rest of starting play on a page that preparePageForPlay() has just put into play mode. Like
+// that, it must happen only once per time the page enters Play, or the opening audio plays again and
+// each image link gets a second click handler.
+function setUpPlayOnPreparedPage(page: HTMLElement): void {
+    playInitialElements(page, true);
+
+    // Follow image hyperlinks to external sites.
+    // Bloom player has its own image hyperlink handling and follows both links to external sites and links to other
+    // pages and books, which we can't do here in the Edit tab.
+    const imagesWithLinks = Array.from(
+        page.querySelectorAll("[data-href]"),
+    ).filter((elt: HTMLElement) => {
+        return (
+            elt.classList.contains("bloom-imageContainer") &&
+            !elt.closest(kDraggableIdAttribute)
+        );
+    });
+    imagesWithLinks.forEach((elt: HTMLElement) => {
+        elt.addEventListener("click", (e: MouseEvent) => {
+            const linkElement = (e.target as HTMLElement).closest(
+                "[href], [data-href]",
+            ) as HTMLElement;
+            if (!linkElement) return;
+
+            const href: string | undefined =
+                (linkElement.getAttribute("href") ||
+                    linkElement.getAttribute("data-href")) ??
+                undefined;
+            if (!href) return;
+            if (href.startsWith("http://") || href.startsWith("https://")) {
+                // This is a generic external link. We open it in a new window or tab.
+                // (The host possibly could intercept this and open a browser to handle it.)
+                e.preventDefault();
+                e.stopPropagation();
+                postString("link", href);
+                return;
+            }
+        });
+    });
 }
 
 // Replace the origami control with the Game tab control if the page is a game.
