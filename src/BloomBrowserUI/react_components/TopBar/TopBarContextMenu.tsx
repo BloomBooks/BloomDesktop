@@ -37,7 +37,7 @@ export const TopBarContextMenu: React.FunctionComponent<{
     const [isMeddlingWithNewFiles, setIsMeddlingWithNewFiles] =
         React.useState(false);
     const [runFreezeDoctor, setRunFreezeDoctor] = React.useState(false);
-    // Lasts for the whole run of Bloom, which may outlive this top bar, so the back end holds it.
+    // The slowing down is done in C# (SlowComputerSimulation.cs), so that is where the setting lives.
     const [simulateSlowComputer, setSimulateSlowComputer] = useApiBoolean(
         "app/simulateSlowComputer",
         false,
