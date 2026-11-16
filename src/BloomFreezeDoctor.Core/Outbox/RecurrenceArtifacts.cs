@@ -77,6 +77,6 @@ public static class RecurrenceArtifacts
     /// Whether a file name is a crash dump. Extension only: the Doctor names its own dumps
     /// <c>bloom-1234.dmp</c>, but a card can also carry one a person attached by hand under any name.
     /// </summary>
-    private static bool IsADump(string fileName) =>
+    internal static bool IsADump(string fileName) =>
         fileName.EndsWith(".dmp", StringComparison.OrdinalIgnoreCase);
 }

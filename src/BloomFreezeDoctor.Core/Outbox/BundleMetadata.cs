@@ -143,9 +143,21 @@ public sealed record BundleMetadata
     /// This is how "wait and comment" is expressed without holding anything up. The sibling's upload is a
     /// network round trip and nothing should block on it, so the report goes into a bundle of its own with
     /// a note of where it belongs; when it is drained, the sibling has a card and this becomes a comment
-    /// on it. Null for a bundle that is nobody's follow-on, which is nearly all of them.
+    /// on it. Null for nearly all bundles.
+    ///
+    /// The sibling can be another report of the same problem (a recurrence that missed being merged), in
+    /// which case this is the bundle's own fingerprint, or the same Bloom's earlier, different problem (a
+    /// follow-on): see <see cref="IsAFollowOn"/>.
     /// </summary>
     public string? CommentOnFingerprint { get; init; }
+
+    /// <summary>
+    /// Whether this is a comment about what happened next to the Bloom a card is about - it froze, then it
+    /// died - rather than another occurrence of the card's problem. A different fingerprint is what makes it
+    /// one: the same fingerprint would be the same problem.
+    /// </summary>
+    [JsonIgnore]
+    public bool IsAFollowOn => CommentOnFingerprint != null && CommentOnFingerprint != Fingerprint;
 
     /// <summary>
     /// The card <see cref="CommentOnFingerprint"/> resolved to, filled in at the moment of sending. Known
