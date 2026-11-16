@@ -5,6 +5,7 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
+using BloomTests.DataBuilders;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -78,6 +79,49 @@ namespace BloomTests.Book
             string path = collectionFolder.Combine(bookTitle);
             Directory.CreateDirectory(path);
             File.WriteAllText(Path.Combine(path, $"{bookTitle}.htm"), @"<html></html>");
+        }
+
+        [Test]
+        public void GetBookInfos_ThumbnailLabelIsWorkedOutOnlyForBooksWithoutAMetaJsonTitle()
+        {
+            new BookFolderBuilder()
+                .WithRootFolder(_folder.Path)
+                .WithTitle("withTitle")
+                .WithHtm("<html></html>")
+                .WithMetaDataJson(
+                    new BookMetaData
+                    {
+                        Id = "11111111-1111-1111-1111-111111111111",
+                        Title = "Has a title",
+                        AllTitles = "{\"en\":\"Has a title\"}",
+                    }.Json
+                )
+                .Build();
+            new BookFolderBuilder()
+                .WithRootFolder(_folder.Path)
+                .WithTitle("noTitle")
+                .WithHtm("<html></html>")
+                .WithMetaDataJson(
+                    new BookMetaData
+                    {
+                        Id = "22222222-2222-2222-2222-222222222222",
+                        AllTitles = "{\"en\":\"Label from allTitles\"}",
+                    }.Json
+                )
+                .Build();
+
+            var infos = _collection.GetBookInfos().ToList();
+
+            var titled = infos.Single(i => Path.GetFileName(i.FolderPath) == "withTitle");
+            var untitled = infos.Single(i => Path.GetFileName(i.FolderPath) == "noTitle");
+            Assert.That(
+                titled.Title,
+                Is.EqualTo("Has a title"),
+                "test setup: meta.json title read"
+            );
+            Assert.That(untitled.Title, Is.Null.Or.Empty, "test setup: no meta.json title");
+            Assert.That(titled.ThumbnailLabel, Is.Null);
+            Assert.That(untitled.ThumbnailLabel, Is.EqualTo("Label from allTitles"));
         }
 
         [Test]
