@@ -57,7 +57,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task SetupAndBuildAsync_RealReadingAppBuilderBuild_CreatesValidApk()
+        public void SetupAndBuild_RealReadingAppBuilderBuild_CreatesValidApk()
         {
             // This is an opt-in verification pass against an installed copy of RAB, not a normal CI test.
             if (Environment.GetEnvironmentVariable(kRunManualRabBuildEnvVar) != "1")
@@ -124,8 +124,8 @@ namespace BloomTests.Publish.Rab
             var restoreNoDefaultCurrentDirectory = RemoveNoDefaultCurrentDirectoryInExePath();
             try
             {
-                await service.PrepareAsync();
-                await service.BuildAsync();
+                service.Prepare();
+                service.Build();
             }
             finally
             {

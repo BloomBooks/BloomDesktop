@@ -85,6 +85,41 @@
         <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Style</note>
         <note>On the Front &amp; Back Matter page of the Collection Settings dialog: the label of the list of front and back matter styles (such as "Traditional" or "Paper Saver"), which decide which pages come at the start and end of every book.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.LineSpacing.Description" translate="no">
+        <source xml:lang="en">Use this to increase the default line spacing if this language has tall characters that tend to run into other lines of text.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.LineSpacing.Description</note>
+        <note>Explains the "Default line spacing" list on the "More" page of one language in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ReaderTools.Language1Changed" translate="no">
+        <source xml:lang="en">These belong to the language you are replacing. To change them for the new language, click OK, then open these settings again.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Language1Changed</note>
+        <note>On the "More" page of the first language in the Collection Settings dialog, shown under the alphabet and sentence punctuation (which cannot be edited) after the user has chosen a different first language. "OK" is the dialog's OK button.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.RightToLeft.Description" translate="no">
+        <source xml:lang="en">If you are not **SURE**, then do not turn this on. If your language is written starting on the right and moving left, you will **KNOW**.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.RightToLeft.Description</note>
+        <note>Explains the checkbox for a language written right to left, on the "More" page of one language in the Collection Settings dialog. The pairs of asterisks make SURE and KNOW bold; keep them around the matching words in your language.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ToolFontSize.Description" translate="no">
+        <source xml:lang="en">Use this to increase the font size when this language is shown in places like the Decodable Reader Tool.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ToolFontSize.Description</note>
+        <note>Explains the "Font size when displayed in tools" list on the "More" page of one language in the Collection Settings dialog. "Decodable Reader Tool" is the name of a Bloom tool.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage1.Description" translate="no">
+        <source xml:lang="en">Example: the local language</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage1.Description</note>
+        <note>On the Languages page of the Collection Settings dialog, under the heading "Written Language 1": an example of what the first language usually is.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage2.Description" translate="no">
+        <source xml:lang="en">Example: national language</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage2.Description</note>
+        <note>On the Languages page of the Collection Settings dialog, under the heading "Written Language 2": an example of what the second language usually is.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage3.Description" translate="no">
+        <source xml:lang="en">Example: regional language</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage3.Description</note>
+        <note>On the Languages page of the Collection Settings dialog, under the heading "Written Language 3": an example of what the third language usually is.</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>
@@ -2001,6 +2036,36 @@
         <source xml:lang="en">Apps have a maximum size of about %1. The current estimate for this app is %0.</source>
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
         <note>Summary text for the estimated total app size. %0 is the current estimated app size and %1 is the app size limit, for example 100 MB.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.OverLimitWithEstimates">
+        <source xml:lang="en">This estimate is above the %0 Android app size limit, but some of the books' sizes are only estimates. Measure the books to find out for sure, or choose fewer books or smaller books.</source>
+        <note>ID: PublishTab.Apps.SizeEstimate.OverLimitWithEstimates</note>
+        <note>Warning shown when the estimated app size exceeds the Android size limit while some books' sizes are still estimates (their BloomPUB files have not been made yet). "Measure" refers to the "Measure exact sizes" button. %0 is the size limit, for example 100 MB.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.MeasuredCount">
+        <source xml:lang="en">%0 of %1 books have been measured. The striped ones are estimates.</source>
+        <note>ID: PublishTab.Apps.SizeEstimate.MeasuredCount</note>
+        <note>Shown below the app size bar. %0 is how many of the app's books have exact sizes and %1 is how many books the app has. "The striped ones" are the books shown with diagonal stripes in the size bar.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.ActualSuffix">
+        <source xml:lang="en">(actual)</source>
+        <note>ID: PublishTab.Apps.SizeEstimate.ActualSuffix</note>
+        <note>Added after a book's size in the tooltip of the app size bar, e.g. "My Book: 3.5 mb (actual)", when the size is exact.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.EstimateSuffix">
+        <source xml:lang="en">(estimate)</source>
+        <note>ID: PublishTab.Apps.SizeEstimate.EstimateSuffix</note>
+        <note>Added after a book's size in the tooltip of the app size bar, e.g. "My Book: 3.5 mb (estimate)", when the size is only an estimate.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.MeasureBooks">
+        <source xml:lang="en">Measure exact sizes</source>
+        <note>ID: PublishTab.Apps.MeasureBooks</note>
+        <note>Button below the app size bar in Publish > Apps. It makes the BloomPUB files for the app's books so that their exact sizes can be shown instead of estimates.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.MeasureBooks.Tooltip">
+        <source xml:lang="en">Make the BloomPUB files for the app's books now, so that their exact sizes are shown. Build will use them too.</source>
+        <note>ID: PublishTab.Apps.MeasureBooks.Tooltip</note>
+        <note>Tooltip for the "Measure exact sizes" button. "BloomPUB" is a file format name and must not be translated. "Build" is the name of the button that builds the app.</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.FailedToAddImage">
         <source xml:lang="en">Sorry, there was a problem adding the image.</source>
