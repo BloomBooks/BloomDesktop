@@ -460,7 +460,7 @@ namespace Bloom.WebLibraryIntegration
             if (!book.BookInfo.IsSaveable)
             {
                 progress.WriteError(
-                    $"{uploadParams.Folder} was not uploaded because it was not checked out to you. Please check out all books you wish to upload before invoking the bulk upload operation."
+                    $"{uploadParams.Folder} was not uploaded because it was not checked out to you. Please check out all the books you want to upload, then upload again."
                 );
                 ++_booksWithErrors;
                 return context;
