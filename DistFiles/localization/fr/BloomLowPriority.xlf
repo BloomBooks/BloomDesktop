@@ -27,6 +27,11 @@
         <target xml:lang="fr" state="final">Bloom n'a pas pu rejoindre le serveur pour obtenir la liste des étagères.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable" translate="no">
+        <source xml:lang="en">Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.</source>
+        <target xml:lang="fr" state="needs-translation">Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed" approved="yes">
         <source xml:lang="en">Conversion file used:</source>
         <target xml:lang="fr" state="final">Fichier de conversion utilisé:</target>
