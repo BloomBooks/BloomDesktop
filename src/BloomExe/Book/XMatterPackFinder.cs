@@ -158,7 +158,7 @@ namespace Bloom.Book
 
         private void AddXMatterDir(string directory, bool factory)
         {
-            var xMatterInfo = new XMatterInfo(directory);
+            var xMatterInfo = new XMatterInfo(directory, factory);
             _all.Add(xMatterInfo);
             if (factory)
                 _factoryXMatters.Add(xMatterInfo);

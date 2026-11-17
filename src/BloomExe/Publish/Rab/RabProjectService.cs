@@ -492,10 +492,17 @@ namespace Bloom.Publish.Rab
                                 + BloomPubMaker.BloomPubExtensionWithDot,
                             tracked?.BloomPubPath
                         );
-                        var bloomPubSize = GetCurrentBloomPubSize(bloomPubPath, book);
+                        var (match, bloomPubSize) = GetKeptBloomPubSize(bloomPubPath, book);
                         if (!bloomPubSize.HasValue)
                             return MakeBookSizeEstimate(book, EstimateBloomPubSize(book), false);
-                        return MakeBookSizeEstimate(book, bloomPubSize.Value, true);
+                        // A BloomPUB made by an earlier Bloom from the book as it is now is a far
+                        // better guide than the estimator, but it isn't measured by this Bloom,
+                        // so it still counts as an estimate (and Build will make it again).
+                        return MakeBookSizeEstimate(
+                            book,
+                            bloomPubSize.Value,
+                            match == BloomPubCache.Match.Current
+                        );
                     })
                     .ToArray(),
                 EstimatedAppOverheadBytes = kEstimatedAppOverheadBytes,
@@ -529,32 +536,35 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// The size of the BloomPUB at <paramref name="bloomPubPath"/>, to report as the book's
-        /// actual size, or null if it is missing, out of date, or can't be read just now; then the
-        /// book gets an estimate this time rather than failing the whole size request. Checking
-        /// reads the book's files, and one can vanish or be locked part way through, e.g. while a
-        /// Measure or Build in the background rewrites meta.json (BL-17062). The BloomPUB itself
-        /// can vanish after the check found it, when a build replaces it, and so can the whole
-        /// cache folder, which lives in the temp folder that Windows and users clear (BL-17097).
+        /// How well the kept BloomPUB at <paramref name="bloomPubPath"/> matches the book (see
+        /// <see cref="BloomPubCache.Match"/>), and its size, which is null when it is out of date
+        /// or can't be read just now; then the book gets an estimate this time rather than failing
+        /// the whole size request. Checking reads the book's files, and one can vanish or be
+        /// locked part way through, e.g. while a Measure or Build in the background rewrites
+        /// meta.json (BL-17062). The BloomPUB itself can vanish after the check found it, when a
+        /// build replaces it, and so can the whole cache folder, which lives in the temp folder
+        /// that Windows and users clear (BL-17097).
         /// </summary>
-        internal static long? GetCurrentBloomPubSize(string bloomPubPath, RabTrackedBookInfo book)
+        internal static (BloomPubCache.Match Match, long? SizeBytes) GetKeptBloomPubSize(
+            string bloomPubPath,
+            RabTrackedBookInfo book
+        )
         {
             try
             {
-                if (
-                    !BloomPubCache.IsCurrent(
-                        bloomPubPath,
-                        book.FolderPath,
-                        book.BloomPubSettingsKey
-                    )
-                )
-                    return null;
-                return new FileInfo(bloomPubPath).Length;
+                var match = BloomPubCache.GetMatch(
+                    bloomPubPath,
+                    book.FolderPath,
+                    book.BloomPubSettingsKey
+                );
+                return match == BloomPubCache.Match.OutOfDate
+                    ? (match, null)
+                    : (match, new FileInfo(bloomPubPath).Length);
             }
             catch (Exception error)
                 when (error is IOException || error is UnauthorizedAccessException)
             {
-                return null;
+                return (BloomPubCache.Match.OutOfDate, null);
             }
         }
 

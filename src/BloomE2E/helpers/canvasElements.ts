@@ -1068,3 +1068,28 @@ async function requireBox(locator: Locator, what: string): Promise<IRect> {
         );
     return box;
 }
+
+/**
+ * The tooltip the Canvas tool's palette shows for one of its items, read by resting the pointer on
+ * the item the way a person does. Opens the Canvas tool first.
+ */
+export async function getPaletteItemTooltip(
+    page: Page,
+    item: PaletteItem,
+): Promise<string> {
+    const toolbox = await openCanvasTool(page);
+    const source = toolbox.locator(`[data-testid="palette-${item}"]:visible`);
+    await source.first().waitFor({ state: "visible", timeout: 20000 });
+    await source.first().hover();
+    const tooltip = toolbox.locator('[role="tooltip"]:visible');
+    await expect(
+        tooltip,
+        `Resting the pointer on the ${item} palette item brought up no tooltip.`,
+    ).toHaveCount(1, { timeout: 10000 });
+    const text = (await tooltip.innerText()).replace(/\s+/g, " ").trim();
+    // Take the pointer off the item again, so the tooltip is not over the palette for whatever
+    // the test does next.
+    await page.mouse.move(0, 0);
+    await expect(tooltip).toHaveCount(0, { timeout: 10000 });
+    return text;
+}

@@ -3196,7 +3196,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void GetCurrentBloomPubSize_CacheFolderGone_ReturnsNull()
+        public void GetKeptBloomPubSize_CacheFolderGone_ReturnsNoSize()
         {
             // The whole cache folder lives in temp, which Windows and users clear; that must not
             // fail the size request (BL-17097). A test can't make it vanish at the exact moment
@@ -3212,14 +3212,17 @@ namespace BloomTests.Publish.Rab
             WriteCurrentBloomPub(bloomPubPath, bookFolder, 1234);
             var book = new RabTrackedBookInfo() { FolderPath = bookFolder };
             Assert.That(
-                RabProjectService.GetCurrentBloomPubSize(bloomPubPath, book),
-                Is.EqualTo(1234),
+                RabProjectService.GetKeptBloomPubSize(bloomPubPath, book),
+                Is.EqualTo((BloomPubCache.Match.Current, (long?)1234)),
                 "test setup: a current BloomPUB reports its size"
             );
 
             Directory.Delete(cacheFolder, true);
 
-            Assert.That(RabProjectService.GetCurrentBloomPubSize(bloomPubPath, book), Is.Null);
+            Assert.That(
+                RabProjectService.GetKeptBloomPubSize(bloomPubPath, book),
+                Is.EqualTo((BloomPubCache.Match.OutOfDate, (long?)null))
+            );
         }
 
         [Test]
@@ -3273,6 +3276,44 @@ namespace BloomTests.Publish.Rab
             Assert.That(edited.SizeBytes, Is.EqualTo(new FileInfo(editedHtmlPath).Length));
             Assert.That(unrecorded.IsActual, Is.False);
             Assert.That(unrecorded.SizeBytes, Is.LessThan(5000));
+        }
+
+        [Test]
+        public void GetSizeEstimates_BloomPubFromEarlierBloom_UsesItsSizeAsEstimate()
+        {
+            // After Bloom is updated, a BloomPUB the old Bloom made from the unchanged book is
+            // still the best guide to its size, but it isn't measured by this Bloom.
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var bookFolder = Path.Combine(tempFolder.Path, "book-1");
+            Directory.CreateDirectory(bookFolder);
+            RobustFile.WriteAllText(Path.Combine(bookFolder, "book-1.htm"), "<html></html>");
+            Directory.CreateDirectory(paths.BloomPubRoot);
+            var bloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub");
+            WriteCurrentBloomPub(bloomPubPath, bookFolder, 4000);
+            BloomTests.Publish.BloomPub.BloomPubCacheTests.PretendMadeByAnotherBloom(bloomPubPath);
+            Assert.That(
+                BloomPubCache.IsCurrent(bloomPubPath, bookFolder, null),
+                Is.False,
+                "test setup: the BloomPUB should now look made by another Bloom"
+            );
+
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = bookFolder,
+                    Title = "Book One",
+                    BloomPubPath = bloomPubPath,
+                },
+            };
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+
+            var estimate = service.GetSizeEstimates().Books.Single();
+
+            Assert.That(estimate.SizeBytes, Is.EqualTo(4000));
+            Assert.That(estimate.IsActual, Is.False);
         }
 
         [Test]
