@@ -1,12 +1,6 @@
 import * as React from "react";
 import { css } from "@emotion/react";
-import {
-    getBoolean,
-    post,
-    postBoolean,
-    postJson,
-    useApiBoolean,
-} from "../../utils/bloomApi";
+import { getBoolean, post, postBoolean, postJson } from "../../utils/bloomApi";
 import Menu from "@mui/material/Menu";
 import Divider from "@mui/material/Divider";
 import {
@@ -37,11 +31,11 @@ export const TopBarContextMenu: React.FunctionComponent<{
     const [isMeddlingWithNewFiles, setIsMeddlingWithNewFiles] =
         React.useState(false);
     const [runFreezeDoctor, setRunFreezeDoctor] = React.useState(false);
+    const [simulateSlowComputer, setSimulateSlowComputer] =
+        React.useState(false);
     // The slowing down is done in C# (SlowComputerSimulation.cs), so that is where the setting lives.
-    const [simulateSlowComputer, setSimulateSlowComputer] = useApiBoolean(
-        "app/simulateSlowComputer",
-        false,
-    );
+    const readSimulateSlowComputer = () =>
+        getBoolean("app/simulateSlowComputer", setSimulateSlowComputer);
     const [canChooseDevBloomLibrary, setCanChooseDevBloomLibrary] =
         React.useState(false);
     const [useDevBloomLibrary, setUseDevBloomLibrary] = React.useState(false);
@@ -71,7 +65,9 @@ export const TopBarContextMenu: React.FunctionComponent<{
         // from local state: it may well have been turned on during a previous session.
         getBoolean("app/runFreezeDoctor", (value) => {
             setRunFreezeDoctor(value);
-        }); // Only some builds offer the choice of web site, and only the back end knows
+        });
+        readSimulateSlowComputer();
+        // Only some builds offer the choice of web site, and only the back end knows
         // which web site this run of Bloom uses.
         getBoolean("app/canChooseDevBloomLibrary", (value) => {
             setCanChooseDevBloomLibrary(value);
@@ -204,7 +200,12 @@ export const TopBarContextMenu: React.FunctionComponent<{
                 label: "Simulate a slow computer",
                 selected: simulateSlowComputer,
                 onClick: () => {
-                    setSimulateSlowComputer(!simulateSlowComputer);
+                    // Show what Bloom reports afterwards: Windows may refuse to limit Bloom,
+                    // leaving the simulation off.
+                    void postJson(
+                        "app/simulateSlowComputer",
+                        !simulateSlowComputer,
+                    ).then(readSimulateSlowComputer);
                 },
             },
         ];
