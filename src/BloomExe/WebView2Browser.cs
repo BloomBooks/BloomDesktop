@@ -348,6 +348,7 @@ namespace Bloom
                     )
                         e.State = CoreWebView2PermissionState.Deny;
                 };
+                SlowComputerSimulation.RegisterWebView(_webview);
                 _readyToNavigate = true;
             };
         }
