@@ -124,7 +124,15 @@ export class ImageDescriptionToolControls extends React.Component<
                         <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.MoreInformation">
                             For more information:
                         </Label>
-                        <div className="indentPoet">
+                        <div
+                            className="indentPoet"
+                            // The URL is one long word. Let it break mid-word,
+                            // but only when it won't fit even on a line of its
+                            // own, so the panel never scrolls sideways.
+                            css={css`
+                                overflow-wrap: anywhere;
+                            `}
+                        >
                             <Link
                                 id="poetDiagram"
                                 href="https://poet.diagramcenter.org"

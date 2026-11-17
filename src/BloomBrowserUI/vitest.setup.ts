@@ -266,6 +266,24 @@ Object.defineProperty(HTMLMediaElement.prototype, "load", {
     value: vi.fn(),
 });
 
+// jsdom has no ResizeObserver, and jsdom does no layout, so nothing it renders ever
+// resizes: a do-nothing stand-in is enough for code that watches sizes (e.g.
+// ShrinkTextToFit, and the table editing that keeps cell pictures fitted). Tests that need real resizing belong in *.browser.spec.ts, where
+// the real one exists and this is skipped.
+if (!globalThis.ResizeObserver) {
+    globalThis.ResizeObserver = class {
+        public observe(): void {
+            // nothing ever resizes in jsdom
+        }
+        public unobserve(): void {
+            // nothing to stop
+        }
+        public disconnect(): void {
+            // nothing to stop
+        }
+    };
+}
+
 // -----------------------------------------------------------------------------
 // CSSSTYLESHEET FIXES FOR JSDOM
 // -----------------------------------------------------------------------------

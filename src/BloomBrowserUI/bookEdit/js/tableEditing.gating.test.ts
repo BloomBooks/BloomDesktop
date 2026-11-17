@@ -33,16 +33,6 @@ import { findParagraphForTextContextMenu } from "../textContextMenu/noIndent";
 import { AttachNewTable, SetupTableEditing } from "./tableEditing";
 import { setTablesMayBeRestructuredForTests } from "./tableFeature";
 
-// jsdom has no ResizeObserver, which attachSingleTable installs to keep cell
-// pictures fitted. Nothing here resizes, so a do-nothing stand-in is enough.
-class NoopResizeObserver {
-    public observe(): void {}
-    public unobserve(): void {}
-    public disconnect(): void {}
-}
-(globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver =
-    NoopResizeObserver;
-
 // GetSettings is injected into the page by RuntimeInformationInjector (C#). The
 // text cell template needs the language new text boxes use.
 (globalThis as unknown as { GetSettings: unknown }).GetSettings = () => ({

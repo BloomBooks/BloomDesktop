@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import { css } from "@emotion/react";
 import { Span } from "../../../react_components/l10nComponents";
 import { kReaderAccent, kReaderMuted } from "./readerToolStyles";
+import { ShrinkTextToFit } from "../../../react_components/ShrinkTextToFit";
 
 // This component displays the phase navigation for both the
 // decodable reader tool and the leveled reader tool (the part
@@ -87,13 +88,23 @@ export const ReaderToolNav: FunctionComponent<{
             {/* The level/stage indicator is two separately-styled localized
                 pieces: the large "Level {0}" and the smaller, muted "of {1}".
                 They were split from a single "Level {0} of {1}" string so each
-                part can be styled; nowrap keeps them on one line. */}
-            <div
+                part can be styled. They share a line when it is wide enough;
+                with a long translation (or a vertical scrollbar taking some of
+                the toolbox's width), "of {1}" moves below, and then each piece
+                wraps at its spaces. Only if a single word is still too wide
+                does ShrinkTextToFit make both smaller (their sizes are in em
+                so they shrink together), so that the arrows always stay
+                inside the toolbox. */}
+            <ShrinkTextToFit
+                minFontSizePx={10}
                 css={css`
                     display: flex;
+                    flex-wrap: wrap;
                     align-items: baseline;
-                    gap: 6px;
-                    white-space: nowrap;
+                    column-gap: 6px;
+                    min-width: 0;
+                    margin-right: 6px;
+                    font-size: 17px;
                 `}
             >
                 <Span
@@ -104,7 +115,6 @@ export const ReaderToolNav: FunctionComponent<{
                     }
                     l10nParam0={curPhaseNum().toString()}
                     css={css`
-                        font-size: 17px;
                         font-weight: bold;
                     `}
                 >
@@ -114,16 +124,18 @@ export const ReaderToolNav: FunctionComponent<{
                     l10nKey="EditTab.Toolbox.ReaderTools.OfCount"
                     l10nParam0={numberOfPhases().toString()}
                     css={css`
-                        font-size: 11px;
+                        // 11px when the indicator is at its full 17px.
+                        font-size: 0.65em;
                         color: ${kReaderMuted};
                     `}
                 >
                     {"of {0}"}
                 </Span>
-            </div>
+            </ShrinkTextToFit>
             <div
                 css={css`
                     display: flex;
+                    flex-shrink: 0;
                     gap: 6px;
                 `}
             >
