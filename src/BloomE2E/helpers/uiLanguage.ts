@@ -181,11 +181,46 @@ export async function chooseUiLanguage(
     bloomApp: IBloomApp,
     languageTag: string,
 ): Promise<Page> {
-    const page = bloomApp.page;
     const { menuText, resolvedTag } = await getMenuTextForLanguageTag(
-        page,
+        bloomApp.page,
         languageTag,
     );
+    return chooseUiLanguageMenuEntry(bloomApp, menuText, resolvedTag);
+}
+
+/** The language tag Bloom reports while its UI is in Pseudo-English. */
+export const kPseudoEnglishUiLanguageTag = "qps-ploc";
+
+/**
+ * Change Bloom's UI language to Pseudo-English the way a user does: open the language menu and
+ * click "Pseudo-English (i18n test)". Every string that goes through Bloom's localization then
+ * comes back in square brackets with its vowels doubled, so a string still in plain English is
+ * one that never asked for a translation. Returns the new shell page, as chooseUiLanguage does.
+ *
+ * Separate from chooseUiLanguage because Bloom does not list the pseudo-locale among its
+ * localizations (the uiLanguages endpoint), only in the menu, under a name it hard-codes.
+ */
+export async function choosePseudoEnglishUiLanguage(
+    bloomApp: IBloomApp,
+): Promise<Page> {
+    return chooseUiLanguageMenuEntry(
+        bloomApp,
+        kPseudoEnglishUiLanguage,
+        kPseudoEnglishUiLanguageTag,
+    );
+}
+
+/**
+ * Click the UI-language menu's entry reading `menuText`, wait out the project reopen that
+ * follows, and return the new shell page once Bloom reports `resolvedTag` as its UI language and
+ * the collection is ready.
+ */
+async function chooseUiLanguageMenuEntry(
+    bloomApp: IBloomApp,
+    menuText: string,
+    resolvedTag: string,
+): Promise<Page> {
+    const page = bloomApp.page;
     const menu = await openUiLanguageMenu(page);
     const item = languageMenuItem(menu, menuText);
     await expect(
@@ -494,4 +529,37 @@ export async function openCollectionFromChooser(
     const newPage = await chooserApp.reattachToShell();
     await waitForCollectionReady(newPage);
     return newPage;
+}
+
+/**
+ * What Bloom shows, in the UI language it is running in, for strings from its localization files.
+ * `strings` maps each string's id (e.g. "EditTab.Table.PaintFormat.Command") to its English;
+ * the answer maps the same ids to the wording in the UI language, which is the English where
+ * there is no translation. This is the question every part of Bloom's web UI asks.
+ *
+ * For a test that has to find a control by its wording while Bloom is not in English.
+ */
+export async function getUiStrings<T extends Record<string, string>>(
+    page: Page,
+    strings: T,
+): Promise<{ [id in keyof T]: string }> {
+    const response = await apiPost(
+        page,
+        "i18n/loadStrings",
+        new URLSearchParams(strings).toString(),
+        "application/x-www-form-urlencoded",
+    );
+    return JSON.parse(response.body) as { [id in keyof T]: string };
+}
+
+/**
+ * Whether `text` reads as Pseudo-English: Bloom's localization puts square brackets round every
+ * string it hands out in that UI language, so wording that has letters in it and no brackets
+ * round it never went through localization. Text with no letters at all (a number) counts as
+ * fine, since there is nothing in it to translate.
+ */
+export function isPseudoEnglish(text: string): boolean {
+    const trimmed = text.trim();
+    if (!/\p{L}/u.test(trimmed)) return true;
+    return trimmed.startsWith("[") && trimmed.endsWith("]");
 }
