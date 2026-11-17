@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { userEvent } from "vitest/browser";
+import { cdp, userEvent } from "vitest/browser";
 
 // Tests must not reach the network, and there is no Bloom here to answer.
 // setupInlineImageInteractions asks whether AI image editing is on; the mock answers that it is
@@ -21,6 +21,7 @@ import { kInlineImageTestCss } from "./inlineImageTestCss";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import {
     insertInlineImage,
+    kInlineImageBottomClass,
     kInlineImageLeftClass,
     kInlineImageMiddleClass,
     kInlineImageRightClass,
@@ -344,5 +345,567 @@ describe("resizing and dragging an inline image", () => {
         // wider than the block as overflowing.
         const editable = group.querySelector(".bloom-editable") as HTMLElement;
         expect(editable.scrollWidth).toBeLessThanOrEqual(editable.clientWidth);
+    });
+});
+
+// The tests below need more than the lower right corner and one quick movement: the other
+// corners and docks, a slow drag, and the crop handles.
+
+type Corner = "nw" | "ne" | "sw" | "se";
+interface IPoint {
+    x: number;
+    y: number;
+}
+
+function centerOf(element: Element): IPoint {
+    const box = element.getBoundingClientRect();
+    return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+}
+
+function pageOf(): HTMLElement {
+    return root.querySelector(".bloom-page") as HTMLElement;
+}
+
+function editableOf(group: HTMLElement): HTMLElement {
+    return group.querySelector(".bloom-editable") as HTMLElement;
+}
+
+// Drags one of the image's corner handles far outward in one movement: to the right edge of the
+// page for a right-hand corner, to its left edge for a left-hand one, and well below the image.
+async function dragCornerFarOut(
+    wrapper: HTMLElement,
+    corner: Corner,
+): Promise<void> {
+    const handle = wrapper.querySelector(
+        `[data-inline-image-corner="${corner}"]`,
+    ) as HTMLElement;
+    expect(handle, `expected a ${corner} resize handle`).not.toBeNull();
+    // The handles show only while the pointer is over the page.
+    await userEvent.hover(pageOf());
+    await userEvent.dragAndDrop(handle, pageOf(), {
+        targetPosition: { x: corner.endsWith("e") ? 400 : 0, y: 600 },
+    });
+}
+
+// Sends one event of the real mouse, at a point in this test page's own coordinates.
+// userEvent.dragAndDrop makes a whole drag in one movement, so a drag that has to be watched part
+// way through, or made slowly, is built from these. The browser takes mouse coordinates in the
+// outer page, which shows the test page in a scaled iframe.
+async function sendMouse(
+    type: "mouseMoved" | "mousePressed" | "mouseReleased",
+    point: IPoint,
+    buttonIsDown: boolean,
+): Promise<void> {
+    const frame = window.frameElement!.getBoundingClientRect();
+    const scale = frame.width / window.innerWidth;
+    await cdp().send("Input.dispatchMouseEvent", {
+        type,
+        x: frame.left + point.x * scale,
+        y: frame.top + point.y * scale,
+        button: type === "mouseMoved" && !buttonIsDown ? "none" : "left",
+        buttons: buttonIsDown ? 1 : 0,
+        clickCount: type === "mouseMoved" ? 0 : 1,
+    });
+}
+
+function nextFrame(): Promise<void> {
+    return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+// Drags with the real mouse from one point to another in `steps` equal movements, calling
+// `afterEachMove` once the page has been laid out after each one.
+async function dragSlowly(
+    from: IPoint,
+    to: IPoint,
+    steps: number,
+    afterEachMove: () => void = () => {},
+): Promise<void> {
+    await sendMouse("mouseMoved", from, false);
+    await sendMouse("mousePressed", from, true);
+    for (let step = 1; step <= steps; step++) {
+        await sendMouse(
+            "mouseMoved",
+            {
+                x: from.x + ((to.x - from.x) * step) / steps,
+                y: from.y + ((to.y - from.y) * step) / steps,
+            },
+            true,
+        );
+        await nextFrame();
+        afterEachMove();
+    }
+    await sendMouse("mouseReleased", to, false);
+    await nextFrame();
+}
+
+function widthPercentOf(wrapper: HTMLElement): number {
+    return parseFloat(wrapper.style.getPropertyValue(kInlineImageWidthVar));
+}
+
+// A narrow, tall block with empty page on both sides of it, so that a corner on either side can
+// be dragged further than the full width of the text.
+function makeNarrowBlockInMiddleOfPage(texts: string[]): HTMLElement {
+    const group = makeTextBlock(200, 800, texts);
+    group.style.marginLeft = "100px";
+    return group;
+}
+
+// Checks that the picture spans the text from edge to edge and that Bloom would not mark the
+// block as overflowing, which is what turns it red.
+function expectFullWidthWithoutOverflow(
+    group: HTMLElement,
+    wrapper: HTMLElement,
+): void {
+    expect(wrapper.style.getPropertyValue(kInlineImageWidthVar)).toBe(
+        `${kMaxInlineImageWidthPercent}%`,
+    );
+    const picture = imgOf(wrapper).getBoundingClientRect();
+    const block = group.getBoundingClientRect();
+    expect(Math.round(picture.left)).toBe(Math.round(block.left));
+    expect(Math.round(picture.right)).toBe(Math.round(block.right));
+    const editable = editableOf(group);
+    expect(editable.scrollWidth).toBeLessThanOrEqual(editable.clientWidth);
+    expect(OverflowChecker.IsOverflowingSelf(editable)).toBe(false);
+}
+
+describe("resizing an inline image from any corner, in any dock, quickly or slowly", () => {
+    // BL-17078: the landscape case, from each corner. A left-hand corner can only be dragged
+    // outward when the picture is docked right, because a left-docked picture's left side is at
+    // the edge of the page.
+    it.each([
+        { corner: "se", dockClass: kInlineImageLeftClass },
+        { corner: "ne", dockClass: kInlineImageLeftClass },
+        { corner: "sw", dockClass: kInlineImageRightClass },
+        { corner: "nw", dockClass: kInlineImageRightClass },
+    ] as { corner: Corner; dockClass: string }[])(
+        "stops at the bottom of a wide, short block when the $corner corner is dragged",
+        async ({ corner, dockClass }) => {
+            const group = makeTextBlock(400, 120, [
+                "Once upon a time, there was a sweet little girl.",
+            ]);
+            const wrapper = await setUpImage(group, dockClass);
+            const blockBottom = group.getBoundingClientRect().bottom;
+            // Sanity check: the image starts 120px wide and the block fits it.
+            expect(
+                Math.round(imgOf(wrapper).getBoundingClientRect().width),
+            ).toBe(120);
+            expect(overflowPx(group)).toBeLessThanOrEqual(0);
+
+            await dragCornerFarOut(wrapper, corner);
+
+            expect(
+                imgOf(wrapper).getBoundingClientRect().bottom,
+            ).toBeLessThanOrEqual(blockBottom + 2);
+            expect(overflowPx(group)).toBeLessThanOrEqual(1);
+            // Every corner stops at the same place: the 120px block holds a 3:2 picture up to
+            // 168px wide, which is 42%.
+            const widthPercent = widthPercentOf(wrapper);
+            expect(widthPercent).toBeGreaterThan(41);
+            expect(widthPercent).toBeLessThan(43);
+            wrapper.style.setProperty(
+                kInlineImageWidthVar,
+                `${widthPercent + 1}%`,
+            );
+            expect(overflowPx(group)).toBeGreaterThan(1);
+        },
+    );
+
+    // BL-17078: the portrait case, in the other two docks. (The test above this describe covers
+    // the left dock.)
+    it.each([
+        { dockClass: kInlineImageRightClass, corner: "sw" },
+        { dockClass: kInlineImageMiddleClass, corner: "se" },
+    ] as { corner: Corner; dockClass: string }[])(
+        "reaches the full width of the text, with nothing past its sides, in $dockClass",
+        async ({ dockClass, corner }) => {
+            const group = makeNarrowBlockInMiddleOfPage(["Once upon a time."]);
+            const wrapper = await setUpImage(group, dockClass);
+            // Sanity check: the picture starts at 30% of the 200px block.
+            expect(
+                Math.round(imgOf(wrapper).getBoundingClientRect().width),
+            ).toBe(60);
+
+            await dragCornerFarOut(wrapper, corner);
+
+            expectFullWidthWithoutOverflow(group, wrapper);
+        },
+    );
+
+    // The text beside a side-docked picture gets narrower as the picture grows, so it takes more
+    // lines. In a block that the text nearly fills, the text reaches the bottom of the block long
+    // before the picture does.
+    it.each([
+        { dockClass: kInlineImageLeftClass, corner: "se" },
+        { dockClass: kInlineImageRightClass, corner: "sw" },
+    ] as { corner: Corner; dockClass: string }[])(
+        "stops before the text beside a picture in $dockClass is pushed out of the block",
+        async ({ dockClass, corner }) => {
+            const group = makeTextBlock(400, 200, [
+                Array(10).fill("The bird waits by the pool.").join(" "),
+            ]);
+            const wrapper = await setUpImage(group, dockClass);
+            const blockBottom = group.getBoundingClientRect().bottom;
+            const text = document.createRange();
+            text.selectNodeContents(editableOf(group).querySelector("p")!);
+            // Sanity checks: the block fits its text with the picture at 30%, with less than
+            // two lines to spare, and would not fit it with the picture at 60%.
+            expect(overflowPx(group)).toBeLessThanOrEqual(0);
+            expect(text.getBoundingClientRect().bottom).toBeGreaterThan(
+                blockBottom - 40,
+            );
+            wrapper.style.setProperty(kInlineImageWidthVar, "60%");
+            expect(overflowPx(group)).toBeGreaterThan(1);
+            wrapper.style.setProperty(kInlineImageWidthVar, "30%");
+
+            await dragCornerFarOut(wrapper, corner);
+
+            const widthPercent = widthPercentOf(wrapper);
+            expect(widthPercent).toBeGreaterThan(30);
+            expect(overflowPx(group)).toBeLessThanOrEqual(1);
+            expect(text.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+                blockBottom + 0.5,
+            );
+            // The text stopped it, not the picture's own bottom, which is well above the
+            // bottom of the block.
+            expect(imgOf(wrapper).getBoundingClientRect().bottom).toBeLessThan(
+                blockBottom - 20,
+            );
+            // It stops close to the largest width that fits: 1% more would not fit.
+            wrapper.style.setProperty(
+                kInlineImageWidthVar,
+                `${widthPercent + 1}%`,
+            );
+            expect(overflowPx(group)).toBeGreaterThan(1);
+        },
+    );
+
+    // One fast movement of the pointer jumps from a width that fits to one far too big. The
+    // resize then looks for the largest width that fits, so that it ends where a slow drag,
+    // which meets every width on the way, ends.
+    it("ends at the same width whether the corner is dragged in one movement or slowly", async () => {
+        const makeBlock = async () => {
+            const group = makeTextBlock(400, 120, [
+                "Once upon a time, there was a sweet little girl.",
+            ]);
+            return { group, wrapper: await setUpImage(group) };
+        };
+        const fast = await makeBlock();
+        await dragCornerFarOut(fast.wrapper, "se");
+        const fastPercent = widthPercentOf(fast.wrapper);
+
+        const slow = await makeBlock();
+        const handle = slow.wrapper.querySelector(
+            '[data-inline-image-corner="se"]',
+        ) as HTMLElement;
+        // The handles show, and so have a place to press, only while the pointer is over the
+        // page.
+        await userEvent.hover(pageOf());
+        expect(
+            handle.getBoundingClientRect().width,
+            "the lower right handle should be showing",
+        ).toBeGreaterThan(0);
+        const widthsOnTheWay = new Set<number>();
+        await dragSlowly(centerOf(handle), { x: 400, y: 600 }, 40, () =>
+            widthsOnTheWay.add(widthPercentOf(slow.wrapper)),
+        );
+        const slowPercent = widthPercentOf(slow.wrapper);
+
+        // Sanity checks: the slow drag did pass through several widths, and it ended where the
+        // block is full.
+        expect(widthsOnTheWay.size).toBeGreaterThan(3);
+        expect(slowPercent).toBeGreaterThan(41);
+        expect(overflowPx(slow.group)).toBeLessThanOrEqual(1);
+        expect(Math.abs(fastPercent - slowPercent)).toBeLessThan(0.5);
+    });
+
+    // A picture as wide as the text, cropped on one side and then uncropped all the way, is as
+    // wide as the text again. Uncropping is limited to the same width as a resize.
+    it("is as wide as the text again after its side is cropped and then uncropped all the way", async () => {
+        const group = makeNarrowBlockInMiddleOfPage(["Once upon a time."]);
+        const wrapper = await setUpImage(group);
+        await dragCornerFarOut(wrapper, "se");
+        expectFullWidthWithoutOverflow(group, wrapper);
+        const sideHandle = () =>
+            wrapper.querySelector(
+                '[data-inline-image-side="e"]',
+            ) as HTMLElement;
+        const block = group.getBoundingClientRect();
+
+        // Crop the right side by 80px, which is 40% of the picture.
+        await userEvent.hover(pageOf());
+        await userEvent.dragAndDrop(sideHandle(), pageOf(), {
+            targetPosition: {
+                x: centerOf(sideHandle()).x - 80,
+                y: centerOf(sideHandle()).y,
+            },
+        });
+        // Sanity check: the picture is now cropped and narrower than the text.
+        expect(widthPercentOf(wrapper)).toBeGreaterThan(55);
+        expect(widthPercentOf(wrapper)).toBeLessThan(65);
+        expect(
+            Math.round(imgOf(wrapper).parentElement!.scrollWidth),
+        ).toBeLessThanOrEqual(Math.round(block.width));
+
+        // Uncrop it: drag the same handle far out to the right.
+        await userEvent.dragAndDrop(sideHandle(), pageOf(), {
+            targetPosition: { x: 400, y: centerOf(sideHandle()).y },
+        });
+
+        expect(wrapper.style.getPropertyValue(kInlineImageWidthVar)).toBe(
+            `${kMaxInlineImageWidthPercent}%`,
+        );
+        const editable = editableOf(group);
+        expect(editable.scrollWidth).toBeLessThanOrEqual(editable.clientWidth);
+        expect(OverflowChecker.IsOverflowingSelf(editable)).toBe(false);
+        const shown = wrapper.getBoundingClientRect();
+        expect(Math.round(shown.left)).toBe(Math.round(block.left));
+        expect(Math.round(shown.right)).toBe(Math.round(block.right));
+    });
+
+    // The measure that stops a resize adds up every language's editable, so a third language
+    // counts as the second does.
+    it("stops a resize before it pushes text out of a block that shows three languages", async () => {
+        // The picture on the left takes 88px with its bottom margin, and the French and the
+        // Spanish take 10 lines each, 400px: 488px, which fits in 496px.
+        const french = Array(10).fill("Il était une fois.").join("<br>");
+        const spanish = Array(10).fill("Érase una vez.").join("<br>");
+        const group = makeTextBlock(400, 496, [
+            "Once upon a time.",
+            french,
+            spanish,
+        ]);
+        const wrapper = await setUpImage(group);
+        // Sanity check: the block fits all three languages.
+        expect(totalScrollOverflowPx(group)).toBeLessThanOrEqual(0);
+
+        await dragCornerFarOut(wrapper, "se");
+
+        const widthPercent = widthPercentOf(wrapper);
+        expect(widthPercent).toBeGreaterThan(30);
+        expect(widthPercent).toBeLessThan(40);
+        expect(totalScrollOverflowPx(group)).toBeLessThanOrEqual(1);
+        // It stops close to the largest width that fits: 1% more would not fit.
+        wrapper.style.setProperty(kInlineImageWidthVar, `${widthPercent + 1}%`);
+        expect(totalScrollOverflowPx(group)).toBeGreaterThan(1);
+    });
+});
+
+describe("dragging an inline image to the bottom of its block", () => {
+    // Drags the picture in one movement to a point of the page.
+    const dragPictureTo = async (wrapper: HTMLElement, to: IPoint) => {
+        await userEvent.hover(pageOf());
+        await userEvent.dragAndDrop(imgOf(wrapper), pageOf(), {
+            targetPosition: to,
+        });
+    };
+
+    // Checks that the picture is at the very bottom of the block: a side-docked picture keeps
+    // its 8px (0.5em) bottom margin inside the block.
+    const expectAtBottomOfBlock = (
+        group: HTMLElement,
+        wrapper: HTMLElement,
+    ) => {
+        const blockBottom = group.getBoundingClientRect().bottom;
+        const picture = imgOf(wrapper).getBoundingClientRect();
+        expect(picture.bottom).toBeLessThanOrEqual(blockBottom);
+        expect(picture.bottom).toBeGreaterThan(blockBottom - 12);
+        expect(overflowPx(group)).toBeLessThanOrEqual(1);
+    };
+
+    // BL-17078: below the block, each third of its width means that third's own dock, at the
+    // bottom. (The test above this describe covers the middle third.) A side dock has a bottom
+    // margin, which the drag has to keep inside the block, or the move is undone.
+    it.each([
+        { x: 60, dockClass: kInlineImageLeftClass },
+        { x: 340, dockClass: kInlineImageRightClass },
+    ])(
+        "leaves a picture dragged below the block at x=$x at the bottom, in $dockClass",
+        async ({ x, dockClass }) => {
+            const group = makeTextBlock(400, 300, ["The end."]);
+            const wrapper = await setUpImage(group, kInlineImageMiddleClass);
+            // Sanity check: the picture starts at the top of the block, in the middle dock.
+            expect(Math.round(imgOf(wrapper).getBoundingClientRect().top)).toBe(
+                Math.round(group.getBoundingClientRect().top),
+            );
+
+            await dragPictureTo(wrapper, { x, y: 600 });
+
+            expect(wrapper.classList.contains(dockClass)).toBe(true);
+            expectAtBottomOfBlock(group, wrapper);
+            // It is against that side of the block.
+            const picture = imgOf(wrapper).getBoundingClientRect();
+            const block = group.getBoundingClientRect();
+            if (dockClass === kInlineImageLeftClass)
+                expect(Math.round(picture.left)).toBe(Math.round(block.left));
+            else
+                expect(Math.round(picture.right)).toBe(Math.round(block.right));
+        },
+    );
+
+    // From the bottom of the block, a drag sideways changes the dock and leaves the picture at
+    // the bottom.
+    it("moves a picture at the bottom of the block to the right side when it is dragged right", async () => {
+        const group = makeTextBlock(400, 300, ["The end."]);
+        const wrapper = await setUpImage(group, kInlineImageMiddleClass);
+        await dragPictureTo(wrapper, { x: 200, y: 600 });
+        // Sanity check: it is at the bottom, in the middle dock.
+        expect(wrapper.classList.contains(kInlineImageMiddleClass)).toBe(true);
+        expectAtBottomOfBlock(group, wrapper);
+
+        await dragPictureTo(wrapper, {
+            x: 340,
+            y: centerOf(imgOf(wrapper)).y,
+        });
+
+        expect(wrapper.classList.contains(kInlineImageRightClass)).toBe(true);
+        expect(Math.round(imgOf(wrapper).getBoundingClientRect().right)).toBe(
+            Math.round(group.getBoundingClientRect().right),
+        );
+        expectAtBottomOfBlock(group, wrapper);
+    });
+
+    // BL-17078: the picture used to jump up to just below the text when it came near the bottom
+    // of the block. A slow drag shows every position on the way, so it shows a jump wherever it
+    // happens.
+    it("never moves the picture up while it is dragged slowly down to the bottom", async () => {
+        const group = makeTextBlock(400, 300, ["The end."]);
+        const wrapper = await setUpImage(group, kInlineImageMiddleClass);
+        const start = centerOf(imgOf(wrapper));
+        const tops: number[] = [imgOf(wrapper).getBoundingClientRect().top];
+
+        // 10px at a time, to well below the block.
+        await dragSlowly(start, { x: start.x, y: 600 }, 56, () =>
+            tops.push(imgOf(wrapper).getBoundingClientRect().top),
+        );
+
+        // Sanity check: the picture did move on the way, not only at the end.
+        expect(new Set(tops.map(Math.round)).size).toBeGreaterThan(10);
+        tops.forEach((top, i) => {
+            if (i > 0)
+                expect(
+                    top,
+                    `the picture moved up on move ${i} of the drag: ${tops.map(Math.round).join(", ")}`,
+                ).toBeGreaterThanOrEqual(tops[i - 1] - 1);
+        });
+        expect(wrapper.classList.contains(kInlineImageMiddleClass)).toBe(true);
+        expectAtBottomOfBlock(group, wrapper);
+    });
+
+    // In a block that has more text than it can show, the bottom dock is at the end of the
+    // content, so below the block still means the bottom dock: right after the last line of text.
+    it("puts a picture dragged below a block that is full of text right after the last line", async () => {
+        // 16 lines of 20px beside and below the picture are more than the 300px block holds.
+        const group = makeTextBlock(400, 300, [
+            Array(16).fill("Line of it.").join("<br>"),
+        ]);
+        const wrapper = await setUpImage(group);
+        const editable = editableOf(group);
+        // Sanity check: the block overflows before the drag.
+        expect(editable.scrollHeight).toBeGreaterThan(editable.clientHeight);
+
+        await dragPictureTo(wrapper, { x: 200, y: 700 });
+
+        expect(wrapper.classList.contains(kInlineImageBottomClass)).toBe(true);
+        // The picture is the last thing in the block, and it starts below the last line.
+        expect(editable.lastElementChild).toBe(wrapper);
+        const text = document.createRange();
+        text.selectNodeContents(editable.querySelector("p")!);
+        const picture = imgOf(wrapper).getBoundingClientRect();
+        expect(picture.top).toBeGreaterThanOrEqual(
+            text.getBoundingClientRect().bottom,
+        );
+        // Right after it: the bottom dock's 8px (0.5em) top margin and no more.
+        expect(picture.top).toBeLessThan(
+            text.getBoundingClientRect().bottom + 12,
+        );
+    });
+
+    // With two pictures in one block, dragging each to the bottom in turn must not make either
+    // jump up, and must not push text out.
+    it("keeps two pictures low in the block when each is dragged to the bottom in turn", async () => {
+        const group = makeTextBlock(400, 400, ["The end."]);
+        const first = await setUpImage(group, kInlineImageMiddleClass);
+        const second = await setUpImage(group, kInlineImageMiddleClass);
+        const blockBottom = group.getBoundingClientRect().bottom;
+        const topOf = (wrapper: HTMLElement) =>
+            imgOf(wrapper).getBoundingClientRect().top;
+        const bottomOf = (wrapper: HTMLElement) =>
+            imgOf(wrapper).getBoundingClientRect().bottom;
+        // Sanity checks: two different pictures, one above the other at the top of the block.
+        expect(second).not.toBe(first);
+        expect(Math.round(topOf(first))).toBe(
+            Math.round(group.getBoundingClientRect().top),
+        );
+        expect(topOf(second)).toBeGreaterThanOrEqual(bottomOf(first));
+        const secondTopAtStart = topOf(second);
+
+        await dragPictureTo(first, { x: 200, y: 700 });
+
+        // The first is at the very bottom, and the second has not moved.
+        expect(bottomOf(first)).toBeLessThanOrEqual(blockBottom);
+        expect(bottomOf(first)).toBeGreaterThan(blockBottom - 12);
+        expect(Math.round(topOf(second))).toBe(Math.round(secondTopAtStart));
+        const firstTopAtBottom = topOf(first);
+
+        // This drag is slow, as a person's is. The place below the block is taken, and a move
+        // that asks for it is undone, so one movement straight there would leave the picture
+        // where it started.
+        const secondTops: number[] = [secondTopAtStart];
+        await dragSlowly(centerOf(imgOf(second)), { x: 200, y: 700 }, 60, () =>
+            secondTops.push(topOf(second)),
+        );
+        secondTops.forEach((top, i) => {
+            if (i > 0)
+                expect(
+                    top,
+                    `the second picture moved up on move ${i} of the drag: ${secondTops.map(Math.round).join(", ")}`,
+                ).toBeGreaterThanOrEqual(secondTops[i - 1] - 1);
+        });
+
+        // The second has gone down as far as the first lets it, the first has stayed at the
+        // bottom, and the block still shows all its text.
+        expect(Math.round(topOf(first))).toBe(Math.round(firstTopAtBottom));
+        expect(topOf(second)).toBeGreaterThan(secondTopAtStart);
+        expect(bottomOf(second)).toBeLessThanOrEqual(topOf(first) + 1);
+        expect(bottomOf(second)).toBeGreaterThan(topOf(first) - 12);
+        expect(overflowPx(group)).toBeLessThanOrEqual(1);
+    });
+
+    // The measure that undoes a drag adds up every language's editable, so a third language
+    // counts as the second does.
+    it("undoes a drag that pushes text out of a block that shows three languages", async () => {
+        // The picture on the left takes 88px with its bottom margin, and the French and the
+        // Spanish take 10 lines each, 400px: 488px, which fits in 496px. Moved to the
+        // full-width band, the picture pushes the English below it, 100px, and the block is
+        // 4px short.
+        const french = Array(10).fill("Il était une fois.").join("<br>");
+        const spanish = Array(10).fill("Érase una vez.").join("<br>");
+        const group = makeTextBlock(400, 496, [
+            "Once upon a time.",
+            french,
+            spanish,
+        ]);
+        const wrapper = await setUpImage(group);
+        // Sanity checks: the block fits all three languages with the picture docked left, and
+        // would not with the picture in the full-width band.
+        expect(totalScrollOverflowPx(group)).toBeLessThanOrEqual(0);
+        expect(wrapper.classList.contains(kInlineImageLeftClass)).toBe(true);
+        wrapper.classList.replace(
+            kInlineImageLeftClass,
+            kInlineImageMiddleClass,
+        );
+        expect(totalScrollOverflowPx(group)).toBeGreaterThan(2);
+        wrapper.classList.replace(
+            kInlineImageMiddleClass,
+            kInlineImageLeftClass,
+        );
+
+        await dragPictureTo(wrapper, {
+            x: 200,
+            y: centerOf(imgOf(wrapper)).y,
+        });
+
+        expect(wrapper.classList.contains(kInlineImageLeftClass)).toBe(true);
+        expect(totalScrollOverflowPx(group)).toBeLessThanOrEqual(1);
     });
 });

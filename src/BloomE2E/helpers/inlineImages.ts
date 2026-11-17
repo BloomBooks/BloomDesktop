@@ -760,6 +760,22 @@ export async function getBlockScrollOverflowPx(
 }
 
 /**
+ * How much wider the block's content is than the block, in layout pixels. Zero when nothing
+ * reaches past its side. Bloom marks a block whose content is wider than the block as overflowing,
+ * as it does one whose content is taller.
+ */
+export async function getBlockSidewaysOverflowPx(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<number> {
+    return editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
+        .first()
+        .evaluate((block) => block.scrollWidth - block.clientWidth);
+}
+
+/**
  * Whether Bloom has marked this block as holding more text than it can show, which is what gives
  * the person the red marking and the warning. getBlockScrollOverflowPx measures the overflow;
  * this reads Bloom's verdict. OverflowChecker adds the "overflow" class, and it checks every
@@ -1325,7 +1341,7 @@ export async function getBlockLineHeightPx(
  * (see computeInlineImageWidthPercent).
  *
  * `pixels` is how far the corner moves outward, which grows the picture; pass a negative number
- * to shrink it. Bloom keeps the width between 10% and 95% of the block.
+ * to shrink it. Bloom keeps the width between 10% and 100% of the block.
  */
 export async function resizeInlineImage(
     page: Page,
@@ -1371,6 +1387,45 @@ export async function resizeInlineImage(
         .not.toBe(before.widthPercent);
     return (await getInlineImage(page, groupSelector, languageTag, id))
         .widthPercent;
+}
+
+/**
+ * Make an inline image as big as Bloom allows, the way a person does who drags a corner handle
+ * outward until the pointer is past the far side of the text block. Returns the width the picture
+ * ends at, as a percentage of the block.
+ *
+ * Use a right-hand corner for a picture docked left or in the middle, and a left-hand corner for
+ * one docked right, so that outward is toward the far side of the block. The pointer goes 30
+ * pixels past that side, which asks for more than the full width of the text. Bloom decides where
+ * the picture stops: at the full width, or sooner when a bigger picture would push text out of
+ * the block (continueResize in bookEdit/js/inlineImageInteractions.ts).
+ */
+export async function resizeInlineImagePastBlockEdge(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+    corner: InlineImageCorner,
+): Promise<number> {
+    const picture = await pictureRectInView(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+    );
+    const block = await blockRect(page, groupSelector, languageTag);
+    const eastward = corner === "ne" || corner === "se";
+    const toFarSide = eastward
+        ? block.x + block.width - (picture.x + picture.width)
+        : picture.x - block.x;
+    return resizeInlineImage(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+        corner,
+        toFarSide + 30,
+    );
 }
 
 /**
