@@ -890,6 +890,11 @@ This version is specific to the Pashto language and used for digital publishing.
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture Device.Description</note>
         <note>Description of the "MXB Scripture - Device" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Story Producer.Description" sil:dynamic="true">
+        <source xml:lang="en">Based on the Device front/back matter, this also provides some special inputs which are passed to Story Producer for its configuration.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Story Producer.Description</note>
+        <note>Description of the "Story Producer" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog. Bloom and Story Producer are product names.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Uzbekistan 2023.Description" sil:dynamic="true">
         <source xml:lang="en">Supports full-bleed cover color with images, adds a specific graphic tied to the grade level, which we get from the chosen bookshelf.</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Uzbekistan 2023.Description</note>

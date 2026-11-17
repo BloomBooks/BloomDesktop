@@ -440,11 +440,6 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL PNG.Description</note>
         <note>Description of the "SIL-PNG" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Story Producer.Description" sil:dynamic="true">
-        <source xml:lang="en">Based on the Device front/back matter, this also provides some special inputs which are passed to Story Producer for its configuration.</source>
-        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Story Producer.Description</note>
-        <note>Description of the "Story Producer" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog. Bloom and Story Producer are product names.</note>
-      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
