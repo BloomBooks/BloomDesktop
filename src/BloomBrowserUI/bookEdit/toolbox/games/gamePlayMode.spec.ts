@@ -205,7 +205,7 @@ describe("play mode, whichever tool is open", () => {
         takePageOutOfPlayMode(page);
     });
 
-    it("a save while playing records canvas text as editable, as every other tab does", () => {
+    it("a save while playing records the page's text as editable, as every other tab does", () => {
         const { page, draggable } = makeActivityPage();
         draggable.classList.add("bloom-canvas-element");
         const text = document.createElement("div");

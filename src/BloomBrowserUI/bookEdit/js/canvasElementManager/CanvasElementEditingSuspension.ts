@@ -1,8 +1,5 @@
 import { getImageFromCanvasElement } from "../bloomImages";
-import {
-    kBackgroundImageClass,
-    kCanvasElementClass,
-} from "../../toolbox/canvas/canvasElementConstants";
+import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 
 export type ComicEditingSuspendedState =
     | "none"
@@ -44,6 +41,9 @@ export class CanvasElementEditingSuspension {
     // come on during it (GameTool's leavePlayBeforeShowingImageDescriptions); drags of origami
     // splitters and jQuery resizes don't happen on game pages.
     private suspendedState: ComicEditingSuspendedState = "none";
+
+    // The page's text boxes that Play made uneditable, to make editable again when it ends.
+    private textDisabledForPlay: Element[] = [];
 
     private splitterResizeObservers: ResizeObserver[] = [];
     private draggingSplitter = false;
@@ -126,7 +126,7 @@ export class CanvasElementEditingSuspension {
         }
 
         if (forWhat === "forGamePlayMode") {
-            this.setCanvasEditablesEditable(false);
+            this.disablePageTextForPlay();
         }
 
         this.suspendedState = forWhat;
@@ -168,27 +168,35 @@ export class CanvasElementEditingSuspension {
             this.setupSplitterEventHandling();
         }
         if (this.suspendedState === "forGamePlayMode") {
-            this.setCanvasEditablesEditable(true);
+            this.restorePageTextAfterPlay();
             this.host.setupControlFrame();
         }
         this.suspendedState = "none";
         this.host.turnOnCanvasElementEditing();
     };
 
-    // Play mode makes the text in canvas elements uneditable, so that a tester's clicks and drags
-    // play the game instead of editing it. It sets the attribute to "false" rather than removing
-    // it: an attribute put back is put back last, and Bloom saves a page only when its HTML has
-    // changed, so a page that had been played would look edited on its next visits.
-    // (gamePlayMode.ts sets it back to "true" in a copy of the page saved during Play.)
-    private setCanvasEditablesEditable = (editable: boolean): void => {
-        document
-            .querySelectorAll(`.${kCanvasElementClass} .bloom-editable`)
-            .forEach((bloomEditable) =>
-                bloomEditable.setAttribute(
-                    "contenteditable",
-                    editable ? "true" : "false",
-                ),
-            );
+    // Play mode is for trying the page out, not editing it, so it makes every text box on the page
+    // uneditable. It sets the attribute to "false" rather than removing it: an attribute put back
+    // is put back last, and Bloom saves a page only when its HTML has changed, so a page that had
+    // been played would look edited on its next visits. (gamePlayMode.ts sets it back to "true" in
+    // a copy of the page saved during Play.) Only the boxes that were editable are touched, and
+    // only those are made editable again: a read-only field has no contenteditable to begin with.
+    private disablePageTextForPlay = (): void => {
+        this.textDisabledForPlay = Array.from(
+            document.querySelectorAll(
+                '.bloom-page .bloom-editable[contenteditable="true"]',
+            ),
+        );
+        this.textDisabledForPlay.forEach((bloomEditable) =>
+            bloomEditable.setAttribute("contenteditable", "false"),
+        );
+    };
+
+    private restorePageTextAfterPlay = (): void => {
+        this.textDisabledForPlay.forEach((bloomEditable) =>
+            bloomEditable.setAttribute("contenteditable", "true"),
+        );
+        this.textDisabledForPlay = [];
     };
 
     private dividerMouseDown = (_ev: Event) => {

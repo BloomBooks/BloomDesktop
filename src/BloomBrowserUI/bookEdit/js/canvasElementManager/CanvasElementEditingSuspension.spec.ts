@@ -11,6 +11,8 @@ import { kCanvasElementClass } from "../../toolbox/canvas/canvasElementConstants
 let editingOn: boolean;
 let suspension: CanvasElementEditingSuspension;
 let canvasText: HTMLElement;
+let otherText: HTMLElement; // a text box that isn't in a canvas element
+let readOnlyText: HTMLElement; // e.g. the original license in a translated shellbook
 
 function makeHost(): ICanvasElementEditingSuspensionHost {
     return {
@@ -35,13 +37,24 @@ function canvasTextIsEditable(): boolean {
 describe("CanvasElementEditingSuspension with a game's Play mode", () => {
     beforeEach(() => {
         document.body.innerHTML = "";
+        const page = document.createElement("div");
+        page.classList.add("bloom-page");
         const canvasElement = document.createElement("div");
         canvasElement.classList.add(kCanvasElementClass);
         canvasText = document.createElement("div");
         canvasText.classList.add("bloom-editable");
         canvasText.setAttribute("contenteditable", "true");
         canvasElement.appendChild(canvasText);
-        document.body.appendChild(canvasElement);
+        page.appendChild(canvasElement);
+        otherText = document.createElement("div");
+        otherText.classList.add("bloom-editable");
+        otherText.setAttribute("contenteditable", "true");
+        page.appendChild(otherText);
+        readOnlyText = document.createElement("div");
+        readOnlyText.classList.add("bloom-editable");
+        readOnlyText.setAttribute("readonly", "true");
+        page.appendChild(readOnlyText);
+        document.body.appendChild(page);
         editingOn = true;
         suspension = new CanvasElementEditingSuspension(makeHost());
     });
@@ -74,6 +87,22 @@ describe("CanvasElementEditingSuspension with a game's Play mode", () => {
         suspension.endGamePlayModeSuspension();
 
         expect(canvasText.outerHTML).toBe(before);
+    });
+
+    it("Play makes all the page's text uneditable, and only what was editable editable again", () => {
+        suspension.suspendComicEditing("forGamePlayMode");
+        expect(otherText.getAttribute("contenteditable")).toBe("false");
+        expect(
+            readOnlyText.hasAttribute("contenteditable"),
+            "a read-only field is left as it is",
+        ).toBe(false);
+
+        suspension.endGamePlayModeSuspension();
+        expect(otherText.getAttribute("contenteditable")).toBe("true");
+        expect(
+            readOnlyText.hasAttribute("contenteditable"),
+            "Play ending doesn't make a read-only field editable",
+        ).toBe(false);
     });
 
     it("choosing a game tab other than Play does not end a tool's suspension", () => {
