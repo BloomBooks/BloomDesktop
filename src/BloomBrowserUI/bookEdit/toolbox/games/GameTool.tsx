@@ -1988,7 +1988,12 @@ export function setActiveDragActivityTab(tab: number) {
     ).startsWith("drag-");
     // Non-drag games can still pass through this API during page setup. Force Start mode there
     // so drag-only positioning logic (for Correct/Wrong/Play) cannot mutate their canvas elements.
-    const effectiveTab = isDragActivityPage ? tab : startTabIndex;
+    let effectiveTab = isDragActivityPage ? tab : startTabIndex;
+    // Play is not available while image descriptions are showing (see
+    // leavePlayBeforeShowingImageDescriptions); this catches a page load that would restore it.
+    if (effectiveTab === playTabIndex && areImageDescriptionsShowing()) {
+        effectiveTab = startTabIndex;
+    }
     window.top!["dragActivityPage"] = effectiveTab;
 
     updateTabClass(effectiveTab);
@@ -2039,6 +2044,40 @@ export function setActiveDragActivityTab(tab: number) {
     // selection state, even if copied by external runtime code paths.
     removeBloomSelectedFromTargets(page);
     scheduleRemoveBloomSelectedFromTargets(page);
+}
+
+// A game's Play tab and image descriptions (shown by the Image Description tool, or by the Talking
+// Book tool when asked) don't go together. Nobody who needs image descriptions is likely to play a
+// dragging game, and both take over the page's canvas elements, so we don't let them overlap.
+// Like setActiveDragActivityTab, both of these must be called through getToolboxBundleExports().
+
+// Call just before showing image descriptions: takes a game page that is in Play back to Start.
+export function leavePlayBeforeShowingImageDescriptions(): void {
+    const page = getBloomPageElement();
+    if (
+        page &&
+        isPageBloomGame(page) &&
+        getActiveDragActivityTab() === playTabIndex
+    ) {
+        setActiveDragActivityTab(startTabIndex);
+    }
+}
+
+// Call just after image descriptions are shown or hidden: redraws a game page's tabs, so that its
+// Play tab is enabled only while they are hidden.
+export function redrawGameTabs(): void {
+    getEditablePageBundleExports()?.renderDragActivityTabControl(
+        getActiveDragActivityTab(),
+    );
+}
+
+// The class on the page iframe's body that shows the image descriptions.
+export const kShowImageDescriptionsClass = "bloom-showImageDescriptions";
+
+function areImageDescriptionsShowing(): boolean {
+    return !!getPageIframeBody()?.classList.contains(
+        kShowImageDescriptionsClass,
+    );
 }
 
 // The rest of starting play on a page that preparePageForPlay() has just put into play mode. Like

@@ -5,9 +5,8 @@ import {
 } from "./CanvasElementEditingSuspension";
 import { kCanvasElementClass } from "../../toolbox/canvas/canvasElementConstants";
 
-// A game page can be played with any tool open, so a game's Play mode and a tool's suspension of
-// comic editing (the Talking Book tool showing image descriptions, say) overlap, in either order.
-// Neither may end the other's.
+// A game page's tabs work whatever tool is open, so a game's Play mode must survive tools that
+// resume comic editing when they close, and the game tabs must end only Play's suspension.
 
 let editingOn: boolean;
 let suspension: CanvasElementEditingSuspension;
@@ -51,7 +50,7 @@ describe("CanvasElementEditingSuspension with a game's Play mode", () => {
         suspension.suspendComicEditing("forGamePlayMode");
         expect(canvasTextIsEditable(), "test setup").toBe(false);
 
-        // e.g. the Talking Book tool detaching while the page is in Play
+        // e.g. the Talking Book tool closing while the page is in Play
         suspension.resumeComicEditing();
         expect(editingOn).toBe(false);
         expect(canvasTextIsEditable()).toBe(false);
@@ -62,47 +61,13 @@ describe("CanvasElementEditingSuspension with a game's Play mode", () => {
         expect(suspension.isSuspended()).toBe(false);
     });
 
-    it("ending Play mode does not end a suspension that came before it", () => {
-        suspension.suspendComicEditing("forTool"); // image descriptions shown
-        suspension.suspendComicEditing("forGamePlayMode");
-        expect(canvasTextIsEditable(), "Play mode takes effect").toBe(false);
-
-        suspension.endGamePlayModeSuspension();
-        expect(editingOn, "the tool still has editing suspended").toBe(false);
-        expect(canvasTextIsEditable()).toBe(true);
-
-        suspension.resumeComicEditing(); // the tool is done
-        expect(editingOn).toBe(true);
-        expect(suspension.isSuspended()).toBe(false);
-    });
-
-    it("ending Play mode does not end a suspension that came during it", () => {
-        suspension.suspendComicEditing("forGamePlayMode");
-        suspension.suspendComicEditing("forTool");
-
-        suspension.endGamePlayModeSuspension();
-        expect(editingOn, "the tool still has editing suspended").toBe(false);
-        expect(suspension.isSuspended()).toBe(true);
-
-        suspension.resumeComicEditing();
-        expect(editingOn).toBe(true);
-    });
-
-    it("a tool that resumes during Play mode is not suspended once Play ends", () => {
-        suspension.suspendComicEditing("forTool");
-        suspension.suspendComicEditing("forGamePlayMode");
-        suspension.resumeComicEditing(); // the tool is done, but Play goes on
-        expect(editingOn).toBe(false);
-
-        suspension.endGamePlayModeSuspension();
-        expect(editingOn).toBe(true);
-        expect(suspension.isSuspended()).toBe(false);
-    });
-
-    it("leaving a tab other than Play does not end a tool's suspension", () => {
-        suspension.suspendComicEditing("forTool");
+    it("choosing a game tab other than Play does not end a tool's suspension", () => {
+        suspension.suspendComicEditing("forTool"); // e.g. image descriptions shown
         suspension.endGamePlayModeSuspension(); // e.g. the Start tab chosen
         expect(editingOn).toBe(false);
         expect(suspension.isSuspended()).toBe(true);
+
+        suspension.resumeComicEditing(); // the tool is done
+        expect(editingOn).toBe(true);
     });
 });

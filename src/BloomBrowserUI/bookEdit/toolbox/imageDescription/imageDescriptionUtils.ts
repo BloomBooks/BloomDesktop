@@ -1,10 +1,14 @@
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
+import { getToolboxBundleExports } from "../../js/workspaceFrames";
 
 // This file is intended to expose some image description functions that other parts of the
 // code (in both iframes) need to use, while pulling in a minimum of dependencies.
 
 export function showImageDescriptions(bodyOfPageIframe: HTMLElement) {
+    // A game page can't be in Play with image descriptions showing; this must come first, so that
+    // leaving Play doesn't turn comic editing back on after we turn it off below.
+    getToolboxBundleExports()?.leavePlayBeforeShowingImageDescriptions();
     const canvasElementManager = getCanvasElementManager();
     canvasElementManager?.suspendComicEditing("forTool");
     // turn on special layout to make image descriptions visible (might already be on, so check first)
@@ -26,6 +30,7 @@ export function showImageDescriptions(bodyOfPageIframe: HTMLElement) {
             bloomCanvas.appendChild(describedImage);
         }
     }
+    getToolboxBundleExports()?.redrawGameTabs(); // Play is no longer available
 }
 export function hideImageDescriptions(bodyOfPageIframe: HTMLElement) {
     const canvasElementManager = getCanvasElementManager();
@@ -34,6 +39,7 @@ export function hideImageDescriptions(bodyOfPageIframe: HTMLElement) {
     bodyOfPageIframe.classList.remove("bloom-showImageDescriptions");
     unwrapDescribedImages(bodyOfPageIframe);
     canvasElementManager?.resumeComicEditing();
+    getToolboxBundleExports()?.redrawGameTabs(); // Play is available again
 }
 
 // Undo the bloom-describedImage wrapper that showImageDescriptions() adds around the non-description
