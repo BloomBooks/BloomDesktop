@@ -63,6 +63,12 @@ namespace Bloom.Publish.Rab
         /// <paramref name="imageSettings"/>. <paramref name="appearanceSettings"/> (may be null)
         /// gives the cover color, which decides whether cover pictures are made transparent. The
         /// size is 0 if the folder doesn't exist.
+        ///
+        /// Estimating reads the book's files, and one can vanish or be locked part way through,
+        /// e.g. while Bloom saves the book or the user renames or deletes it (BL-17097). Then this
+        /// returns the book's last estimate, or 0 if it has none, rather than fail the Apps
+        /// screen's whole size request; nothing from the failed attempt is remembered, so the next
+        /// request tries again.
         /// </summary>
         public long EstimateBloomPubSize(
             string bookFolderPath,
@@ -77,23 +83,35 @@ namespace Bloom.Publish.Rab
             bookFolderPath = Path.GetFullPath(bookFolderPath)
                 .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-            var files = new DirectoryInfo(bookFolderPath)
-                .EnumerateFiles("*", SearchOption.AllDirectories)
-                .OrderBy(file => file.FullName, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            var key = MakeCacheKey(files, imageSettings);
-            lock (_cacheLock)
+            string key;
+            long estimate;
+            try
             {
-                if (_cache.TryGetValue(bookFolderPath, out var cached) && cached.Key == key)
-                    return cached.SizeBytes;
+                var files = new DirectoryInfo(bookFolderPath)
+                    .EnumerateFiles("*", SearchOption.AllDirectories)
+                    .OrderBy(file => file.FullName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                key = MakeCacheKey(files, imageSettings);
+                lock (_cacheLock)
+                {
+                    if (_cache.TryGetValue(bookFolderPath, out var cached) && cached.Key == key)
+                        return cached.SizeBytes;
+                }
+                estimate = ComputeEstimate(
+                    bookFolderPath,
+                    files,
+                    imageSettings,
+                    appearanceSettings
+                );
             }
-
-            var estimate = ComputeEstimate(
-                bookFolderPath,
-                files,
-                imageSettings,
-                appearanceSettings
-            );
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                lock (_cacheLock)
+                {
+                    return _cache.TryGetValue(bookFolderPath, out var last) ? last.SizeBytes : 0;
+                }
+            }
             lock (_cacheLock)
             {
                 _cache[bookFolderPath] = (key, estimate);
@@ -335,7 +353,7 @@ namespace Bloom.Publish.Rab
         /// </summary>
         private static SafeXmlDocument LoadBookDom(string bookFolderPath)
         {
-            var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
+            var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath, false);
             return string.IsNullOrEmpty(htmlPath)
                 ? null
                 : XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlPath, false);
