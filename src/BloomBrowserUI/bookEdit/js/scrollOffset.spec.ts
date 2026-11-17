@@ -46,6 +46,20 @@ describe("trackScrollOffsets", () => {
         expect(copy.style.color).toBe("red");
         container.remove();
     });
+
+    it("corrects a copy of a scrolled box that is itself the element added to the page", async () => {
+        trackScrollOffsets(document);
+        const copy = document.createElement("div");
+        copy.className = "bloom-editable";
+        copy.style.setProperty(kScrollTopVariable, "44px");
+        expect(copy.style.getPropertyValue(kScrollTopVariable)).toBe("44px");
+
+        document.body.appendChild(copy);
+        await Promise.resolve();
+
+        expect(copy.style.getPropertyValue(kScrollTopVariable)).toBe("");
+        copy.remove();
+    });
 });
 
 describe("removeScrollOffsets", () => {

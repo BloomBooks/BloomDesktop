@@ -20,31 +20,40 @@ export function trackScrollOffsets(doc: Document): void {
     });
 }
 
+// The boxes that have the language label. Unlike the boxes that OverflowChecker checks, this
+// leaves out the textareas of a calendar's day cells: a textarea cannot have an :after, so it has
+// no label to keep in place.
+const kLabelledBoxSelector = ".bloom-editable";
+
 // Records how far the text box that scrolled is scrolled.
 function recordScrollOffset(e: Event): void {
-    if (
-        e.target instanceof HTMLElement &&
-        e.target.matches(".bloom-editable")
-    ) {
-        setScrollOffset(e.target);
-    }
+    setScrollOffset(e.target);
 }
 
-// Sets kScrollTopVariable to how far `box` is scrolled, or removes it when the box is at the top.
-function setScrollOffset(box: HTMLElement): void {
-    if (box.scrollTop) {
-        box.style.setProperty(kScrollTopVariable, box.scrollTop + "px");
+// Sets kScrollTopVariable to how far `node` is scrolled, or removes it when the box is at the top.
+// Does nothing if `node` is not a text box with the language label.
+function setScrollOffset(node: EventTarget | null): void {
+    if (!(node instanceof HTMLElement) || !node.matches(kLabelledBoxSelector)) {
+        return;
+    }
+    if (node.scrollTop) {
+        node.style.setProperty(kScrollTopVariable, node.scrollTop + "px");
     } else {
-        removeScrollOffset(box);
+        removeScrollOffset(node);
     }
 }
 
-// Corrects the offset of every added element that carries one, which is a copy of a scrolled box.
+// Puts every text box that is added to the page, and every one in an added element, into the
+// state that recordScrollOffset would have left it in had it been there all along. A copy of a
+// scrolled box carries the original's offset but starts unscrolled, so this removes it.
 function correctAddedScrollOffsets(mutations: MutationRecord[]): void {
     for (const m of mutations) {
         for (const node of Array.from(m.addedNodes)) {
+            setScrollOffset(node);
             if (node instanceof HTMLElement) {
-                withScrollOffset(node).forEach(setScrollOffset);
+                node.querySelectorAll(kLabelledBoxSelector).forEach(
+                    setScrollOffset,
+                );
             }
         }
     }
@@ -62,14 +71,7 @@ export function removeScrollOffset(box: HTMLElement): void {
 // Removes kScrollTopVariable from every element in `root`, a copy of the page about to be saved,
 // so that it never reaches the book.
 export function removeScrollOffsets(root: HTMLElement): void {
-    withScrollOffset(root).forEach(removeScrollOffset);
-}
-
-// `root` and the elements in it that carry kScrollTopVariable.
-function withScrollOffset(root: HTMLElement): HTMLElement[] {
-    const selector = `[style*="${kScrollTopVariable}"]`;
-    return [
-        ...(root.matches(selector) ? [root] : []),
-        ...Array.from(root.querySelectorAll<HTMLElement>(selector)),
-    ];
+    root.querySelectorAll<HTMLElement>(
+        `[style*="${kScrollTopVariable}"]`,
+    ).forEach(removeScrollOffset);
 }

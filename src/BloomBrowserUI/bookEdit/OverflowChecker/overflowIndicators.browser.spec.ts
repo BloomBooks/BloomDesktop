@@ -174,6 +174,86 @@ describe("the marks for other kinds of overflow", () => {
     });
 });
 
+describe("the fade on the last line that fits", () => {
+    // The color the fade ends in, which overflowIndicators.ts hands to the stylesheet.
+    function fadeColor(): string {
+        return document
+            .querySelector<HTMLElement>(
+                "#bloom-overflow-indicator-layer .bloom-overflow-fadeLastLine",
+            )!
+            .style.getPropertyValue("--overflow-background");
+    }
+
+    it.each([
+        {
+            where: "the box's own background",
+            html: `<div class="bloom-editable overflow" style="${boxStyle(50, 40)} background-color: rgb(20, 40, 60);">${kTenLines}</div>`,
+            expected: "rgb(20, 40, 60)",
+        },
+        {
+            where: "the color of what the box is on, when the box has none",
+            html: `<div style="position: absolute; left: 0; top: 0; width: 400px; height: 300px; background-color: rgb(250, 220, 130);">
+                    <div class="bloom-editable overflow" style="${boxStyle(50, 40)}">${kTenLines}</div>
+                </div>`,
+            expected: "rgb(250, 220, 130)",
+        },
+        {
+            where: "white, when nothing behind the box has a color",
+            html: `<div class="bloom-editable overflow" style="${boxStyle(50, 40)}">${kTenLines}</div>`,
+            expected: "white",
+        },
+    ])("ends in $where", async ({ html, expected }) => {
+        addPage(html);
+
+        await redraw();
+
+        expect(fadeColor()).toBe(expected);
+    });
+});
+
+describe("a page that scrolls instead of overflowing (Device and Ebook layouts)", () => {
+    // Makes a page with a box of ten lines that shows five, as makePageWithBoxTooFull does, on
+    // a page of the given layout, the box wrapped in `wrapperClass` when one is given.
+    function addScrollingPage(layout: string, wrapperClass?: string) {
+        const box = `<div class="bloom-editable overflow" style="${boxStyle(50, 40)}">${kTenLines}</div>`;
+        addPage(
+            wrapperClass ? `<div class="${wrapperClass}">${box}</div>` : box,
+        );
+        document
+            .getElementById("overflowIndicatorsTestPage")!
+            .classList.add(layout);
+    }
+
+    function drawingCount(): number {
+        return document.querySelectorAll("#bloom-overflow-indicator-layer > *")
+            .length;
+    }
+
+    it.each(["Device16x9Portrait", "Ebook2x3Portrait"])(
+        "does not mark a box with too much text on a %s page",
+        async (layout) => {
+            // Sanity check: the same box on a paper page is marked.
+            makePageWithBoxTooFull();
+            await redraw();
+            expect(drawingCount()).toBeGreaterThan(0);
+            document.getElementById("overflowIndicatorsTestPage")!.remove();
+
+            addScrollingPage(layout);
+            await redraw();
+
+            expect(drawingCount()).toBe(0);
+        },
+    );
+
+    it("still marks text that does not fit on a button", async () => {
+        addScrollingPage("Device16x9Portrait", "bloom-canvas-button");
+
+        await redraw();
+
+        expect(drawn("bloom-overflow-chip")!.top).toBeCloseTo(140);
+    });
+});
+
 describe("placementOf", () => {
     it("uses the box's own rectangle when it is not rotated", () => {
         const box = makePageWithCanvasElement(0);
