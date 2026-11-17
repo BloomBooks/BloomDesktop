@@ -483,9 +483,9 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Kihifadhi Karatasi</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Designed to save paper, this puts the credits on the inside of the front cover.</source>
-        <target xml:lang="sw" state="needs-translation">Designed to save paper, this puts the credits on the inside of the front cover.</target>
+        <target xml:lang="sw" state="final">Imebuniwa ili kuokoa karatasi. Hii inaweka sifa upande wa ndani wa jalada la nje.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true" approved="yes">
@@ -503,9 +503,9 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Kihifadhi Karatasi kilicho Bora zaidi</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Designed to save paper, this puts the title page on the inside of the front cover, and the credits on the inside of the back cover.</source>
-        <target xml:lang="sw" state="needs-translation">Designed to save paper, this puts the title page on the inside of the front cover, and the credits on the inside of the back cover.</target>
+        <target xml:lang="sw" state="final">Imeundwa ili kupunguza matumizi ya karatasi, hii inaweka ukurasa wa mada upande wa ndani wa jalada la mbele, na sifa ndani ya jalada la nyuma.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
@@ -515,7 +515,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description" sil:dynamic="true">
         <source xml:lang="en">Like a printed book, this puts the credits on the back side of the title page.</source>
-        <target xml:lang="sw" state="needs-translation">Like a printed book, this puts the credits on the back side of the title page.</target>
+        <target xml:lang="sw" state="translated">Sifa kwenye upande wa nyuma wa ukurasa wa mada.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true" approved="yes">
