@@ -27,6 +27,11 @@
         <target xml:lang="kw" state="needs-translation">Bloom could not reach the server to get the list of bookshelves.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable" translate="no">
+        <source xml:lang="en">Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.</source>
+        <target xml:lang="kw" state="needs-translation">Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
         <target xml:lang="kw" state="needs-translation">Conversion file used:</target>
@@ -178,6 +183,11 @@
         <target xml:lang="kw" state="needs-translation">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</target>
         <note>ID: PublishTab.Upload.BookshelfError</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignInRejected" translate="no">
+        <source xml:lang="en">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</source>
+        <target xml:lang="kw" state="needs-translation">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</target>
+        <note>ID: PublishTab.Upload.SignInRejected</note>
+      </trans-unit>
       <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true">
         <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
         <target xml:lang="kw" state="needs-translation">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</target>
@@ -278,6 +288,11 @@
         <target xml:lang="kw" state="needs-translation">Spreadsheet Import/Export</target>
         <note>ID: Feature.Spreadsheet</note>
       </trans-unit>
+      <trans-unit id="Feature.Table">
+        <source xml:lang="en">Table</source>
+        <target xml:lang="kw" state="needs-translation">Table</target>
+        <note>ID: Feature.Table</note>
+      </trans-unit>
       <!-- TODO: add other features -->
       <trans-unit id="Spreadsheet.DataDivConflictWarning">
         <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
@@ -348,6 +363,21 @@
         <source xml:lang="en">Bloom was not able to access a microphone.</source>
         <target xml:lang="kw" state="needs-translation">Bloom was not able to access a microphone.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation">
+        <source xml:lang="en">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</source>
+        <target xml:lang="kw" state="needs-translation">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile">
+        <source xml:lang="en">Current timings file is {0}</source>
+        <target xml:lang="kw" state="needs-translation">Current timings file is {0}</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile">
+        <source xml:lang="en">Current audio file is {0} (.wav or .mp3)</source>
+        <target xml:lang="kw" state="needs-translation">Current audio file is {0} (.wav or .mp3)</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile</note>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.OneDriveProblem">
         <source xml:lang="en">OneDrive Problem</source>
@@ -448,6 +478,11 @@
         <source xml:lang="en">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</source>
         <target xml:lang="kw" state="needs-translation">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</target>
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
+      </trans-unit>
+      <trans-unit id="Shell.SavingBeforeWindowsShutsDown" translate="no">
+        <source xml:lang="en">Bloom is saving your book</source>
+        <target xml:lang="kw" state="needs-translation">Bloom is saving your book</target>
+        <note>ID: Shell.SavingBeforeWindowsShutsDown</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Credits.AccountCreditsUsed">
         <source xml:lang="en">{0} used of {1} account credits</source>
@@ -748,6 +783,94 @@
         <source xml:lang="en">Remove Object</source>
         <target xml:lang="kw" state="needs-translation">Remove Object</target>
         <note>ID: AiImageEditor.Tool.remove_object.Title</note>
+      </trans-unit>
+      <trans-unit id="Errors.FileAccessCheck.Blocked" translate="no">
+        <source xml:lang="en">Windows is not letting Bloom change files in this collection.</source>
+        <target xml:lang="kw" state="needs-translation">Windows is not letting Bloom change files in this collection.</target>
+        <note>ID: Errors.FileAccessCheck.Blocked</note>
+      </trans-unit>
+      <trans-unit id="Errors.FileAccessCheck.BlockedLonger" translate="no">
+        <source xml:lang="en">Windows is not letting Bloom create, change, rename or delete files in the folder where this collection is stored. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see "{0}".</source>
+        <target xml:lang="kw" state="needs-translation">Windows is not letting Bloom create, change, rename or delete files in the folder where this collection is stored. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see "{0}".</target>
+        <note>ID: Errors.FileAccessCheck.BlockedLonger</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader.Description" sil:dynamic="true">
+        <source xml:lang="en">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</source>
+        <target xml:lang="kw" state="needs-translation">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</source>
+        <target xml:lang="kw" state="needs-translation">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader Device.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Dari language.</source>
+        <target xml:lang="kw" state="needs-translation">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Dari language.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Dari language and used for digital publishing.</source>
+        <target xml:lang="kw" state="needs-translation">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Dari language and used for digital publishing.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari Device.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Pashto language.</source>
+        <target xml:lang="kw" state="needs-translation">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Pashto language.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Pashto language and used for digital publishing.</source>
+        <target xml:lang="kw" state="needs-translation">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Pashto language and used for digital publishing.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto Device.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Kyrgyzstan 2020.Description" sil:dynamic="true">
+        <source xml:lang="en">Supports full-bleed cover color (but not images), and a place to paste a graphic on the back which is used to show what level this book is.</source>
+        <target xml:lang="kw" state="needs-translation">Supports full-bleed cover color (but not images), and a place to paste a graphic on the back which is used to show what level this book is.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Kyrgyzstan 2020.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Book.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</source>
+        <target xml:lang="kw" state="needs-translation">Designed for books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Book.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Literacy.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for literacy books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</source>
+        <target xml:lang="kw" state="needs-translation">Designed for literacy books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Literacy.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Literacy Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Used by ILV Mexico Branch, 2022.</source>
+        <target xml:lang="kw" state="needs-translation">Used by ILV Mexico Branch, 2022.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Literacy Device.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for Scripture books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</source>
+        <target xml:lang="kw" state="needs-translation">Designed for Scripture books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Used by ILV Mexico Branch, 2022.</source>
+        <target xml:lang="kw" state="needs-translation">Used by ILV Mexico Branch, 2022.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture Device.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Story Producer.Description" sil:dynamic="true">
+        <source xml:lang="en">Based on the Device front/back matter, this also provides some special inputs which are passed to Story Producer for its configuration.</source>
+        <target xml:lang="kw" state="needs-translation">Based on the Device front/back matter, this also provides some special inputs which are passed to Story Producer for its configuration.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Story Producer.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Uzbekistan 2023.Description" sil:dynamic="true">
+        <source xml:lang="en">Supports full-bleed cover color with images, adds a specific graphic tied to the grade level, which we get from the chosen bookshelf.</source>
+        <target xml:lang="kw" state="needs-translation">Supports full-bleed cover color with images, adds a specific graphic tied to the grade level, which we get from the chosen bookshelf.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Uzbekistan 2023.Description</note>
       </trans-unit>
     </body>
   </file>
