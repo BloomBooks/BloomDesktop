@@ -2,6 +2,7 @@ import * as React from "react";
 import { css } from "@emotion/react";
 import { get } from "../utils/bloomApi";
 import {
+    disabledWhilePlayingCss,
     disabledWhilePlayingProps,
     setToolboxEnabledHandler,
     useEditingDisabledForPlay,
@@ -179,6 +180,7 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
                         // The whole toolbox is for editing, so it is disabled (but left in view, so
                         // the page doesn't move) while a game page is being played.
                         {...disabledWhilePlayingProps(editingDisabledForPlay)}
+                        css={disabledWhilePlayingCss(editingDisabledForPlay)}
                     >
                         <iframe
                             id="toolbox"

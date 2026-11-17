@@ -12,6 +12,7 @@ import { Link } from "../react_components/BookGridSetup/BookLinkTypes";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
 import * as React from "react";
+import { css, SerializedStyles } from "@emotion/react";
 
 export interface IWorkspaceExports {
     showDialog(
@@ -273,17 +274,19 @@ export function useEditingDisabledForPlay(): boolean {
 }
 
 // Props for an element whose whole content is disabled while editing is: `inert` makes everything
-// inside it unclickable and unfocusable, including controls added there later, and the dimming
-// shows why. (React 18 doesn't know `inert`, but passes it through to the element.)
+// inside it unclickable and unfocusable, including controls added there later. Use it with
+// disabledWhilePlayingCss, whose dimming shows why. (React 18 doesn't know `inert`, but passes it
+// through to the element.)
 export function disabledWhilePlayingProps(
     disabled: boolean,
 ): React.HTMLAttributes<HTMLElement> {
-    return disabled
-        ? ({
-              inert: "",
-              style: { opacity: 0.4 },
-          } as React.HTMLAttributes<HTMLElement>)
-        : {};
+    return disabled ? ({ inert: "" } as React.HTMLAttributes<HTMLElement>) : {};
+}
+
+export function disabledWhilePlayingCss(disabled: boolean): SerializedStyles {
+    return css`
+        opacity: ${disabled ? 0.4 : 1};
+    `;
 }
 
 // Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.

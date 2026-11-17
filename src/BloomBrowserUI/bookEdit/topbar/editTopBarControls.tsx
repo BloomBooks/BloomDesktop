@@ -19,6 +19,7 @@ import { LocalizableMenuItem } from "../../react_components/localizableMenuItem"
 import { callOnBlur } from "../../utils/menuCloseOnBlur";
 import { LayoutChoicesDropdown } from "./layoutChoicesDropdown";
 import {
+    disabledWhilePlayingCss,
     disabledWhilePlayingProps,
     useEditingDisabledForPlay,
 } from "../workspaceRoot";
@@ -177,11 +178,14 @@ export const EditTopBarControls: React.FunctionComponent = () => {
 
     return (
         <div
-            css={css`
-                display: flex;
-                justify-content: space-between;
-                width: 100%;
-            `}
+            css={[
+                css`
+                    display: flex;
+                    justify-content: space-between;
+                    width: 100%;
+                `,
+                disabledWhilePlayingCss(editingDisabledForPlay),
+            ]}
             {...disabledWhilePlayingProps(editingDisabledForPlay)}
         >
             <div
