@@ -492,17 +492,18 @@ namespace Bloom.Publish.Rab
                                 + BloomPubMaker.BloomPubExtensionWithDot,
                             tracked?.BloomPubPath
                         );
-                        var (match, bloomPubSize) = GetKeptBloomPubSize(bloomPubPath, book);
+                        var (bloomPubSize, isActual) = GetKeptBloomPubSize(bloomPubPath, book);
                         if (!bloomPubSize.HasValue)
-                            return MakeBookSizeEstimate(book, EstimateBloomPubSize(book), false);
-                        // A BloomPUB made by an earlier Bloom from the book as it is now is a far
-                        // better guide than the estimator, but it isn't measured by this Bloom,
-                        // so it still counts as an estimate (and Build will make it again).
-                        return MakeBookSizeEstimate(
-                            book,
-                            bloomPubSize.Value,
-                            match == BloomPubCache.Match.Current
-                        );
+                            return MakeBookSizeEstimate(
+                                book,
+                                _bloomPubSizeEstimator.EstimateBloomPubSize(
+                                    book.FolderPath,
+                                    book.ImageSettings,
+                                    book.AppearanceSettings
+                                ),
+                                false
+                            );
+                        return MakeBookSizeEstimate(book, bloomPubSize.Value, isActual);
                     })
                     .ToArray(),
                 EstimatedAppOverheadBytes = kEstimatedAppOverheadBytes,
@@ -511,41 +512,19 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// The estimated size of the book's BloomPUB (see <see cref="BloomPubSizeEstimator"/>).
-        /// Estimating reads the book's files, and one can vanish or be locked part way through,
-        /// e.g. while Bloom saves the book or the user renames or deletes it (BL-17097). Then we
-        /// report the book's last estimate, or 0 if it has none, rather than fail the whole size
-        /// request; the estimator remembers nothing from the failed attempt, so the next request
-        /// tries again.
-        /// </summary>
-        private long EstimateBloomPubSize(RabTrackedBookInfo book)
-        {
-            try
-            {
-                return _bloomPubSizeEstimator.EstimateBloomPubSize(
-                    book.FolderPath,
-                    book.ImageSettings,
-                    book.AppearanceSettings
-                );
-            }
-            catch (Exception error)
-                when (error is IOException || error is UnauthorizedAccessException)
-            {
-                return _bloomPubSizeEstimator.GetLastEstimate(book.FolderPath) ?? 0;
-            }
-        }
-
-        /// <summary>
-        /// How well the kept BloomPUB at <paramref name="bloomPubPath"/> matches the book (see
-        /// <see cref="BloomPubCache.Match"/>), and its size, which is null when it is out of date
-        /// or can't be read just now; then the book gets an estimate this time rather than failing
+        /// The size of the kept BloomPUB at <paramref name="bloomPubPath"/>, and whether it counts
+        /// as the book's actual size. A BloomPUB made by an earlier Bloom from the book as it is
+        /// now is a far better guide than the estimator, but it isn't measured by this Bloom, so
+        /// it still counts as an estimate (and Build will make it again); see
+        /// <see cref="BloomPubCache.Match"/>. The size is null when the BloomPUB is out of date or
+        /// can't be read just now; then the book gets an estimate this time rather than failing
         /// the whole size request. Checking reads the book's files, and one can vanish or be
         /// locked part way through, e.g. while a Measure or Build in the background rewrites
         /// meta.json (BL-17062). The BloomPUB itself can vanish after the check found it, when a
         /// build replaces it, and so can the whole cache folder, which lives in the temp folder
         /// that Windows and users clear (BL-17097).
         /// </summary>
-        internal static (BloomPubCache.Match Match, long? SizeBytes) GetKeptBloomPubSize(
+        internal static (long? SizeBytes, bool IsActual) GetKeptBloomPubSize(
             string bloomPubPath,
             RabTrackedBookInfo book
         )
@@ -558,13 +537,13 @@ namespace Bloom.Publish.Rab
                     book.BloomPubSettingsKey
                 );
                 return match == BloomPubCache.Match.OutOfDate
-                    ? (match, null)
-                    : (match, new FileInfo(bloomPubPath).Length);
+                    ? (null, false)
+                    : (new FileInfo(bloomPubPath).Length, match == BloomPubCache.Match.Current);
             }
             catch (Exception error)
                 when (error is IOException || error is UnauthorizedAccessException)
             {
-                return (BloomPubCache.Match.OutOfDate, null);
+                return (null, false);
             }
         }
 

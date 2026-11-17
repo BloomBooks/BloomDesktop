@@ -383,19 +383,21 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void GetLastEstimate_ReportsTheLastEstimateEvenAfterTheBookChanges()
+        public void FindBookHtmlInFolder_NotNotifying_FolderGone_ThrowsDirectoryNotFound()
         {
-            var estimator = new BloomPubSizeEstimator();
-            var settings = new ImagePublishSettings();
-            Assert.That(estimator.GetLastEstimate(_bookFolder), Is.Null, "no estimate yet");
-            var first = estimator.EstimateBloomPubSize(_bookFolder, settings);
-
-            RobustFile.WriteAllBytes(Path.Combine(_bookFolder, "a.css"), new byte[1000]);
-
-            // Spelled differently from the path the estimate was made for.
+            // The estimator and BloomPubCache use this, so a book folder deleted while they read
+            // it is an ordinary IO failure that the Apps size request survives, not an
+            // ApplicationException and a "can't save this book" message (Greptile, PR 8587).
+            Assert.Throws<DirectoryNotFoundException>(() =>
+                BookStorage.FindBookHtmlInFolder(
+                    Path.Combine(_tempFolder.Path, "no-such-book"),
+                    false
+                )
+            );
             Assert.That(
-                estimator.GetLastEstimate(_bookFolder + Path.DirectorySeparatorChar),
-                Is.EqualTo(first)
+                BookStorage.FindBookHtmlInFolder(_bookFolder, false),
+                Does.EndWith("book.htm"),
+                "an existing book is found as before"
             );
         }
 

@@ -3213,7 +3213,7 @@ namespace BloomTests.Publish.Rab
             var book = new RabTrackedBookInfo() { FolderPath = bookFolder };
             Assert.That(
                 RabProjectService.GetKeptBloomPubSize(bloomPubPath, book),
-                Is.EqualTo((BloomPubCache.Match.Current, (long?)1234)),
+                Is.EqualTo(((long?)1234, true)),
                 "test setup: a current BloomPUB reports its size"
             );
 
@@ -3221,7 +3221,7 @@ namespace BloomTests.Publish.Rab
 
             Assert.That(
                 RabProjectService.GetKeptBloomPubSize(bloomPubPath, book),
-                Is.EqualTo((BloomPubCache.Match.OutOfDate, (long?)null))
+                Is.EqualTo(((long?)null, false))
             );
         }
 

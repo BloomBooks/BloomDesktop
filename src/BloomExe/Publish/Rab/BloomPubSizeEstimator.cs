@@ -63,6 +63,12 @@ namespace Bloom.Publish.Rab
         /// <paramref name="imageSettings"/>. <paramref name="appearanceSettings"/> (may be null)
         /// gives the cover color, which decides whether cover pictures are made transparent. The
         /// size is 0 if the folder doesn't exist.
+        ///
+        /// Estimating reads the book's files, and one can vanish or be locked part way through,
+        /// e.g. while Bloom saves the book or the user renames or deletes it (BL-17097). Then this
+        /// returns the book's last estimate, or 0 if it has none, rather than fail the Apps
+        /// screen's whole size request; nothing from the failed attempt is remembered, so the next
+        /// request tries again.
         /// </summary>
         public long EstimateBloomPubSize(
             string bookFolderPath,
@@ -72,55 +78,45 @@ namespace Bloom.Publish.Rab
         {
             if (!Directory.Exists(bookFolderPath))
                 return 0;
-            bookFolderPath = NormalizeFolderPath(bookFolderPath);
+            // BookFileFilter works out relative paths by chopping the folder path off the front of
+            // each file's full path, so the two must be spelled the same way.
+            bookFolderPath = Path.GetFullPath(bookFolderPath)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-            var files = new DirectoryInfo(bookFolderPath)
-                .EnumerateFiles("*", SearchOption.AllDirectories)
-                .OrderBy(file => file.FullName, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            var key = MakeCacheKey(files, imageSettings);
-            lock (_cacheLock)
+            string key;
+            long estimate;
+            try
             {
-                if (_cache.TryGetValue(bookFolderPath, out var cached) && cached.Key == key)
-                    return cached.SizeBytes;
+                var files = new DirectoryInfo(bookFolderPath)
+                    .EnumerateFiles("*", SearchOption.AllDirectories)
+                    .OrderBy(file => file.FullName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                key = MakeCacheKey(files, imageSettings);
+                lock (_cacheLock)
+                {
+                    if (_cache.TryGetValue(bookFolderPath, out var cached) && cached.Key == key)
+                        return cached.SizeBytes;
+                }
+                estimate = ComputeEstimate(
+                    bookFolderPath,
+                    files,
+                    imageSettings,
+                    appearanceSettings
+                );
             }
-
-            var estimate = ComputeEstimate(
-                bookFolderPath,
-                files,
-                imageSettings,
-                appearanceSettings
-            );
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                lock (_cacheLock)
+                {
+                    return _cache.TryGetValue(bookFolderPath, out var last) ? last.SizeBytes : 0;
+                }
+            }
             lock (_cacheLock)
             {
                 _cache[bookFolderPath] = (key, estimate);
             }
             return estimate;
-        }
-
-        /// <summary>
-        /// The last estimate made for the book in <paramref name="bookFolderPath"/>, whatever has
-        /// changed since, or null if none has been made.
-        /// </summary>
-        public long? GetLastEstimate(string bookFolderPath)
-        {
-            lock (_cacheLock)
-            {
-                return _cache.TryGetValue(NormalizeFolderPath(bookFolderPath), out var last)
-                    ? last.SizeBytes
-                    : null;
-            }
-        }
-
-        /// <summary>
-        /// The full path of a book folder, spelled the same way however it was given. Both the
-        /// cache and BookFileFilter need that: BookFileFilter works out relative paths by chopping
-        /// the folder path off the front of each file's full path.
-        /// </summary>
-        private static string NormalizeFolderPath(string bookFolderPath)
-        {
-            return Path.GetFullPath(bookFolderPath)
-                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         }
 
         /// <summary>
@@ -357,7 +353,7 @@ namespace Bloom.Publish.Rab
         /// </summary>
         private static SafeXmlDocument LoadBookDom(string bookFolderPath)
         {
-            var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
+            var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath, false);
             return string.IsNullOrEmpty(htmlPath)
                 ? null
                 : XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlPath, false);

@@ -2257,7 +2257,23 @@ namespace Bloom.Book
             return Path.Combine(folderPath, Path.GetFileName(folderPath) + ".htm");
         }
 
+        /// <summary>
+        /// The book's HTML file in <paramref name="folderPath"/>, or an empty string if there is
+        /// none. A missing folder tells the user Bloom can't save the book, and throws.
+        /// </summary>
         public static string FindBookHtmlInFolder(string folderPath)
+        {
+            return FindBookHtmlInFolder(folderPath, true);
+        }
+
+        /// <summary>
+        /// <see cref="FindBookHtmlInFolder(string)"/>, but code that only reads a book, which the
+        /// user may rename or delete while it reads (e.g. the Apps screen's size estimates,
+        /// BL-17097), passes false for <paramref name="notifyIfFolderMissing"/>: then a missing
+        /// folder throws DirectoryNotFoundException, like other failed reads, rather than telling
+        /// the user that Bloom can't save the book.
+        /// </summary>
+        public static string FindBookHtmlInFolder(string folderPath, bool notifyIfFolderMissing)
         {
             string p = GetHtmCandidate(folderPath);
             if (RobustFile.Exists(p))
@@ -2268,6 +2284,8 @@ namespace Bloom.Book
 
             if (!Directory.Exists(folderPath)) //bl-291 (user had 4 month-old version, so the bug may well be long gone)
             {
+                if (!notifyIfFolderMissing)
+                    throw new DirectoryNotFoundException($"The book folder {folderPath} is gone.");
                 //in version 1.012 I got this because I had tried to delete the folder on disk that had a book
                 //open in Bloom.
                 ErrorReport.NotifyUserOfProblem(
