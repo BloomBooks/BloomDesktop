@@ -40,9 +40,9 @@ export class CanvasElementEditingSuspension {
     // turn it on again.
     // Only one reason is remembered, so two must never overlap. A game's Play tab is the one that
     // could: the game page's tabs stay usable whatever tool is open. Image descriptions, the only
-    // tool suspension a game page can have, end Play before they show and disable it while they are
-    // showing (GameTool's leavePlayBeforeShowingImageDescriptions); drags of origami splitters and
-    // jQuery resizes don't happen on game pages.
+    // tool suspension a game page can have, disable Play while they are showing, and end it if they
+    // come on during it (GameTool's leavePlayBeforeShowingImageDescriptions); drags of origami
+    // splitters and jQuery resizes don't happen on game pages.
     private suspendedState: ComicEditingSuspendedState = "none";
 
     private splitterResizeObservers: ResizeObserver[] = [];
@@ -133,9 +133,10 @@ export class CanvasElementEditingSuspension {
     };
 
     // Resume comic editing after a suspension for anything but a game's Play mode, which only the
-    // game's tab control may end (endGamePlayModeSuspension). A game page can be played with most
-    // tools open, and some of them call this when they are closed whether or not they suspended
-    // anything (the Talking Book tool does); that must not make the game's text editable mid-Play.
+    // game's tab control may end (endGamePlayModeSuspension). Hiding the toolbox during Play (its
+    // toggle stays usable) closes the open tool, and some tools call this as they close whether or
+    // not they suspended anything (the Talking Book tool does); that must not make the game's text
+    // editable mid-Play.
     public resumeComicEditing = (): void => {
         if (this.suspendedState === "forGamePlayMode") {
             return;

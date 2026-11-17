@@ -2058,6 +2058,8 @@ export function setActiveDragActivityTab(tab: number) {
 // Like setActiveDragActivityTab, both of these must be called through getToolboxBundleExports().
 
 // Call just before showing image descriptions: takes a game page that is in Play back to Start.
+// (The toolbox is disabled in Play, but its toggle isn't: showing a hidden toolbox restarts its tool,
+// which shows them if, say, Talking Book was left set to.)
 export function leavePlayBeforeShowingImageDescriptions(): void {
     const page = getBloomPageElement();
     if (
