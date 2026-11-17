@@ -3205,6 +3205,44 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void GetSizeEstimates_BloomPubFromEarlierBloom_UsesItsSizeAsEstimate()
+        {
+            // After Bloom is updated, a BloomPUB the old Bloom made from the unchanged book is
+            // still the best guide to its size, but it isn't measured by this Bloom.
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var bookFolder = Path.Combine(tempFolder.Path, "book-1");
+            Directory.CreateDirectory(bookFolder);
+            RobustFile.WriteAllText(Path.Combine(bookFolder, "book-1.htm"), "<html></html>");
+            Directory.CreateDirectory(paths.BloomPubRoot);
+            var bloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub");
+            WriteCurrentBloomPub(bloomPubPath, bookFolder, 4000);
+            BloomTests.Publish.BloomPub.BloomPubCacheTests.PretendMadeByAnotherBloom(bloomPubPath);
+            Assert.That(
+                BloomPubCache.IsCurrent(bloomPubPath, bookFolder, null),
+                Is.False,
+                "test setup: the BloomPUB should now look made by another Bloom"
+            );
+
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = bookFolder,
+                    Title = "Book One",
+                    BloomPubPath = bloomPubPath,
+                },
+            };
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+
+            var estimate = service.GetSizeEstimates().Books.Single();
+
+            Assert.That(estimate.SizeBytes, Is.EqualTo(4000));
+            Assert.That(estimate.IsActual, Is.False);
+        }
+
+        [Test]
         public void GetSizeEstimates_RenamedAppBook_UsesTheBloomPubNameExportUses()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");

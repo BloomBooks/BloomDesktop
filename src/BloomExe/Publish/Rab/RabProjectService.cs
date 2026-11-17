@@ -492,9 +492,14 @@ namespace Bloom.Publish.Rab
                                 + BloomPubMaker.BloomPubExtensionWithDot,
                             tracked?.BloomPubPath
                         );
-                        var bloomPubSize = IsBloomPubCurrentForSizeEstimate(bloomPubPath, book)
-                            ? GetBloomPubSizeIfPresent(bloomPubPath)
-                            : null;
+                        var match = GetBloomPubMatchForSizeEstimate(bloomPubPath, book);
+                        // A BloomPUB made by an earlier Bloom from the book as it is now is a far
+                        // better guide than the estimator, but it isn't measured by this Bloom,
+                        // so it still counts as an estimate (and Build will make it again).
+                        var bloomPubSize =
+                            match == BloomPubCache.Match.OutOfDate
+                                ? null
+                                : GetBloomPubSizeIfPresent(bloomPubPath);
                         if (!bloomPubSize.HasValue)
                             return MakeBookSizeEstimate(
                                 book,
@@ -505,7 +510,11 @@ namespace Bloom.Publish.Rab
                                 ),
                                 false
                             );
-                        return MakeBookSizeEstimate(book, bloomPubSize.Value, true);
+                        return MakeBookSizeEstimate(
+                            book,
+                            bloomPubSize.Value,
+                            match == BloomPubCache.Match.Current
+                        );
                     })
                     .ToArray(),
                 EstimatedAppOverheadBytes = kEstimatedAppOverheadBytes,
@@ -515,15 +524,19 @@ namespace Bloom.Publish.Rab
 
         /// <summary>
         /// Whether the BloomPUB at <paramref name="bloomPubPath"/> can be reported as the book's
-        /// actual size. Checking reads the book's files, and one can vanish or be locked part way
-        /// through, e.g. while a Measure or Build in the background rewrites meta.json; then we
-        /// show the estimate this time rather than fail the whole size request (BL-17062).
+        /// actual size, or at least used as its estimate (see <see cref="BloomPubCache.Match"/>).
+        /// Checking reads the book's files, and one can vanish or be locked part way through,
+        /// e.g. while a Measure or Build in the background rewrites meta.json; then we show the
+        /// estimate this time rather than fail the whole size request (BL-17062).
         /// </summary>
-        private bool IsBloomPubCurrentForSizeEstimate(string bloomPubPath, RabTrackedBookInfo book)
+        private BloomPubCache.Match GetBloomPubMatchForSizeEstimate(
+            string bloomPubPath,
+            RabTrackedBookInfo book
+        )
         {
             try
             {
-                return BloomPubCache.IsCurrent(
+                return BloomPubCache.GetMatch(
                     bloomPubPath,
                     book.FolderPath,
                     book.BloomPubSettingsKey
@@ -532,7 +545,7 @@ namespace Bloom.Publish.Rab
             catch (Exception error)
                 when (error is IOException || error is UnauthorizedAccessException)
             {
-                return false;
+                return BloomPubCache.Match.OutOfDate;
             }
         }
 

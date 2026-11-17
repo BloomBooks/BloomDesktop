@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,7 +22,8 @@ namespace Bloom.Publish.BloomPub
     ///
     /// Next to each BloomPUB we keep a small record (<c>name.bloompub.cache.json</c>) of what it
     /// was made from:
-    /// - the version of Bloom that made it, since a different Bloom may make a different BloomPUB;
+    /// - the version of Bloom that made it, since a different Bloom may make a different BloomPUB
+    ///   (though one from an earlier Bloom still serves for estimating size; see <see cref="GetMatch"/>);
     /// - the publish settings that affect it, the tool that made it and the collection's
     ///   subscription (see <see cref="MakeSettingsKey"/>);
     /// - the book's content hash, the same one BloomPUBs carry in version.txt and Team
@@ -79,6 +81,13 @@ namespace Bloom.Publish.BloomPub
                 + "|"
                 + new FileInfo(assembly.Location).LastWriteTimeUtc.Ticks;
         });
+
+        // For each kept BloomPUB found not to match its book, the book's file signature at that
+        // time. While the book stays as it was, the Apps screen's repeated size requests can say
+        // "out of date" again without reading the whole book each time. Forgotten when the
+        // BloomPUB is made again or deleted.
+        private static readonly ConcurrentDictionary<string, string> s_outOfDateSignatures =
+            new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The path of the record kept next to the BloomPUB at <paramref name="bloomPubPath"/>.
@@ -184,6 +193,7 @@ namespace Bloom.Publish.BloomPub
             string settingsKey
         )
         {
+            s_outOfDateSignatures.TryRemove(bloomPubPath, out _);
             WriteRecord(
                 bloomPubPath,
                 new Record
@@ -203,8 +213,28 @@ namespace Bloom.Publish.BloomPub
         /// </summary>
         public static void Delete(string bloomPubPath)
         {
+            s_outOfDateSignatures.TryRemove(bloomPubPath, out _);
             RobustFile.Delete(GetRecordPath(bloomPubPath));
             RobustFile.Delete(bloomPubPath);
+        }
+
+        /// <summary>
+        /// How well a kept BloomPUB matches its book; see <see cref="GetMatch"/>.
+        /// </summary>
+        public enum Match
+        {
+            /// <summary>Missing, or made from a different book or with different settings.</summary>
+            OutOfDate,
+
+            /// <summary>
+            /// Made from the book as it is now with the same settings, but by a different Bloom
+            /// (usually the one before an update). Its size is still a good estimate, but it must
+            /// be made again before it goes into an app.
+            /// </summary>
+            MadeByAnotherBloom,
+
+            /// <summary>Made by this Bloom from the book as it is now, with the same settings.</summary>
+            Current,
         }
 
         /// <summary>
@@ -214,25 +244,78 @@ namespace Bloom.Publish.BloomPub
         /// </summary>
         public static bool IsCurrent(string bloomPubPath, string bookFolderPath, string settingsKey)
         {
+            // Check the Bloom version before the book, so that a BloomPUB which has to be made
+            // again anyway doesn't cost reading the whole book.
+            var record = ReadRecordToCompare(bloomPubPath, bookFolderPath, settingsKey);
+            return record != null
+                && record.BloomVersion == s_bloomVersion.Value
+                && BookStillMatches(record, bloomPubPath, bookFolderPath);
+        }
+
+        /// <summary>
+        /// Like <see cref="IsCurrent"/>, but tells apart a BloomPUB that only differs in the
+        /// Bloom that made it, so that the Apps screen can keep using its size as an estimate
+        /// after Bloom is updated (BL-17062).
+        /// </summary>
+        public static Match GetMatch(string bloomPubPath, string bookFolderPath, string settingsKey)
+        {
+            var record = ReadRecordToCompare(bloomPubPath, bookFolderPath, settingsKey);
+            if (record == null || !BookStillMatches(record, bloomPubPath, bookFolderPath))
+                return Match.OutOfDate;
+            return record.BloomVersion == s_bloomVersion.Value
+                ? Match.Current
+                : Match.MadeByAnotherBloom;
+        }
+
+        /// <summary>
+        /// The record of the BloomPUB at <paramref name="bloomPubPath"/>, or null if there is no
+        /// BloomPUB, no readable record, the settings differ, or the book folder is gone.
+        /// </summary>
+        private static Record ReadRecordToCompare(
+            string bloomPubPath,
+            string bookFolderPath,
+            string settingsKey
+        )
+        {
             if (!RobustFile.Exists(bloomPubPath))
-                return false;
+                return null;
             var record = ReadRecord(bloomPubPath);
             if (
                 record == null
-                || record.BloomVersion != s_bloomVersion.Value
                 || record.SettingsKey != settingsKey
                 || !Directory.Exists(bookFolderPath)
             )
-                return false;
+                return null;
+            return record;
+        }
 
+        /// <summary>
+        /// True if the book in <paramref name="bookFolderPath"/> is as it was when the BloomPUB
+        /// that <paramref name="record"/> describes was made.
+        /// </summary>
+        private static bool BookStillMatches(
+            Record record,
+            string bloomPubPath,
+            string bookFolderPath
+        )
+        {
             var signature = MakeFileSignature(bookFolderPath);
             if (signature == record.FileSignature)
                 return true;
             if (
-                ComputeContentHash(bookFolderPath) != record.ContentHash
-                || ComputeMetadataHash(bookFolderPath) != record.MetadataHash
+                s_outOfDateSignatures.TryGetValue(bloomPubPath, out var knownOutOfDate)
+                && knownOutOfDate == signature
             )
                 return false;
+            // meta.json first: it is one small file, and the content hash reads the whole book.
+            if (
+                ComputeMetadataHash(bookFolderPath) != record.MetadataHash
+                || ComputeContentHash(bookFolderPath) != record.ContentHash
+            )
+            {
+                s_outOfDateSignatures[bloomPubPath] = signature;
+                return false;
+            }
 
             // The files were touched but their content is the same. Remember the new signature
             // so we don't have to read the whole book again next time.
