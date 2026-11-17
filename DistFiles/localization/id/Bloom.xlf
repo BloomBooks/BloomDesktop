@@ -482,9 +482,9 @@
         <target xml:lang="id" state="final">Penghemat Kertas</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Designed to save paper, this puts the credits on the inside of the front cover.</source>
-        <target xml:lang="id" state="needs-translation">Designed to save paper, this puts the credits on the inside of the front cover.</target>
+        <target xml:lang="id" state="final">Dirancang untuk menghemat kertas, ini akan menempatkan pengakuan di bagian dalam sampul depan.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true">
@@ -502,9 +502,9 @@
         <target xml:lang="id" state="translated">Kertas Super Hemat</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Designed to save paper, this puts the title page on the inside of the front cover, and the credits on the inside of the back cover.</source>
-        <target xml:lang="id" state="needs-translation">Designed to save paper, this puts the title page on the inside of the front cover, and the credits on the inside of the back cover.</target>
+        <target xml:lang="id" state="final">Dirancang untuk menghemat kertas, alat ini menempatkan halaman judul pada bagian dalam sampul depan, dan pengakuan di bagian dalam sampul belakang.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
@@ -514,7 +514,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description" sil:dynamic="true">
         <source xml:lang="en">Like a printed book, this puts the credits on the back side of the title page.</source>
-        <target xml:lang="id" state="needs-translation">Like a printed book, this puts the credits on the back side of the title page.</target>
+        <target xml:lang="id" state="translated">Pengakuan ada di bagian belakang halaman judul.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true">
