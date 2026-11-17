@@ -15,7 +15,7 @@
 // Per the UI-vs-API policy in README.md, use these for setup, navigation, and assertions. The
 // behavior a test measures is always driven through the real UI.
 
-import type { Page } from "@playwright/test";
+import { expect, type Page, type Request, type Route } from "@playwright/test";
 
 /** The response of a Bloom API call: its HTTP status and its body as text. */
 export interface IApiResponse {
@@ -138,4 +138,83 @@ async function attemptRequest(
                 `Body: ${result.body.slice(0, 500)}`,
         );
     return result;
+}
+
+/** Some of Bloom's answers to its own front end, held back until `release` is called. */
+export interface IHeldBackAnswers {
+    /**
+     * Wait until the front end has asked the held-back question at least once since the hold
+     * began, and every OTHER question matching `others` that it asked since then has been
+     * answered. From then on the held-back answer is the only one of them the page lacks.
+     */
+    onlyTheseAreMissing: () => Promise<void>;
+    /** Let the held-back answers through, and stop holding. */
+    release: () => Promise<void>;
+}
+
+/**
+ * Hold back Bloom's answers to some of the API calls its own front end makes, so that a test can
+ * look at the UI in the moment before an answer arrives, a moment that otherwise lasts a few
+ * milliseconds and cannot be aimed at. Nothing is changed or made up: each request goes on to
+ * Bloom untouched when `release` is called, and Bloom's real answer comes back.
+ *
+ * `endpoint` matches the URLs to watch; `isHeld` picks which of those requests to hold, and
+ * `isOther` picks the ones `onlyTheseAreMissing` waits to see answered. Always call `release`,
+ * in a `finally`, or the page being edited is left waiting.
+ */
+export async function holdBackAnswers(
+    page: Page,
+    endpoint: RegExp,
+    isHeld: (request: Request) => boolean,
+    others: RegExp,
+    isOther: (request: Request) => boolean,
+): Promise<IHeldBackAnswers> {
+    const waiting: Route[] = [];
+    let holding = true;
+    const othersAsked = new Set<Request>();
+    const othersAnswered = new Set<Request>();
+    const noteAsked = (request: Request) => {
+        if (others.test(request.url()) && isOther(request))
+            othersAsked.add(request);
+    };
+    const noteAnswered = (request: Request) => {
+        if (othersAsked.has(request)) othersAnswered.add(request);
+    };
+    const hold = async (route: Route) => {
+        if (holding && isHeld(route.request())) waiting.push(route);
+        else await route.fallback();
+    };
+    page.on("request", noteAsked);
+    page.on("requestfinished", noteAnswered);
+    page.on("requestfailed", noteAnswered);
+    await page.route(endpoint, hold);
+    return {
+        onlyTheseAreMissing: async () => {
+            await expect
+                .poll(
+                    () =>
+                        waiting.length > 0 &&
+                        othersAsked.size > 0 &&
+                        othersAnswered.size === othersAsked.size,
+                    {
+                        timeout: 30000,
+                        message:
+                            `Waiting for the page to have asked ${endpoint} and to have had ` +
+                            `every answer from ${others}.`,
+                    },
+                )
+                .toBe(true);
+        },
+        release: async () => {
+            holding = false;
+            page.off("request", noteAsked);
+            page.off("requestfinished", noteAnswered);
+            page.off("requestfailed", noteAnswered);
+            await page.unroute(endpoint, hold);
+            // A request from a page that has since been left has nobody waiting for it, and
+            // letting it through fails; that is not a problem for the page showing now.
+            for (const route of waiting.splice(0))
+                await route.continue().catch(() => undefined);
+        },
+    };
 }
