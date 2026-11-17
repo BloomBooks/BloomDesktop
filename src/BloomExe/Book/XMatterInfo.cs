@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
+using Bloom.Api;
 using L10NSharp;
 using SIL.IO;
 
@@ -43,9 +44,7 @@ namespace Bloom.Book
         {
             get
             {
-                var x = Path.GetFileName(PathToFolder);
-                var end = x.IndexOf("-xmatter", StringComparison.OrdinalIgnoreCase);
-                var label = x.Substring(0, end);
+                var label = Key;
                 if (label == "Factory") //historical name
                 {
                     label = "PaperSaver";
@@ -53,6 +52,12 @@ namespace Bloom.Book
                 return SplitCamelCase(label);
             }
         }
+
+        /// <summary>
+        /// The localization id of this pack's name.
+        /// </summary>
+        public string NameL10nId =>
+            "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack." + EnglishLabel;
 
         // from http://stackoverflow.com/a/5796793/723299
         private static string SplitCamelCase(string str)
@@ -64,7 +69,31 @@ namespace Bloom.Book
             );
         }
 
+        /// <summary>
+        /// The localization id of this pack's description, next to the id of its name.
+        /// Every pack that ships with Bloom has its description in one of the XLF files under this id.
+        /// </summary>
+        public string DescriptionL10nId => NameL10nId + ".Description";
+
+        /// <summary>
+        /// The description of the pack in the current UI language, if available, otherwise in English.
+        /// Packs that ship with Bloom have their descriptions in the XLF files. A pack a user
+        /// installed themselves may instead have description-{lang}.txt files in its folder.
+        /// </summary>
         public string GetDescription()
+        {
+            var id = DescriptionL10nId;
+            if (LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
+                return I18NApi.GetTranslation(id);
+            return GetDescriptionFromFiles();
+        }
+
+        /// <summary>
+        /// Read the description from the description-{lang}.txt files in the pack's folder, as
+        /// a pack the user installed may provide. A translation is used only when its [Vn] version
+        /// prefix is at least the English file's.
+        /// </summary>
+        private string GetDescriptionFromFiles()
         {
             const string desc = "description";
             try
