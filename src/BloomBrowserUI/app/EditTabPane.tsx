@@ -1,7 +1,11 @@
 import * as React from "react";
 import { css } from "@emotion/react";
 import { get } from "../utils/bloomApi";
-import { setToolboxEnabledHandler } from "../bookEdit/workspaceRoot";
+import {
+    disabledWhilePlayingProps,
+    setToolboxEnabledHandler,
+    useEditingDisabledForPlay,
+} from "../bookEdit/workspaceRoot";
 
 interface IEditFrameSources {
     pageListSrc: string;
@@ -24,6 +28,7 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
     );
     const [toolboxIsShowing, setToolboxIsShowing] = React.useState(true);
     const [toolboxIsEnabled, setToolboxIsEnabled] = React.useState(true);
+    const editingDisabledForPlay = useEditingDisabledForPlay();
 
     // Request edit-frame URLs from C# when edit mode becomes active so app.tsx controls iframe rendering.
     React.useEffect(() => {
@@ -169,7 +174,12 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
                     <span className="pure-toggle-icon" />
                 </label>
                 <nav className="pure-drawer" data-position="right">
-                    <div id="right">
+                    <div
+                        id="right"
+                        // The whole toolbox is for editing, so it is disabled (but left in view, so
+                        // the page doesn't move) while a game page is being played.
+                        {...disabledWhilePlayingProps(editingDisabledForPlay)}
+                    >
                         <iframe
                             id="toolbox"
                             title="toolbox"

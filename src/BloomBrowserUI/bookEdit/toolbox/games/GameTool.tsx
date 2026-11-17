@@ -41,6 +41,7 @@ import {
 import {
     getEditablePageBundleExports,
     getToolboxBundleExports,
+    tryGetWorkspaceBundleExports,
 } from "../../js/workspaceFrames";
 import { MenuItem, Select } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
@@ -1995,6 +1996,11 @@ export function setActiveDragActivityTab(tab: number) {
         effectiveTab = startTabIndex;
     }
     window.top!["dragActivityPage"] = effectiveTab;
+    // Play is for seeing how the game behaves when published, not for editing it.
+    // (Off-screen, e.g. process-book, there is no workspace.)
+    tryGetWorkspaceBundleExports()?.setEditingDisabledForPlay(
+        effectiveTab === playTabIndex,
+    );
 
     updateTabClass(effectiveTab);
     pageFrameExports.renderDragActivityTabControl(effectiveTab);
