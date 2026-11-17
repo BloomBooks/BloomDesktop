@@ -4,6 +4,7 @@ import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
 import { IToolboxSettings } from "../toolbox";
 import { getPageIframeBody } from "../../../utils/shared";
+import { getToolboxBundleExports } from "../../js/workspaceFrames";
 import { getAudioRecorder, getOrCreateAudioRecorder } from "./audioRecording";
 import * as AudioRecorder from "./audioRecording";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
@@ -169,6 +170,8 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         getPageIframeBody()?.classList.remove("bloom-showImageDescriptions");
         super.detachFromPage();
         getCanvasElementManager()?.resumeComicEditing();
+        // With the image descriptions gone, a game page's Play tab is available again.
+        getToolboxBundleExports()?.redrawGameTabs();
     }
 
     // Called whenever the user edits text.
