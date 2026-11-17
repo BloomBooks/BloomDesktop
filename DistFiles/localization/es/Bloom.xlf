@@ -473,25 +473,50 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="final">Dispositivo</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device.Description" sil:dynamic="true">
+        <source xml:lang="en">This is automatically applied when publishing to Bloom Reader (Android). It moves front matter pages (other than the cover) to the back.</source>
+        <target xml:lang="es-ES" state="needs-translation">This is automatically applied when publishing to Bloom Reader (Android). It moves front matter pages (other than the cover) to the back.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device.Description</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paper Saver</source>
         <target xml:lang="es-ES" state="final">Economizador de Papel</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed to save paper, this puts the credits on the inside of the front cover.</source>
+        <target xml:lang="es-ES" state="needs-translation">Designed to save paper, this puts the credits on the inside of the front cover.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true" approved="yes">
         <source xml:lang="en">SIL-PNG</source>
         <target xml:lang="es-ES" state="final">SIL-PNG</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL PNG.Description" sil:dynamic="true">
+        <source xml:lang="en">Has SIL Papua New Guinea customizations, including hiding some fields and changing instructions in others.</source>
+        <target xml:lang="es-ES" state="needs-translation">Has SIL Papua New Guinea customizations, including hiding some fields and changing instructions in others.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL PNG.Description</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Super Paper Saver</source>
         <target xml:lang="es-ES" state="final">Súper Economizador de Papel</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed to save paper, this puts the title page on the inside of the front cover, and the credits on the inside of the back cover.</source>
+        <target xml:lang="es-ES" state="needs-translation">Designed to save paper, this puts the title page on the inside of the front cover, and the credits on the inside of the back cover.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional</source>
         <target xml:lang="es-ES" state="final">Tradicional</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description" sil:dynamic="true">
+        <source xml:lang="en">Like a printed book, this puts the credits on the back side of the title page.</source>
+        <target xml:lang="es-ES" state="needs-translation">Like a printed book, this puts the credits on the back side of the title page.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Video</source>
