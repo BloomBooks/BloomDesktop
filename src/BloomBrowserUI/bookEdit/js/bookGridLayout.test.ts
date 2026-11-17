@@ -426,3 +426,41 @@ describe("makeGridLayout, showing only some of the pages", () => {
         expect(shown.positionOfPage(6)).toEqual({ x: 0, y: 160 });
     });
 });
+
+describe("the blank page before the back cover, at the end of the pages shown", () => {
+    test("in a calendar it can be the lower half of the last spread shown, so it is the lowest page in the grid", () => {
+        const calendar = { pagesPerSpread: 2 as const, pagesAreStacked: true };
+        const pageCount = 52;
+        const blankPageBefore = 50;
+        // Find a page being edited whose range ends just before the page after the blank page.
+        let range: { first: number; last: number } | undefined;
+        for (let edited = 0; edited < pageCount && !range; edited++) {
+            const r = getPagesToShow(
+                calendar,
+                pageCount,
+                edited,
+                blankPageBefore,
+            );
+            if (r.last === blankPageBefore - 1) range = r;
+        }
+        if (!range)
+            throw new Error(
+                "Sanity check: some page being edited should give such a range",
+            );
+        expect(isBlankPageShown(calendar, blankPageBefore, range)).toBe(true);
+        const grid = makeGridLayout(
+            calendar,
+            kPageWidth,
+            kPageHeight,
+            1000,
+            kGap,
+            kGap,
+            false,
+            blankPageBefore,
+            range,
+        );
+        const blank = grid.positionOfBlankPage();
+        expect(blank).toBeDefined();
+        expect(blank!.y).toBe(grid.positionOfPage(range.last).y + kPageHeight);
+    });
+});

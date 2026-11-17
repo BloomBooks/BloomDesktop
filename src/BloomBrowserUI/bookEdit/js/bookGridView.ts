@@ -560,9 +560,14 @@ function layoutGrid(
     );
     const blankPosition = grid.positionOfBlankPage();
     if (blankCell && blankPosition) placeCell(blankCell, blankPosition);
-    const last = grid.positionOfPage(pagesShown.last);
+    // The lowest page in the grid is the last page shown, or the blank page before the back cover:
+    // in a calendar that can be the lower half of the last spread shown.
+    const lowestY = Math.max(
+        grid.positionOfPage(pagesShown.last).y,
+        blankPosition?.y ?? 0,
+    );
     gridLayer.style.width = `${grid.spreadsPerRow * (grid.spreadWidth + kSpreadGap)}px`;
-    gridLayer.style.height = `${last.y + pageHeight + edgeMargin + spaceBelowGrid}px`;
+    gridLayer.style.height = `${lowestY + pageHeight + edgeMargin + spaceBelowGrid}px`;
     keepEditedPageInPlace();
     repositionBubbles();
 }
@@ -938,7 +943,8 @@ async function replayOpeningClick(): Promise<void> {
     // CKEditor puts back the text it took over when it finishes starting, which would wipe out a
     // cursor placed before then. The page is already showing during that wait, so if the user
     // clicks or types in the meantime, they have moved on and the old click must not take the
-    // focus back.
+    // focus back. A click in another frame (the toolbox, the top bar, the page list) never reaches
+    // this document, but it takes the focus from this window, which blur reports.
     if (editable) {
         let userActedMeanwhile = false;
         const noteUserAction = (event: Event) => {
@@ -946,11 +952,13 @@ async function replayOpeningClick(): Promise<void> {
         };
         document.addEventListener("pointerdown", noteUserAction, true);
         document.addEventListener("keydown", noteUserAction, true);
+        window.addEventListener("blur", noteUserAction);
         try {
             await whenCkEditorIsReady(editable);
         } finally {
             document.removeEventListener("pointerdown", noteUserAction, true);
             document.removeEventListener("keydown", noteUserAction, true);
+            window.removeEventListener("blur", noteUserAction);
         }
         if (userActedMeanwhile) return;
     }
