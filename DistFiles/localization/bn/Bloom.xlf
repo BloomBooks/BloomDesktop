@@ -484,7 +484,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description" sil:dynamic="true">
         <source xml:lang="en">Designed to save paper, this puts the credits on the inside of the front cover.</source>
-        <target xml:lang="bn" state="needs-translation">Designed to save paper, this puts the credits on the inside of the front cover.</target>
+        <target xml:lang="bn" state="translated">কাগজ সংরক্ষনের উদ্দেশ্যে তৈরী করা হয়েছে।এটি প্রচ্ছদের ভিতরে কৃতজ্ঞতা প্রকাশ করে।</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true" approved="yes">
@@ -504,7 +504,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description" sil:dynamic="true">
         <source xml:lang="en">Designed to save paper, this puts the title page on the inside of the front cover, and the credits on the inside of the back cover.</source>
-        <target xml:lang="bn" state="needs-translation">Designed to save paper, this puts the title page on the inside of the front cover, and the credits on the inside of the back cover.</target>
+        <target xml:lang="bn" state="translated">কাগজ সংরক্ষণ/ অপচয় রোধ করার জন্য শিরোনামের পাতা প্রচ্ছদের অপর পাতায় এবং মুদ্রণ সংক্রান্ত তথ্য প্রচ্ছদের শেষের পাতার ভেতর রাখা হয়েছে।</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
@@ -514,7 +514,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description" sil:dynamic="true">
         <source xml:lang="en">Like a printed book, this puts the credits on the back side of the title page.</source>
-        <target xml:lang="bn" state="needs-translation">Like a printed book, this puts the credits on the back side of the title page.</target>
+        <target xml:lang="bn" state="translated">শিরোনাম পৃষ্ঠার পিছনে কৃতজ্ঞতা স্বীকার করা হয়েছে ।</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true" approved="yes">
