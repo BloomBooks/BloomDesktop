@@ -12,7 +12,8 @@
 // the left one stays where it was. A resize does the same.
 //
 // The lower right picture is pushed down when the dragged one would overlap it. That is expected,
-// so the tests do not check it.
+// so the first two tests do not check it. The third checks that the lower right picture moves only
+// then, by opening a gap above it first.
 //
 // Each test builds the layout on a page of its own, so either can run, and fail, alone.
 
@@ -229,5 +230,95 @@ test("resizing one picture larger, pushing the one below it, does not move the p
         Math.abs(leftAfter - leftTop),
         `Resizing the upper right picture moved the left picture from ${leftTop} to ${leftAfter}, ` +
             `along with the lower right picture it pushed.`,
+    ).toBeLessThanOrEqual(1);
+});
+
+test("a picture below on the same side moves down only when the picture above it would overlap it [Test Case ID 815]", async ({
+    page,
+    step,
+}) => {
+    test.setTimeout(300000);
+    let ids = { upperRight: "", lowerRight: "", left: "" };
+    await step("Make a page with text and three pictures", async () => {
+        ids = await makePageWithThreePictures(page);
+    });
+    const upper = await pictureRect(page, ids.upperRight);
+    await step(
+        "Drag the lower right picture down its own height, leaving a gap above it",
+        async () => {
+            await dragInlineImageDown(
+                page,
+                BLOCK,
+                LANG,
+                ids.lowerRight,
+                Math.round(upper.height),
+            );
+        },
+    );
+    const upperTop = await topInBlock(page, ids.upperRight);
+    const lowerTop = await topInBlock(page, ids.lowerRight);
+    const gap = lowerTop - (upperTop + upper.height);
+    expect(
+        gap,
+        `There should be a gap of most of a picture's height between the two right pictures, ` +
+            `but the upper one ends at ${Math.round(upperTop + upper.height)} and the lower one ` +
+            `starts at ${Math.round(lowerTop)}.`,
+    ).toBeGreaterThan(upper.height / 2);
+    const leftTop = await topInBlock(page, ids.left);
+
+    await step(
+        "Drag the upper right picture down a third of the gap",
+        async () => {
+            await dragInlineImageDown(
+                page,
+                BLOCK,
+                LANG,
+                ids.upperRight,
+                Math.round(gap / 3),
+            );
+        },
+    );
+    expect(
+        await topInBlock(page, ids.upperRight),
+        "The upper right picture should have moved down.",
+    ).toBeGreaterThan(upperTop + 1);
+    expect(
+        Math.abs((await topInBlock(page, ids.lowerRight)) - lowerTop),
+        "Dragging the upper right picture down into the gap, without reaching the lower right " +
+            "picture, moved the lower right picture.",
+    ).toBeLessThanOrEqual(1);
+    expect(
+        Math.abs((await topInBlock(page, ids.left)) - leftTop),
+        "Dragging the upper right picture down moved the left picture.",
+    ).toBeLessThanOrEqual(1);
+
+    await step(
+        "Drag the upper right picture down past the top of the lower right one",
+        async () => {
+            await dragInlineImageDown(
+                page,
+                BLOCK,
+                LANG,
+                ids.upperRight,
+                Math.round(gap),
+            );
+        },
+    );
+    const upperBottom = (await topInBlock(page, ids.upperRight)) + upper.height;
+    const lowerAfter = await topInBlock(page, ids.lowerRight);
+    expect(
+        lowerAfter,
+        `The upper right picture now ends at ${Math.round(upperBottom)}, so the lower right ` +
+            `picture should have been pushed below that, but it starts at ` +
+            `${Math.round(lowerAfter)}.`,
+    ).toBeGreaterThanOrEqual(upperBottom - 1);
+    expect(
+        lowerAfter,
+        "The lower right picture should have been pushed down.",
+    ).toBeGreaterThan(lowerTop + 1);
+    expect(
+        Math.abs((await topInBlock(page, ids.left)) - leftTop),
+        "Dragging the upper right picture down, pushing the lower right one, moved the left " +
+            "picture.",
     ).toBeLessThanOrEqual(1);
 });

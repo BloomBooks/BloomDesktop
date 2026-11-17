@@ -26,9 +26,11 @@ import {
 import {
     addInlineImage,
     changeInlineImagePicture,
+    chooseInlineImagePictureFromMenu,
     getInlineImageInEveryLanguage,
     readSavedInlineImages,
 } from "../helpers/inlineImages";
+import { setPageSize } from "../helpers/pageSize";
 
 test.use({
     collectionSpec: {
@@ -133,4 +135,100 @@ test("a new picture for an inline image that was on the page when it loaded is s
         ),
         `After the page was saved and loaded again, every copy should show ${SECOND_PICTURE}.`,
     ).toEqual(languages.map(() => SECOND_PICTURE));
+});
+
+// The report that led to this file (BL-16822) was of a changed picture that went back to the old
+// one when the book was changed from A5 Portrait to A5 Landscape, after which the new picture's
+// file could not be used again in the book. Changing the page size saves the page and builds it
+// again, as leaving it does. Like the test above, this checks what a person sees, and Bloom's
+// normal save reads the src, so it does not fail on data-cke-saved-src alone.
+test("a new picture for an inline image is still there after the book changes to another page size, and its file can be used for another picture [Test Case ID 815]", async ({
+    page,
+    step,
+}) => {
+    test.setTimeout(300000);
+    const title = "Change Picture Then Page Size";
+    let imageId = "";
+    await step(
+        "Make a page with a picture in its text, and leave it and come back",
+        async () => {
+            await makeBookFromTemplate(page, "Basic Book");
+            await typeInGroup(page, ".bookTitle", "en", title);
+            await addPage(page, "Just Text");
+            await goToPage(page, (await getContentPages(page))[0].id);
+            await typeInGroup(page, BLOCK, LANG, TEXT);
+            imageId = await addInlineImage(page, BLOCK, LANG);
+            await changeInlineImagePicture(
+                page,
+                BLOCK,
+                LANG,
+                imageId,
+                fixtureImage(FIRST_PICTURE),
+            );
+            await reloadPageBeingEdited(page);
+        },
+    );
+    const bookFolder = await findBookFolder(page, title);
+    const languages = (
+        await getInlineImageInEveryLanguage(page, BLOCK, imageId)
+    ).map((copy) => copy.languageTag);
+    expect(
+        languages.length,
+        "The picture should be in more than one language block, so that every language's " +
+            "copy can be checked.",
+    ).toBeGreaterThan(1);
+
+    await step(
+        "Choose another picture from the picture's menu, then change the book to A5 Landscape",
+        async () => {
+            await chooseInlineImagePictureFromMenu(
+                page,
+                BLOCK,
+                LANG,
+                imageId,
+                fixtureImage(SECOND_PICTURE),
+            );
+            await setPageSize(page, "A5Landscape");
+        },
+    );
+    expect(
+        (await getInlineImageInEveryLanguage(page, BLOCK, imageId)).map(
+            (copy) => copy.fileName,
+        ),
+        `After the book changed to A5 Landscape, every copy should show ${SECOND_PICTURE}, the ` +
+            `picture chosen last.`,
+    ).toEqual(languages.map(() => SECOND_PICTURE));
+    expect(
+        (await readSavedInlineImages(page, bookFolder))
+            .filter((image) => image.id === imageId)
+            .map((image) => decodeURIComponent(image.source.split("?")[0])),
+        `The saved book should have ${SECOND_PICTURE} in every language's copy of the picture.`,
+    ).toEqual(languages.map(() => SECOND_PICTURE));
+
+    // chooseInlineImagePictureFromMenu fails unless every language's copy ends up showing the
+    // file that was chosen.
+    await step(
+        "Choose that same file for a picture on another page",
+        async () => {
+            await addPage(page, "Just Text");
+            const pages = await getContentPages(page);
+            await goToPage(page, pages[pages.length - 1].id);
+            await typeInGroup(page, BLOCK, LANG, TEXT);
+            const otherId = await addInlineImage(page, BLOCK, LANG);
+            await changeInlineImagePicture(
+                page,
+                BLOCK,
+                LANG,
+                otherId,
+                fixtureImage(FIRST_PICTURE),
+            );
+            await chooseInlineImagePictureFromMenu(
+                page,
+                BLOCK,
+                LANG,
+                otherId,
+                fixtureImage(SECOND_PICTURE),
+            );
+        },
+    );
 });

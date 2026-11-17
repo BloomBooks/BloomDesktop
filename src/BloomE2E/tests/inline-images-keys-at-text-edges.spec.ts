@@ -33,6 +33,7 @@ import {
     getInlineImages,
     putCaretAtEndOfBlockText,
     putCaretAtStartOfBlockText,
+    selectAllAndDeleteInBlock,
     typeAtCaretInBlock,
 } from "../helpers/inlineImages";
 import { pressKeys } from "../helpers/keys";
@@ -177,4 +178,39 @@ test("Delete held at the end of the text does not delete a picture docked at the
         "Delete at the end of the text changed the text; only the typed letter should have been " +
             "added, at the end.",
     ).toBe(textBefore + MARK);
+});
+
+// Once Ctrl+A and Delete have emptied the block, the Delete presses that follow, while the key is
+// still held, find nothing but the picture beside the empty paragraph.
+test("Delete held after Ctrl+A empties the text and does not delete a picture docked at the top [Test Case ID 815]", async ({
+    page,
+    step,
+}) => {
+    test.setTimeout(300000);
+    await step("Make a page with text and a picture", async () =>
+        makePageWithTextAndPicture(page),
+    );
+    const before = await copiesByLanguage(page);
+    expect(
+        Object.values(before).every((count) => count === 1) &&
+            Object.keys(before).length > 1,
+        `Every language block should hold one copy of the new picture before the keys are ` +
+            `pressed, or this test measures nothing. They hold: ${JSON.stringify(before)}.`,
+    ).toBe(true);
+
+    await step("Press Ctrl+A, hold Delete, then type a letter", async () => {
+        await selectAllAndDeleteInBlock(page, BLOCK, LANG);
+        await pressKeys(page, Array(PRESSES - 1).fill("Delete"));
+        await typeAtCaretInBlock(page, BLOCK, LANG, MARK);
+    });
+
+    expect(
+        await copiesByLanguage(page),
+        "Delete held after Ctrl+A deleted the picture, in some language.",
+    ).toEqual(before);
+    expect(
+        await getBlockText(page, BLOCK, LANG),
+        "Ctrl+A and Delete should have taken out all of the text, leaving only the letter typed " +
+            "afterwards.",
+    ).toBe(MARK);
 });

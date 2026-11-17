@@ -865,6 +865,195 @@ async function dragInlineImageBelowBlock(
     languageTag: string,
     id: string,
 ): Promise<void> {
+    await dragInlineImageDownTo(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+        0.5,
+        (block) => block.y + block.height * 1.05,
+    );
+}
+
+/** How far above the bottom of its block dragInlineImageToBottomOfBlock aims the picture's centre. */
+const kAimAboveBlockBottomPx = 3;
+
+/**
+ * Drag an inline image down its block as far as it goes, the way a person does, in the left,
+ * middle or right third of the block, and let go. The pointer, and so the centre of the picture,
+ * ends just above the bottom edge of the block, which is further than the picture can go: Bloom
+ * stops it at the lowest place where it still fits. In a small window, where the bottom of the
+ * block is out of sight, this drags, scrolls the page and drags again, as a person does.
+ *
+ * It waits for nothing and checks nothing, because where the picture stops is the caller's
+ * question; read it with getInlineImage and getInlineImageRects.
+ */
+export async function dragInlineImageToBottomOfBlock(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+    third: "left" | "middle" | "right",
+): Promise<void> {
+    await dragInlineImageDownTo(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+        { left: 1 / 6, middle: 0.5, right: 5 / 6 }[third],
+        (block) => block.y + block.height - kAimAboveBlockBottomPx,
+    );
+}
+
+/**
+ * Drag an inline image to the same place as dragInlineImageToBottomOfBlock, but with a single
+ * movement of the pointer, as a fast drag does: Bloom then sees the pointer where the drag began
+ * and where it ended, and nowhere between. The picture stays in the third of the block it is in.
+ * The whole movement has to be inside the window, so this throws when the bottom of the block is
+ * out of sight; drag the picture near the bottom first. Waits for nothing and checks nothing.
+ */
+export async function dragInlineImageToBottomOfBlockInOneMove(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+): Promise<void> {
+    const picture = await pictureRectInView(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+    );
+    const block = await blockRect(page, groupSelector, languageTag);
+    const dropY = block.y + block.height - kAimAboveBlockBottomPx;
+    const viewBottomY = await pageViewBottomY(
+        inlineImageBlock(page, groupSelector, languageTag),
+        block,
+    );
+    if (dropY > viewBottomY)
+        throw new Error(
+            `The bottom of the block is ${Math.round(dropY - viewBottomY)}px below the window, ` +
+                `so inline image ${id} cannot be dragged there in one movement.`,
+        );
+    await page.mouse.move(
+        picture.x + picture.width / 2,
+        picture.y + picture.height / 2,
+    );
+    await page.mouse.down();
+    await page.mouse.move(picture.x + picture.width / 2, dropY, { steps: 1 });
+    await page.mouse.up();
+}
+
+/**
+ * The bottom of the page frame's view, in the coordinates of `block`, which is the rectangle of
+ * `blockLocator` on screen.
+ */
+async function pageViewBottomY(
+    blockLocator: Locator,
+    block: IRect,
+): Promise<number> {
+    return blockLocator.evaluate(
+        (element, blockTopOnScreen) =>
+            blockTopOnScreen -
+            element.getBoundingClientRect().top +
+            element.ownerDocument.defaultView!.innerHeight,
+        block.y,
+    );
+}
+
+/** One step of dragInlineImageInSteps: where the pointer was, and what the picture did. */
+export interface IInlineImageDragStep {
+    /**
+     * Where the top of the picture would be if it followed the pointer exactly, in screen pixels
+     * below the top of the block.
+     */
+    pointerTopInBlock: number;
+    /** Where the top of the picture is, in screen pixels below the top of the block. */
+    pictureTopInBlock: number;
+    /** The dock the picture is in at this step. */
+    dock: InlineImageDock;
+    /** The picture and its block on screen at this step. */
+    picture: IRect;
+    block: IRect;
+}
+
+/**
+ * Press on an inline image and move it straight down (or up, with a negative `stepPx`) one small
+ * step at a time, the way a person drags slowly, reading after each step which dock the picture is
+ * in and where it is. `stop` sees the steps so far after each one; the drag ends, by letting go,
+ * when it returns true or after `maxSteps`. Returns every step, so the caller can check what the
+ * picture did on the way, such as staying in one place while the pointer went on. `toThird` makes
+ * the drag go down the middle of that third of the block instead of straight down from where the
+ * picture is.
+ */
+export async function dragInlineImageInSteps(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+    stepPx: number,
+    stop: (steps: IInlineImageDragStep[]) => boolean,
+    maxSteps = 80,
+    toThird?: "left" | "middle" | "right",
+): Promise<IInlineImageDragStep[]> {
+    const start = await pictureRectInView(page, groupSelector, languageTag, id);
+    const pointer = {
+        x: start.x + start.width / 2,
+        y: start.y + start.height / 2,
+    };
+    await page.mouse.move(pointer.x, pointer.y);
+    await page.mouse.down();
+    // With `toThird`, the first step also carries the picture across to the middle of that third
+    // of the block, so the rest of the drag goes down that third.
+    if (toThird) {
+        const block = await blockRect(page, groupSelector, languageTag);
+        pointer.x =
+            block.x +
+            block.width * { left: 1 / 6, middle: 0.5, right: 5 / 6 }[toThird];
+    }
+    // The page can scroll during a drag, so the pointer's place in the block is worked out at
+    // each step from where the block is then.
+    const steps: IInlineImageDragStep[] = [];
+    try {
+        for (let count = 0; count < maxSteps; count++) {
+            pointer.y += stepPx;
+            await page.mouse.move(pointer.x, pointer.y, { steps: 2 });
+            const picture = await pictureRect(
+                page,
+                groupSelector,
+                languageTag,
+                id,
+            );
+            const block = await blockRect(page, groupSelector, languageTag);
+            steps.push({
+                pointerTopInBlock: pointer.y - picture.height / 2 - block.y,
+                pictureTopInBlock: picture.y - block.y,
+                dock: (
+                    await getInlineImage(page, groupSelector, languageTag, id)
+                ).dock,
+                picture,
+                block,
+            });
+            if (stop(steps)) break;
+        }
+    } finally {
+        await page.mouse.up();
+    }
+    return steps;
+}
+
+/**
+ * Drag an inline image down, in rounds if the window is too small to do it in one, until the
+ * pointer reaches the point `dropYOf` gives for the block, `acrossFraction` of the way across it.
+ */
+async function dragInlineImageDownTo(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+    acrossFraction: number,
+    dropYOf: (block: IRect) => number,
+): Promise<void> {
     const blockLocator = inlineImageBlock(page, groupSelector, languageTag);
     // A few pixels inside the edge of the window, so the mouse stays over the page.
     const edgeMarginPx = 10;
@@ -879,16 +1068,10 @@ async function dragInlineImageBelowBlock(
             id,
         );
         const block = await blockRect(page, groupSelector, languageTag);
-        const across = block.x + block.width / 2;
-        const dropY = block.y + block.height * 1.05;
+        const across = block.x + block.width * acrossFraction;
+        const dropY = dropYOf(block);
         // The bottom of the page frame's view, in the same coordinates as the rectangles above.
-        const viewBottomY = await blockLocator.evaluate(
-            (element, blockTopOnScreen) =>
-                blockTopOnScreen -
-                element.getBoundingClientRect().top +
-                element.ownerDocument.defaultView!.innerHeight,
-            block.y,
-        );
+        const viewBottomY = await pageViewBottomY(blockLocator, block);
         if (dropY <= viewBottomY - edgeMarginPx) {
             await dragInlineImageTo(page, groupSelector, languageTag, id, {
                 x: across,
