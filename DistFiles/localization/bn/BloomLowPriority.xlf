@@ -794,6 +794,84 @@
         <target xml:lang="bn" state="needs-translation">Windows is not letting Bloom create, change, rename or delete files in the folder where this collection is stored. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see "{0}".</target>
         <note>ID: Errors.FileAccessCheck.BlockedLonger</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader.Description" sil:dynamic="true">
+        <source xml:lang="en">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</source>
+        <target xml:lang="bn" state="needs-translation">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</source>
+        <target xml:lang="bn" state="needs-translation">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader Device.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Dari language.</source>
+        <target xml:lang="bn" state="needs-translation">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Dari language.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Dari language and used for digital publishing.</source>
+        <target xml:lang="bn" state="needs-translation">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Dari language and used for digital publishing.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari Device.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Pashto language.</source>
+        <target xml:lang="bn" state="needs-translation">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Pashto language.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Pashto language and used for digital publishing.</source>
+        <target xml:lang="bn" state="needs-translation">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Pashto language and used for digital publishing.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto Device.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Kyrgyzstan 2020.Description" sil:dynamic="true">
+        <source xml:lang="en">Supports full-bleed cover color (but not images), and a place to paste a graphic on the back which is used to show what level this book is.</source>
+        <target xml:lang="bn" state="needs-translation">Supports full-bleed cover color (but not images), and a place to paste a graphic on the back which is used to show what level this book is.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Kyrgyzstan 2020.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Book.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</source>
+        <target xml:lang="bn" state="needs-translation">Designed for books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Book.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Literacy.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for literacy books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</source>
+        <target xml:lang="bn" state="needs-translation">Designed for literacy books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Literacy.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Literacy Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Used by ILV Mexico Branch, 2022.</source>
+        <target xml:lang="bn" state="needs-translation">Used by ILV Mexico Branch, 2022.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Literacy Device.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for Scripture books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</source>
+        <target xml:lang="bn" state="needs-translation">Designed for Scripture books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Used by ILV Mexico Branch, 2022.</source>
+        <target xml:lang="bn" state="needs-translation">Used by ILV Mexico Branch, 2022.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture Device.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Story Producer.Description" sil:dynamic="true">
+        <source xml:lang="en">Based on the Device front/back matter, this also provides some special inputs which are passed to Story Producer for its configuration.</source>
+        <target xml:lang="bn" state="needs-translation">Based on the Device front/back matter, this also provides some special inputs which are passed to Story Producer for its configuration.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Story Producer.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Uzbekistan 2023.Description" sil:dynamic="true">
+        <source xml:lang="en">Supports full-bleed cover color with images, adds a specific graphic tied to the grade level, which we get from the chosen bookshelf.</source>
+        <target xml:lang="bn" state="needs-translation">Supports full-bleed cover color with images, adds a specific graphic tied to the grade level, which we get from the chosen bookshelf.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Uzbekistan 2023.Description</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
