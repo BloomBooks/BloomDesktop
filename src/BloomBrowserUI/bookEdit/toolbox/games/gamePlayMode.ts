@@ -1,4 +1,5 @@
 import { prepareActivity, undoPrepareActivity } from "bloom-player";
+import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
 
 // Putting a game page into the Play tab's play mode, and taking it, or a copy of it, out again.
 //
@@ -56,6 +57,15 @@ export function takePageOutOfPlayMode(page: HTMLElement): void {
 export function removePlayModeMarkupFromClone(pageClone: HTMLElement): void {
     if (pagePreparedForPlay) {
         undoPrepareActivity(pageClone);
+        // Play makes canvas-element text uneditable (CanvasElementEditingSuspension); the book
+        // records it as editable, as it is in every other tab.
+        pageClone
+            .querySelectorAll(
+                `${kCanvasElementSelector} .bloom-editable[contenteditable="false"]`,
+            )
+            .forEach((editable) =>
+                editable.setAttribute("contenteditable", "true"),
+            );
     }
 }
 

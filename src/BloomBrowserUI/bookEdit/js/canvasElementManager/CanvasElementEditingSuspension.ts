@@ -175,17 +175,19 @@ export class CanvasElementEditingSuspension {
     };
 
     // Play mode makes the text in canvas elements uneditable, so that a tester's clicks and drags
-    // play the game instead of editing it.
+    // play the game instead of editing it. It sets the attribute to "false" rather than removing
+    // it: an attribute put back is put back last, and Bloom saves a page only when its HTML has
+    // changed, so a page that had been played would look edited on its next visits.
+    // (gamePlayMode.ts sets it back to "true" in a copy of the page saved during Play.)
     private setCanvasEditablesEditable = (editable: boolean): void => {
         document
             .querySelectorAll(`.${kCanvasElementClass} .bloom-editable`)
-            .forEach((bloomEditable) => {
-                if (editable) {
-                    bloomEditable.setAttribute("contenteditable", "true");
-                } else {
-                    bloomEditable.removeAttribute("contenteditable");
-                }
-            });
+            .forEach((bloomEditable) =>
+                bloomEditable.setAttribute(
+                    "contenteditable",
+                    editable ? "true" : "false",
+                ),
+            );
     };
 
     private dividerMouseDown = (_ev: Event) => {

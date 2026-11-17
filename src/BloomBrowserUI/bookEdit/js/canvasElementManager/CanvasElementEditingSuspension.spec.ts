@@ -61,6 +61,21 @@ describe("CanvasElementEditingSuspension with a game's Play mode", () => {
         expect(suspension.isSuspended()).toBe(false);
     });
 
+    it("Play leaves the text's HTML exactly as it found it, attribute order included", () => {
+        // Bloom saves a page only when its HTML has changed, so moving an attribute would make a
+        // page that had been played look edited.
+        canvasText.setAttribute("data-languagetipcontent", "English");
+        const before = canvasText.outerHTML;
+        expect(before, "test setup: contenteditable comes first").toMatch(
+            /contenteditable="true" data-languagetipcontent/,
+        );
+
+        suspension.suspendComicEditing("forGamePlayMode");
+        suspension.endGamePlayModeSuspension();
+
+        expect(canvasText.outerHTML).toBe(before);
+    });
+
     it("choosing a game tab other than Play does not end a tool's suspension", () => {
         suspension.suspendComicEditing("forTool"); // e.g. image descriptions shown
         suspension.endGamePlayModeSuspension(); // e.g. the Start tab chosen

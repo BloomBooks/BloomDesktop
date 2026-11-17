@@ -205,6 +205,31 @@ describe("play mode, whichever tool is open", () => {
         takePageOutOfPlayMode(page);
     });
 
+    it("a save while playing records canvas text as editable, as every other tab does", () => {
+        const { page, draggable } = makeActivityPage();
+        draggable.classList.add("bloom-canvas-element");
+        const text = document.createElement("div");
+        text.classList.add("bloom-editable");
+        draggable.appendChild(text);
+        preparePageForPlay(page);
+        // What CanvasElementEditingSuspension does to the live page in Play.
+        text.setAttribute("contenteditable", "false");
+
+        const copy = page.cloneNode(true) as HTMLElement;
+        removePlayModeMarkupFromClone(copy);
+
+        expect(
+            copy
+                .querySelector(".bloom-editable")!
+                .getAttribute("contenteditable"),
+        ).toBe("true");
+        expect(
+            text.getAttribute("contenteditable"),
+            "live page untouched",
+        ).toBe("false");
+        takePageOutOfPlayMode(page);
+    });
+
     it("a save when no page is in play mode leaves the copy alone", () => {
         const { page, draggable } = makeActivityPage();
         // An authored position that differs from anything play recorded earlier.
