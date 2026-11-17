@@ -77,6 +77,82 @@ export async function typeWithKeys(page: Page, text: string): Promise<void> {
 }
 
 /**
+ * Put text in at the caret with no key press at all, as voice typing (Windows dictation) and Keyman
+ * do: the page gets the input events of the text and no keydown, keypress or keyup. Waits for
+ * nothing.
+ */
+export async function insertTextWithNoKeyPress(
+    page: Page,
+    text: string,
+): Promise<void> {
+    // CDP Input.insertText, which raises no key events.
+    await page.keyboard.insertText(text);
+}
+
+/**
+ * Show `text` at the caret as an input method's composition that is not yet committed, as a
+ * Chinese, Japanese or Thai keyboard shows what the person is typing before they choose the word.
+ * The text is in the box, and replaces any composition already showing. No key is pressed. Finish
+ * with commitInputMethodText(). Waits for nothing.
+ */
+export async function composeWithInputMethod(
+    page: Page,
+    text: string,
+): Promise<void> {
+    await sendInputCommand(page, "Input.imeSetComposition", {
+        text,
+        selectionStart: text.length,
+        selectionEnd: text.length,
+    });
+}
+
+/**
+ * Commit an input method's composition as `text`, as the person does by choosing the word, which
+ * replaces the composition showing (see composeWithInputMethod()). No key is pressed. Waits for
+ * nothing.
+ */
+export async function commitInputMethodText(
+    page: Page,
+    text: string,
+): Promise<void> {
+    await sendInputCommand(page, "Input.insertText", { text });
+}
+
+/**
+ * Press the key that Windows sends a page ahead of each change an input method makes: the
+ * VK_PROCESSKEY key, which a browser reports as a keydown with keyCode 229 and key "Process". A
+ * Windows IME sends it; voice typing and Keyman send nothing. Waits for nothing.
+ */
+export async function pressProcessKey(page: Page): Promise<void> {
+    for (const type of ["rawKeyDown", "keyUp"])
+        await sendInputCommand(page, "Input.dispatchKeyEvent", {
+            type,
+            key: "Process",
+            windowsVirtualKeyCode: 229,
+            nativeVirtualKeyCode: 229,
+        });
+}
+
+// Send one command of CDP's Input domain to the shell page; the browser passes it to the frame
+// that has the focus, as it does with input from Windows.
+async function sendInputCommand(
+    page: Page,
+    method:
+        | "Input.imeSetComposition"
+        | "Input.insertText"
+        | "Input.dispatchKeyEvent",
+    params: Record<string, unknown>,
+): Promise<void> {
+    const session = await page.context().newCDPSession(page);
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await session.send(method as any, params as any);
+    } finally {
+        await session.detach().catch(() => {});
+    }
+}
+
+/**
  * Select all the text in a text box and copy it to the clipboard with the real Ctrl+A and Ctrl+C a
  * person presses, so that whatever CKEditor and Bloom do on a copy runs. The copy carries the
  * box's markup as well as its text, e.g. the Talking Book tool's sentence markers.

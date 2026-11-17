@@ -30,14 +30,24 @@ import {
     getStatusOfFocusedEditor,
     holdCkEditorStartup,
 } from "../helpers/ckeditorStartup";
+import {
+    commitInputMethodText,
+    composeWithInputMethod,
+    insertTextWithNoKeyPress,
+    pressProcessKey,
+} from "../helpers/keys";
 import { clickPageThumbnail } from "../helpers/pageList";
+import { choosePdfMode, getPdfPreviewPageCount } from "../helpers/pdfPrint";
 import {
     choosePageView,
     clickTextOfPageInGrid,
     expectGridToMatchBook,
     getFocusedGroupIndex,
     isPageChangeUnderway,
+    startRecordingEachFrame,
+    stopRecordingEachFrame,
     textBoxOfOtherPage,
+    waitForOtherPagesOnScreenToBeDrawn,
     waitForClickedPageToSettle,
     waitForFocusInGroup,
     waitForPageToBeShown,
@@ -235,6 +245,129 @@ test.describe("straight after a page change", () => {
         await hideToolbox(page);
     });
 
+    // Text from an input method or voice typing, which may come with no key press at all. The page
+    // gets the text before its editors are ready, then more once they are. Both pieces must stay
+    // together in the box.
+    for (const input of [
+        {
+            name: "voice typing or Keyman, which press no key",
+            target: 1,
+            composes: false,
+            pressesKey: false,
+            composingWhenReady: false,
+        },
+        {
+            name: "an input method that presses no key",
+            target: 2,
+            composes: true,
+            pressesKey: false,
+            composingWhenReady: false,
+        },
+        {
+            name: "an input method that sends Windows' key press for each change",
+            target: 3,
+            composes: true,
+            pressesKey: true,
+            composingWhenReady: false,
+        },
+        {
+            name: "an input method still composing a word when the editors are ready",
+            target: 5,
+            composes: true,
+            pressesKey: true,
+            composingWhenReady: true,
+        },
+    ]) {
+        test(`with All Pages, text from ${input.name}, given before and after the clicked page is ready, stays together in the box`, async ({
+            page,
+        }) => {
+            // Two bugs, each found by this test:
+            // - The click that opened the page is replayed once its editors are ready, unless the
+            //   person pressed a key, clicked, or left the page in the meantime
+            //   (replayOpeningClick() in bookGridView.ts). Text that comes with no key press does
+            //   not count, so the replay moves the cursor from the end of that text back to where
+            //   the page was clicked, and the next words go in there.
+            // - When the editors finish starting, keepTypingWhenCkEditorLoads() and CKEditor
+            //   rewrite the text box. A word still being composed then stays in the box as typed
+            //   letters, and the word the person chooses goes in beside them instead of replacing
+            //   them.
+            test.fail(
+                !input.pressesKey,
+                "Bug: text that comes with no key press does not stop the replayed click from moving the cursor (replayOpeningClick() in bookGridView.ts).",
+            );
+            test.fail(
+                input.composingWhenReady,
+                "Bug: a word being composed when the editors finish starting is left in the box, and the chosen word goes in beside it (keepTypingWhenCkEditorLoads.ts).",
+            );
+            const leaving = textPages[input.target - 1];
+            const target = textPages[input.target];
+            await goToPage(page, leaving.id);
+            await expectGridToMatchBook(page);
+            await waitForEditTabSettled(page);
+            const textBefore = (
+                await (await textBoxOfOtherPage(page, target.id)).innerText()
+            ).trim();
+            const textOfLeftPage = await textOfShownPage(page);
+            const hold = await holdCkEditorStartup(page);
+
+            // THE ACTION UNDER TEST: click the other page's text and give text at once, before the
+            // page's editors are ready; then, once they are, give more.
+            await clickTextOfPageInGrid(page, target.id);
+            await waitForPageToBeShown(page, target.id);
+            await hold.requested;
+            await waitForFocusInGroup(page, 0);
+            expect(
+                await getStatusOfFocusedEditor(page),
+                "test setup: the text box's editor should still be starting when the text arrives",
+            ).not.toBe("ready");
+            const first = "FIRST WORDS";
+            const second = " AND MORE";
+            const editorsAreReady = async () => {
+                await hold.release();
+                await waitForClickedPageToSettle(page);
+                await waitForEditTabSettled(page);
+            };
+            // A word as an input method gives it: the letters typed so far, shown but not yet
+            // committed, then the word chosen, which replaces them.
+            const composeWord = async (
+                word: string,
+                then?: () => Promise<void>,
+            ) => {
+                if (input.pressesKey) await pressProcessKey(page);
+                await composeWithInputMethod(page, word.slice(0, 3));
+                if (then) await then();
+                if (input.pressesKey) await pressProcessKey(page);
+                await commitInputMethodText(page, word);
+            };
+            if (!input.composes) {
+                await insertTextWithNoKeyPress(page, first);
+                await editorsAreReady();
+                await insertTextWithNoKeyPress(page, second);
+            } else if (input.composingWhenReady) {
+                await composeWord(first, editorsAreReady);
+                await composeWord(second);
+            } else {
+                await composeWord(first);
+                await editorsAreReady();
+                await composeWord(second);
+            }
+
+            const text = await textOfShownPage(page);
+            expect(
+                text.replace(first + second, ""),
+                `The two pieces of text should be side by side in the box, which held "${textBefore}" before, but it now reads "${text}".`,
+            ).toBe(textBefore);
+            await expect(await textBoxOfOtherPage(page, leaving.id)).toHaveText(
+                textOfLeftPage,
+            );
+            await waitForBloomToHaveTyping(page, first + second);
+            await goToPage(page, leaving.id);
+            await expect
+                .poll(() => savedTextOfPage(page, target.id))
+                .toContain(first + second);
+        });
+    }
+
     for (const view of ["one", "all"] as const) {
         test(`clicking quickly through five pages in the page list ends on the last one, ready to type in (${view === "one" ? "One Page" : "All Pages"})`, async ({
             page,
@@ -262,6 +395,67 @@ test.describe("straight after a page change", () => {
             await expect
                 .poll(() => savedTextOfPage(page, last.id))
                 .toContain(typed);
+        });
+    }
+
+    for (const view of ["one", "all"] as const) {
+        test(`clicking quickly through ten pages in the page list shows a drawn page on every frame, and the page list never moves (${view === "one" ? "One Page" : "All Pages"})`, async ({
+            page,
+        }) => {
+            const pages = (await getPages(page)).slice(0, 11);
+            expect(
+                pages.length,
+                "test setup: the book should have eleven pages",
+            ).toBe(11);
+            await goToPage(page, pages[0].id);
+            await choosePageView(page, view);
+            await waitForEditTabSettled(page);
+            if (view === "all") await waitForOtherPagesOnScreenToBeDrawn(page);
+            await startRecordingEachFrame(page);
+
+            // THE ACTION UNDER TEST: ten clicks, none waiting for the page before it to show.
+            for (const next of pages.slice(1))
+                await clickPageThumbnail(page, next.id);
+
+            const last = pages[pages.length - 1];
+            await waitForPageToBeShown(page, last.id);
+            await waitForEditablePage(page);
+            if (view === "all") await expectGridToMatchBook(page);
+            const frames = await stopRecordingEachFrame(page);
+            expect(frames.length).toBeGreaterThan(10);
+            const bookPages = new Set(pages.map((p) => p.id));
+            frames.forEach((f, i) => {
+                const where = `Animation frame ${i} of ${frames.length} (${f.frame})`;
+                // With All Pages, the page being left stays on screen until the next one is drawn
+                // with the pages around it. (With One Page, the frame is blank while a page loads.)
+                // The page being left scrolls the clicked page into view, and the pages that
+                // brings on screen are drawn a few frames later, so only the new page's frame is
+                // checked for pages not drawn.
+                if (view === "all") {
+                    expect(
+                        f.pageId && bookPages.has(f.pageId),
+                        `${where} showed no page of the book.`,
+                    ).toBe(true);
+                    expect(
+                        f.showsOtherPages,
+                        `${where} did not show the other pages.`,
+                    ).toBe(true);
+                    if (f.frame === "page")
+                        expect(
+                            f.undrawnPagesOnScreen,
+                            `${where} showed page ${f.pageId} with pages around it not drawn.`,
+                        ).toEqual([]);
+                }
+                expect(f.pageListLeft, `${where}: the page list moved.`).toBe(
+                    frames[0].pageListLeft,
+                );
+                expect(
+                    f.scrolledAroundPageList,
+                    `${where}: something around the page list scrolled.`,
+                ).toBe("");
+            });
+            expect(frames[frames.length - 1].pageId).toBe(last.id);
+            await waitForEditTabSettled(page);
         });
     }
 
@@ -329,6 +523,32 @@ test.describe("straight after a page change", () => {
         expect((html.match(/class="bloom-page /g) ?? []).length).toBe(
             (await getPages(page)).length,
         );
+    });
+
+    test("with All Pages, after typing on a page and clicking another page in the grid, the PDF has the book's own pages and nothing more", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        const typedOn = textPages[3];
+        const clicked = textPages[4];
+        await goToPage(page, typedOn.id);
+        await choosePageView(page, "all");
+        await typeInGroup(page, kGroup, "en", "Typed before making the PDF");
+
+        // THE ACTION UNDER TEST: a real click on another page, then the PDF.
+        await clickTextOfPageInGrid(page, clicked.id);
+        await waitForPageToBeShown(page, clicked.id);
+        await waitForEditablePage(page);
+        const pageCount = (await getPages(page)).length;
+        await switchTab(page, "publish");
+        await choosePdfMode(page, "Simple");
+
+        expect(
+            await getPdfPreviewPageCount(page),
+            "The PDF should have one page for each page of the book.",
+        ).toBe(pageCount);
+        await switchTab(page, "edit");
+        await waitForEditablePage(page);
     });
 
     for (const view of ["one", "all"] as const) {

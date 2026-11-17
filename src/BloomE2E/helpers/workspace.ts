@@ -86,6 +86,40 @@ export async function getZoom(page: Page): Promise<IZoomInfo> {
 }
 
 /**
+ * Click the top bar's − ("out") or + ("in") zoom button once, as a person does, and return once
+ * Bloom reports a different zoom. Returns the new zoom. Throws when the zoom is already at that end
+ * of its range.
+ */
+export async function clickZoomButton(
+    page: Page,
+    direction: "in" | "out",
+): Promise<number> {
+    const before = await getZoom(page);
+    if (
+        direction === "in"
+            ? before.zoom >= before.maxZoom
+            : before.zoom <= before.minZoom
+    )
+        throw new Error(
+            `The zoom is already ${before.zoom}%, the ${direction === "in" ? "largest" : "smallest"} Bloom allows.`,
+        );
+    // The − is an en dash in the top bar.
+    await page
+        .getByRole("button", {
+            name: direction === "in" ? "+" : "–",
+            exact: true,
+        })
+        .click();
+    await expect
+        .poll(async () => (await getZoom(page)).zoom, {
+            timeout: 5000,
+            message: `Clicking the zoom ${direction} button did not change the zoom.`,
+        })
+        .not.toBe(before.zoom);
+    return (await getZoom(page)).zoom;
+}
+
+/**
  * Set the Edit tab's zoom to `percent`, by the same route as the top bar's + and − buttons post.
  * This is the SETUP route for a test that needs the page drawn large or small; a test whose subject
  * is the zoom control clicks the buttons instead.

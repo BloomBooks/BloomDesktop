@@ -121,6 +121,30 @@ export async function duplicatePageWithContextMenu(
 }
 
 /**
+ * Right-click a page's thumbnail and choose an item from its menu, e.g. "Duplicate Page", and
+ * return at once, without waiting for Bloom to carry the command out. For a test of what a person
+ * gets by doing something else straight away; duplicatePageWithContextMenu() waits for the copy.
+ */
+export async function clickPageMenuItem(
+    page: Page,
+    pageId: string,
+    itemName: string,
+): Promise<void> {
+    await waitForEditTabSettled(page);
+    const target = thumbnail(page, pageId);
+    await target.waitFor({ state: "visible", timeout: 30000 });
+    await target.click({ button: "right" });
+    // The menu is portaled into the shell document, not the page list's own frame.
+    const item = page.getByRole("menuitem", { name: itemName, exact: true });
+    await item.waitFor({ state: "visible", timeout: 30000 });
+    await expect(
+        item,
+        `${itemName} is disabled in the page's right-click menu.`,
+    ).toBeEnabled();
+    await item.click();
+}
+
+/**
  * Move a page by dragging its thumbnail onto another page's slot, the way a person reorders
  * pages, and wait until Bloom lists the moved page in that slot.
  *

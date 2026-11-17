@@ -266,6 +266,73 @@ export async function clickPageInGrid(
 }
 
 /**
+ * The ids of the other pages (not the page being edited) that are at least partly on screen in the
+ * page frame that is showing, which while a page change or a page layout update is under way can be
+ * the page being left.
+ */
+export async function getOtherPagesOnScreen(page: Page): Promise<string[]> {
+    return page.evaluate(() => {
+        const frame = (document.getElementById("page-outgoing") ??
+            document.getElementById("page")) as HTMLIFrameElement | null;
+        const doc = frame?.contentDocument;
+        if (!frame || !doc) return [];
+        const f = frame.getBoundingClientRect();
+        return Array.from(
+            doc.querySelectorAll(
+                ".bloom-book-grid-cell:not(.bloom-book-grid-edited)",
+            ),
+        )
+            .filter((cell) => {
+                const r = cell.getBoundingClientRect();
+                return (
+                    r.bottom > 0 &&
+                    r.right > 0 &&
+                    r.top < f.height &&
+                    r.left < f.width
+                );
+            })
+            .map((cell) => cell.getAttribute("data-page-id") ?? "");
+    });
+}
+
+/**
+ * Click with the mouse in the middle of where another page is drawn on screen, whatever is on top
+ * of it at the moment (a dialog's backdrop, say), as a person clicks what they see. Uses the page
+ * frame that is on screen: while a page change or a page layout update is under way, that can be
+ * the page being left.
+ */
+export async function clickWhereOtherPageIsShown(
+    page: Page,
+    pageId: string,
+): Promise<void> {
+    const point = await page.evaluate((id) => {
+        const frame = (document.getElementById("page-outgoing") ??
+            document.getElementById("page")) as HTMLIFrameElement | null;
+        const cell = frame?.contentDocument?.querySelector(
+            `.bloom-book-grid-cell[data-page-id="${id}"]`,
+        );
+        if (!frame || !cell) return undefined;
+        const f = frame.getBoundingClientRect();
+        const r = cell.getBoundingClientRect();
+        // The middle of the part of the page that is inside the frame.
+        const top = Math.max(r.top, 0);
+        const bottom = Math.min(r.bottom, f.height);
+        const left = Math.max(r.left, 0);
+        const right = Math.min(r.right, f.width);
+        if (bottom <= top || right <= left) return undefined;
+        return {
+            x: f.left + (left + right) / 2,
+            y: f.top + (top + bottom) / 2,
+        };
+    }, pageId);
+    if (!point)
+        throw new Error(
+            `Page ${pageId} is not drawn on screen, so there is nowhere to click it.`,
+        );
+    await page.mouse.click(point.x, point.y);
+}
+
+/**
  * Wait until the page being edited has finished dealing with the click that opened it (when it
  * was one of the other pages, Bloom replays that click on it; see
  * replayTheClickThatOpenedThisPage in bookGridView.ts).
@@ -348,6 +415,30 @@ export function gridCell(page: Page, pageId: string): Locator {
     return editablePageFrame(page).locator(
         `.bloom-book-grid-cell[data-page-id="${pageId}"]`,
     );
+}
+
+/**
+ * Where All Pages puts each page it lays out, the page being edited among them, in the page frame's
+ * viewport, by page id. Every place is there whether or not its page is drawn yet.
+ */
+export async function getGridPlaces(
+    page: Page,
+): Promise<Record<string, IViewRect>> {
+    return editablePageFrame(page)
+        .locator(".bloom-book-grid-cell")
+        .evaluateAll((cells) => {
+            const places: Record<string, IViewRect> = {};
+            for (const cell of cells) {
+                const r = cell.getBoundingClientRect();
+                places[cell.getAttribute("data-page-id") ?? "?"] = {
+                    left: r.left,
+                    top: r.top,
+                    right: r.right,
+                    bottom: r.bottom,
+                };
+            }
+            return places;
+        });
 }
 
 /** The ids of the pages that the grid of All Pages has places for, in the order of the places. */
@@ -462,13 +553,37 @@ export async function clickTextOfPageInGrid(
             y: (line.top + line.height / 2 - boxRect.top) / boxRect.height,
         };
     });
-    const onScreen = await box.boundingBox();
-    if (!onScreen)
-        throw new Error(`The text box of page ${pageId} has no box on screen.`);
-    await page.mouse.click(
-        onScreen.x + at.x * onScreen.width,
-        onScreen.y + at.y * onScreen.height,
+    const pointOnScreen = async () => {
+        const onScreen = await box.boundingBox();
+        if (!onScreen)
+            throw new Error(
+                `The text box of page ${pageId} has no box on screen.`,
+            );
+        return {
+            x: onScreen.x + at.x * onScreen.width,
+            y: onScreen.y + at.y * onScreen.height,
+        };
+    };
+    let point = await pointOnScreen();
+    // A point under the bar of controls across the top of the view, or below the view, is not
+    // one a person could click; scroll it to the middle of the view first.
+    const frameBox = await page.locator("#page").boundingBox();
+    if (!frameBox) throw new Error("The page frame has no box on screen.");
+    const barBottom = await editablePageFrame(page).evaluate(
+        () =>
+            document
+                .querySelector("body > .bloom-controls-bar")
+                ?.getBoundingClientRect().bottom ?? 0,
     );
+    const yInFrame = point.y - frameBox.y;
+    if (yInFrame < barBottom + 10 || yInFrame > frameBox.height - 10) {
+        await editablePageFrame(page).evaluate(
+            (dy) => window.scrollBy(0, dy),
+            yInFrame - (barBottom + frameBox.height) / 2,
+        );
+        point = await pointOnScreen();
+    }
+    await page.mouse.click(point.x, point.y);
 }
 
 /**
@@ -558,6 +673,96 @@ export async function isOtherPageDrawnAtSize(
         );
 }
 
+/**
+ * Where the margin box (the area inside the page's margins that holds its content) sits on the page
+ * with this id, as fractions of the page's width and height, so that the grid's scaling does not
+ * matter: the page being edited, or another page as All Pages draws it. The page's theme decides
+ * the margins, so this tells whether a page is drawn in the book's current appearance.
+ */
+export async function getMarginBoxOnPage(
+    page: Page,
+    pageId: string,
+): Promise<IViewRect> {
+    const measure = (bloomPage: Element) => {
+        const p = bloomPage.getBoundingClientRect();
+        const box = bloomPage.querySelector(".marginBox");
+        if (!box) throw new Error("The page has no margin box.");
+        const m = box.getBoundingClientRect();
+        const round = (n: number) => Math.round(n * 1000) / 1000;
+        return {
+            left: round((m.left - p.left) / p.width),
+            top: round((m.top - p.top) / p.height),
+            right: round((p.right - m.right) / p.width),
+            bottom: round((p.bottom - m.bottom) / p.height),
+        };
+    };
+    if ((await getShownPageId(page)) === pageId)
+        return editablePageFrame(page)
+            .locator(".bloom-page")
+            .first()
+            .evaluate(measure);
+    const cell = gridCell(page, pageId);
+    await cell.scrollIntoViewIfNeeded();
+    return cell
+        .frameLocator("iframe")
+        .locator(".bloom-page")
+        .first()
+        .evaluate(measure, undefined, { timeout: 15000 });
+}
+
+/** The first picture on a page, as the page shows it; see getPictureOnPage(). */
+export interface IShownPicture {
+    /** The picture's address, with the query Bloom put on it (thumbnail=1, transparent=...). */
+    src: string;
+    /** The size of the picture as the server sent it, in pixels. */
+    naturalWidth: number;
+    naturalHeight: number;
+    /** The alpha (0 to 255) of the picture's top left pixel as the server sent it. */
+    topLeftAlpha: number;
+}
+
+/**
+ * The first picture on the page with this id, as it is shown: on the page being edited, or on
+ * another page as All Pages draws it (which this scrolls into view, so that it is drawn).
+ */
+export async function getPictureOnPage(
+    page: Page,
+    pageId: string,
+): Promise<IShownPicture> {
+    const describe = async (img: HTMLImageElement) => {
+        if (!img.complete || !img.naturalWidth)
+            await new Promise((resolve) => {
+                img.addEventListener("load", resolve, { once: true });
+                img.addEventListener("error", resolve, { once: true });
+            });
+        const canvas = img.ownerDocument.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const context = canvas.getContext("2d")!;
+        context.drawImage(img, 0, 0);
+        return {
+            src: img.getAttribute("src") ?? "",
+            naturalWidth: img.naturalWidth,
+            naturalHeight: img.naturalHeight,
+            topLeftAlpha: context.getImageData(0, 0, 1, 1).data[3],
+        };
+    };
+    const selector =
+        ".bloom-page .bloom-imageContainer img, .bloom-page .bloom-canvas img";
+    if ((await getShownPageId(page)) === pageId)
+        return editablePageFrame(page)
+            .locator(selector)
+            .first()
+            .evaluate(describe);
+    const cell = gridCell(page, pageId);
+    await cell.scrollIntoViewIfNeeded();
+    return cell
+        .frameLocator("iframe")
+        .locator(selector)
+        .first()
+        .evaluate(describe, undefined, { timeout: 15000 });
+}
+
 /** Whether the page frame's view is wider than the frame, so that it scrolls sideways. */
 export async function doesPageFrameScrollSideways(
     page: Page,
@@ -589,6 +794,217 @@ export async function getChangeLayoutSwitchPlacement(
             right: Math.round(r.right),
             bottom: Math.round(r.bottom),
         };
+    });
+}
+
+/**
+ * With All Pages showing, wait until every other page that is at least partly on screen in the page
+ * frame is drawn.
+ */
+export async function waitForOtherPagesOnScreenToBeDrawn(
+    page: Page,
+): Promise<void> {
+    let undrawn: string[] = [];
+    await expect
+        .poll(
+            async () => {
+                undrawn = await editablePageFrame(page)
+                    .evaluate(() =>
+                        Array.from(
+                            document.querySelectorAll(
+                                ".bloom-book-grid-cell:not(.bloom-book-grid-edited):not(.bloom-book-grid-rendered)",
+                            ),
+                        )
+                            .filter((cell) => {
+                                const r = cell.getBoundingClientRect();
+                                return (
+                                    r.bottom > 0 &&
+                                    r.right > 0 &&
+                                    r.top < window.innerHeight &&
+                                    r.left < window.innerWidth
+                                );
+                            })
+                            .map(
+                                (cell) =>
+                                    cell.getAttribute("data-page-id") ?? "?",
+                            ),
+                    )
+                    .catch(() => ["(the page frame is changing)"]);
+                return undrawn.length;
+            },
+            {
+                timeout: 30000,
+                message: `All Pages never drew every page on screen: ${undrawn.join(", ")} stayed undrawn.`,
+            },
+        )
+        .toBe(0);
+}
+
+// Where every place in the grid and the page being edited are in the page frame's view, and how far
+// it is scrolled, rounded to whole pixels: a layout that changes changes this.
+function gridLayoutNow(): string {
+    const rects = Array.from(
+        document.querySelectorAll(".bloom-book-grid-cell, .bloom-page"),
+    ).map((e) => {
+        const r = e.getBoundingClientRect();
+        return `${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.width)}`;
+    });
+    return `${Math.round(window.scrollX)},${Math.round(window.scrollY)}|${rects.join(";")}`;
+}
+
+/**
+ * Wait until the layout of the page frame (every page's place, and the scroll) has stayed the same
+ * for `quietMs`. Fails, saying so, if it keeps changing for 30 seconds: a view that never settles.
+ */
+export async function waitForGridToHoldStill(
+    page: Page,
+    quietMs = 1000,
+): Promise<void> {
+    let last = "";
+    let since = Date.now();
+    await expect
+        .poll(
+            async () => {
+                const now = await editablePageFrame(page)
+                    .evaluate(gridLayoutNow)
+                    .catch(() => "(the page frame is changing)");
+                if (now !== last) {
+                    last = now;
+                    since = Date.now();
+                }
+                return Date.now() - since >= quietMs;
+            },
+            {
+                intervals: [100],
+                timeout: 30000,
+                message: `The pages never held still for ${quietMs}ms.`,
+            },
+        )
+        .toBe(true);
+}
+
+/**
+ * Watch the page frame on every animation frame for `ms`, and return how many times its layout
+ * (see waitForGridToHoldStill()) changed.
+ */
+export async function countGridLayoutChangesDuring(
+    page: Page,
+    ms: number,
+): Promise<number> {
+    return editablePageFrame(page).evaluate(
+        (ms) =>
+            new Promise<number>((resolve) => {
+                // The same reading as gridLayoutNow(), which cannot be passed in.
+                const layoutNow = () => {
+                    const rects = Array.from(
+                        document.querySelectorAll(
+                            ".bloom-book-grid-cell, .bloom-page",
+                        ),
+                    ).map((e) => {
+                        const r = e.getBoundingClientRect();
+                        return `${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.width)}`;
+                    });
+                    return `${Math.round(window.scrollX)},${Math.round(window.scrollY)}|${rects.join(";")}`;
+                };
+                let last = layoutNow();
+                let changes = 0;
+                const end = performance.now() + ms;
+                const look = () => {
+                    const now = layoutNow();
+                    if (now !== last) {
+                        changes++;
+                        last = now;
+                    }
+                    if (performance.now() < end) requestAnimationFrame(look);
+                    else resolve(changes);
+                };
+                requestAnimationFrame(look);
+            }),
+        ms,
+    );
+}
+
+/** What the Edit tab showed on one animation frame; see startRecordingEachFrame(). */
+export interface IRecordedFrame {
+    /** The id of the page frame on top: "page-outgoing" while a page being left is still shown. */
+    frame: string;
+    /** The id of the page being edited in that frame, or undefined when it shows no page. */
+    pageId?: string;
+    /** Whether that frame lays out the other pages of the book around it (All Pages). */
+    showsOtherPages: boolean;
+    /** Other pages that are at least partly on screen and not drawn. */
+    undrawnPagesOnScreen: string[];
+    /** The left edge of the page list in the Edit tab. */
+    pageListLeft: number;
+    /** Every container around the page list that is scrolled, if any. */
+    scrolledAroundPageList: string;
+}
+
+/**
+ * From now on, on every animation frame of the Edit tab, record which page frame is on top, the
+ * page it shows, which of the other pages on screen are not drawn, and where the page list sits.
+ * The recording sees layout and the DOM, not painted pixels. Read it with stopRecordingEachFrame().
+ */
+export async function startRecordingEachFrame(page: Page): Promise<void> {
+    await page.evaluate(() => {
+        const w = window as unknown as Record<string, unknown>;
+        const frames: unknown[] = [];
+        w.__bloomE2eFrames = frames;
+        w.__bloomE2eRecording = true;
+        const record = () => {
+            const top = (document.getElementById("page-outgoing") ??
+                document.getElementById("page")) as HTMLIFrameElement | null;
+            const doc = top?.contentDocument;
+            const view = top?.getBoundingClientRect();
+            const undrawn: string[] = [];
+            const cells = doc
+                ? Array.from(doc.querySelectorAll(".bloom-book-grid-cell"))
+                : [];
+            for (const cell of cells) {
+                if (cell.classList.contains("bloom-book-grid-edited")) continue;
+                const r = cell.getBoundingClientRect();
+                const onScreen =
+                    !!view &&
+                    r.bottom > 0 &&
+                    r.right > 0 &&
+                    r.top < view.height &&
+                    r.left < view.width;
+                if (
+                    onScreen &&
+                    !cell.classList.contains("bloom-book-grid-rendered")
+                )
+                    undrawn.push(cell.getAttribute("data-page-id") ?? "?");
+            }
+            const list = document.getElementById("pageList");
+            let scrolled = "";
+            for (let e = list?.parentElement; e; e = e.parentElement) {
+                if (e.scrollLeft !== 0 || e.scrollTop !== 0)
+                    scrolled += `${e.tagName}#${e.id}.${e.className} (${e.scrollLeft},${e.scrollTop}) `;
+            }
+            frames.push({
+                frame: top?.id ?? "(no page frame)",
+                pageId: doc?.querySelector(".bloom-page")?.id || undefined,
+                showsOtherPages: cells.length > 0,
+                undrawnPagesOnScreen: undrawn,
+                pageListLeft: Math.round(
+                    list?.getBoundingClientRect().left ?? -1,
+                ),
+                scrolledAroundPageList: scrolled,
+            });
+            if (w.__bloomE2eRecording) requestAnimationFrame(record);
+        };
+        requestAnimationFrame(record);
+    });
+}
+
+/** Stop the recording that startRecordingEachFrame() started, and return it. */
+export async function stopRecordingEachFrame(
+    page: Page,
+): Promise<IRecordedFrame[]> {
+    return page.evaluate(() => {
+        const w = window as unknown as Record<string, unknown>;
+        w.__bloomE2eRecording = false;
+        return (w.__bloomE2eFrames ?? []) as IRecordedFrame[];
     });
 }
 

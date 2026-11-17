@@ -163,6 +163,11 @@ interface IBloomWorkerFixtures {
      */
     experimentalFeatures: string[] | undefined;
     /**
+     * Set with test.use() to give this Bloom a fake camera and microphone, for a test that records
+     * a video. See ILaunchBloomOptions.fakeCamera. Honoured only for a Bloom launched on a collection.
+     */
+    fakeCamera: boolean;
+    /**
      * Set with test.use() to launch Bloom with NO collection, at the Choose Collection dialog;
      * the test then uses the chooserApp fixture instead of bloomApp. collectionSpec still names
      * the collection the test can open FROM the dialog (chooserApp.collectionToOpen).
@@ -405,6 +410,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
     collectionName: [undefined, { scope: "worker", option: true }],
     collectionSpec: [undefined, { scope: "worker", option: true }],
     experimentalFeatures: [undefined, { scope: "worker", option: true }],
+    fakeCamera: [false, { scope: "worker", option: true }],
     startAtChooser: [false, { scope: "worker", option: true }],
 
     _launchedApp: [
@@ -413,6 +419,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                 collectionName,
                 collectionSpec,
                 experimentalFeatures,
+                fakeCamera,
                 startAtChooser,
             },
             use,
@@ -487,6 +494,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                     collectionName,
                     collectionSpec,
                     experimentalFeatures,
+                    fakeCamera,
                 });
                 const app: IBloomApp = {
                     mode: "collection",
