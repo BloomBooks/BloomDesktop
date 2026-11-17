@@ -43,19 +43,22 @@ namespace BloomTests.Book
             return sources;
         }
 
-        [Test]
-        public void DescriptionL10nId_IsNextToTheNameId()
+        [TestCase("Factory-XMatter", "Paper Saver")]
+        [TestCase("SIL-PNG-XMatter", "SIL PNG")]
+        [TestCase("ABC-Reader-Device-XMatter", "ABC Reader Device")]
+        [TestCase("Kyrgyzstan2020-XMatter", "Kyrgyzstan 2020")]
+        public void DescriptionL10nId_IsTheKeyAsWords(string folderName, string words)
         {
-            var info = new XMatterInfo(Path.Combine("somewhere", "Factory-XMatter"));
+            var info = new XMatterInfo(Path.Combine("somewhere", folderName), true);
 
             Assert.That(
-                info.NameL10nId,
+                info.DescriptionL10nId,
                 Is.EqualTo(
-                    "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver"
-                ),
-                "Test setup: the name id should match the existing name entries in Bloom.xlf"
+                    "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."
+                        + words
+                        + ".Description"
+                )
             );
-            Assert.That(info.DescriptionL10nId, Is.EqualTo(info.NameL10nId + ".Description"));
         }
 
         /// <summary>
@@ -170,16 +173,24 @@ namespace BloomTests.Book
             Assert.That(wrong, Is.Empty, "These packs did not get their description from the XLF");
         }
 
-        [Test]
-        public void GetDescription_UserInstalledPackWithoutXlfEntry_ComesFromItsFile()
+        /// <summary>
+        /// A pack the user installed shows its own description, whether or not a pack that ships
+        /// with Bloom has the same name (and so an XLF entry).
+        /// </summary>
+        [TestCase("SomeoneElses-XMatter", false)]
+        [TestCase("MXBBook-XMatter", true)]
+        public void GetDescription_UserInstalledPack_ComesFromItsFile(
+            string folderName,
+            bool sameNameAsShippedPack
+        )
         {
-            var folder = Path.Combine(_packsFolder.Path, "SomeoneElses-XMatter");
+            var folder = Path.Combine(_packsFolder.Path, folderName);
             Directory.CreateDirectory(folder);
-            var pack = new XMatterInfo(folder);
+            var pack = new XMatterInfo(folder, false);
             Assert.That(
                 _englishSources.ContainsKey(pack.DescriptionL10nId),
-                Is.False,
-                "Test setup: the user's pack should have no XLF entry"
+                Is.EqualTo(sameNameAsShippedPack),
+                "Test setup: only a pack named like a shipped one should have an XLF entry"
             );
             RobustFile.WriteAllText(
                 Path.Combine(folder, "description-en.txt"),
