@@ -482,9 +482,9 @@
         <target xml:lang="zh-CN" state="final">节省纸张装置</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Designed to save paper, this puts the credits on the inside of the front cover.</source>
-        <target xml:lang="zh-CN" state="needs-translation">Designed to save paper, this puts the credits on the inside of the front cover.</target>
+        <target xml:lang="zh-CN" state="final">为节省纸张而设计，将版权页放在封面内侧。</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true" approved="yes">
@@ -502,9 +502,9 @@
         <target xml:lang="zh-CN" state="final">节省纸张模板</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Designed to save paper, this puts the title page on the inside of the front cover, and the credits on the inside of the back cover.</source>
-        <target xml:lang="zh-CN" state="needs-translation">Designed to save paper, this puts the title page on the inside of the front cover, and the credits on the inside of the back cover.</target>
+        <target xml:lang="zh-CN" state="final">为节省纸张而设计，标题页在封面内侧，版权信息在封底的内侧。</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
@@ -514,7 +514,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description" sil:dynamic="true">
         <source xml:lang="en">Like a printed book, this puts the credits on the back side of the title page.</source>
-        <target xml:lang="zh-CN" state="needs-translation">Like a printed book, this puts the credits on the back side of the title page.</target>
+        <target xml:lang="zh-CN" state="translated">版权信息在标题页背面</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true" approved="yes">
