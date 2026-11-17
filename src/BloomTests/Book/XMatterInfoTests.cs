@@ -142,6 +142,9 @@ namespace BloomTests.Book
         {
             foreach (var lm in _localizationManagers)
                 lm.Dispose();
+            // Otherwise the disposed "Bloom" manager stays registered, and a later fixture that
+            // looks up a string (e.g. CreateArtifactsCommandTests) throws ObjectDisposedException.
+            LocalizationManager.ForgetDisposedManagers();
             LocalizationManager.SetUILanguage(LocalizationManager.kDefaultLang);
         }
 
