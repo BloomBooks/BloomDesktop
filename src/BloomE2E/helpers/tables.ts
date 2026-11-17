@@ -75,6 +75,9 @@ export type TableMenuCommand =
     | "Move Left"
     | "Duplicate Column"
     | "Delete Column"
+    | "Copy properties"
+    | "Paste properties"
+    | "Paint format"
     | "Copy Table"
     | "Cut Table"
     | "Delete Table";
@@ -942,6 +945,10 @@ export async function clickAddButton(
  *
  * The pills appear only while the pointer is near the row or column they belong to, so this hovers
  * the cell that identifies it first. For "table" the pill sits at the top left corner.
+ *
+ * `index` only decides where the pointer goes. The menu that opens acts on the row or column of
+ * the table's selected cell (togglePillMenu in the table library), so a caller that means a
+ * particular row or column selects a cell in it first, with clickCell.
  */
 export async function openTableMenu(
     page: Page,
@@ -1991,4 +1998,127 @@ export async function toggleMenuCellLanguage(
             message: `Clicking the ${role} check box did not change it from "${before}".`,
         })
         .not.toBe(before);
+}
+
+/**
+ * Copy one cell's format onto another with Paint format, as a person does: choose Paint format in
+ * the source cell's Cell menu, press on the target cell, and press Escape to stop painting.
+ * Returns when the table has left its painting mode.
+ *
+ * While painting, the table library marks the page's body `bloom-paint-format` and takes every
+ * press on a cell as "paint this one", so this waits for the mark before the press and for its
+ * removal afterwards.
+ */
+export async function paintFormatFromCellOntoCell(
+    page: Page,
+    from: { row: number; column: number },
+    onto: { row: number; column: number },
+    tableIndex = 0,
+): Promise<void> {
+    const menus = await rightClickCell(page, from.row, from.column, tableIndex);
+    if (!menus.cell)
+        throw new Error(
+            `Right-clicking the cell at row ${from.row}, column ${from.column} did not open the ` +
+                `Cell menu. Menus that did open: ${describeMenus(menus)}.`,
+        );
+    await clickTableMenuCommand(page, "Paint format");
+    const body = editablePageFrame(page).locator("body");
+    await expect(
+        body,
+        "Choosing Paint format did not put the table into its painting mode.",
+    ).toHaveClass(/\bbloom-paint-format\b/, { timeout: kTableWaitMs });
+    const target = await cell(page, onto.row, onto.column, tableIndex);
+    const box = await requireBox(
+        target,
+        `the cell at row ${onto.row}, column ${onto.column}`,
+    );
+    // A real press, for the same reason as in clickCell.
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.up();
+    await body.press("Escape");
+    await expect(
+        body,
+        "Escape did not end the table's painting mode.",
+    ).not.toHaveClass(/\bbloom-paint-format\b/, { timeout: kTableWaitMs });
+}
+
+/**
+ * Copy the properties of the table's first cell and paste them onto every cell of the table, with
+ * Copy properties and then Paste properties in the Table menu, which is the only menu that has
+ * them. Copy takes the first cell of the table; Paste gives every cell what was copied.
+ */
+export async function copyAndPasteTableProperties(
+    page: Page,
+    tableIndex = 0,
+): Promise<void> {
+    await openTableMenu(page, "table", 0, tableIndex);
+    await clickTableMenuCommand(page, "Copy properties");
+    await openTableMenu(page, "table", 0, tableIndex);
+    await clickTableMenuCommand(page, "Paste properties");
+}
+
+/**
+ * Which way the text of one language's box in a cell runs, "ltr" or "rtl", as the browser lays it
+ * out. This is the computed direction, so it is what a person sees whichever of the attribute and
+ * the stylesheet decided it.
+ */
+export async function getCellTextDirection(
+    page: Page,
+    row: number,
+    column: number,
+    languageTag: string,
+    tableIndex = 0,
+): Promise<string> {
+    const box = await cellTextBox(page, row, column, languageTag, tableIndex);
+    await box.waitFor({ state: "attached", timeout: kTableWaitMs });
+    return box.evaluate((element) => getComputedStyle(element).direction);
+}
+
+/**
+ * The languages whose text a reader sees in one cell of the first table of a page in `frame`, in
+ * the order they are drawn. Written for the BloomPUB preview, whose frame is bloom-player showing
+ * the book: a language counts only when its box is really drawn there, with a size, so one that
+ * the player hides is left out however the saved page marks it.
+ *
+ * `pageId` scopes it to one page, because bloom-player builds only the pages near the one it is
+ * showing. Waits until that page's table is there.
+ */
+export async function getCellLanguagesShownIn(
+    frame: Frame,
+    pageId: string,
+    row: number,
+    column: number,
+): Promise<string[]> {
+    const target = frame.locator(`[id="${pageId}"] .bloom-table`).first();
+    await target.waitFor({ state: "attached", timeout: 30000 });
+    return target.evaluate(
+        (element, where) => {
+            const columns = (
+                element.getAttribute("data-column-widths") ?? ""
+            ).split(",").length;
+            const cells = Array.from(
+                element.querySelectorAll(":scope > .bloom-cell"),
+            );
+            const cellElement = cells[where.row * columns + where.column];
+            if (!cellElement)
+                throw new Error(
+                    `The table has ${cells.length} cells in ${columns} columns, so there is ` +
+                        `no cell at row ${where.row}, column ${where.column}.`,
+                );
+            return Array.from(cellElement.querySelectorAll(".bloom-editable"))
+                .filter((box) => {
+                    const rect = box.getBoundingClientRect();
+                    return (
+                        (box as HTMLElement).checkVisibility({
+                            visibilityProperty: true,
+                        }) &&
+                        rect.width > 0 &&
+                        rect.height > 0
+                    );
+                })
+                .map((box) => box.getAttribute("lang") ?? "");
+        },
+        { row, column },
+    );
 }
