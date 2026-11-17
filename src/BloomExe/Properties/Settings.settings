@@ -71,6 +71,9 @@
     <Setting Name="ImageSearchLanguage" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="ImageGallerySource" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
     <Setting Name="PageZoom" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)">1.0</Value>
     </Setting>

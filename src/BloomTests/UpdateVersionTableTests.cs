@@ -187,14 +187,18 @@ namespace BloomTests
             t.URLOfTableFormat = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
             t.RunningVersion = Version.Parse("3.7.2000"); // Pre-3.7 versions no longer supported
             //the full result will be something like
-            //"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
-            //this just checks the part that is less likely to break (independent of channel)
+            //"https://bloomlibrary.org/deltasAlpha" (served through Cloudflare, which caches the packages).
+            //Some channels' tables may still point straight at S3
+            //("https://s3.amazonaws.com/bloomlibrary.org/deltas..."), so accept either.
+            //This just checks the part that is less likely to break (independent of channel).
+            var url = t.LookupURLOfUpdate().URL;
             Assert.That(
-                t.LookupURLOfUpdate()
-                    .URL.StartsWith(
+                url.StartsWith("https://bloomlibrary.org/deltas", StringComparison.Ordinal)
+                    || url.StartsWith(
                         "https://s3.amazonaws.com/bloomlibrary.org/deltas",
                         StringComparison.Ordinal
-                    )
+                    ),
+                "Unexpected update URL: " + url
             );
         }
 
@@ -209,7 +213,7 @@ namespace BloomTests
             t.URLOfTableFormat = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
             t.RunningVersion = Version.Parse("2.0.2000");
             //the full result would normally be something like
-            //"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
+            //"https://bloomlibrary.org/deltasAlpha"
             //check that feeding this a normal WebClient doesn't find an error.
             var client = new BloomWebClient();
             TableLookupResult dummy;
@@ -223,7 +227,7 @@ namespace BloomTests
             t.URLOfTableFormat = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
             t.RunningVersion = Version.Parse("2.0.2000");
             //the full result would normally be something like
-            //"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
+            //"https://bloomlibrary.org/deltasAlpha"
             //check that feeding this a mock WebClient that simulates a captive portal doesn't crash
             var mockClient = GetMockWebClient();
             TableLookupResult errorResult = null;

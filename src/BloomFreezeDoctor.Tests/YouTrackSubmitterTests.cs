@@ -80,4 +80,93 @@ public class YouTrackSubmitterTests
             "and it should tell the reader to ask sooner rather than later"
         );
     }
+
+    private static QueuedBundle CommentBundle(
+        string[] artifacts,
+        string? commentOnFingerprint = null
+    )
+    {
+        var bundle = Bundle(new DateTimeOffset(2026, 11, 8, 21, 9, 34, TimeSpan.Zero));
+        return bundle with
+        {
+            Metadata = bundle.Metadata with
+            {
+                Summary = "UI froze, then the process died",
+                Artifacts = artifacts,
+                CommentOnFingerprint = commentOnFingerprint,
+            },
+        };
+    }
+
+    [Test]
+    public void BuildRecurrenceComment_BundleHasNoDump_SaysSo()
+    {
+        // BL-17092: the comment said "The full report, with the crash dump and Bloom's log, is on that
+        // machine" about a report that had no dump, and sent people looking for one.
+        var bundle = CommentBundle(new[] { "bloom-log.txt" });
+        Assert.That(bundle.Metadata.Artifacts, Has.None.EndsWith(".dmp"), "sanity check");
+
+        var text = YouTrackSubmitter.BuildRecurrenceComment(bundle, contributingADump: false);
+
+        Assert.That(text, Does.Contain("No crash dump was taken for this report"));
+        Assert.That(text, Does.Not.Contain("with the crash dump"));
+        Assert.That(text, Does.Not.Contain("with its crash dump"));
+    }
+
+    [Test]
+    public void BuildRecurrenceComment_BundleHasADumpNotAttached_SaysItIsInTheFolder()
+    {
+        var bundle = CommentBundle(new[] { "bloom-log.txt", "bloom-26400.dmp" });
+
+        var text = YouTrackSubmitter.BuildRecurrenceComment(bundle, contributingADump: false);
+
+        Assert.That(text, Does.Contain("with its crash dump"));
+        Assert.That(text, Does.Contain(bundle.Directory));
+        Assert.That(text, Does.Not.Contain("No crash dump"));
+    }
+
+    [Test]
+    public void BuildRecurrenceComment_ContributingADump_SaysItIsAttached()
+    {
+        var bundle = CommentBundle(new[] { "bloom-26400.dmp" });
+
+        var text = YouTrackSubmitter.BuildRecurrenceComment(bundle, contributingADump: true);
+
+        Assert.That(text, Does.Contain("The crash dump from this report is attached"));
+        Assert.That(text, Does.Not.Contain("No crash dump"));
+    }
+
+    [Test]
+    public void BuildRecurrenceComment_TrueRecurrence_SaysItHappenedAgain()
+    {
+        // The comment-on field is also set, to the bundle's own fingerprint, for a recurrence that missed
+        // being merged; that is still a recurrence.
+        var bundle = CommentBundle(new[] { "bloom-log.txt" }, commentOnFingerprint: "abc");
+        Assert.That(bundle.Metadata.Fingerprint, Is.EqualTo("abc"), "sanity check");
+
+        var text = YouTrackSubmitter.BuildRecurrenceComment(bundle, contributingADump: false);
+
+        Assert.That(text, Does.Contain("This happened again"));
+        Assert.That(text, Does.Contain("near enough a copy of the report already on this card"));
+    }
+
+    [Test]
+    public void BuildRecurrenceComment_SameBloomsFollowOn_DoesNotSayItHappenedAgain()
+    {
+        // BL-17092: the second half of one freeze (it froze, then it died) could not be folded into the
+        // first report, and was posted as "This happened again" about the very same process.
+        var bundle = CommentBundle(new[] { "bloom-log.txt" }, commentOnFingerprint: "def");
+        Assert.That(bundle.Metadata.Fingerprint, Is.Not.EqualTo("def"), "sanity check");
+
+        var text = YouTrackSubmitter.BuildRecurrenceComment(bundle, contributingADump: false);
+
+        Assert.That(text, Does.Not.Contain("happened again"));
+        Assert.That(text, Does.Contain("The same Bloom then had a further problem"));
+        Assert.That(text, Does.Contain("UI froze, then the process died"));
+        Assert.That(
+            text,
+            Does.Not.Contain("near enough a copy"),
+            "a follow-on is new information, not a copy of what the card says"
+        );
+    }
 }

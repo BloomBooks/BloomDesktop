@@ -4355,7 +4355,28 @@ namespace Bloom.Book
             // The main condition for being able to just write the page is that no shareable data on the
             // page changed during editing. If that's so we can skip this step.
             if (needToDoFullSave)
+            {
                 _bookData.SuckInDataFromEditedDom(editedPageDom, BookInfo); //this will do an updatetitle
+                // An emptied field for the sentence about the original book hands it back to
+                // Bloom. Harvesting the page does not always see that: a paragraph that kept its
+                // formatting, such as centering, counts as a value even with no text in it.
+                if (
+                    BookCopyrightAndLicense.UserEmptiedOriginalCopyrightNotice(editedPageDom.RawDom)
+                )
+                    _bookData.RemoveAllForms(
+                        BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense
+                    );
+                // Whatever the user did to the sentence about the original book, the book's copy
+                // of the page shows it locked, worked out from the data div just as the full
+                // update does: their wording if they kept some, Bloom's own sentence in place of
+                // the empty field if they emptied it.
+                BookCopyrightAndLicense.ShowOriginalCopyrightNoticeLocked(
+                    pageToSaveToDisk,
+                    OurHtmlDom,
+                    _bookData,
+                    BookInfo.MetaData.UseOriginalCopyright
+                );
+            }
 
             // When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
             // Here we copy that over to the book DOM.
@@ -4889,7 +4910,7 @@ namespace Bloom.Book
         /// <summary>
         /// True for the landscape sizes whose booklets are printed two pages to a portrait sheet
         /// (A5 on A4, HalfLetter on Letter), then cut horizontally and stacked rather than folded.
-        /// The print instructions on the Publish tab (PublishPdfApi.HandlePrintSettingsHelp) rely
+        /// The print instructions on the Publish tab (PublishPdfApi.GetPrintSettingsHelp) rely
         /// on this too, so the layout we make and the instructions we give always agree (BL-16759).
         /// </summary>
         public static bool UsesCutAndStackBooklet(SizeAndOrientation sizeAndOrientation)
@@ -5366,6 +5387,19 @@ namespace Bloom.Book
             return RetryUtility.Retry(() => MakeVersionCodeInternal(fileContent, filePath));
         }
 
+        /// <summary>
+        /// Whether the file named <paramref name="fileName"/>, in a collection's folder (not a
+        /// book's), can change how the collection's books come out: the collection settings and
+        /// the collection's custom styles. <see cref="MakeVersionCode"/> includes these in a
+        /// book's version code, and anything that checks for changes more cheaply must watch the
+        /// same files (e.g. Publish.BloomPub.BloomPubCache).
+        /// </summary>
+        public static bool IsCollectionFileThatAffectsBooks(string fileName)
+        {
+            return fileName == "customCollectionStyles.css"
+                || fileName.EndsWith(CollectionSettings.kFileExtension, StringComparison.Ordinal);
+        }
+
         private static string MakeVersionCodeInternal(string fileContent, string filePath = null)
         {
             //var debugBldr = new StringBuilder();
@@ -5458,14 +5492,7 @@ namespace Bloom.Book
                             .OrderBy(x => x)
                     )
                     {
-                        var name = Path.GetFileName(path);
-                        if (
-                            name == "customCollectionStyles.css"
-                            || name.EndsWith(
-                                CollectionSettings.kFileExtension,
-                                StringComparison.Ordinal
-                            )
-                        )
+                        if (IsCollectionFileThatAffectsBooks(Path.GetFileName(path)))
                         {
                             //AppendDebugInfo(debugBldr, path);
                             byte[] buffer = RobustFile.ReadAllBytes(path);

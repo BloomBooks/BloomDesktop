@@ -78,6 +78,53 @@ namespace Bloom.Publish.BloomPub
             );
         }
 
+        /// <summary>
+        /// Make sure <paramref name="bloomPubPath"/> holds a BloomPUB of <paramref name="book"/>
+        /// as it is now, made with <paramref name="settings"/> by <paramref name="creator"/>:
+        /// reuse the one already there if it still matches (see <see cref="BloomPubCache"/>),
+        /// otherwise make it again and record what it was made from. Normally the path is in
+        /// <see cref="BloomPubCache.GetCacheFolder"/>. <paramref name="bookTitle"/> is only for
+        /// the progress messages. Returns true if the existing BloomPUB was reused.
+        /// </summary>
+        public static bool GetOrCreateCachedBloomPub(
+            BloomPubPublishSettings settings,
+            string bloomPubPath,
+            Book.Book book,
+            BookServer bookServer,
+            IWebSocketProgress progress,
+            string bookTitle,
+            string creator = kCreatorBloom
+        )
+        {
+            var settingsKey = BloomPubCache.MakeSettingsKey(
+                settings,
+                creator,
+                book.CollectionSettings.Subscription
+            );
+            if (BloomPubCache.IsCurrent(bloomPubPath, book.FolderPath, settingsKey))
+            {
+                progress.MessageWithoutLocalizing($"Reusing existing BloomPUB for {bookTitle}...");
+                return true;
+            }
+
+            progress.MessageWithoutLocalizing($"Creating BloomPUB for {bookTitle}...");
+            BloomPubCache.Delete(bloomPubPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(bloomPubPath));
+            // Taken before making the BloomPUB, so that an edit made meanwhile counts as a change.
+            var snapshot = BloomPubCache.TakeSnapshot(book.FolderPath);
+            CreateBloomPub(
+                settings,
+                bloomPubPath,
+                book.FolderPath,
+                bookServer,
+                progress,
+                book.IsTemplateBook,
+                creator: creator
+            );
+            BloomPubCache.RecordNewBloomPub(bloomPubPath, snapshot, settingsKey);
+            return false;
+        }
+
         // Create a BloomReader book while also creating a staging folder of its own for it and disposing of it
         public static void CreateBloomPub(
             BloomPubPublishSettings settings,

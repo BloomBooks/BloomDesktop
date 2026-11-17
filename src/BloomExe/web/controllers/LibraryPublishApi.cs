@@ -429,6 +429,13 @@ namespace Bloom.web.controllers
                     index
                 );
             }
+            catch (SessionRejectedException e)
+            {
+                // The server refused the saved sign-in; the client has signed the user out.
+                _webSocketProgress.MessageWithoutLocalizing(e.Message, ProgressKind.Error);
+                request.ReplyWithJson(CollisionDialogInfoForErrorCondition);
+                return;
+            }
             catch
             {
                 // This should be pretty rare. We can't get this far unless we already verified the user is logged in.

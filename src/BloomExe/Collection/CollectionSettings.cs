@@ -597,7 +597,7 @@ namespace Bloom.Collection
             //    should not be flipped when L1 is right-to-left;
             //  - no line-height (-1 suppresses it), for the reason given above about basePage.css.
             // It must stay L1's font rather than becoming its own setting: GetUsedFontsCommand finds
-            // fonts through DefaultLangStylesCssRegex, whose language group is [-a-zA-Z]* and so never
+            // fonts through DefaultLangStylesCssRegex, whose language group is [-a-zA-Z0-9]* and so never
             // matches "*". A font used ONLY here would be invisible to that scan and could go
             // unembedded by the harvester. Sharing L1's font means it is always already reported.
             // Scoped to content pages on purpose. Xmatter must NOT be caught by this: XMatterHelper

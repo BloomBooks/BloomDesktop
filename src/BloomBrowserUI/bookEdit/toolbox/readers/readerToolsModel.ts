@@ -126,6 +126,10 @@ export class ReaderToolsModel {
     // which is the coupling BL-16608 set out to remove. Reported by Greptile on PR #8447.
     private stageAwaitingSynphony: IPhaseRequest | undefined;
     private levelAwaitingSynphony: IPhaseRequest | undefined;
+    // How many restores (each reader tool's beginRestoreSettings) have started and not yet
+    // finished. More than one can be running: a new page starts another while the last still
+    // waits. See isRestoringPhase().
+    private restoresInProgress = 0;
     public synphony: ReadersSynphonyWrapper | undefined; // to ensure detection of async issues, don't init until we load its settings
     public sort: string = SortType.alphabetic;
     public currentMarkupType: number = MarkupType.None;
@@ -185,6 +189,7 @@ export class ReaderToolsModel {
         this.hasBeenGivenAPhase = false;
         this.stageAwaitingSynphony = undefined;
         this.levelAwaitingSynphony = undefined;
+        this.restoresInProgress = 0;
         this.sort = SortType.alphabetic;
         this.currentMarkupType = MarkupType.None;
         this.allWords = {};
@@ -209,6 +214,34 @@ export class ReaderToolsModel {
     }
     public setCkEditorLoaded(): void {
         this.ckEditorLoaded = true;
+    }
+
+    /**
+     * Run a reader tool's restore of the book's stage or level, with the arrow buttons
+     * disabled until it finishes (isRestoringPhase()).
+     *
+     * A restore can wait a second or more on a busy machine, for the reader settings and, in
+     * a book with nothing saved, for Bloom to say what the default is. It then applies what
+     * it found, and for a new book saves it, both in the book and as the default for new
+     * books. A stage or level chosen with the arrows during the wait would be undone by that
+     * (BL-17099), so the arrows stay disabled until the restore is done.
+     */
+    public async whileRestoringPhase(
+        restore: () => Promise<void>,
+    ): Promise<void> {
+        this.restoresInProgress++;
+        this.refreshControls();
+        try {
+            await restore();
+        } finally {
+            this.restoresInProgress--;
+            this.refreshControls();
+        }
+    }
+
+    /** True while a restore is running (see whileRestoringPhase()); the arrows are disabled. */
+    public isRestoringPhase(): boolean {
+        return this.restoresInProgress > 0;
     }
 
     public incrementStage(): void {
@@ -385,6 +418,11 @@ export class ReaderToolsModel {
     public updateControlContents(): void {
         this.updateStageNumberIfNeeded(); // May change the stage number
         this.updateLevelNumberIfNeeded(); // May change the level number
+        this.refreshControls();
+    }
+
+    /** Re-render whichever reader tool controls are showing. */
+    private refreshControls(): void {
         if (this.refreshFuncLeveled !== undefined) {
             this.refreshFuncLeveled();
         }

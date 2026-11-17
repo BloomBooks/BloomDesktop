@@ -9,7 +9,7 @@
 # Each suite publishes its own check run / job-summary section, so the commit shows five
 # independent results rather than one merged total. See the "Test reports" steps at the end.
 #
-# Every night is then reported to Zulip and Slack -- pass or fail, all in one topic -- with each
+# Every night is then reported to Slack -- pass or fail, all in one channel -- with each
 # suite's counts and how long it took. See "The nightly report" at the end.
 #
 # Schedule: 04:00 UTC daily. GitHub cron is always UTC (== GMT, no DST), so this is a
@@ -69,8 +69,8 @@ on:
                 description: "Visual regression tests -- book page layout (~3 min)"
                 type: boolean
                 default: true
-            post_to_zulip:
-                description: "Post report to Zulip and Slack"
+            post_report:
+                description: "Post report to Slack"
                 type: boolean
                 default: false
 
@@ -127,6 +127,30 @@ jobs:
               working-directory: src/BloomBrowserUI
               run: pnpm run build-prod
 
+            # Now and then the vitest process dies of a native access violation (exit code
+            # 3221225477) part way through, with no failing test and nothing in the log to say
+            # where (BL-17117). Windows Error Reporting writes a minidump of any node.exe that
+            # crashes while this key exists; the stack in it is what we need to find the cause.
+            #
+            # A dump holds the crashed process's memory, environment included, and artifacts of
+            # this public repo can be downloaded by anyone. So dumps are on ONLY around the
+            # vitest step, which is given no secrets: the step right after it turns them off before
+            # any step that does get one (the e2e tests have a password in their environment). The
+            # setting is machine-wide, which is why it must not outlive that one step. DumpType 1
+            # is a minidump, not the whole heap, but it still holds stacks, module data and
+            # probably the environment, so what keeps it safe is that the step has no secrets.
+            - name: Turn on crash dumps for the browser UI tests
+              id: crash_dumps_on
+              if: ${{ success() && env.RUN_FRONTEND_TESTS == 'true' }}
+              run: |
+                  $dumpFolder = Join-Path $env:GITHUB_WORKSPACE "output\vitest-crash-dumps"
+                  New-Item -ItemType Directory -Force -Path $dumpFolder | Out-Null
+                  $key = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\node.exe"
+                  New-Item -Force -Path $key | Out-Null
+                  New-ItemProperty -Path $key -Name DumpFolder -PropertyType ExpandString -Value $dumpFolder -Force | Out-Null
+                  New-ItemProperty -Path $key -Name DumpType -PropertyType DWord -Value 1 -Force | Out-Null
+                  New-ItemProperty -Path $key -Name DumpCount -PropertyType DWord -Value 3 -Force | Out-Null
+
             # The junit file feeds this suite's "Publish ..." step at the end of the job.
             #
             # Two easy ways to get a silently-empty report here, both of which we have hit:
@@ -151,6 +175,29 @@ jobs:
               if: ${{ success() && env.RUN_FRONTEND_TESTS == 'true' }}
               working-directory: src/BloomBrowserUI
               run: pnpm run test:ci --reporter=default --reporter=junit --outputFile=../../output/Tests/vitest-junit.xml
+
+            # always(), so that dumps are off before any later step even when the tests failed or
+            # the run is being cancelled.
+            - name: Turn off crash dumps
+              if: ${{ always() && steps.crash_dumps_on.outcome != 'skipped' }}
+              run: |
+                  $key = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\node.exe"
+                  if (Test-Path $key) { Remove-Item -Recurse -Force -Path $key }
+
+            # Only a crash writes a dump, so a night without one uploads nothing: the step needs
+            # the tests to have failed, and if-no-files-found: ignore covers a failure that was
+            # not a crash. Kept as long as the other diagnostic artifacts below. See the BloomE2E
+            # report upload for why !cancelled() is needed alongside the outcome check.
+            # Keep this step directly after the turn-off step and the only one that uploads this
+            # folder, so it can never carry a dump from a later step that has secrets.
+            - name: Upload browser UI test crash dumps
+              if: ${{ !cancelled() && steps.frontend_tests.outcome == 'failure' }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: vitest-crash-dumps
+                  path: output/vitest-crash-dumps/*.dmp
+                  retention-days: 4
+                  if-no-files-found: ignore
 
             # ----- C# build + tests -----
             # We want the C# suite to run even when the front-end TESTS fail, so a broken
@@ -586,25 +633,18 @@ jobs:
                   retention-days: 14
 
             # ----- The nightly report -----
-            # Post a report of EVERY night to Zulip -- channel "developers", topic "Nightly run" --
-            # rather than speaking up only when something broke. Silence on a good night is
-            # indistinguishable from a nightly that never ran at all, which is the failure that
-            # hides longest; and the timings below are worth watching on a green night too, since
-            # a suite doubling in length is news before it is a failure.
+            # Post a report of EVERY night to Slack's #bloom-team-developers, rather than speaking
+            # up only when something broke. Silence on a good night is indistinguishable from a
+            # nightly that never ran at all, which is the failure that hides longest; and the
+            # timings below are worth watching on a green night too, since a suite doubling in
+            # length is news before it is a failure. Slack's own date dividers separate the nights,
+            # so the report carries no date of its own.
             #
-            # One topic for all of them, so the nights sit together as a single thread you can
-            # follow or mute in one go, and so last night's numbers are one scroll from the night
-            # before's. Zulip's own date dividers separate them, so the report carries no date of
-            # its own.
+            # A night that dies on the job timeout reports nothing: a morning with no message in a
+            # channel that has one every other day.
             #
-            # The cost of that, worth knowing because it undoes half an argument made when this was
-            # designed: a night that dies on the job timeout reports nothing, and with a shared
-            # topic that is a gap in a thread rather than a missing topic in a list. Less visible,
-            # though still a morning with no message in a channel that has one every other day.
-            #
-            # Two steps: compose the message here, hand it to Zulip's own action below. The split is
-            # not decoration -- gathering the outcomes, counts and timings is our logic; talking to
-            # the API is theirs.
+            # Two steps: compose the message here, post it below. Gathering the outcomes, counts
+            # and timings is one job; talking to Slack's API is another.
             #
             # This pair is deliberately the LAST thing in the job, because it reports the job as it
             # stands when it runs. By this point that includes the five publish-test-results steps
@@ -612,24 +652,14 @@ jobs:
             # (action_fail_on_inconclusive). Put this any earlier and that entire class of failure --
             # the one the per-suite reports exist to catch -- would be reported as a good night.
             #
-            # Needs two repository secrets, from a Zulip bot (Zulip settings > Personal settings >
-            # Bots > Add a new bot; "Incoming webhook" is the right type -- it can only send
-            # messages, never read them):
-            #   BLOOM_ZULIP_EMAIL   - the bot's generated email
-            #   BLOOM_ZULIP_API_KEY - that bot's API key
-            #
-            # Scheduled runs always post. A manual run posts only if post_to_zulip is ticked, so
+            # Scheduled runs always post. A manual run posts only if post_report is ticked, so
             # iterating on this workflow cannot fill the channel with noise.
             - name: Compose the nightly report
-              id: zulip_message
+              id: report_message
               # always(), so a failed or cancelled night reports too -- that is the whole point.
-              if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.post_to_zulip) }}
+              if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.post_report) }}
               shell: pwsh
               env:
-                  # Checked here rather than left to the send step, so a missing secret says so in
-                  # plain words instead of surfacing as an API rejection.
-                  BLOOM_ZULIP_EMAIL: ${{ secrets.BLOOM_ZULIP_EMAIL }}
-                  BLOOM_ZULIP_API_KEY: ${{ secrets.BLOOM_ZULIP_API_KEY }}
                   # job.status, not success()/failure(): the status FUNCTIONS are only legal in an
                   # `if`, and using one here fails the whole workflow at parse time. The job context
                   # is legal in a step env and carries the same fact.
@@ -652,10 +682,6 @@ jobs:
                   COMPONENT_TESTS: ${{ steps.component_tests.outcome }}
                   VISUAL_REGRESSION: ${{ steps.visual_regression.outcome }}
               run: |
-                  if (-not $env:BLOOM_ZULIP_EMAIL -or -not $env:BLOOM_ZULIP_API_KEY) {
-                      throw "BLOOM_ZULIP_EMAIL / BLOOM_ZULIP_API_KEY are not set as repository secrets, so the nightly could not be reported."
-                  }
-
                   # ---- timings -------------------------------------------------------------
                   # GitHub does not expose a step's own duration to a later step, but it does
                   # expose every step's start and end through the jobs API, including the steps of
@@ -782,7 +808,7 @@ jobs:
                   }
 
                   # ---- the message ---------------------------------------------------------
-                  # Read at a glance in the Zulip app. An outcome we did not anticipate shows as a
+                  # Read at a glance in the Slack app. An outcome we did not anticipate shows as a
                   # question mark rather than as a blank.
                   $glyphs = @{ success = "✅"; failure = "❌"; skipped = "⏭️"; cancelled = "🚫" }
                   function Format-Outcome([string] $label, [string] $outcome) {
@@ -895,22 +921,11 @@ jobs:
                       $message += "Also: " + ($restTimes -join " · ")
                   }
 
-                  # Quoted deliberately. Zulip turns a bare link into a preview card -- a big
-                  # GitHub icon and the repository blurb, several times the height of the report
-                  # itself -- and there is no per-message way to turn that off. But its markdown
-                  # processor skips links inside a blockquote ("we don't do inline previews for
-                  # links inside blockquotes", zerver/lib/markdown/__init__.py), so quoting the
-                  # line suppresses the card while leaving an ordinary clickable link. The
-                  # alternative is the org-wide "Show previews of linked websites" setting, which
-                  # would change every message everyone posts.
                   $message += ""
-                  $message += "> [The run]($($env:RUN_URL))"
+                  $message += "[The run]($($env:RUN_URL))"
                   $content = $message -join "`n"
 
                   Write-Host $content
-
-                  # A fixed topic, so every night lands in the same thread.
-                  $topic = "Nightly run"
 
                   # Step outputs, so the send step below stays a pure "here is a message, post it".
                   # A multi-line value needs the delimiter form.
@@ -919,43 +934,25 @@ jobs:
                   # only in PowerShell 7 and BOM-ful in 5.1, and a BOM here is silent poison: it
                   # lands in front of the key, so the output becomes "﻿content" and the send
                   # step posts an empty message with no error anywhere.
-                  $block = "content<<ZULIP_MESSAGE_EOF`n$content`nZULIP_MESSAGE_EOF`ntopic=$topic`n"
+                  $block = "content<<REPORT_MESSAGE_EOF`n$content`nREPORT_MESSAGE_EOF`n"
                   [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, $block, [System.Text.UTF8Encoding]::new($false))
 
-            # Zulip's own documented GitHub Actions integration
-            # (https://zulip.com/integrations/doc/github-actions). Pinned by SHA like every other
-            # action here; that is v2.0.2, which the docs' `@v1` predates -- same inputs, but v1
-            # still runs on node20, which the runners are retiring.
-            #
-            # always() rather than a status check: the composing step above has already decided
-            # whether there is anything to say, so if it was skipped this is skipped with it.
-            # Naming a status here instead would drop the cancelled case.
-            - name: Post the nightly report to Zulip
-              if: ${{ always() && steps.zulip_message.outcome == 'success' }}
-              uses: zulip/github-actions-zulip/send-message@f675f2b4eb2a95fae974215476dcb7ad8dfeff6b # v2.0.2
-              with:
-                  organization-url: https://sil-bloom.zulipchat.com
-                  email: ${{ secrets.BLOOM_ZULIP_EMAIL }}
-                  api-key: ${{ secrets.BLOOM_ZULIP_API_KEY }}
-                  type: stream
-                  to: developers
-                  topic: ${{ steps.zulip_message.outputs.topic }}
-                  content: ${{ steps.zulip_message.outputs.content }}
-
-            # The same report, to Slack's #bloom-team-developers, while the team moves from Zulip
-            # to Slack. Slack's `markdown` block renders the report's Markdown (bold, the list, the
-            # quoted link) as written; `text` is what a notification shows. Link previews are off
-            # for the same reason the report quotes its link for Zulip.
+            # Slack's `markdown` block renders the report's Markdown (bold, the list, the link) as
+            # written; `text` is what a notification shows. Link previews are off: a preview card of
+            # the run would be several times the height of the report itself.
             #
             # Needs the repository secret BLOOM_SLACK_BOT_TOKEN, the Bot User OAuth Token (xoxb-) of
             # the "Bloom bot" Slack app, which must be a member of the channel. The channel is
             # private, so it is named by id.
             - name: Post the nightly report to Slack
-              if: ${{ always() && steps.zulip_message.outcome == 'success' }}
+              # always() rather than a status check: the composing step above has already decided
+              # whether there is anything to say, so if it was skipped this is skipped with it.
+              # Naming a status here instead would drop the cancelled case.
+              if: ${{ always() && steps.report_message.outcome == 'success' }}
               shell: pwsh
               env:
                   BLOOM_SLACK_BOT_TOKEN: ${{ secrets.BLOOM_SLACK_BOT_TOKEN }}
-                  CONTENT: ${{ steps.zulip_message.outputs.content }}
+                  CONTENT: ${{ steps.report_message.outputs.content }}
               run: |
                   if (-not $env:BLOOM_SLACK_BOT_TOKEN) {
                       throw "BLOOM_SLACK_BOT_TOKEN is not set as a repository secret, so the nightly could not be reported to Slack."

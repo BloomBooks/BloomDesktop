@@ -106,6 +106,28 @@ namespace Bloom.Utils
         }
 
         /// <summary>
+        /// Whether AddDirectory leaves this file out: hidden and system files (BL-12680).
+        /// </summary>
+        public static bool IsFileLeftOut(string path)
+        {
+            return RobustZip.ShouldFileBeIgnored(path);
+        }
+
+        /// <summary>
+        /// Whether AddDirectory leaves this folder out. That is the AI Image Editor's per-book working
+        /// folder: its state/history is regenerable working data that must not ship inside
+        /// team-collection books, .bloomSource backups, or other archives of a book folder.
+        /// Deliberately narrow — a blanket "skip all dot-folders" rule here would silently change
+        /// what every archive producer includes (e.g. user-supplied widget folders can legitimately
+        /// contain dot-folders like .well-known).
+        /// </summary>
+        public static bool IsFolderLeftOut(string folderPath)
+        {
+            return Path.GetFileName(folderPath)
+                .Equals(".ai-image-editor", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Add everything in directoryPath, including subfolders recursively, to the zip.
         /// The names of the zip entries are made by removing dirNameOffset chars from the start
         /// of the full path to the file. See the other overload for a fuller explanation.
@@ -134,8 +156,8 @@ namespace Bloom.Utils
             {
                 foreach (var path in files)
                 {
-                    if (RobustZip.ShouldFileBeIgnored(path))
-                        continue; //don't add hidden files (BL-12680)
+                    if (IsFileLeftOut(path))
+                        continue;
                     currentFilename = path;
                     var entryName = path.Substring(dirNameOffest);
                     string zipEntryName = ZipEntry.CleanName(entryName);
@@ -160,13 +182,7 @@ namespace Bloom.Utils
                     if (dirName == null)
                         continue; // Don't want to bundle these up
 
-                    // Skip the AI Image Editor's per-book working folder: its state/history
-                    // is regenerable working data that must not ship inside team-collection
-                    // books, .bloomSource backups, or other archives of a book folder.
-                    // Deliberately narrow — a blanket "skip all dot-folders" rule here would
-                    // silently change what every archive producer includes (e.g. user-supplied
-                    // widget folders can legitimately contain dot-folders like .well-known).
-                    if (dirName.Equals(".ai-image-editor", StringComparison.OrdinalIgnoreCase))
+                    if (IsFolderLeftOut(folder))
                         continue;
 
                     count += AddDirectory(folder, dirNameOffest, extensionsToExclude, justCount);

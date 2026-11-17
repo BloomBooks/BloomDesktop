@@ -327,6 +327,10 @@ namespace Bloom.web
                 },
                 { "appBundle", "/app/App.entry.tsx" },
                 { "collectionChooserBundle", "/collection/CollectionChooserDialog.entry.tsx" },
+                {
+                    "printInstructionsBundle",
+                    "/publish/PDFPrintPublish/PrintInstructionsWindow.entry.tsx"
+                },
             };
             string viteModulePath = null;
             var useViteDev = ShouldUseViteDev(() =>

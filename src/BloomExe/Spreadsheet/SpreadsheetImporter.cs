@@ -146,13 +146,15 @@ namespace Bloom.Spreadsheet
                         return true;
                     if (!Validate(sheet, progress))
                         return true; // errors already reported to progress
-                    progress.MessageWithoutLocalizing($"Making a backup of the original book...");
-                    var backupPath = BookStorage.SaveCopyBeforeImportOverwrite(_pathToBookFolder);
-                    progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
-                    var audioFolder = Path.Combine(_pathToBookFolder, "audio");
-                    if (Directory.Exists(audioFolder))
-                        SIL.IO.RobustIO.DeleteDirectoryAndContents(audioFolder);
-                    await ImportAsync(sheet, progress);
+                    if (
+                        !await ImportWithBackupAsync(
+                            _pathToBookFolder,
+                            progress,
+                            () => ImportAsync(sheet, progress),
+                            () => HasStartedSaving
+                        )
+                    )
+                        return true; // the refusal is already reported to progress
                     BookHistory.AddEvent(
                         _book,
                         BookHistoryEventType.ImportSpreadsheet,
@@ -167,6 +169,82 @@ namespace Bloom.Spreadsheet
                 doWhenDialogCloses: doWhenProgressCloses
             );
         }
+
+        /// <summary>
+        /// How a spreadsheet import runs: save a backup copy of the book, delete its audio folder (the
+        /// spreadsheet supplies all the recordings the book will have), then run
+        /// the import. If the import throws before it starts saving the book, put the whole book folder
+        /// back as it was from the backup before letting the exception go on, undoing whatever the
+        /// import had already done to it (deleted recordings, copied pictures and so on). Once saving
+        /// has started, the save may have renamed the book's folder, so restoring into the old path
+        /// could leave two copies of the book; then nothing is restored and the user is told where the
+        /// backup is.
+        /// A book whose main file is read-only has been protected from changes on purpose, so it is
+        /// left completely alone and the user is told why.
+        /// </summary>
+        /// <param name="hasStartedSaving">whether the import has begun saving the book</param>
+        /// <returns>false if the import was refused because the book is read-only</returns>
+        public static async Task<bool> ImportWithBackupAsync(
+            string bookFolderPath,
+            IWebSocketProgress progress,
+            Func<Task> import,
+            Func<bool> hasStartedSaving
+        )
+        {
+            var bookHtmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
+            if (RobustFile.GetAttributes(bookHtmlPath).HasFlag(FileAttributes.ReadOnly))
+            {
+                progress.MessageWithoutLocalizing(
+                    $"The book's file {bookHtmlPath} is read-only, so Bloom did not import into it.",
+                    ProgressKind.Error
+                );
+                return false;
+            }
+            progress.MessageWithoutLocalizing($"Making a backup of the original book...");
+            var backupPath = BookStorage.SaveCopyBeforeImportOverwrite(bookFolderPath);
+            progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
+            var audioFolder = Path.Combine(bookFolderPath, "audio");
+            if (Directory.Exists(audioFolder))
+                RobustIO.DeleteDirectoryAndContents(audioFolder);
+            try
+            {
+                await import();
+            }
+            catch (Exception)
+            {
+                if (hasStartedSaving())
+                {
+                    progress.MessageWithoutLocalizing(
+                        $"The import failed while saving the book. The original book is in the backup at {backupPath}.",
+                        ProgressKind.Error
+                    );
+                    throw;
+                }
+                try
+                {
+                    BookStorage.RestoreFromPreImportBackup(bookFolderPath, backupPath);
+                    progress.MessageWithoutLocalizing(
+                        "The import failed, so the book was put back as it was."
+                    );
+                }
+                catch (Exception restoreError)
+                {
+                    // Report this, but let the import's own exception, the real problem, go on.
+                    progress.MessageWithoutLocalizing(
+                        $"The import failed, and the book could not be put back as it was ({restoreError.Message}). The original book is in the backup at {backupPath}.",
+                        ProgressKind.Error
+                    );
+                }
+                throw;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Set just before the import saves the book, so ImportWithBackupAsync knows not to restore
+        /// the book if something fails after that.
+        /// </summary>
+        public bool HasStartedSaving { get; private set; }
 
         private Browser _browser;
 
@@ -210,12 +288,10 @@ namespace Bloom.Spreadsheet
                 //
                 // This browser is created on whatever thread we are on, and is then used across the
                 // awaits below, so that thread has to be an STA thread with a message loop or WebView2
-                // cannot initialize at all. Two arrangements provide that, and there is no third caller:
-                // in the app, ControlForInvoke is set and the block above put us on the UI thread; in the
-                // console `spreadsheetImport` verb, ControlForInvoke is null but the command runs on the
-                // STA main thread inside Program.RunConsoleCommandLoop's message loop, and its awaits
-                // resume there. Before that loop existed, console import was exposed to exactly the
-                // failure bulk upload hit in BL-16767. See ConsoleCommandLoopTests. (BL-16773)
+                // cannot initialize at all. In the app, ControlForInvoke is set and the block above put
+                // us on the UI thread. (The commented-out console `spreadsheetImport` verb had no
+                // ControlForInvoke and relied instead on Program.RunConsoleCommandLoop's STA message
+                // loop; see SpreadsheetImportCommand.cs and ConsoleCommandLoopTests. BL-16773)
 #if __MonoCS__
                 _browser = new GeckoFxBrowser();
 #else
@@ -234,11 +310,26 @@ namespace Bloom.Spreadsheet
                 // The ToLocalHost() seems to be necessary to prevent CORS errors loading the
                 // javascript. This somehow was not an issue with the webpack build but is
                 // with Vite.
-                _browser.Navigate(rootPage.ToLocalhost(), false);
-                await signal.WaitAsync(); // Following code happens after browser has navigated
+                var url = rootPage.ToLocalhost();
+                // If the page fails to load (for example, because no local server is listening),
+                // give up with a clear error rather than wait forever. One deadline covers both
+                // the navigation and the bundle appearing.
+                const int timeLimitMs = 20000;
+                var timer = Stopwatch.StartNew();
+                var pageNotLoaded = new ApplicationException(
+                    $"The page spreadsheet import needs for processing audio ({url}) did not load."
+                );
+                _browser.Navigate(url, false);
+                // Following code happens after browser has navigated
+                if (!await signal.WaitAsync(timeLimitMs))
+                    throw pageNotLoaded;
                 // This extra check that spreadsheetBundle actually exists might not be necessary.
                 while (await _browser.GetStringFromJavascriptAsync($"spreadsheetBundle") == null)
+                {
+                    if (timer.ElapsedMilliseconds > timeLimitMs)
+                        throw pageNotLoaded;
                     await Task.Delay(10);
+                }
             }
             return _browser;
         }
@@ -280,6 +371,40 @@ namespace Bloom.Spreadsheet
         public async Task<List<string>> ImportAsync(
             InternalSpreadsheet sheet,
             IWebSocketProgress progress = null
+        )
+        {
+            try
+            {
+                return await ImportContentAsync(sheet, progress);
+            }
+            finally
+            {
+                // Whether or not the import succeeded, don't leave a browser running.
+                DisposeBrowser();
+            }
+        }
+
+        /// <summary>
+        /// Dispose the browser GetBrowserAsync made, if any, on the thread it belongs to.
+        /// </summary>
+        private void DisposeBrowser()
+        {
+            if (_browser == null)
+                return;
+            Action disposeBrowser = () =>
+            {
+                _browser.Dispose();
+                _browser = null;
+            };
+            if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
+                ControlForInvoke.Invoke(disposeBrowser);
+            else
+                disposeBrowser();
+        }
+
+        private async Task<List<string>> ImportContentAsync(
+            InternalSpreadsheet sheet,
+            IWebSocketProgress progress
         )
         {
             _sheet = sheet;
@@ -427,21 +552,10 @@ namespace Bloom.Spreadsheet
                 ImportLanguageNames();
                 // The import changed the data div behind the book's back (BL-17070).
                 _book.RereadDataFromDom();
+                HasStartedSaving = true; // BringBookUpToDate saves the book
                 _book.BringBookUpToDate(new NullProgress());
             }
 
-            if (_browser != null)
-            {
-                Action disposeBrowser = () =>
-                {
-                    _browser.Dispose();
-                    _browser = null;
-                };
-                if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
-                    ControlForInvoke.Invoke(disposeBrowser);
-                else
-                    disposeBrowser();
-            }
             Progress("Done");
             return _warnings;
         }

@@ -36,9 +36,13 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     // this function restores the level that was last saved,
     // as well as the data for that stage, so that the tool
     // doesn't restart at level 1 all the time
-    public async beginRestoreSettings(
-        settings: IToolboxSettings,
-    ): Promise<void> {
+    public beginRestoreSettings(settings: IToolboxSettings): Promise<void> {
+        return getTheOneReaderToolsModel().whileRestoringPhase(() =>
+            this.restoreSettings(settings),
+        );
+    }
+
+    private async restoreSettings(settings: IToolboxSettings): Promise<void> {
         // This restore supersedes any level still waiting for the settings; see
         // forgetLevelAwaitingSynphony().
         getTheOneReaderToolsModel().forgetLevelAwaitingSynphony();

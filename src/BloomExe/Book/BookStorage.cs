@@ -1497,20 +1497,7 @@ namespace Bloom.Book
             //Delete any files still in the list
             foreach (var fileName in audioFilesToDeleteIfNotUsed)
             {
-                var path = Path.Combine(audioFolderPath, fileName);
-                try
-                {
-                    Debug.WriteLine("Removed unused audio file: " + path);
-                    Logger.WriteEvent("Removed unused audio file: " + path);
-                    RobustFile.Delete(path);
-                }
-                catch (Exception ex) when (ex is IOException || ex is SecurityException)
-                {
-                    // It's not worth bothering the user about, we'll get it someday.
-                    // We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
-                    Debug.WriteLine("Could not remove unused audio file: " + path);
-                    Logger.WriteEvent("Could not remove unused audio file: " + path);
-                }
+                TryDeleteUnusedFile(Path.Combine(audioFolderPath, fileName), "audio");
             }
         }
 
@@ -1678,20 +1665,28 @@ namespace Bloom.Book
             //Delete any files still in the list
             foreach (var fileName in videoFilesToDeleteIfNotUsed)
             {
-                var path = Path.Combine(videoFolderPath, fileName);
-                try
-                {
-                    Debug.WriteLine("Removed unused video file: " + path);
-                    Logger.WriteEvent("Removed unused video file: " + path);
-                    RobustFile.Delete(path);
-                }
-                catch (Exception ex) when (ex is IOException || ex is SecurityException)
-                {
-                    // It's not worth bothering the user about, we'll get it someday.
-                    // We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
-                    Debug.WriteLine("Could not remove unused video file: " + path);
-                    Logger.WriteEvent("Could not remove unused video file: " + path);
-                }
+                TryDeleteUnusedFile(Path.Combine(videoFolderPath, fileName), "video");
+            }
+        }
+
+        /// <summary>
+        /// Delete a file the book no longer uses. If Windows refuses (antivirus folder protection
+        /// often does), log it and go on: it's not worth bothering the user about, and a later
+        /// cleanup will try again. kind names the sort of file for the log.
+        /// </summary>
+        private static void TryDeleteUnusedFile(string path, string kind)
+        {
+            try
+            {
+                RobustFile.Delete(path);
+                Debug.WriteLine($"Removed unused {kind} file: {path}");
+                Logger.WriteEvent($"Removed unused {kind} file: {path}");
+            }
+            catch (Exception ex) when (FileAccessDiagnostics.IsRefusal(ex))
+            {
+                // We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
+                Debug.WriteLine($"Could not remove unused {kind} file: {path}");
+                Logger.WriteEvent($"Could not remove unused {kind} file: {path}: {ex.Message}");
             }
         }
 
@@ -3652,10 +3647,6 @@ namespace Bloom.Book
                 "Errors.CannotUpdateFile",
                 "There was a problem updating a support file"
             );
-            var howToTroubleshoot = LocalizationManager.GetString(
-                "Errors.CannotUpdateTroubleshoot",
-                "How to troubleshoot file updating errors"
-            );
 
             var longerMsgTemplate = LocalizationManager.GetString(
                 "Errors.CannotUpdateFileLonger",
@@ -3664,12 +3655,12 @@ namespace Bloom.Book
             var longerMsg = string.Format(
                 longerMsgTemplate,
                 Path.GetFileName(documentPath),
-                $"<a href='https://docs.bloomlibrary.org/troubleshooting-file-access' target='_blank'>{howToTroubleshoot}</a>"
+                FileAccessDiagnostics.TroubleshootingLinkHtml()
             );
 
             // Something like this was called for in the comment on BL-11863 that led to this,
             // but we finally decided not to.
-            // var avProgs = MiscUtils.InstalledAntivirusProgramNames();
+            // var avProgs = string.Join(", ", FileAccessDiagnostics.GetActiveAntivirusNames());
             //if (!string.IsNullOrEmpty(avProgs))
             //{
             //	var avTemplate = LocalizationManager.GetString("Errors.TryPausingAV",
@@ -4619,6 +4610,82 @@ namespace Bloom.Book
             zipFile.Save();
 
             return destPath;
+        }
+
+        /// <summary>
+        /// Put the book folder back as SaveCopyBeforeImportOverwrite saved it. Each file in the backup
+        /// that is missing or different is written back; one that is still the same is left alone,
+        /// so a file nothing changed keeps its attributes (a read-only thumbnail.png is how a user
+        /// marks a custom thumbnail that Bloom must not regenerate). Then the files such a backup
+        /// would hold that this one doesn't (ones added since it was made) are deleted. Writing first
+        /// means that a failure partway leaves no file missing. What a backup leaves out (hidden and
+        /// system files, the AI Image Editor's folder) is not touched.
+        /// </summary>
+        public static void RestoreFromPreImportBackup(string bookFolder, string backupPath)
+        {
+            var filesNotInBackup = BloomZipFile.GetEntryNamesForDirectory(bookFolder);
+            // Retrying is safe: a second pass skips the files the first one already wrote back.
+            RetryUtility.Retry(() =>
+            {
+                using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(backupPath))
+                {
+                    foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in zipFile)
+                    {
+                        if (!entry.IsFile)
+                            continue;
+                        filesNotInBackup.Remove(entry.Name);
+                        var path = Path.Combine(bookFolder, entry.Name);
+                        if (RobustFile.Exists(path))
+                        {
+                            if (IsSameAsZipEntry(path, entry))
+                                continue;
+                            MakeWritable(path);
+                        }
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                        using (var input = zipFile.GetInputStream(entry))
+                        using (var output = RobustFile.Create(path))
+                            input.CopyTo(output);
+                    }
+                }
+            });
+            foreach (var name in filesNotInBackup)
+            {
+                var path = Path.Combine(bookFolder, name);
+                MakeWritable(path);
+                RobustFile.Delete(path);
+            }
+        }
+
+        /// <summary>
+        /// Whether the file holds exactly what the zip entry does (same length and checksum).
+        /// </summary>
+        private static bool IsSameAsZipEntry(
+            string path,
+            ICSharpCode.SharpZipLib.Zip.ZipEntry entry
+        )
+        {
+            if (new FileInfo(path).Length != entry.Size)
+                return false;
+            var crc = new ICSharpCode.SharpZipLib.Checksum.Crc32();
+            var buffer = new byte[81920];
+            using (var stream = RobustFile.OpenRead(path))
+            {
+                int count;
+                while ((count = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    crc.Update(new ArraySegment<byte>(buffer, 0, count));
+            }
+            return crc.Value == entry.Crc;
+        }
+
+        /// <summary>
+        /// Clear the file's read-only flag so it can be replaced or deleted.
+        /// </summary>
+        private static void MakeWritable(string path)
+        {
+            RobustFile.SetAttributes(
+                path,
+                RobustFile.GetAttributes(path) & ~FileAttributes.ReadOnly
+            );
         }
 
         // These are files that should never be searched for outside of the book folder, should not be cached, etc.

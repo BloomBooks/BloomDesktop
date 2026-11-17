@@ -44,6 +44,9 @@ interface IAppSizeSummary {
     maxBytes: number;
     exceedsMax: boolean;
     segments: IAppSizeSegment[];
+    bookCount: number;
+    // Books whose size is only an estimate, because Bloom has no current BloomPUB for them.
+    estimatedBookCount: number;
 }
 
 function formatSize(bytes: number, useUppercaseUnit = false): string {
@@ -71,6 +74,19 @@ function getBookEstimate(
             (!!selectedBook.folderPath &&
                 book.folderPath === selectedBook.folderPath),
     );
+}
+
+/**
+ * How many of the given books have only an estimated size, i.e. no current BloomPUB to
+ * measure (BL-17062).
+ */
+export function countEstimatedBooks(
+    sizeEstimates: IAppSizeEstimates,
+    books: IAppSizeSelectionBook[],
+): number {
+    return books.filter(
+        (book) => getBookEstimate(sizeEstimates, book)?.isActual !== true,
+    ).length;
 }
 
 function buildSummary(
@@ -149,7 +165,35 @@ function buildSummary(
         maxBytes,
         exceedsMax,
         segments,
+        bookCount: books.length,
+        estimatedBookCount: countEstimatedBooks(sizeEstimates, books),
     };
+}
+
+/** The text a segment's tooltip shows, e.g. "My Book: 3.5 mb (estimate)". */
+function describeSegment(
+    segment: IAppSizeSegment,
+    actualSuffix: string,
+    estimateSuffix: string,
+): string {
+    let suffix = "";
+    if (segment.isActual === true) {
+        suffix = ` ${actualSuffix}`;
+    } else if (segment.isActual === false) {
+        suffix = ` ${estimateSuffix}`;
+    }
+    return `${segment.label}: ${formatSize(segment.sizeBytes)}${suffix}`;
+}
+
+/**
+ * The background of a segment: estimated books are hatched so that they look less certain
+ * than measured ones (BL-17062).
+ */
+function getSegmentBackground(segment: IAppSizeSegment): string {
+    if (segment.isActual === false) {
+        return `repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0 4px, transparent 4px 8px), ${segment.color}`;
+    }
+    return segment.color;
 }
 
 export const EstimatedAppSizeIndicator: React.FunctionComponent<{
@@ -168,11 +212,28 @@ export const EstimatedAppSizeIndicator: React.FunctionComponent<{
         "This estimate is above the %0 Android app size limit. Choose fewer books or smaller books.",
         "PublishTab.Apps.SizeEstimate.OverLimit",
     );
+    const overLimitWithEstimatesText = useL10n(
+        "This estimate is above the %0 Android app size limit, but some of the books' sizes are only estimates. Measure the books to find out for sure, or choose fewer books or smaller books.",
+        "PublishTab.Apps.SizeEstimate.OverLimitWithEstimates",
+    );
+    const measuredCountTemplate = useL10n(
+        "%0 of %1 books have been measured. The striped ones are estimates.",
+        "PublishTab.Apps.SizeEstimate.MeasuredCount",
+    );
+    const actualSuffix = useL10n(
+        "(actual)",
+        "PublishTab.Apps.SizeEstimate.ActualSuffix",
+    );
+    const estimateSuffix = useL10n(
+        "(estimate)",
+        "PublishTab.Apps.SizeEstimate.EstimateSuffix",
+    );
     const summary = buildSummary(
         props.sizeEstimates,
         props.books,
         overheadLabel,
     );
+    const hasEstimates = summary.estimatedBookCount > 0;
 
     return (
         <div
@@ -203,16 +264,27 @@ export const EstimatedAppSizeIndicator: React.FunctionComponent<{
                                   100
                                 : 0;
 
+                        const description = describeSegment(
+                            segment,
+                            actualSuffix,
+                            estimateSuffix,
+                        );
+
                         return (
                             <Tooltip
                                 key={segment.key}
-                                title={`${segment.label}: ${formatSize(segment.sizeBytes)}${segment.isActual === true ? " (actual)" : segment.isActual === false ? " (est)" : ""}`}
+                                title={description}
                                 placement="top"
                             >
                                 <div
+                                    data-size-is-estimate={
+                                        segment.isActual === false
+                                    }
                                     css={css`
                                         width: ${widthPercent}%;
-                                        background: ${segment.color};
+                                        background: ${getSegmentBackground(
+                                            segment,
+                                        )};
                                         border-right: ${index <
                                         summary.segments.length - 1
                                             ? "2px solid rgba(255, 255, 255, 0.9)"
@@ -221,7 +293,7 @@ export const EstimatedAppSizeIndicator: React.FunctionComponent<{
                                             ? "6px"
                                             : "0"};
                                     `}
-                                    aria-label={`${segment.label}: ${formatSize(segment.sizeBytes)}${segment.isActual === true ? " (actual)" : segment.isActual === false ? " (est)" : ""}`}
+                                    aria-label={description}
                                 />
                             </Tooltip>
                         );
@@ -236,6 +308,24 @@ export const EstimatedAppSizeIndicator: React.FunctionComponent<{
                         .replace("%0", formatSize(summary.totalBytes))
                         .replace("%1", formatSize(summary.maxBytes))}
                 </div>
+                {hasEstimates && (
+                    <div
+                        data-testid="app-size-measured-count"
+                        css={css`
+                            margin-top: 4px;
+                        `}
+                    >
+                        {measuredCountTemplate
+                            .replace(
+                                "%0",
+                                (
+                                    summary.bookCount -
+                                    summary.estimatedBookCount
+                                ).toString(),
+                            )
+                            .replace("%1", summary.bookCount.toString())}
+                    </div>
+                )}
             </div>
             {summary.exceedsMax && (
                 <Alert
@@ -245,7 +335,10 @@ export const EstimatedAppSizeIndicator: React.FunctionComponent<{
                         width: min(640px, 100%);
                     `}
                 >
-                    {overLimitText.replace("%0", formatSize(summary.maxBytes))}
+                    {(hasEstimates
+                        ? overLimitWithEstimatesText
+                        : overLimitText
+                    ).replace("%0", formatSize(summary.maxBytes))}
                 </Alert>
             )}
         </div>

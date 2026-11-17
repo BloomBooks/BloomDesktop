@@ -1106,6 +1106,84 @@ namespace BloomTests.Book
             Assert.That(changed, Is.False);
         }
 
+        // What the editor leaves when the user deletes all the text, plain or after formatting it.
+        [TestCase("<p></p>")]
+        [TestCase("<p style=\"text-align: center;\"><br /></p>")]
+        public void UpdateDomFromEditedPage_UsersOriginalCopyrightEmptied_PageGetsBloomsSentenceBack(
+            string emptiedField
+        )
+        {
+            // Emptying the unlocked field is how the user gives the sentence about the original
+            // book back to Bloom. Saving that page must leave Bloom's generated sentence on it, not
+            // the empty field (BL-16859).
+            var book = CreateBook();
+            book.BookData.Set(
+                "originalCopyright",
+                XmlString.FromUnencoded("Copyright © 2021, SIL International"),
+                "*"
+            );
+            book.BookData.Set(
+                "originalLicenseUrl",
+                XmlString.FromUnencoded("http://creativecommons.org/licenses/by/4.0/"),
+                "*"
+            );
+            book.BookData.Set(
+                "originalTitle",
+                XmlString.FromUnencoded("A Family Learns about Immunisations"),
+                "*"
+            );
+            book.BookData.Set(
+                BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense,
+                XmlString.FromXml("<p>My own words about the original.</p>"),
+                "*"
+            );
+            var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            var pageDiv =
+                dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-page')]")
+                as SafeXmlElement;
+            var spot = pageDiv.AppendChild(dom.RawDom.CreateElement("div")) as SafeXmlElement;
+            spot.SetAttribute("class", "copyright Credits-Page-style");
+            spot.SetAttribute("data-derived", "originalCopyrightAndLicense");
+            spot.SetAttribute("lang", "*");
+            spot.InnerXml = "<p>My own words about the original.</p>";
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out _);
+
+            var unlocked = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            BookCopyrightAndLicense.MakeOriginalCopyrightNoticeEditable(unlocked);
+            var editable =
+                unlocked.SelectSingleNode(
+                    "//div[@data-book='userOriginalCopyrightAndLicense' and @lang='*']"
+                ) as SafeXmlElement;
+            Assert.That(editable, Is.Not.Null, "test setup: the sentence should be editable");
+            editable.InnerXml = emptiedField;
+
+            book.UpdateDomFromEditedPage(
+                unlocked,
+                out var savedPage,
+                needToDoFullSave: true,
+                out _
+            );
+
+            Assert.That(
+                book.BookData.GetVariableOrNull(
+                    BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense,
+                    "*"
+                ).Xml,
+                Is.Null.Or.Empty,
+                "the user's wording should be gone from the data div"
+            );
+            var savedSpot =
+                savedPage.SelectSingleNode(".//div[@data-derived='originalCopyrightAndLicense']")
+                as SafeXmlElement;
+            Assert.That(savedSpot, Is.Not.Null, "the saved page lost the sentence's place");
+            Assert.That(
+                savedSpot.InnerText,
+                Does.Contain("A Family Learns about Immunisations").And.Contain("SIL International")
+            );
+            Assert.That(savedSpot.InnerXml, Does.Contain("<cite data-book=\"originalTitle\""));
+            Assert.That(savedSpot.GetAttribute("data-link-icon"), Is.EqualTo("lock"));
+        }
+
         [Test]
         public void UpdateDomFromEditedPage_AttributeValueChanged_ReportsChanged()
         {
@@ -6740,6 +6818,268 @@ namespace BloomTests.Book
             AssertThatXmlIn
                 .Dom(bookDom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(hashTimingsXpath, 1);
+        }
+
+        /// <summary>
+        /// A book made before Bloom converted HEVC videos on import (BL-17114) is converted when it is
+        /// published, so the harvester's BloomPUB, Read Online and ePUB copies of it play.
+        /// </summary>
+        [Test]
+        public void PrepareBookVideoForPublishing_HevcVideo_IsConvertedToH264()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'></div>
+				<div class='bloom-page'>
+					<div class='marginBox'>
+						<div class='bloom-videoContainer'>
+							<video>
+								<source src='video/Test%20pattern%20hevc.mp4#t=0.0,2.0'></source>
+							</video>
+						</div>
+					</div>
+				</div>"
+            );
+            var book = CreateBook();
+            var bookDom = book.OurHtmlDom;
+            var videoFolder = Path.Combine(book.FolderPath, "video");
+            Directory.CreateDirectory(videoFolder);
+            var hevcPath = Path.Combine(videoFolder, "Test pattern hevc.mp4");
+            RobustFile.Copy(
+                FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestVideos,
+                    "Test pattern hevc.mp4"
+                ),
+                hevcPath
+            );
+            Assert.That(
+                SignLanguageApi.GetVideoCharacteristicsOutput(hevcPath),
+                Does.Contain("Video: hevc"),
+                "test setup: the test video should be HEVC"
+            );
+            var videoContainer =
+                bookDom.SafeSelectNodes(".//div[contains(@class, 'bloom-videoContainer')]")[0]
+                as SafeXmlElement;
+
+            var publishedPath = SignLanguageApi.PrepareVideoForPublishing(
+                videoContainer,
+                book.FolderPath,
+                videoControls: false
+            );
+
+            Assert.That(publishedPath, Is.Not.EqualTo(hevcPath));
+            Assert.That(
+                SignLanguageApi.GetVideoCharacteristicsOutput(publishedPath),
+                Does.Contain("Video: h264")
+            );
+            Assert.That(
+                RobustFile.Exists(hevcPath),
+                Is.False,
+                "the HEVC video should not be published"
+            );
+            var src = videoContainer.SelectSingleNode("video/source").GetAttribute("src");
+            Assert.That(
+                src,
+                Is.EqualTo($"video/{Path.GetFileName(publishedPath)}#t=0.0,2.0"),
+                "the book should point at the converted video, keeping its (whole-video) timings"
+            );
+        }
+
+        /// <summary>
+        /// A custom cover layout keeps a copy of its video container in bloomDataDiv, which comes first.
+        /// Converting the video for that copy deletes the original, so the cover page's container must reuse
+        /// the converted video rather than look for the deleted file.
+        /// </summary>
+        [Test]
+        public void ProcessVideos_TwoContainersShowingOneHevcVideo_BothPointAtTheConvertedVideo()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'>
+					<div data-book='customCoverContent'>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4'></source></video>
+						</div>
+					</div>
+				</div>
+				<div class='bloom-page'>
+					<div class='marginBox'>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4'></source></video>
+						</div>
+					</div>
+				</div>"
+            );
+            var book = CreateBook();
+            var videoFolder = Path.Combine(book.FolderPath, "video");
+            Directory.CreateDirectory(videoFolder);
+            RobustFile.Copy(
+                FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestVideos,
+                    "Test pattern hevc.mp4"
+                ),
+                Path.Combine(videoFolder, "Test pattern hevc.mp4")
+            );
+            var containers = HtmlDom
+                .SelectChildVideoElements(book.OurHtmlDom.RawDom.DocumentElement)
+                .Cast<SafeXmlElement>()
+                .ToList();
+            Assert.That(containers, Has.Count.EqualTo(2), "test setup: two video containers");
+
+            SignLanguageApi.ProcessVideos(containers, book.FolderPath);
+
+            var srcs = containers
+                .Select(c => c.SelectSingleNode("video/source").GetAttribute("src"))
+                .ToList();
+            Assert.That(srcs[0], Does.Not.Contain("Test"), "the video should have been converted");
+            Assert.That(
+                srcs[1],
+                Is.EqualTo(srcs[0]),
+                "both containers should show the converted video"
+            );
+            var convertedPath = Path.Combine(book.FolderPath, srcs[0]);
+            Assert.That(RobustFile.Exists(convertedPath), Is.True);
+            Assert.That(
+                SignLanguageApi.GetVideoCharacteristicsOutput(convertedPath),
+                Does.Contain("Video: h264")
+            );
+        }
+
+        /// <summary>
+        /// Two containers show one HEVC video, the second trimmed. Converting for the first must not delete
+        /// the video before the second is processed, and nothing should be left pointing at a missing file.
+        /// </summary>
+        [Test]
+        public void ProcessVideos_OneHevcVideoShownWithDifferentTimings_BothGetPlayableVideos()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'></div>
+				<div class='bloom-page'>
+					<div class='marginBox'>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4'></source></video>
+						</div>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4#t=0.5,1.5'></source></video>
+						</div>
+					</div>
+				</div>"
+            );
+            var book = CreateBook();
+            var videoFolder = Path.Combine(book.FolderPath, "video");
+            Directory.CreateDirectory(videoFolder);
+            var hevcPath = Path.Combine(videoFolder, "Test pattern hevc.mp4");
+            RobustFile.Copy(
+                FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestVideos,
+                    "Test pattern hevc.mp4"
+                ),
+                hevcPath
+            );
+            var containers = HtmlDom
+                .SelectChildVideoElements(book.OurHtmlDom.RawDom.DocumentElement)
+                .Cast<SafeXmlElement>()
+                .ToList();
+            Assert.That(containers, Has.Count.EqualTo(2), "test setup: two video containers");
+
+            SignLanguageApi.ProcessVideos(containers, book.FolderPath);
+
+            var srcs = containers
+                .Select(c => c.SelectSingleNode("video/source").GetAttribute("src"))
+                .ToList();
+            Assert.That(srcs[0], Is.Not.EqualTo(srcs[1]), "the trimmed video is a separate file");
+            foreach (var src in srcs)
+            {
+                Assert.That(
+                    src,
+                    Does.Not.Contain("Test"),
+                    $"{src} should not be the HEVC original"
+                );
+                var path = Path.Combine(book.FolderPath, src);
+                Assert.That(RobustFile.Exists(path), Is.True, $"{src} should exist");
+                Assert.That(
+                    SignLanguageApi.GetVideoCharacteristicsOutput(path),
+                    Does.Contain("Video: h264"),
+                    $"{src} should be H.264"
+                );
+            }
+            Assert.That(
+                RobustFile.Exists(hevcPath),
+                Is.False,
+                "the HEVC original should be deleted once nothing uses it"
+            );
+        }
+
+        /// <summary>
+        /// Two containers ask for the same trim of one video (as a custom cover's bloomDataDiv copy does):
+        /// they should share one trimmed file rather than each carry its own copy.
+        /// </summary>
+        [Test]
+        public void ProcessVideos_TwoContainersWithTheSameTrim_ShareOneTrimmedFile()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'></div>
+				<div class='bloom-page'>
+					<div class='marginBox'>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4#t=0.5,1.5'></source></video>
+						</div>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4#t=0.5,1.5'></source></video>
+						</div>
+					</div>
+				</div>"
+            );
+            var book = CreateBook();
+            var videoFolder = Path.Combine(book.FolderPath, "video");
+            Directory.CreateDirectory(videoFolder);
+            RobustFile.Copy(
+                FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestVideos,
+                    "Test pattern hevc.mp4"
+                ),
+                Path.Combine(videoFolder, "Test pattern hevc.mp4")
+            );
+            var containers = HtmlDom
+                .SelectChildVideoElements(book.OurHtmlDom.RawDom.DocumentElement)
+                .Cast<SafeXmlElement>()
+                .ToList();
+            Assert.That(containers, Has.Count.EqualTo(2), "test setup: two video containers");
+
+            SignLanguageApi.ProcessVideos(containers, book.FolderPath);
+
+            var srcs = containers
+                .Select(c => c.SelectSingleNode("video/source").GetAttribute("src"))
+                .ToList();
+            Assert.That(srcs[0], Does.Not.Contain("Test"), "the video should have been replaced");
+            Assert.That(
+                srcs[0],
+                Does.Not.Contain("#t="),
+                "a trimmed video's src has no timings; timings left means the trim failed"
+            );
+            Assert.That(
+                srcs[1],
+                Is.EqualTo(srcs[0]),
+                "both containers should share one trimmed file"
+            );
+            Assert.That(
+                Directory.GetFiles(videoFolder),
+                Has.Length.EqualTo(1),
+                "only the shared trimmed file should be left"
+            );
+            var description = SignLanguageApi.GetVideoCharacteristicsOutput(
+                Path.Combine(book.FolderPath, srcs[0])
+            );
+            var duration = TimeSpan.Parse(
+                System
+                    .Text.RegularExpressions.Regex.Match(description, @"Duration: ([0-9:.]+),")
+                    .Groups[1]
+                    .Value,
+                CultureInfo.InvariantCulture
+            );
+            Assert.That(
+                duration.TotalSeconds,
+                Is.LessThan(1.5),
+                "the shared file should hold the trimmed second, not the whole 2-second video"
+            );
         }
 
         [Test]
