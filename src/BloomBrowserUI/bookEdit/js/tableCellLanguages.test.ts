@@ -148,6 +148,32 @@ describe("showRolesInGroup", () => {
         expect(wired[0].classList.contains("normal-style")).toBe(true);
         expect(visibleTagsOf(group)).toEqual(["tpi", "en", "es"]);
     });
+
+    it("makes a new editable for a right-to-left language run right to left", () => {
+        const languages = cellLanguagesOfCollection({
+            language1Name: "Tok Pisin",
+            language1Tag: "tpi",
+            language1IsRightToLeft: false,
+            language2Name: "Arabic",
+            language2Tag: "ar",
+            language2IsRightToLeft: true,
+        });
+        const group = document.createElement("div");
+        group.className = "bloom-translationGroup";
+        group.innerHTML =
+            "<div class='bloom-editable normal-style bloom-visibility-code-on' lang='tpi'><p>hi</p></div>";
+        document.body.appendChild(group);
+
+        const added = showRolesInGroup(group, ["V", "N1"], languages);
+
+        expect(added.map((editable) => editable.getAttribute("lang"))).toEqual([
+            "ar",
+        ]);
+        expect(added[0].getAttribute("dir")).toBe("rtl");
+        expect(group.querySelector("[lang='tpi']")!.hasAttribute("dir")).toBe(
+            false,
+        );
+    });
 });
 
 describe("toggleRole", () => {

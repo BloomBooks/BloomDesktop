@@ -23,6 +23,7 @@ export interface ICellLanguage {
     shortName: string;
     tag: string;
     name: string;
+    isRightToLeft: boolean;
     /** The Collection Settings label for the role, used as the entry's tooltip. */
     tooltipEnglish: string;
     tooltipL10nId: string;
@@ -43,6 +44,7 @@ export function cellLanguagesOfCollection(
             shortName: "L1",
             tag: names.language1Tag,
             name: names.language1Name,
+            isRightToLeft: !!names.language1IsRightToLeft,
             tooltipEnglish: "Local Language",
             tooltipL10nId:
                 "CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel",
@@ -52,6 +54,7 @@ export function cellLanguagesOfCollection(
             shortName: "L2",
             tag: names.language2Tag,
             name: names.language2Name,
+            isRightToLeft: !!names.language2IsRightToLeft,
             tooltipEnglish: "Language 2 (e.g. National Language)",
             tooltipL10nId:
                 "CollectionSettingsDialog.LanguageTab._language2Label",
@@ -61,6 +64,7 @@ export function cellLanguagesOfCollection(
             shortName: "L3",
             tag: names.language3Tag ?? "",
             name: names.language3Name ?? "",
+            isRightToLeft: !!names.language3IsRightToLeft,
             tooltipEnglish: "Language 3 (e.g. Regional Language)   (Optional)",
             tooltipL10nId:
                 "CollectionSettingsDialog.LanguageTab._language3Label",
@@ -199,6 +203,8 @@ function addEditable(
     const editable = group.ownerDocument.createElement("div");
     editable.classList.add("bloom-editable", ...styleClasses);
     editable.setAttribute("lang", language.tag);
+    // As TranslationGroupManager does when a page loads, so the text runs the right way at once.
+    if (language.isRightToLeft) editable.setAttribute("dir", "rtl");
     editable.innerHTML = "<p></p>";
     const later = languages
         .slice(languages.indexOf(language) + 1)
