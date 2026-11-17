@@ -5,7 +5,7 @@
 // Scrolling goes through the page frame's own window: that frame's document is what scrolls, and
 // the Edit tab around it never does.
 
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import {
     editablePageFrame,
     getPages,
@@ -300,4 +300,309 @@ export async function isPageChangeUnderway(page: Page): Promise<boolean> {
             !!document.getElementById("page-loading-cover") ||
             !!document.getElementById("page-outgoing"),
     );
+}
+
+/**
+ * The page that shares a spread with the page with this id, in a book whose pages are side by side
+ * and read left to right: the front cover (the first page) stands alone on the right, so the page
+ * after it is a left page. Not for the last pages of a book that has a blank page before its back
+ * cover (see getPagesInGrid()).
+ */
+export function getFacingPage(pages: IBookPage[], pageId: string): IBookPage {
+    const index = pages.findIndex((p) => p.id === pageId);
+    if (index < 1)
+        throw new Error(
+            `Page ${pageId} is the front cover, or not one of the book's pages, so no page faces it.`,
+        );
+    return pages[index % 2 === 1 ? index + 1 : index - 1];
+}
+
+/**
+ * With All Pages showing, check that the page being edited and the page facing it sit side by side:
+ * tops level, the same height, and the edges between them touching.
+ */
+export async function expectFacingPageBesidePageBeingEdited(
+    page: Page,
+): Promise<void> {
+    const pages = await getPages(page);
+    const editedId = await getShownPageId(page);
+    if (!editedId) throw new Error("The Edit tab is not showing a page.");
+    const editedIndex = pages.findIndex((p) => p.id === editedId);
+    const facing = getFacingPage(pages, editedId);
+    await gridCell(page, facing.id).scrollIntoViewIfNeeded();
+    const e = (await getPagePlacement(page, editedId)).page;
+    const f = (await getPagePlacement(page, facing.id)).page;
+    const describe =
+        `The page being edited is at (${e.left}, ${e.top})-(${e.right}, ${e.bottom}) and the ` +
+        `page facing it at (${f.left}, ${f.top})-(${f.right}, ${f.bottom}).`;
+    expect(Math.abs(e.top - f.top), describe).toBeLessThan(2);
+    expect(Math.abs(e.bottom - f.bottom), describe).toBeLessThan(2);
+    // A left page (an odd index) has its facing page on its right.
+    if (editedIndex % 2 === 1)
+        expect(Math.abs(f.left - e.right), describe).toBeLessThan(2);
+    else expect(Math.abs(e.left - f.right), describe).toBeLessThan(2);
+}
+
+/** The place the grid of All Pages gives the page with this id. */
+export function gridCell(page: Page, pageId: string): Locator {
+    return editablePageFrame(page).locator(
+        `.bloom-book-grid-cell[data-page-id="${pageId}"]`,
+    );
+}
+
+/** The ids of the pages that the grid of All Pages has places for, in the order of the places. */
+export async function getGridPageIds(page: Page): Promise<string[]> {
+    return editablePageFrame(page)
+        .locator(".bloom-book-grid-cell")
+        .evaluateAll((cells) =>
+            cells.map((c) => c.getAttribute("data-page-id") ?? ""),
+        );
+}
+
+/**
+ * Wait until the grid of All Pages holds exactly the pages that belong around the page being edited
+ * (see getPagesInGrid()), in the book's order as Bloom reports it now. Use it after something that
+ * changes the book's pages or their order.
+ */
+export async function expectGridToMatchBook(
+    page: Page,
+    timeoutMs = 30000,
+): Promise<void> {
+    let expected: string[] = [];
+    let found: string[] = [];
+    try {
+        await expect
+            .poll(
+                async () => {
+                    // The page frame is replaced while the page changes, and reading it then throws.
+                    try {
+                        const shown = await getShownPageId(page);
+                        if (!shown) return false;
+                        expected = getPagesInGrid(
+                            await getPages(page),
+                            shown,
+                        ).map((p) => p.id);
+                        found = await getGridPageIds(page);
+                    } catch {
+                        return false;
+                    }
+                    return (
+                        expected.length === found.length &&
+                        expected.every((id, i) => id === found[i])
+                    );
+                },
+                { timeout: timeoutMs },
+            )
+            .toBe(true);
+    } catch {
+        throw new Error(
+            `The grid of All Pages does not hold the pages around the page being edited. ` +
+                `Expected [${expected.join(", ")}], found [${found.join(", ")}].`,
+        );
+    }
+}
+
+/**
+ * One language's text box in one translation group of another page, as All Pages draws it (not the
+ * page being edited). Scrolls that page into view, which is what makes the grid draw it.
+ */
+export async function textBoxOfOtherPage(
+    page: Page,
+    pageId: string,
+    groupIndex = 0,
+    languageTag = "en",
+): Promise<Locator> {
+    const cell = gridCell(page, pageId);
+    await cell.scrollIntoViewIfNeeded();
+    const box = cell
+        .frameLocator("iframe")
+        .locator(".bloom-translationGroup")
+        .nth(groupIndex)
+        .locator(`.bloom-editable[lang="${languageTag}"]`)
+        .first();
+    await expect(
+        box,
+        `All Pages never drew the text box of page ${pageId}.`,
+    ).toBeVisible({ timeout: 15000 });
+    return box;
+}
+
+/**
+ * With All Pages showing, click with the mouse in a text box of another page, as a user does to
+ * start typing there: on the middle of its text, or in the middle of the box when it is empty.
+ * Returns at once, without waiting for that page to become the page being edited; follow it with
+ * waitForPageToBeShown().
+ */
+export async function clickTextOfPageInGrid(
+    page: Page,
+    pageId: string,
+    groupIndex = 0,
+): Promise<void> {
+    const box = await textBoxOfOtherPage(page, pageId, groupIndex);
+    // Where the middle of the text is, as shares of the box, so that the scaling of the grid
+    // does not matter.
+    const at = await box.evaluate((element) => {
+        const boxRect = element.getBoundingClientRect();
+        // The first piece of text itself: a range around the paragraph would give the paragraph's
+        // box, which is as wide as the text box whatever the text's length.
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let textNode = walker.nextNode();
+        while (textNode && !textNode.textContent?.trim())
+            textNode = walker.nextNode();
+        if (!textNode) return { x: 0.5, y: 0.5 };
+        const range = document.createRange();
+        range.selectNodeContents(textNode);
+        const lines = Array.from(range.getClientRects()).filter(
+            (r) => r.width > 0 && r.height > 0,
+        );
+        if (lines.length === 0) return { x: 0.5, y: 0.5 };
+        const line = lines[0];
+        return {
+            x: (line.left + line.width / 2 - boxRect.left) / boxRect.width,
+            y: (line.top + line.height / 2 - boxRect.top) / boxRect.height,
+        };
+    });
+    const onScreen = await box.boundingBox();
+    if (!onScreen)
+        throw new Error(`The text box of page ${pageId} has no box on screen.`);
+    await page.mouse.click(
+        onScreen.x + at.x * onScreen.width,
+        onScreen.y + at.y * onScreen.height,
+    );
+}
+
+/**
+ * Wait until the page with this id is the page being edited and is on screen: in the page frame,
+ * with the cover that the Edit tab puts over the pages during a change taken away. This is the
+ * moment a user first sees the page; Bloom may still be setting up its text boxes.
+ */
+export async function waitForPageToBeShown(
+    page: Page,
+    pageId: string,
+): Promise<void> {
+    await expect
+        .poll(() => getShownPageId(page), {
+            timeout: 30000,
+            message: `Page ${pageId} never became the page being edited.`,
+        })
+        .toBe(pageId);
+    await expect
+        .poll(() => isPageChangeUnderway(page), {
+            timeout: 30000,
+            message: `The Edit tab never finished showing page ${pageId}.`,
+        })
+        .toBe(false);
+}
+
+/**
+ * Which translation group of the page being edited holds the text box that has the focus, counting
+ * from 0 in document order, or undefined when no text box has it.
+ */
+export async function getFocusedGroupIndex(
+    page: Page,
+): Promise<number | undefined> {
+    const index = await editablePageFrame(page).evaluate(() => {
+        const group = document.activeElement?.closest(
+            ".bloom-page .bloom-translationGroup",
+        );
+        if (!group || !document.activeElement?.closest(".bloom-editable"))
+            return -1;
+        return Array.from(
+            document.querySelectorAll(".bloom-page .bloom-translationGroup"),
+        ).indexOf(group);
+    });
+    return index < 0 ? undefined : index;
+}
+
+/** Wait until the text box in this translation group of the page being edited has the focus. */
+export async function waitForFocusInGroup(
+    page: Page,
+    groupIndex: number,
+): Promise<void> {
+    await expect
+        .poll(() => getFocusedGroupIndex(page).catch(() => undefined), {
+            timeout: 30000,
+            message: `The text box in group ${groupIndex} of the page being edited never got the focus.`,
+        })
+        .toBe(groupIndex);
+}
+
+/** The font size, in points, of the first text box of another page as All Pages draws it. */
+export async function getFontSizeOfOtherPage(
+    page: Page,
+    pageId: string,
+): Promise<number> {
+    const box = await textBoxOfOtherPage(page, pageId);
+    const px = await box.evaluate((element) =>
+        parseFloat(getComputedStyle(element).fontSize),
+    );
+    return Math.round(px * 0.75 * 10) / 10;
+}
+
+/** Whether All Pages draws another page at this page size and orientation, e.g. "A5Portrait". */
+export async function isOtherPageDrawnAtSize(
+    page: Page,
+    pageId: string,
+    layoutId: string,
+): Promise<boolean> {
+    const cell = gridCell(page, pageId);
+    await cell.scrollIntoViewIfNeeded();
+    return cell
+        .frameLocator("iframe")
+        .locator(".bloom-page")
+        .first()
+        .evaluate(
+            (element, layout) => element.classList.contains(layout),
+            layoutId,
+            { timeout: 15000 },
+        );
+}
+
+/** Whether the page frame's view is wider than the frame, so that it scrolls sideways. */
+export async function doesPageFrameScrollSideways(
+    page: Page,
+): Promise<boolean> {
+    return editablePageFrame(page).evaluate(() => {
+        const view = document.scrollingElement!;
+        // A pixel of rounding is not scrolling.
+        return view.scrollWidth > view.clientWidth + 1;
+    });
+}
+
+/**
+ * Where the Change Layout switch is in the page frame's view. It sits in the bar of controls across
+ * the top of the frame. Throws when the page being edited offers no such switch.
+ */
+export async function getChangeLayoutSwitchPlacement(
+    page: Page,
+): Promise<IViewRect> {
+    return editablePageFrame(page).evaluate(() => {
+        const label = document.querySelector('label[for="changeLayoutToggle"]');
+        if (!label)
+            throw new Error(
+                "The page being edited shows no Change Layout switch.",
+            );
+        const r = label.getBoundingClientRect();
+        return {
+            left: Math.round(r.left),
+            top: Math.round(r.top),
+            right: Math.round(r.right),
+            bottom: Math.round(r.bottom),
+        };
+    });
+}
+
+/**
+ * Scroll the page frame's view down (or, with a negative number, up) by this many pixels, and
+ * return how far it went.
+ */
+export async function scrollPageFrameBy(
+    page: Page,
+    pixels: number,
+): Promise<number> {
+    return editablePageFrame(page).evaluate((dy) => {
+        const before = window.scrollY;
+        window.scrollBy(0, dy);
+        return window.scrollY - before;
+    }, pixels);
 }

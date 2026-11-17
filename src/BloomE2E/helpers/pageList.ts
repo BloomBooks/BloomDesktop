@@ -329,6 +329,51 @@ export async function cancelRemovePageDialog(page: Page): Promise<void> {
     ).toHaveCount(0, { timeout: 30000 });
 }
 
+/**
+ * Click Remove in the dialog that confirms removing a page, and wait until the dialog has closed
+ * and the book has one page fewer.
+ */
+export async function confirmRemovePageDialog(page: Page): Promise<void> {
+    const before = (await getPages(page)).length;
+    const dialog = removePageDialog(page);
+    await dialog.getByRole("button", { name: "Remove" }).click();
+    await expect(
+        dialog,
+        "The dialog asking to confirm removing a page did not close after Remove.",
+    ).toHaveCount(0, { timeout: 30000 });
+    await expect
+        .poll(async () => (await getPages(page)).length, {
+            timeout: 60000,
+            message: "Bloom never removed the page.",
+        })
+        .toBe(before - 1);
+    await waitForEditTabSettled(page);
+}
+
+/** Press Escape in the dialog that confirms removing a page, and wait for the dialog to close. */
+export async function escapeRemovePageDialog(page: Page): Promise<void> {
+    const dialog = removePageDialog(page);
+    await dialog.press("Escape");
+    await expect(
+        dialog,
+        "The dialog asking to confirm removing a page did not close after Escape.",
+    ).toHaveCount(0, { timeout: 30000 });
+}
+
+/**
+ * Click a page's thumbnail in the page list and return at once, without waiting for Bloom to show
+ * that page. This is for a test of what a user gets by clicking pages faster than Bloom shows
+ * them; selectPage() in pageThumbnails.ts is the route for everything else.
+ */
+export async function clickPageThumbnail(
+    page: Page,
+    pageId: string,
+): Promise<void> {
+    const target = thumbnail(page, pageId);
+    await target.scrollIntoViewIfNeeded();
+    await target.click();
+}
+
 /** The red X Bloom draws across a page while it asks to confirm removing it. */
 export interface IRemovalMark {
     left: number;
