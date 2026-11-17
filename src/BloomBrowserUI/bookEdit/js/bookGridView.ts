@@ -669,7 +669,7 @@ let activePageRequests = 0;
 const queuedPageRequests: (() => void)[] = [];
 
 // Get a page's content, as made for the page list but with its pictures at full size (the page
-// list's are made small; see GetPageContentForThumbnail in PageListApi.cs), once a request slot is
+// list's are made small; see GetReadOnlyPageContent in PageListApi.cs), once a request slot is
 // free. Resolves to undefined if the request fails, or if stillWanted() says no by the time a slot
 // is free.
 function getPageContent(

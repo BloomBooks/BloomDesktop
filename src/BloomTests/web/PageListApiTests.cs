@@ -11,7 +11,7 @@ namespace BloomTests.web
     {
         /// <summary>
         /// Builds a one-page DOM containing a single img with the given (already URL-encoded)
-        /// src, runs MarkImageNodesForThumbnail over it, and returns the resulting src.
+        /// src, runs MarkPicturesToBeServedSmall over it, and returns the resulting src.
         /// </summary>
         private static string GetThumbnailSrc(string originalSrc)
         {
@@ -28,13 +28,13 @@ namespace BloomTests.web
                 "Setup failed: the img did not start out with the src we specified."
             );
 
-            PageListApi.MarkImageNodesForThumbnail(pageElement);
+            PageListApi.MarkPicturesToBeServedSmall(pageElement);
 
             return ((SafeXmlElement)pageElement.SafeSelectNodes(".//img")[0]).GetAttribute("src");
         }
 
         [Test]
-        public void MarkImageNodesForThumbnail_SimpleName_AddsThumbnailQuery()
+        public void MarkPicturesToBeServedSmall_SimpleName_AddsThumbnailQuery()
         {
             Assert.AreEqual("picture.jpg?thumbnail=1", GetThumbnailSrc("picture.jpg"));
         }
@@ -43,7 +43,7 @@ namespace BloomTests.web
         // characters like # and ? in the file name make the browser request the wrong thing
         // (or nothing at all), and the page list shows a broken image.
         [Test]
-        public void MarkImageNodesForThumbnail_NameWithSpecialCharacters_KeepsPathEncoded()
+        public void MarkPicturesToBeServedSmall_NameWithSpecialCharacters_KeepsPathEncoded()
         {
             // This is the encoding of the real file name: This Image !@#$%^&()2.jpg
             const string encodedName = "This%20Image%20!%40%23%24%25%5e%26()2.jpg";
@@ -58,7 +58,7 @@ namespace BloomTests.web
         }
 
         [Test]
-        public void MarkImageNodesForThumbnail_ExistingQuery_AppendsThumbnailAndKeepsPathEncoded()
+        public void MarkPicturesToBeServedSmall_ExistingQuery_AppendsThumbnailAndKeepsPathEncoded()
         {
             const string encodedName = "This%20Image%20!%40%23%24%25%5e%26()2.jpg";
 
@@ -70,7 +70,7 @@ namespace BloomTests.web
         // A src that is genuinely a path, not a bare file name, must keep its separators usable.
         // "/api/" srcs are skipped earlier, but other rooted srcs (e.g. branding) are not.
         [Test]
-        public void MarkImageNodesForThumbnail_RootedPathSrc_KeepsSeparatorsUnescaped()
+        public void MarkPicturesToBeServedSmall_RootedPathSrc_KeepsSeparatorsUnescaped()
         {
             Assert.AreEqual(
                 "/bloom/branding/Some-Brand/logo.png?thumbnail=1",
@@ -80,7 +80,7 @@ namespace BloomTests.web
         }
 
         [Test]
-        public void MarkImageNodesForThumbnail_ApiUrl_LeftAlone()
+        public void MarkPicturesToBeServedSmall_ApiUrl_LeftAlone()
         {
             const string brandingUrl = "/bloom/api/branding/image?id=cover-lower-left.png";
 
@@ -88,7 +88,7 @@ namespace BloomTests.web
         }
 
         [Test]
-        public void MarkImageNodesForThumbnail_BackgroundImage_KeepsPathEncoded()
+        public void MarkPicturesToBeServedSmall_BackgroundImage_KeepsPathEncoded()
         {
             const string encodedName = "This%20Image%20!%40%23%24%25%5e%26()2.jpg";
             var dom = SafeXmlDocument.Create();
@@ -97,7 +97,7 @@ namespace BloomTests.web
             );
             var pageElement = (SafeXmlElement)dom.FirstChild;
 
-            PageListApi.MarkImageNodesForThumbnail(pageElement);
+            PageListApi.MarkPicturesToBeServedSmall(pageElement);
 
             var marginBox = (SafeXmlElement)
                 pageElement.SafeSelectNodes(".//*[contains(@style,'background-image')]")[0];
@@ -108,7 +108,7 @@ namespace BloomTests.web
         }
 
         /// <summary>
-        /// The content GetPageContentForThumbnail makes for a one-page DOM holding an img and a
+        /// The content GetReadOnlyPageContent makes for a one-page DOM holding an img and a
         /// background image, both named picture.jpg.
         /// </summary>
         private static string GetPageContent(bool fullSizePictures)
@@ -119,11 +119,11 @@ namespace BloomTests.web
             );
             var page = new Mock<IPage>();
             page.Setup(p => p.GetDivNodeForThisPage()).Returns((SafeXmlElement)dom.FirstChild);
-            return PageListApi.GetPageContentForThumbnail(page.Object, fullSizePictures);
+            return PageListApi.GetReadOnlyPageContent(page.Object, fullSizePictures);
         }
 
         [Test]
-        public void GetPageContentForThumbnail_ForThePageList_MarksPicturesAsThumbnails()
+        public void GetReadOnlyPageContent_ForThePageList_MarksPicturesAsThumbnails()
         {
             var content = GetPageContent(false);
 
@@ -132,7 +132,7 @@ namespace BloomTests.web
         }
 
         [Test]
-        public void GetPageContentForThumbnail_FullSize_LeavesPicturesAlone()
+        public void GetReadOnlyPageContent_FullSize_LeavesPicturesAlone()
         {
             var content = GetPageContent(true);
 

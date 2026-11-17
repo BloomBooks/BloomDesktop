@@ -17,6 +17,7 @@ import {
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import {
+    isLiveEditTabPage,
     renderDragActivityTabControl,
     updateAbovePageControls,
 } from "./js/AbovePageControls";
@@ -501,7 +502,7 @@ $(document).ready(() => {
     bootstrap();
     // Only the live Edit tab has the bar of controls above the page (see AbovePageControls.tsx) and
     // the book's other pages; the same code also loads pages off-screen to process them.
-    if (window.frameElement?.id === "page") {
+    if (isLiveEditTabPage()) {
         updateAbovePageControls({});
         // The page being left stays on screen until this one looks the way it will (see
         // switchContentPage), so the Edit tab holds steady while it changes pages.

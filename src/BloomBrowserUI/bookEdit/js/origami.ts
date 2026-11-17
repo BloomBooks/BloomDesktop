@@ -14,7 +14,10 @@ import $ from "jquery";
 import "../../lib/jquery.i18n.custom";
 import { splitPane } from "../../lib/split-pane/split-pane";
 import { kCanvasToolId } from "../toolbox/toolIds";
-import { updateAbovePageControls } from "./AbovePageControls";
+import {
+    isLiveEditTabPage,
+    updateAbovePageControls,
+} from "./AbovePageControls";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import { AttachNewTable } from "./tableEditing";
@@ -47,7 +50,8 @@ export function setupOrigami() {
             const bloomPage = document.getElementsByClassName(
                 "bloom-page",
             )[0] as HTMLElement | undefined;
-            if (bloomPage) {
+            // Off-screen (pages loaded to process them) there are no controls and no toolbox.
+            if (bloomPage && isLiveEditTabPage()) {
                 const showChangeLayoutModeControls = customPages.length > 0;
                 const isChangeLayoutMode = $(".marginBox").hasClass(
                     "origami-layout-mode",

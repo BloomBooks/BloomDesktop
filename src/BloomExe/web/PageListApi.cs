@@ -294,10 +294,11 @@ namespace Bloom.web
             request.ReplyWithJson(answer);
         }
 
-        // Requests the content that should be displayed in a single page thumbnail.
+        // Requests the content of a single page, as the page list and the All Pages view show it.
         // Parameters:
         //    page-id - the page ID
         //    book-id - the book ID (optional)
+        //    full-size - "true" to leave the pictures at full size (optional)
         public void HandlePageContentRequest(ApiRequest request)
         {
             var id = request.RequiredParam("page-id");
@@ -320,16 +321,16 @@ namespace Bloom.web
             // view (bookGridView.ts) shows them at full size, so it asks for the pictures themselves.
             var fullSizePictures = request.GetParamOrNull("full-size") == "true";
             dynamic answer = new ExpandoObject();
-            answer.content = GetPageContentForThumbnail(page, fullSizePictures);
+            answer.content = GetReadOnlyPageContent(page, fullSizePictures);
             request.ReplyWithJson(answer);
         }
 
         /// <summary>
         /// The page's HTML as the page list and the All Pages view show it: read-only, without its
-        /// videos, and with its pictures marked to be served small (see MarkImageNodesForThumbnail)
+        /// videos, and with its pictures marked to be served small (see MarkPicturesToBeServedSmall)
         /// unless <paramref name="fullSizePictures"/> is true.
         /// </summary>
-        internal static string GetPageContentForThumbnail(IPage page, bool fullSizePictures)
+        internal static string GetReadOnlyPageContent(IPage page, bool fullSizePictures)
         {
             if (page == null)
             {
@@ -344,7 +345,7 @@ namespace Bloom.web
             }
 
             if (!fullSizePictures)
-                MarkImageNodesForThumbnail(pageElement);
+                MarkPicturesToBeServedSmall(pageElement);
 
             var pageNeedsTransparent = HtmlDom.PageNeedsTransparentImages(pageElement);
             foreach (
@@ -366,7 +367,7 @@ namespace Bloom.web
                 }
             }
 
-            // For WebView2, this prevents any interaction with elements in the page thumbnail.
+            // For WebView2, this prevents any interaction with elements in the page shown.
             // We put an overlay over it to try to prevent such interaction, but this is more
             // reliable. Nothing in the page will ever get focus, be tabbed to, be read by
             // screen readers, etc. In particular, we finally concluded that BL-11528 was caused
@@ -376,13 +377,12 @@ namespace Bloom.web
             return XmlHtmlConverter.ConvertElementToHtml5(pageElement);
         }
 
-        // As a further form of optimization, mark img elements as being thumbnails. The server
+        // As a further form of optimization, ask the server for small copies of the page's pictures
+        // (img elements and background images), by adding thumbnail=1 to their URLs. The server
         // produces miniatures that take up less memory.
-        internal static void MarkImageNodesForThumbnail(SafeXmlElement pageElementForThumbnail)
+        internal static void MarkPicturesToBeServedSmall(SafeXmlElement pageElement)
         {
-            var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(
-                pageElementForThumbnail
-            );
+            var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(pageElement);
             if (imgNodes != null)
             {
                 foreach (SafeXmlElement imgNode in imgNodes)

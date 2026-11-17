@@ -73,19 +73,13 @@ export function renderDragActivityTabControl(currentTab: number): void {
     }
 }
 
+// Only the live Edit tab's page shows the controls. The same editing code also loads pages
+// off-screen to process them, and the setup that runs on every page load asks for the controls
+// there too, where nobody would see them.
 function renderAbovePageControls(): void {
-    const page = document.getElementsByClassName("bloom-page")[0] as
-        | HTMLElement
-        | undefined;
-    if (!page) {
+    if (!isLiveEditTabPage()) {
         return;
     }
-
-    const container = getOrCreateAbovePageControlContainer(page);
-    if (!container) {
-        return;
-    }
-
     renderRoot(
         <AbovePageControls
             isDragGamePage={currentState.isDragGamePage}
@@ -98,17 +92,19 @@ function renderAbovePageControls(): void {
             disableCustomPage={currentState.disableCustomPage}
             onSetCustom={currentState.onSetCustom}
         />,
-        container,
+        getOrCreateAbovePageControlContainer(),
     );
 }
 
-// The element that holds the controls shown above the page, made the first time it is needed. In
-// the live Edit tab's page it is the bar fixed across the top of the page frame (see
-// makeControlsBar()). Everywhere else (pages loaded off-screen to process them) it sits at the top
-// of the scaling container, as wide as the page.
-function getOrCreateAbovePageControlContainer(
-    page: HTMLElement,
-): HTMLElement | undefined {
+// True in the page that the Edit tab shows the user, and false in pages loaded off-screen to
+// process them.
+export function isLiveEditTabPage(): boolean {
+    return window.frameElement?.id === "page";
+}
+
+// The element that holds the controls shown above the page: the bar fixed across the top of the
+// page frame (see makeControlsBar()), made the first time it is needed.
+function getOrCreateAbovePageControlContainer(): HTMLElement {
     let container = document.getElementsByClassName(
         "above-page-control-container",
     )[0] as HTMLElement | undefined;
@@ -117,24 +113,7 @@ function getOrCreateAbovePageControlContainer(
         container = document.createElement("div");
         container.classList.add("above-page-control-container");
         container.classList.add("bloom-ui");
-
-        const pageScalingContainer = document.getElementById(
-            "page-scaling-container",
-        );
-        if (window.frameElement?.id === "page") {
-            makeControlsBar(container);
-        } else if (pageScalingContainer) {
-            pageScalingContainer.prepend(container);
-        } else {
-            page.parentElement?.insertBefore(
-                container,
-                page.parentElement.firstChild,
-            );
-        }
-    }
-
-    if (!container.classList.contains(kControlsBarClass)) {
-        container.style.maxWidth = page.clientWidth + "px";
+        makeControlsBar(container);
     }
     return container;
 }

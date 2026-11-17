@@ -731,6 +731,75 @@ test.describe("showing the other pages of the book", () => {
         expect(await gridPageIds(page)).toEqual(aroundClicked.map((p) => p.id));
     });
 
+    test("in a long book, a page far from both covers has only the pages around it, and clicking the first of them opens it where it was [Test Case ID 835]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        // For the grid around the middle page to hold neither cover, the book needs more pages than
+        // the grid holds, with at least one spread left over at each end.
+        const wanted = kMaxPagesInGrid + 4;
+        const have = (await getPages(page)).length;
+        if (have < wanted) await addPage(page, "Just Text", wanted - have);
+        const pages = await getPages(page);
+        const middle = pages[Math.floor(pages.length / 2)];
+        const inGrid = getPagesInGrid(pages, middle.id);
+        expect(
+            inGrid.map((p) => p.id),
+            "Sanity check: the cover should be too far away to be in the grid",
+        ).not.toContain(pages[0].id);
+        expect(
+            inGrid.map((p) => p.id),
+            "Sanity check: the back cover should be too far away to be in the grid",
+        ).not.toContain(pages[pages.length - 1].id);
+
+        await goToPage(page, middle.id);
+        expect(await chosenPageView(page)).toBe("all");
+        await expect(gridCells(page)).toHaveCount(inGrid.length);
+        expect(await gridPageIds(page)).toEqual(inGrid.map((p) => p.id));
+        // The page frame has one set of controls above the page, the bar across its top.
+        await expect(
+            editablePageFrame(page).locator(".above-page-control-container"),
+        ).toHaveCount(1);
+        await expect(
+            editablePageFrame(page).locator("body > .bloom-controls-bar"),
+        ).toHaveCount(1);
+
+        // THE ACTION UNDER TEST: a real click on the first page in the grid, going back toward
+        // the cover.
+        const firstInGrid = inGrid[0];
+        await editablePageFrame(page).evaluate(() => window.scrollTo(0, 0));
+        const firstCell = cell(page, firstInGrid.id);
+        await firstCell.scrollIntoViewIfNeeded();
+        const firstCellBox = await boxOf(
+            firstCell,
+            "The first page in the grid",
+        );
+        await page.mouse.click(
+            firstCellBox.x + firstCellBox.width / 2,
+            firstCellBox.y + firstCellBox.height / 2,
+        );
+
+        await expect
+            .poll(() => getShownPageId(page), { timeout: 30000 })
+            .toBe(firstInGrid.id);
+        await waitForEditablePage(page);
+        await waitForClickedPageToSettle(page);
+        const newPageBox = await boxOf(
+            editablePageFrame(page).locator(".bloom-page"),
+            "The page now being edited",
+        );
+        expect(Math.abs(newPageBox.x - firstCellBox.x)).toBeLessThan(3);
+        expect(Math.abs(newPageBox.y - firstCellBox.y)).toBeLessThan(3);
+        // The grid now holds the pages around that page, which reach further toward the cover.
+        const aroundClicked = getPagesInGrid(pages, firstInGrid.id);
+        expect(
+            pages.findIndex((p) => p.id === aroundClicked[0].id),
+            "Sanity check: the pages around the clicked page should start nearer the cover",
+        ).toBeLessThan(pages.findIndex((p) => p.id === firstInGrid.id));
+        await expect(gridCells(page)).toHaveCount(aroundClicked.length);
+        expect(await gridPageIds(page)).toEqual(aroundClicked.map((p) => p.id));
+    });
+
     test("clicking a page whose top is above the view opens that page and no other [Test Case ID 835]", async ({
         page,
     }) => {
