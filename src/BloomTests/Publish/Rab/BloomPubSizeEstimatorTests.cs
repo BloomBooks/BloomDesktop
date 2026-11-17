@@ -382,6 +382,23 @@ namespace BloomTests.Publish.Rab
             Assert.That(estimate, Is.EqualTo(0));
         }
 
+        [Test]
+        public void GetLastEstimate_ReportsTheLastEstimateEvenAfterTheBookChanges()
+        {
+            var estimator = new BloomPubSizeEstimator();
+            var settings = new ImagePublishSettings();
+            Assert.That(estimator.GetLastEstimate(_bookFolder), Is.Null, "no estimate yet");
+            var first = estimator.EstimateBloomPubSize(_bookFolder, settings);
+
+            RobustFile.WriteAllBytes(Path.Combine(_bookFolder, "a.css"), new byte[1000]);
+
+            // Spelled differently from the path the estimate was made for.
+            Assert.That(
+                estimator.GetLastEstimate(_bookFolder + Path.DirectorySeparatorChar),
+                Is.EqualTo(first)
+            );
+        }
+
         /// <summary>
         /// Write a picture full of random (opaque) colors, so it doesn't compress to almost
         /// nothing.

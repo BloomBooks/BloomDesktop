@@ -72,10 +72,7 @@ namespace Bloom.Publish.Rab
         {
             if (!Directory.Exists(bookFolderPath))
                 return 0;
-            // BookFileFilter works out relative paths by chopping the folder path off the front of
-            // each file's full path, so the two must be spelled the same way.
-            bookFolderPath = Path.GetFullPath(bookFolderPath)
-                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            bookFolderPath = NormalizeFolderPath(bookFolderPath);
 
             var files = new DirectoryInfo(bookFolderPath)
                 .EnumerateFiles("*", SearchOption.AllDirectories)
@@ -99,6 +96,31 @@ namespace Bloom.Publish.Rab
                 _cache[bookFolderPath] = (key, estimate);
             }
             return estimate;
+        }
+
+        /// <summary>
+        /// The last estimate made for the book in <paramref name="bookFolderPath"/>, whatever has
+        /// changed since, or null if none has been made.
+        /// </summary>
+        public long? GetLastEstimate(string bookFolderPath)
+        {
+            lock (_cacheLock)
+            {
+                return _cache.TryGetValue(NormalizeFolderPath(bookFolderPath), out var last)
+                    ? last.SizeBytes
+                    : null;
+            }
+        }
+
+        /// <summary>
+        /// The full path of a book folder, spelled the same way however it was given. Both the
+        /// cache and BookFileFilter need that: BookFileFilter works out relative paths by chopping
+        /// the folder path off the front of each file's full path.
+        /// </summary>
+        private static string NormalizeFolderPath(string bookFolderPath)
+        {
+            return Path.GetFullPath(bookFolderPath)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         }
 
         /// <summary>

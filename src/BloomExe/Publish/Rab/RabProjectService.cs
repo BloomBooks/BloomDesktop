@@ -492,19 +492,9 @@ namespace Bloom.Publish.Rab
                                 + BloomPubMaker.BloomPubExtensionWithDot,
                             tracked?.BloomPubPath
                         );
-                        var bloomPubSize = IsBloomPubCurrentForSizeEstimate(bloomPubPath, book)
-                            ? GetBloomPubSizeIfPresent(bloomPubPath)
-                            : null;
+                        var bloomPubSize = GetCurrentBloomPubSize(bloomPubPath, book);
                         if (!bloomPubSize.HasValue)
-                            return MakeBookSizeEstimate(
-                                book,
-                                _bloomPubSizeEstimator.EstimateBloomPubSize(
-                                    book.FolderPath,
-                                    book.ImageSettings,
-                                    book.AppearanceSettings
-                                ),
-                                false
-                            );
+                            return MakeBookSizeEstimate(book, EstimateBloomPubSize(book), false);
                         return MakeBookSizeEstimate(book, bloomPubSize.Value, true);
                     })
                     .ToArray(),
@@ -514,25 +504,57 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Whether the BloomPUB at <paramref name="bloomPubPath"/> can be reported as the book's
-        /// actual size. Checking reads the book's files, and one can vanish or be locked part way
-        /// through, e.g. while a Measure or Build in the background rewrites meta.json; then we
-        /// show the estimate this time rather than fail the whole size request (BL-17062).
+        /// The estimated size of the book's BloomPUB (see <see cref="BloomPubSizeEstimator"/>).
+        /// Estimating reads the book's files, and one can vanish or be locked part way through,
+        /// e.g. while Bloom saves the book or the user renames or deletes it (BL-17097). Then we
+        /// report the book's last estimate, or 0 if it has none, rather than fail the whole size
+        /// request; the estimator remembers nothing from the failed attempt, so the next request
+        /// tries again.
         /// </summary>
-        private bool IsBloomPubCurrentForSizeEstimate(string bloomPubPath, RabTrackedBookInfo book)
+        private long EstimateBloomPubSize(RabTrackedBookInfo book)
         {
             try
             {
-                return BloomPubCache.IsCurrent(
-                    bloomPubPath,
+                return _bloomPubSizeEstimator.EstimateBloomPubSize(
                     book.FolderPath,
-                    book.BloomPubSettingsKey
+                    book.ImageSettings,
+                    book.AppearanceSettings
                 );
             }
             catch (Exception error)
                 when (error is IOException || error is UnauthorizedAccessException)
             {
-                return false;
+                return _bloomPubSizeEstimator.GetLastEstimate(book.FolderPath) ?? 0;
+            }
+        }
+
+        /// <summary>
+        /// The size of the BloomPUB at <paramref name="bloomPubPath"/>, to report as the book's
+        /// actual size, or null if it is missing, out of date, or can't be read just now; then the
+        /// book gets an estimate this time rather than failing the whole size request. Checking
+        /// reads the book's files, and one can vanish or be locked part way through, e.g. while a
+        /// Measure or Build in the background rewrites meta.json (BL-17062). The BloomPUB itself
+        /// can vanish after the check found it, when a build replaces it, and so can the whole
+        /// cache folder, which lives in the temp folder that Windows and users clear (BL-17097).
+        /// </summary>
+        internal static long? GetCurrentBloomPubSize(string bloomPubPath, RabTrackedBookInfo book)
+        {
+            try
+            {
+                if (
+                    !BloomPubCache.IsCurrent(
+                        bloomPubPath,
+                        book.FolderPath,
+                        book.BloomPubSettingsKey
+                    )
+                )
+                    return null;
+                return new FileInfo(bloomPubPath).Length;
+            }
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                return null;
             }
         }
 
@@ -4461,25 +4483,6 @@ namespace Bloom.Publish.Rab
                 BloomPubMaker.kCreatorBloom,
                 _collectionSettings.Subscription
             );
-        }
-
-        /// <summary>
-        /// The size of an already-made BloomPUB, or null if there isn't one. The file can vanish
-        /// between checking for it and reading its size, e.g. when a build replaces it while the
-        /// size estimates are being worked out (BL-17062); that counts as not having one.
-        /// </summary>
-        private static long? GetBloomPubSizeIfPresent(string bloomPubPath)
-        {
-            if (!RobustFile.Exists(bloomPubPath))
-                return null;
-            try
-            {
-                return new FileInfo(bloomPubPath).Length;
-            }
-            catch (FileNotFoundException)
-            {
-                return null;
-            }
         }
 
         private static string FirstNonEmpty(params string[] values)
