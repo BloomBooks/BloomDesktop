@@ -246,9 +246,9 @@ export function getInlineImageActionTarget(
  * means the left dock, the middle third the middle band, and the right third the right dock.
  *
  * A position below the block is the bottom dock, wherever it is horizontally. In the middle
- * third, an image whose top is within one line below the end of the block's content (its text,
- * and any other image that hangs below the text) is the bottom dock too, because that is where
- * the bottom dock puts it (see IInlineImageContentEnd). Every other
+ * third, an image whose top is within one line below where the bottom dock puts it (after the
+ * text, any other image that hangs below the text, and the images already in the bottom dock) is
+ * the bottom dock too (see IInlineImageContentEnd). Every other
  * position inside the block belongs to the left, middle or right dock, all the way down.
  * continueDrag limits the offset so that the image stops with its bottom edge on the bottom of
  * the block.
@@ -291,9 +291,9 @@ export function computeInlineImageDock(
     if (fraction > 2 / 3) return kInlineImageRightClass;
     if (
         contentEnd &&
-        contentEnd.imageTopViewportPx >= contentEnd.contentEndViewportPx &&
+        contentEnd.imageTopViewportPx >= contentEnd.bottomDockTopViewportPx &&
         contentEnd.imageTopViewportPx <=
-            contentEnd.contentEndViewportPx + contentEnd.lineHeightViewportPx
+            contentEnd.bottomDockTopViewportPx + contentEnd.lineHeightViewportPx
     )
         return kInlineImageBottomClass;
     return kInlineImageMiddleClass;
@@ -306,9 +306,9 @@ export function computeInlineImageDock(
 export interface IInlineImageContentEnd {
     // Where the top of the image would be, from the pointer and the grab offsets.
     imageTopViewportPx: number;
-    // Where the bottom dock would put the image: below the last line of text in the block and
-    // below every other inline image, not counting the dragged one.
-    contentEndViewportPx: number;
+    // Where the top of the image is when it is in the bottom dock. tryBottomDock reads this by
+    // putting the image there.
+    bottomDockTopViewportPx: number;
     // The height of one line of the block's text.
     lineHeightViewportPx: number;
 }
@@ -1897,37 +1897,101 @@ function continueDrag(
         x: pointViewportPx.x + state.grabOffsetXViewportPx,
         y: pointViewportPx.y + state.grabOffsetYViewportPx,
     };
-    const degenerate = isLayoutEmpty(state);
-    const plainDock = computeInlineImageDock(
+    const dock = computeInlineImageDock(
         imageCenterViewportPx,
         state.editableContentBoxViewportPx,
     );
-    const dock = degenerate
-        ? plainDock
-        : computeInlineImageDock(
-              imageCenterViewportPx,
-              state.editableContentBoxViewportPx,
-              {
-                  imageTopViewportPx:
-                      imageCenterViewportPx.y -
-                      getImageBox(state.wrapper).height / 2,
-                  ...measureContentEnd(state),
-              },
-          );
-    const fitted = applyMove(
-        state,
-        pointViewportPx,
-        imageCenterViewportPx,
-        dock,
-    );
-    if (degenerate) return;
-    // The end of the content can only turn the middle band into the bottom dock. The bottom dock
-    // leaves half a line above the image, which the middle band does not, so in a block with
-    // just enough room below the text for the image, the bottom dock may not fit where the
-    // middle band does. Without this, the image would stop following the pointer there.
-    if (!fitted && dock !== plainDock)
-        applyMove(state, pointViewportPx, imageCenterViewportPx, plainDock);
+    if (isLayoutEmpty(state)) {
+        applyMove(state, pointViewportPx, imageCenterViewportPx, dock);
+        return;
+    }
+    if (
+        dock !== kInlineImageMiddleClass ||
+        !tryBottomDock(state, pointViewportPx, imageCenterViewportPx)
+    )
+        applyMove(state, pointViewportPx, imageCenterViewportPx, dock);
     scrollBlockToKeepDraggedImageInView(state);
+}
+
+/**
+ * In the middle third, puts the dragged image in the bottom dock when its top would be within a
+ * line below where the bottom dock puts it (see computeInlineImageDock). This tries the bottom
+ * dock and reads where the image landed, so that it needs to know nothing about the dock's CSS:
+ * that it clears the floats, its top margin, and that the image goes after the other images
+ * already there. If the image is not caught, or the bottom dock does not fit, everything is put
+ * back as it was and this returns false.
+ */
+function tryBottomDock(
+    state: IInlineImageDragState,
+    pointViewportPx: { x: number; y: number },
+    imageCenterViewportPx: { x: number; y: number },
+): boolean {
+    const before = recordArrangement(state);
+    if (
+        !applyMove(
+            state,
+            pointViewportPx,
+            imageCenterViewportPx,
+            kInlineImageBottomClass,
+        )
+    )
+        return false;
+    const imageBox = getImageBox(state.wrapper);
+    if (
+        computeInlineImageDock(
+            imageCenterViewportPx,
+            state.editableContentBoxViewportPx,
+            {
+                imageTopViewportPx:
+                    imageCenterViewportPx.y - imageBox.height / 2,
+                bottomDockTopViewportPx: imageBox.top,
+                lineHeightViewportPx: measureLineHeightViewportPx(state),
+            },
+        ) === kInlineImageBottomClass
+    )
+        return true;
+    restoreArrangement(state, before);
+    return false;
+}
+
+/**
+ * Where the dragged image and the floating images are, so that a move can be undone.
+ * reorderInFloatingCluster can move any of the floating wrappers in the DOM, so their order is
+ * recorded. The next sibling records where the wrapper is when it is in the bottom dock, after
+ * the text.
+ */
+interface IInlineImageArrangement {
+    dock: InlineImageDock;
+    offsetLayoutPx: number;
+    nextSibling: Element | null;
+    floatOrder: HTMLElement[];
+}
+
+function recordArrangement(
+    state: IInlineImageDragState,
+): IInlineImageArrangement {
+    return {
+        dock: state.dock,
+        offsetLayoutPx: getInlineImageOffsetLayoutPx(state.wrapper),
+        nextSibling: state.wrapper.nextElementSibling,
+        floatOrder: getFloatingWrappersIn(state.editable),
+    };
+}
+
+function restoreArrangement(
+    state: IInlineImageDragState,
+    arrangement: IInlineImageArrangement,
+): void {
+    state.editable.insertBefore(state.wrapper, arrangement.nextSibling);
+    setInlineImageDock(state.wrapper, arrangement.dock);
+    if (arrangement.floatOrder.length > 0)
+        putFloatsInOrder(state.editable, arrangement.floatOrder);
+    state.wrapper.style.setProperty(
+        kInlineImageOffsetVar,
+        `${arrangement.offsetLayoutPx}px`,
+    );
+    state.dock = arrangement.dock;
+    restoreNeighborImagePositions(state);
 }
 
 /**
@@ -1943,17 +2007,12 @@ function applyMove(
     const degenerate = isLayoutEmpty(state);
     // Remember how things were at the start of this move, when everything fitted inside the
     // block. Each move either ends with everything fitting or is undone back to this, so every
-    // move starts from an arrangement that fits. reorderInFloatingCluster can move any of the
-    // floating wrappers in the DOM, so their order is recorded. The next sibling records where
-    // the wrapper is when it starts in the bottom dock, after the text.
-    const previousDock = state.dock;
-    const previousOffsetLayoutPx = getInlineImageOffsetLayoutPx(state.wrapper);
-    const previousNextSibling = state.wrapper.nextElementSibling;
-    const previousFloatOrder = getFloatingWrappersIn(state.editable);
+    // move starts from an arrangement that fits.
+    const before = recordArrangement(state);
     const blockBottomViewportPx =
         state.editableContentBoxViewportPx.top +
         state.editableContentBoxViewportPx.height;
-    if (dock !== previousDock) {
+    if (dock !== before.dock) {
         // setInlineImageDock also moves the wrapper between the start and the end of the
         // editable, which is the only difference in the DOM between the bottom dock and the
         // others.
@@ -1981,7 +2040,9 @@ function applyMove(
         // measured from where the float would start without it, below any earlier float it
         // clears, so the room left is measured from the bottom of the wrapper as it is drawn
         // now. The distance from there to the block's bottom is how much more the current
-        // offset may grow. The bottom of the wrapper includes its bottom margin, which a left
+        // offset may grow. The offset is padding inside the wrapper, so it does not move the
+        // wrapper's top, and the limit holds for the new offset as exactly as for the current
+        // one. The bottom of the wrapper includes its bottom margin, which a left
         // or right image has to keep the text below it away. The block counts that margin as
         // content, so an offset that pushed it past the bottom would make the block overflow,
         // and the whole move would be undone, leaving the image wherever the move before it
@@ -2019,21 +2080,6 @@ function applyMove(
             kInlineImageOffsetVar,
             `${offsetLayoutPx}px`,
         );
-        if (!degenerate) {
-            // The maximum above was measured before this move's offset was applied, so a fast
-            // move can go a few pixels too far. Take back whatever is over.
-            const overViewportPx =
-                getWrapperBottomWithMarginViewportPx(
-                    state.wrapper,
-                    state.viewportPxPerLayoutPx,
-                ) - blockBottomViewportPx;
-            if (overViewportPx > 0) {
-                state.wrapper.style.setProperty(
-                    kInlineImageOffsetVar,
-                    `${clampInlineImageOffset(offsetLayoutPx - overViewportPx / state.viewportPxPerLayoutPx)}px`,
-                );
-            }
-        }
     }
     if (degenerate) return true;
     // Whatever this move did, the other images stay exactly where the user put them. This is
@@ -2053,105 +2099,27 @@ function applyMove(
             state.editable.scrollHeight - state.editable.clientHeight,
         )
     ) {
-        state.editable.insertBefore(state.wrapper, previousNextSibling);
-        setInlineImageDock(state.wrapper, previousDock);
-        if (previousFloatOrder.length > 0)
-            putFloatsInOrder(state.editable, previousFloatOrder);
-        state.wrapper.style.setProperty(
-            kInlineImageOffsetVar,
-            `${previousOffsetLayoutPx}px`,
-        );
-        state.dock = previousDock;
-        restoreNeighborImagePositions(state);
+        restoreArrangement(state, before);
         return false;
     }
     return true;
 }
 
-// Measures where the bottom dock would put the dragged image, and how tall a line of the block's
-// text is, for computeInlineImageDock.
-//
-// The bottom dock comes after the text and clears floats, so it starts below the last line of
-// text and below every other floating image, including a left or right image that hangs below
-// the text. Those are measured as they are on the page now: each move puts the other floating
-// images back where they were, so their places now are their places after the move, and the
-// text's wrapping around them is already in the bottom of its last line. When the dragged image
-// floats above the last line, that line is pushed below it, so the end of the content is below
-// the image's top and the image is not put in the bottom dock.
-//
-// The images already in the bottom dock are stacked below that, and the dragged image goes after
-// them. They are not measured where they are now, because they clear the dragged image when it
-// floats, so they move down with it and could never be reached. Only their heights are used. When
-// the dragged image is in the bottom dock already, the bottom-docked images after it stay after
-// it, so only those before it count.
-function measureContentEnd(
-    state: IInlineImageDragState,
-): Omit<IInlineImageContentEnd, "imageTopViewportPx"> {
-    const children = Array.from(state.editable.children).filter(
+// How tall a line of the block's text is on the screen, for computeInlineImageDock.
+function measureLineHeightViewportPx(state: IInlineImageDragState): number {
+    const textChildren = Array.from(state.editable.children).filter(
         (child) =>
-            child !== state.wrapper &&
+            !child.classList.contains(kInlineImageClass) &&
             // The bloom-ui elements, such as the format button, are not content.
             !child.classList.contains("bloom-ui"),
-    ) as HTMLElement[];
-    const isImage = (child: HTMLElement) =>
-        child.classList.contains(kInlineImageClass);
-    const textChildren = children.filter((child) => !isImage(child));
-    const lastText = textChildren[textChildren.length - 1];
-    const textEndViewportPx =
-        textChildren.length > 0
-            ? Math.max(
-                  ...textChildren.map(
-                      (child) => child.getBoundingClientRect().bottom,
-                  ),
-              )
-            : state.editableContentBoxViewportPx.top;
-    const floatsEndViewportPx = Math.max(
-        -Infinity,
-        ...getFloatingWrappersIn(state.editable)
-            .filter((wrapper) => wrapper !== state.wrapper)
-            .map((wrapper) =>
-                getWrapperBottomWithMarginViewportPx(
-                    wrapper,
-                    state.viewportPxPerLayoutPx,
-                ),
-            ),
     );
-    const bottomDocked = children.filter(
-        (child) =>
-            isImage(child) &&
-            getInlineImageDock(child) === kInlineImageBottomClass &&
-            !(
-                state.dock === kInlineImageBottomClass &&
-                state.wrapper.compareDocumentPosition(child) &
-                    Node.DOCUMENT_POSITION_FOLLOWING
-            ),
+    const style = getComputedStyle(
+        textChildren[textChildren.length - 1] ?? state.editable,
     );
-    const first = bottomDocked[0];
-    const last = bottomDocked[bottomDocked.length - 1];
-    // The first bottom-docked image's top margin keeps it off the text. Clearing the floats moves
-    // it down to the bottom of the lowest one's margin box if that is lower.
-    const contentEndViewportPx =
-        bottomDocked.length === 0
-            ? Math.max(textEndViewportPx, floatsEndViewportPx)
-            : Math.max(
-                  textEndViewportPx +
-                      getMarginViewportPx(
-                          first,
-                          "marginTop",
-                          state.viewportPxPerLayoutPx,
-                      ),
-                  floatsEndViewportPx,
-              ) +
-              last.getBoundingClientRect().bottom -
-              first.getBoundingClientRect().top;
-    const style = getComputedStyle(lastText ?? state.editable);
     // A line-height of "normal" has no number. Browsers draw it at about 1.2 times the font size.
     const lineHeightLayoutPx =
         parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
-    return {
-        contentEndViewportPx,
-        lineHeightViewportPx: lineHeightLayoutPx * state.viewportPxPerLayoutPx,
-    };
+    return lineHeightLayoutPx * state.viewportPxPerLayoutPx;
 }
 
 // Where the bottom of a wrapper's margin box is on the screen. The block has to hold the
@@ -2162,20 +2130,20 @@ function getWrapperBottomWithMarginViewportPx(
 ): number {
     return (
         wrapper.getBoundingClientRect().bottom +
-        getMarginViewportPx(wrapper, "marginBottom", viewportPxPerLayoutPx)
+        getBottomMarginViewportPx(wrapper, viewportPxPerLayoutPx)
     );
 }
 
-// The height of a wrapper's top or bottom margin on the screen. A left or right image has a
-// bottom margin, to keep the text below it away; a bottom-docked image has a top one.
-function getMarginViewportPx(
+// The height of a wrapper's bottom margin on the screen. A left or right image has one, to keep
+// the text below it away.
+function getBottomMarginViewportPx(
     wrapper: HTMLElement,
-    side: "marginTop" | "marginBottom",
     viewportPxPerLayoutPx: number,
 ): number {
     const marginLayoutPx =
         parseFloat(
-            wrapper.ownerDocument.defaultView!.getComputedStyle(wrapper)[side],
+            wrapper.ownerDocument.defaultView!.getComputedStyle(wrapper)
+                .marginBottom,
         ) || 0;
     return marginLayoutPx * viewportPxPerLayoutPx;
 }
@@ -2348,11 +2316,7 @@ function orderFloatsSoEachCanReachItsTop(
                     imageBox.top - contentTopViewportPx,
                 heightWithMarginViewportPx:
                     imageBox.height +
-                    getMarginViewportPx(
-                        wrapper,
-                        "marginBottom",
-                        viewportPxPerLayoutPx,
-                    ),
+                    getBottomMarginViewportPx(wrapper, viewportPxPerLayoutPx),
             };
         }),
     );
