@@ -329,16 +329,23 @@ namespace Bloom.Collection
 
         private void CheckFolderIsWritable()
         {
-            // Check that Bloom can write in the collection's folder: it may be read-only, lack
-            // write permission, or be protected by antivirus such as Windows Defender's
-            // "Controlled Folder Access". 'FolderPath' is the directory part of 'SettingsFilePath'.
-            // Throws so the caller can recover: when opening a collection this runs inside building
-            // the ProjectContext, and the caller (Program.OpenProjectWindow) tears that down,
-            // reports the problem, and offers the collection chooser; code that creates a
-            // collection reports it too. (BL-16728)
-            var problem = DefenderFolderProtectionCheck.GetWriteProblem(FolderPath);
+            // 'FolderPath' is the directory part of 'SettingsFilePath'.
+            ThrowIfFolderNotWritable(FolderPath);
+        }
+
+        /// <summary>
+        /// Check that Bloom can write in a collection's folder: it may be read-only, lack write
+        /// permission, or be protected by antivirus such as Windows Defender's "Controlled Folder
+        /// Access". Throws CollectionFolderNotWritableException so the caller can recover: when
+        /// opening a collection this runs inside building the ProjectContext, and the caller
+        /// (Program.OpenProjectWindow) tears that down, reports the problem, and offers the
+        /// collection chooser; code that creates a collection reports it too. (BL-16728)
+        /// </summary>
+        public static void ThrowIfFolderNotWritable(string collectionFolder)
+        {
+            var problem = DefenderFolderProtectionCheck.GetWriteProblem(collectionFolder);
             if (problem != null)
-                throw new CollectionFolderNotWritableException(FolderPath, problem);
+                throw new CollectionFolderNotWritableException(collectionFolder, problem);
         }
 
         // The initializer provides a default for collections (like in unit tests)

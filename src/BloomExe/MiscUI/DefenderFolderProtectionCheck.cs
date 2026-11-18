@@ -88,14 +88,14 @@ namespace Bloom.MiscUI
 
         /// <summary>
         /// Whether the exception we got writing in a folder means the user lacks permission or the
-        /// folder is read-only, as opposed to virus protection refusing us. likelyCause is what
-        /// FileAccessDiagnostics.Collect found; when it names a suspect (Controlled Folder Access
-        /// covering the folder, Avast with the folder under Documents...) we believe it, because
-        /// antivirus folder protection also refuses with UnauthorizedAccessException (BL-17056).
+        /// folder is read-only, as opposed to virus protection refusing us. antivirusSuspected is
+        /// what FileAccessDiagnostics.Collect found (Controlled Folder Access covering the folder,
+        /// Avast with the folder under Documents); when it is true we believe it, because antivirus
+        /// folder protection also refuses with UnauthorizedAccessException (BL-17056).
         /// </summary>
-        public static bool IsPermissionProblem(Exception writeProblem, string likelyCause)
+        public static bool IsPermissionProblem(Exception writeProblem, bool antivirusSuspected)
         {
-            return likelyCause == null && writeProblem is UnauthorizedAccessException;
+            return !antivirusSuspected && writeProblem is UnauthorizedAccessException;
         }
 
         /// <summary>
@@ -111,7 +111,8 @@ namespace Bloom.MiscUI
         {
             var details = FileAccessDiagnostics.Collect(
                 Path.Combine(failingFolder, "probe"),
-                out var likelyCause
+                out var likelyCause,
+                out var antivirusSuspected
             );
             Logger.WriteEvent(
                 $"Cannot write to {failingFolder}: {writeProblem.GetType().Name}: {writeProblem.Message}{Environment.NewLine}{details}"
@@ -120,7 +121,7 @@ namespace Bloom.MiscUI
                 "Errors.DefenderFolderProtectionHeading",
                 "This program cannot write to the folder {0}."
             );
-            var isPermissionProblem = IsPermissionProblem(writeProblem, likelyCause);
+            var isPermissionProblem = IsPermissionProblem(writeProblem, antivirusSuspected);
             string mainMsg;
             if (isPermissionProblem)
             {
@@ -135,11 +136,11 @@ namespace Bloom.MiscUI
                     "Errors.DefenderFolderProtection",
                     "This might be caused by Windows Defender \"Controlled Folder Access\" or some other virus protection."
                 );
-                // The likely cause names a product and setting, which a person helping the user
-                // needs, even though it is only in English.
-                if (likelyCause != null)
-                    mainMsg += Environment.NewLine + Environment.NewLine + likelyCause;
             }
+            // The likely cause names a product, setting or sync program, which a person helping
+            // the user needs, even though it is only in English.
+            if (likelyCause != null)
+                mainMsg += Environment.NewLine + Environment.NewLine + likelyCause;
             var msg =
                 string.Format(heading, failingFolder)
                 + Environment.NewLine

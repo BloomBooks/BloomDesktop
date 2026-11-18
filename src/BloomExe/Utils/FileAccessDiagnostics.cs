@@ -696,8 +696,23 @@ namespace Bloom.Utils
         /// </summary>
         public static string Collect(string path, out string likelyCause)
         {
+            return Collect(path, out likelyCause, out _);
+        }
+
+        /// <summary>
+        /// As Collect(path, out likelyCause), also saying whether the evidence points at antivirus
+        /// folder protection (Controlled Folder Access, or Avast with path under Documents) rather
+        /// than, say, a cloud sync program. Never throws.
+        /// </summary>
+        public static string Collect(
+            string path,
+            out string likelyCause,
+            out bool antivirusSuspected
+        )
+        {
             var bldr = new StringBuilder();
             likelyCause = null;
+            antivirusSuspected = false;
             try
             {
                 var exists = FileIsPresent(path, out var existence);
@@ -770,18 +785,21 @@ namespace Bloom.Utils
                 var avastActive = activeAntivirus.Any(name =>
                     name.IndexOf("Avast", StringComparison.OrdinalIgnoreCase) >= 0
                 );
+                var cfaCoversFile = ControlledFolderAccessCoversFile(
+                    cfa,
+                    path,
+                    protectedFolders,
+                    bloomAllowedByCfa
+                );
+                var avastSuspected = avastActive && underDocuments;
+                antivirusSuspected = cfaCoversFile || avastSuspected;
                 likelyCause = GetLikelyCause(
                     fileAttributes,
                     folderAttributes,
                     syncRoot,
-                    ControlledFolderAccessCoversFile(
-                        cfa,
-                        path,
-                        protectedFolders,
-                        bloomAllowedByCfa
-                    ),
+                    cfaCoversFile,
                     placeholderState,
-                    avastActive && underDocuments
+                    avastSuspected
                 );
             }
             catch (Exception e)

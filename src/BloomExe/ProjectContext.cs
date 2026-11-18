@@ -294,6 +294,12 @@ namespace Bloom
                     builder
                         .Register<CollectionSettings>(c =>
                         {
+                            // Before the Team Collection manager syncs the collection's files, so
+                            // that an unwritable folder is reported as such rather than as a Team
+                            // Collection failure. (BL-16728)
+                            CollectionSettings.ThrowIfFolderNotWritable(
+                                Path.GetDirectoryName(projectSettingsPath)
+                            );
                             c.Resolve<TeamCollectionManager>();
                             return GetCollectionSettings(projectSettingsPath);
                         })

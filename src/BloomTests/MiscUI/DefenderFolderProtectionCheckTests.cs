@@ -12,19 +12,17 @@ namespace BloomTests.MiscUI
     [TestFixture]
     public class DefenderFolderProtectionCheckTests
     {
-        private const string kAvastCause =
-            "Avast's Ransomware Shield may be blocking Bloom. You can allow Bloom in Avast under Protection > Ransomware Shield.";
-
         /// <summary>
-        /// Access denied with no suspect found is an ordinary permission or read-only problem.
+        /// Access denied with no antivirus suspected is an ordinary permission or read-only
+        /// problem, even when something else, such as a cloud sync program, is a likely cause.
         /// </summary>
         [Test]
-        public void IsPermissionProblem_AccessDeniedNoSuspect_True()
+        public void IsPermissionProblem_AccessDeniedNoAntivirusSuspected_True()
         {
             Assert.That(
                 DefenderFolderProtectionCheck.IsPermissionProblem(
                     new UnauthorizedAccessException("Access to the path is denied."),
-                    null
+                    false
                 ),
                 Is.True
             );
@@ -32,15 +30,15 @@ namespace BloomTests.MiscUI
 
         /// <summary>
         /// Avast's Ransomware Shield refuses with access denied too (BL-17056); when the diagnostics
-        /// suspect it, telling the user to ask for permission would send them the wrong way.
+        /// suspect antivirus, telling the user to ask for permission would send them the wrong way.
         /// </summary>
         [Test]
-        public void IsPermissionProblem_AccessDeniedWithAntivirusSuspect_False()
+        public void IsPermissionProblem_AccessDeniedWithAntivirusSuspected_False()
         {
             Assert.That(
                 DefenderFolderProtectionCheck.IsPermissionProblem(
                     new UnauthorizedAccessException("Access to the path is denied."),
-                    kAvastCause
+                    true
                 ),
                 Is.False
             );
@@ -56,7 +54,7 @@ namespace BloomTests.MiscUI
             Assert.That(
                 DefenderFolderProtectionCheck.IsPermissionProblem(
                     new FileNotFoundException("Could not find file."),
-                    null
+                    false
                 ),
                 Is.False
             );
