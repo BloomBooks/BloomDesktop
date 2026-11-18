@@ -889,9 +889,9 @@ namespace Bloom.ImageProcessing
         }
 
         /// <summary>
-        /// Tell the user that Bloom could not save the copyright and license they chose for the
-        /// image at filePath. A file that is merely in use is not corrupt, so that case gets a
-        /// message of its own. (BL-17093)
+        /// Tell the user that Bloom could not save the copyright and license they just chose in the
+        /// Copyright and License dialog for the image at filePath. A file that is merely in use is
+        /// not corrupt, so that case gets a message of its own. (BL-17093)
         /// </summary>
         public static void ReportImageMetadataSaveProblem(string filePath, Exception ex)
         {
@@ -900,12 +900,16 @@ namespace Bloom.ImageProcessing
                 ReportImageMetadataProblem(filePath, ex);
                 return;
             }
+            // The message leaves out the file name: names of pictures from Pixabay, Openverse and
+            // the like mean nothing to the user. The user has just clicked OK in the dialog, so
+            // "the information you just entered" says which picture. The log gets the path.
+            Logger.WriteEvent($"Could not save image metadata because {filePath} is in use");
             // We can't tell what has the file open (it could even be Bloom), hence "possibly".
-            var msgFmt = LocalizationManager.GetString(
-                "Errors.CouldNotModifyFileBecauseItIsInUse",
-                "Bloom could not change {0}, possibly because another program is using that file, so your changes to it were not saved. Wait a moment, then make the same change again. If that does not work, restarting your computer may help."
+            var msg = LocalizationManager.GetString(
+                "EditTab.ImageMetadata.CouldNotSaveBecauseFileInUse",
+                "Bloom could not save the copyright and license information you just entered, possibly because another program is using the picture's file. Please wait a moment, then open Copyright and License for this picture again and enter the information again. If this keeps happening, restarting your computer may help."
             );
-            NotifyUserOfImageMetadataProblem(string.Format(msgFmt, Path.GetFileName(filePath)), ex);
+            NotifyUserOfImageMetadataProblem(msg, ex);
         }
 
         /// <summary>
