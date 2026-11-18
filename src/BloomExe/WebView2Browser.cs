@@ -335,6 +335,16 @@ namespace Bloom
                 {
                     if (e.PermissionKind == CoreWebView2PermissionKind.ClipboardRead)
                         e.State = CoreWebView2PermissionState.Allow;
+                    // An e2e test that records a video asks for a fake camera (see
+                    // UseFakeCameraForE2eTests), and Chromium then has nothing to ask the user.
+                    else if (
+                        UseFakeCameraForE2eTests
+                        && (
+                            e.PermissionKind == CoreWebView2PermissionKind.Camera
+                            || e.PermissionKind == CoreWebView2PermissionKind.Microphone
+                        )
+                    )
+                        e.State = CoreWebView2PermissionState.Allow;
                     // An e2e run starts from a fresh browser profile, so the first thing the Sign
                     // Language tool does (ask for the camera) would put up WebView2's permission
                     // prompt, which no test can dismiss. Refuse, which is what happens on a machine
@@ -398,6 +408,15 @@ namespace Bloom
         private static bool _clearedCache;
         private static string _uiLanguageOfThisRun;
         private static bool _alreadyOpenedAWebView2Instance;
+
+        /// <summary>
+        /// True only in an e2e run whose test records a video: the BloomE2E fixture sets
+        /// BLOOM_E2E_FAKE_CAMERA=1 for it, and the run's browsers then get a camera and microphone
+        /// that Chromium makes up. Read only under --e2e, so it changes nothing for a user.
+        /// </summary>
+        private static bool UseFakeCameraForE2eTests =>
+            Program.RunningE2eTests
+            && Environment.GetEnvironmentVariable("BLOOM_E2E_FAKE_CAMERA") == "1";
 
         static int dataFolderCounter = 0;
 
@@ -619,6 +638,14 @@ namespace Bloom
                 // tests, in which case Chromium's fight over the port breaks WebView2 startup and fails the test
                 // (seen as flaky BookUploadAndDownloadTests upload failures on agents also running Bloom automation).
                 additionalBrowserArgs += $" --remote-debugging-port={RemoteDebuggingPort.Value} "; // allow external inspector connect
+            }
+            if (UseFakeCameraForE2eTests)
+            {
+                // Chromium makes up a camera and a microphone, and answers their permission
+                // prompts itself. The same for every browser of the run, since it depends only on
+                // how this Bloom was started.
+                additionalBrowserArgs +=
+                    " --use-fake-device-for-media-stream --use-fake-ui-for-media-stream";
             }
             if (featuresToDisable.Count > 0)
                 additionalBrowserArgs +=
