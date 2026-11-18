@@ -2166,17 +2166,17 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SizeEstimate.ActualSuffix">
         <source xml:lang="en">(actual)</source>
-        <target xml:lang="pt-PT" state="needs-translation">(actual)</target>
+        <target xml:lang="pt-PT" state="translated">(atual)</target>
         <note>ID: PublishTab.Apps.SizeEstimate.ActualSuffix</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SizeEstimate.EstimateSuffix">
         <source xml:lang="en">(estimate)</source>
-        <target xml:lang="pt-PT" state="needs-translation">(estimate)</target>
+        <target xml:lang="pt-PT" state="translated">(estimado)</target>
         <note>ID: PublishTab.Apps.SizeEstimate.EstimateSuffix</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.MeasureBooks">
         <source xml:lang="en">Measure exact sizes</source>
-        <target xml:lang="pt-PT" state="needs-translation">Measure exact sizes</target>
+        <target xml:lang="pt-PT" state="translated">Medir tamanhos exatos</target>
         <note>ID: PublishTab.Apps.MeasureBooks</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.MeasureBooks.Tooltip">
@@ -2479,9 +2479,9 @@
         <target xml:lang="pt-PT" state="final">Colar uma imagem para adicionar um personagem</target>
         <note>ID: AiImageEditor.Characters.PasteToAdd</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Error.AddReferenceImage">
+      <trans-unit id="AiImageEditor.Error.AddReferenceImage" approved="yes">
         <source xml:lang="en">Please add a reference image for this tool (drag from history or upload).</source>
-        <target xml:lang="pt-PT" state="translated">Adicione uma imagem de referência para esta ferramenta (arraste do histórico ou envie um arquivo).</target>
+        <target xml:lang="pt-PT" state="final">Adicione uma imagem de referência para esta ferramenta (arraste do histórico ou envie um arquivo).</target>
         <note>ID: AiImageEditor.Error.AddReferenceImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Error.CouldNotStartAuthentication" approved="yes">
@@ -2524,14 +2524,14 @@
         <target xml:lang="pt-PT" state="final">Ótimo, mas caro</target>
         <note>ID: AiImageEditor.Model.Badge.GreatButExpensive</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.google-gemini-3-1-flash-image.Description">
+      <trans-unit id="AiImageEditor.Model.google-gemini-3-1-flash-image.Description" approved="yes">
         <source xml:lang="en">Good for changing an image. It leaves alone the parts you did not ask it to change. It does not follow your instructions quite as well as Gemini 3 Pro.</source>
-        <target xml:lang="pt-PT" state="translated">Funciona bem para alterar uma imagem. Preserva as partes que você não pediu para mudar. Não segue as suas instruções tão bem quanto o Gemini 3 Pro.</target>
+        <target xml:lang="pt-PT" state="final">Funciona bem para alterar uma imagem. Preserva as partes que você não pediu para mudar. Não segue as suas instruções tão bem quanto o Gemini 3 Pro.</target>
         <note>ID: AiImageEditor.Model.google-gemini-3-1-flash-image.Description</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.google-gemini-3-pro-image.Description">
+      <trans-unit id="AiImageEditor.Model.google-gemini-3-pro-image.Description" approved="yes">
         <source xml:lang="en">Good for changing an image. It leaves alone the parts you did not ask it to change. It follows your instructions better than the others here, but it costs more.</source>
-        <target xml:lang="pt-PT" state="translated">Funciona bem para alterar uma imagem. Preserve as partes que você não pediu para mudar. Segue as suas instruções melhor do que as outras opções, mas custa mais.</target>
+        <target xml:lang="pt-PT" state="final">Funciona bem para alterar uma imagem. Preserve as partes que você não pediu para mudar. Segue as suas instruções melhor do que as outras opções, mas custa mais.</target>
         <note>ID: AiImageEditor.Model.google-gemini-3-pro-image.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.openai-gpt-image-2-5-sunburst.Description" approved="yes">
@@ -2704,14 +2704,14 @@
         <target xml:lang="pt-PT" state="final">Executar</target>
         <note>ID: AiImageEditor.Run.Go</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.NotAvailableInLookAround">
+      <trans-unit id="AiImageEditor.Run.NotAvailableInLookAround" approved="yes">
         <source xml:lang="en">Not available in look-around mode</source>
-        <target xml:lang="pt-PT" state="translated">Não disponível no modo "apenas explorar"</target>
+        <target xml:lang="pt-PT" state="final">Não disponível no modo "apenas explorar"</target>
         <note>ID: AiImageEditor.Run.NotAvailableInLookAround</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ScaleUp.ModelLimit">
+      <trans-unit id="AiImageEditor.ScaleUp.ModelLimit" approved="yes">
         <source xml:lang="en">Scale up as far as this model can, about {0}% of the size this page needs.</source>
-        <target xml:lang="pt-PT" state="translated">Ampliar o máximo que este modelo permite, cerca de {0}% do tamanho que esta página precisa.</target>
+        <target xml:lang="pt-PT" state="final">Ampliar o máximo que este modelo permite, cerca de {0}% do tamanho que esta página precisa.</target>
         <note>ID: AiImageEditor.ScaleUp.ModelLimit</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Section.Enhance" approved="yes">
@@ -2754,19 +2754,19 @@
         <target xml:lang="pt-PT" state="final">Configurações das Ferramentas de imagem com IA</target>
         <note>ID: AiImageEditor.Settings.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Shape.MatchContainer">
+      <trans-unit id="AiImageEditor.Shape.MatchContainer" approved="yes">
         <source xml:lang="en">Match Container</source>
-        <target xml:lang="pt-PT" state="translated">Ajustar ao espaço da imagem</target>
+        <target xml:lang="pt-PT" state="final">Ajustar ao espaço da imagem</target>
         <note>ID: AiImageEditor.Shape.MatchContainer</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Shape.MatchContainerTooltip">
+      <trans-unit id="AiImageEditor.Shape.MatchContainerTooltip" approved="yes">
         <source xml:lang="en">Image container on the page is {0} x {1}</source>
-        <target xml:lang="pt-PT" state="translated">O espaço da imagem na página mede {0} x {1}</target>
+        <target xml:lang="pt-PT" state="final">O espaço da imagem na página mede {0} x {1}</target>
         <note>ID: AiImageEditor.Shape.MatchContainerTooltip</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Shape.MatchImage">
+      <trans-unit id="AiImageEditor.Shape.MatchImage" approved="yes">
         <source xml:lang="en">Match Image</source>
-        <target xml:lang="pt-PT" state="translated">Manter a proporção da imagem</target>
+        <target xml:lang="pt-PT" state="final">Manter a proporção da imagem</target>
         <note>ID: AiImageEditor.Shape.MatchImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Shape.MatchImageTooltip" approved="yes">
@@ -2809,9 +2809,9 @@
         <target xml:lang="pt-PT" state="final">Imagens do livro</target>
         <note>ID: AiImageEditor.Strip.bookImages.Label</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.bookImages.Tip">
+      <trans-unit id="AiImageEditor.Strip.bookImages.Tip" approved="yes">
         <source xml:lang="en">Book images supplied by the current book.</source>
-        <target xml:lang="pt-PT" state="translated">Imagens fornecidas do livro atual.</target>
+        <target xml:lang="pt-PT" state="final">Imagens fornecidas do livro atual.</target>
         <note>ID: AiImageEditor.Strip.bookImages.Tip</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.characters.Label" approved="yes">
@@ -2849,14 +2849,14 @@
         <target xml:lang="pt-PT" state="final">Marque imagens com uma estrela para deixá-las em destaque.</target>
         <note>ID: AiImageEditor.Strip.starred.Tip</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.apply_localized_characters.Param.furtherInstructions.Placeholder">
+      <trans-unit id="AiImageEditor.Tool.apply_localized_characters.Param.furtherInstructions.Placeholder" approved="yes">
         <source xml:lang="en">Optional: explain which references map to which characters, or note any details to preserve.</source>
-        <target xml:lang="pt-PT" state="translated">Opcional: explique quais imagens de referência correspondem a quais personagens ou indique os detalhes a serem preservados.</target>
+        <target xml:lang="pt-PT" state="final">Opcional: explique quais imagens de referência correspondem a quais personagens ou indique os detalhes a serem preservados.</target>
         <note>ID: AiImageEditor.Tool.apply_localized_characters.Param.furtherInstructions.Placeholder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.apply_localized_characters.Title">
+      <trans-unit id="AiImageEditor.Tool.apply_localized_characters.Title" approved="yes">
         <source xml:lang="en">Apply Localized Characters</source>
-        <target xml:lang="pt-PT" state="translated">Aplicar as personagens adaptadas</target>
+        <target xml:lang="pt-PT" state="final">Aplicar as personagens adaptadas</target>
         <note>ID: AiImageEditor.Tool.apply_localized_characters.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.change_style.Param.extraInstructions" approved="yes">
@@ -2934,9 +2934,9 @@
         <target xml:lang="pt-PT" state="final">Edição personalizada</target>
         <note>ID: AiImageEditor.Tool.custom.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.ethnicity.Param.character">
+      <trans-unit id="AiImageEditor.Tool.ethnicity.Param.character" approved="yes">
         <source xml:lang="en">Target Character (optional; leave blank for all)</source>
-        <target xml:lang="pt-PT" state="translated">Personagem a alterar (opcional; deixe em branco para adaptar todas as personagens)</target>
+        <target xml:lang="pt-PT" state="final">Personagem a alterar (opcional; deixe em branco para adaptar todas as personagens)</target>
         <note>ID: AiImageEditor.Tool.ethnicity.Param.character</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.ethnicity.Param.ethnicity" approved="yes">
