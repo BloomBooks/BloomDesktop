@@ -12,6 +12,7 @@
 import { ILanguageNameValues } from "../toolbox/canvas/canvasControlTypes";
 import { theOneUndoStack } from "../undo/UndoStack";
 import { isInChangeLayoutMode } from "../undo/redoKeyBinding";
+import { showLanguagesInTranslationGroup } from "./translationGroupLanguages";
 
 export type LanguageRole = "V" | "N1" | "N2";
 
@@ -229,9 +230,9 @@ export function showRolesInGroup(
 
 /**
  * Make `group` store `setting` exactly as given, including no setting at all, and show the
- * languages it stands for. Where the group has no bloom-editable in one of those languages yet (a
- * cell made since the page loaded has only its first one), one is added. Returns the added ones,
- * which need the wiring that page load gives the rest.
+ * languages it stands for, in role order. Where the group has no bloom-editable in one of those
+ * languages yet (a cell made since the page loaded has only its first one), one is added. Returns
+ * the added ones, which need setUpBoxesBuiltAfterLoad.
  */
 export function showSettingInGroup(
     group: HTMLElement,
@@ -247,59 +248,11 @@ export function showSettingInGroup(
         rolesFromSetting(setting, languages),
         languages,
     );
-    const added = wanted
-        .filter((language) => !editableInLanguage(group, language.tag))
-        .map((language) => addEditable(group, language, languages));
-    const wantedTags = wanted.map((language) => language.tag);
-    Array.from(
-        group.querySelectorAll<HTMLElement>(":scope > .bloom-editable"),
-    ).forEach((editable) => {
-        Array.from(editable.classList)
-            .filter((name) => name.startsWith("bloom-visibility-code-"))
-            .forEach((name) => editable.classList.remove(name));
-        if (wantedTags.includes(editable.getAttribute("lang") ?? "")) {
-            editable.classList.add("bloom-visibility-code-on");
-        }
-    });
-    return added;
-}
-
-function editableInLanguage(
-    group: HTMLElement,
-    tag: string,
-): HTMLElement | undefined {
-    return (
-        group.querySelector<HTMLElement>(
-            `:scope > .bloom-editable[lang="${tag}"]`,
-        ) ?? undefined
+    return showLanguagesInTranslationGroup(
+        group,
+        wanted.map((language) => language.tag),
+        languages.map((language) => language.tag),
     );
-}
-
-// A new, empty editable in `language`, with the paragraph style of the group's other editables,
-// placed among them in role order so the languages read L1, L2, L3 down the cell.
-function addEditable(
-    group: HTMLElement,
-    language: ICellLanguage,
-    languages: ICellLanguage[],
-): HTMLElement {
-    const sibling = group.querySelector<HTMLElement>(
-        ":scope > .bloom-editable",
-    );
-    const styleClasses = sibling
-        ? Array.from(sibling.classList).filter((name) =>
-              name.endsWith("-style"),
-          )
-        : ["normal-style"];
-    const editable = group.ownerDocument.createElement("div");
-    editable.classList.add("bloom-editable", ...styleClasses);
-    editable.setAttribute("lang", language.tag);
-    editable.innerHTML = "<p></p>";
-    const later = languages
-        .slice(languages.indexOf(language) + 1)
-        .map((other) => editableInLanguage(group, other.tag))
-        .find((other) => other !== undefined);
-    group.insertBefore(editable, later ?? null);
-    return editable;
 }
 
 /**

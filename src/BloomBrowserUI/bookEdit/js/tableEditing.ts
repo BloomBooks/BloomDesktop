@@ -26,16 +26,9 @@ import "bloom-table/bloom-table-edit.css";
 import "./tableEditing.less";
 import { SetupImagesInContainer } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
-import { setupInlineImages } from "./inlineImages";
+import { setUpBoxesBuiltAfterLoad } from "./translationGroupLanguages";
 import { get, post } from "../../utils/bloomApi";
-import $ from "jquery";
-import BloomField from "../bloomField/BloomField";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
-import {
-    activateLongPressFor,
-    AddLanguageTags,
-    attachToCkEditor,
-} from "./bloomEditing";
 import {
     refreshTableFeatureStatus,
     tablesMayBeRestructured,
@@ -185,7 +178,7 @@ function installHostHooks(): void {
         return createElement(TableCellLanguagesSection, {
             groups,
             languages: cellLanguages,
-            onNewEditables: wireNewEditables,
+            onNewEditables: setUpBoxesBuiltAfterLoad,
         });
     });
     // A text cell's languages travel with the cell's other settings: into a new row or column
@@ -202,7 +195,7 @@ function installHostHooks(): void {
             const group = textGroupOfCell(cell);
             // undefined: the cell copied from is not a text cell, so it has no languages to give.
             if (!group || !cellLanguages || value === undefined) return;
-            wireNewEditables(
+            setUpBoxesBuiltAfterLoad(
                 showSettingInGroup(
                     group,
                     value === kNoSetting ? null : value,
@@ -242,18 +235,6 @@ function refreshCellLanguages(): void {
     });
 }
 
-// An editable added to a cell for a newly chosen language gets the wiring that page load gives
-// the others. Only the cells that gained one are wired: Paste properties over many cells calls
-// this once per cell.
-function wireNewEditables(editables: HTMLElement[]): void {
-    const cells = new Set<HTMLElement>();
-    editables.forEach((editable) => {
-        const cell = editable.closest<HTMLElement>(".bloom-cell");
-        if (cell) cells.add(cell);
-    });
-    cells.forEach((cell) => wireBloomContentOfNewCells(cell));
-}
-
 /**
  * Give the Bloom content of the cells inside `root` the wiring that Bloom
  * normally applies to a whole page as it loads, for the cells that have not had
@@ -284,40 +265,9 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
             ".bloom-editable:not([contenteditable])",
         ),
     );
-    // Every language of a group holds the same inline pictures, so an editable
-    // made since the page loaded (a language newly chosen for a cell, say) gets
-    // copies of them, as page load gives the others. Before CKEditor attaches,
-    // as at page load, and only in the cells that have such an editable.
-    new Set(
-        newEditables.map((editable) =>
-            editable.closest<HTMLElement>(".bloom-cell"),
-        ),
-    ).forEach((cell) => {
-        if (cell) setupInlineImages(cell);
-    });
-    // Page load marks a box in a right-to-left language dir="rtl", and the Format dialog's
-    // alignment and the paragraph marks of editMode.less go by that. The collection's
-    // stylesheet already gives the language its direction by [lang], so read it from there,
-    // for every box before the loop below writes to any, so the styles are worked out once.
-    const rightToLeft = new Set(
-        newEditables.filter(
-            (editable) => getComputedStyle(editable).direction === "rtl",
-        ),
-    );
-    newEditables.forEach((editable) => {
-        if (rightToLeft.has(editable)) editable.setAttribute("dir", "rtl");
-        // Must come before attachToCkEditor: CKEditor's inline mode decides
-        // whether the editor is read-only from the element's contenteditable
-        // state at the moment it attaches.
-        editable.setAttribute("contenteditable", "true");
-        BloomField.ManageField(editable);
-        attachToCkEditor(editable);
-        activateLongPressFor($(editable));
-    });
-    // Gives each cell the little tag naming the language it is in. Run on the
-    // whole root because it only looks at editables that are contenteditable,
-    // which the ones above have only just become.
-    AddLanguageTags(root);
+    // Typable, with CKEditor, its language tag, its group's inline pictures and its direction,
+    // as page load makes every other box.
+    setUpBoxesBuiltAfterLoad(newEditables);
     // `root` itself is one of these when a cell has just become a picture cell.
     const imageCellSelector = ".bloom-cell[data-content-type='image']";
     const imageCells = Array.from(
