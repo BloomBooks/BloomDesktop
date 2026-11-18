@@ -57,8 +57,17 @@ async function expectEveryCellShows(
     languages: string[],
     why: string,
 ): Promise<void> {
-    const shown = await getTableCellLanguages(page);
-    expect(shown, why).toEqual(shown.map((row) => row.map(() => languages)));
+    // The expected grid comes from the table's shape, read separately, so a table that lost
+    // cells, or had none, fails rather than matching itself.
+    const { rows, columns } = await getTableShape(page);
+    expect(
+        rows * columns,
+        "The table should have cells to check.",
+    ).toBeGreaterThan(0);
+    const expected = Array.from({ length: rows }, () =>
+        Array.from({ length: columns }, () => languages),
+    );
+    expect(await getTableCellLanguages(page), why).toEqual(expected);
 }
 
 test.describe("the languages of a table's text cells", () => {
