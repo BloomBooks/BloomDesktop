@@ -712,14 +712,26 @@ describe("dragging an inline image to the bottom of its block", () => {
         expect(overflowPx(group)).toBeLessThanOrEqual(1);
     };
 
-    // BL-17078: below the block, each third of its width means that third's own dock, at the
-    // bottom. (The test above this describe covers the middle third.) A side dock has a bottom
-    // margin, which the drag has to keep inside the block, or the move is undone.
+    // Where on the page a drag to the bottom of the block lets go: just above the block's bottom
+    // edge, which is further down than the picture can go, so Bloom stops it at the lowest place
+    // where it fits. (A drop below the block means the dock after the text instead.) In page
+    // coordinates for dragPictureTo, or in viewport coordinates for dragSlowly.
+    const bottomOfBlockOnPage = (group: HTMLElement) =>
+        group.getBoundingClientRect().bottom -
+        pageOf().getBoundingClientRect().top -
+        3;
+    const bottomOfBlockInViewport = (group: HTMLElement) =>
+        group.getBoundingClientRect().bottom - 3;
+
+    // BL-17078: dragged to the bottom of the block, a picture in each third of its width rests on
+    // the bottom in that third's dock. A side dock has a bottom margin, which the drag has to keep
+    // inside the block, or the move is undone.
     it.each([
         { x: 60, dockClass: kInlineImageLeftClass },
+        { x: 200, dockClass: kInlineImageMiddleClass },
         { x: 340, dockClass: kInlineImageRightClass },
     ])(
-        "leaves a picture dragged below the block at x=$x at the bottom, in $dockClass",
+        "leaves a picture dragged to the bottom of the block at x=$x at the bottom, in $dockClass",
         async ({ x, dockClass }) => {
             const group = makeTextBlock(400, 300, ["The end."]);
             const wrapper = await setUpImage(group, kInlineImageMiddleClass);
@@ -728,7 +740,7 @@ describe("dragging an inline image to the bottom of its block", () => {
                 Math.round(group.getBoundingClientRect().top),
             );
 
-            await dragPictureTo(wrapper, { x, y: 600 });
+            await dragPictureTo(wrapper, { x, y: bottomOfBlockOnPage(group) });
 
             expect(wrapper.classList.contains(dockClass)).toBe(true);
             expectAtBottomOfBlock(group, wrapper);
@@ -737,7 +749,7 @@ describe("dragging an inline image to the bottom of its block", () => {
             const block = group.getBoundingClientRect();
             if (dockClass === kInlineImageLeftClass)
                 expect(Math.round(picture.left)).toBe(Math.round(block.left));
-            else
+            else if (dockClass === kInlineImageRightClass)
                 expect(Math.round(picture.right)).toBe(Math.round(block.right));
         },
     );
@@ -747,7 +759,7 @@ describe("dragging an inline image to the bottom of its block", () => {
     it("moves a picture at the bottom of the block to the right side when it is dragged right", async () => {
         const group = makeTextBlock(400, 300, ["The end."]);
         const wrapper = await setUpImage(group, kInlineImageMiddleClass);
-        await dragPictureTo(wrapper, { x: 200, y: 600 });
+        await dragPictureTo(wrapper, { x: 200, y: bottomOfBlockOnPage(group) });
         // Sanity check: it is at the bottom, in the middle dock.
         expect(wrapper.classList.contains(kInlineImageMiddleClass)).toBe(true);
         expectAtBottomOfBlock(group, wrapper);
@@ -773,9 +785,12 @@ describe("dragging an inline image to the bottom of its block", () => {
         const start = centerOf(imgOf(wrapper));
         const tops: number[] = [imgOf(wrapper).getBoundingClientRect().top];
 
-        // 10px at a time, to well below the block.
-        await dragSlowly(start, { x: start.x, y: 600 }, 56, () =>
-            tops.push(imgOf(wrapper).getBoundingClientRect().top),
+        // A few pixels at a time, to the bottom of the block.
+        await dragSlowly(
+            start,
+            { x: start.x, y: bottomOfBlockInViewport(group) },
+            56,
+            () => tops.push(imgOf(wrapper).getBoundingClientRect().top),
         );
 
         // Sanity check: the picture did move on the way, not only at the end.
@@ -839,7 +854,7 @@ describe("dragging an inline image to the bottom of its block", () => {
         expect(topOf(second)).toBeGreaterThanOrEqual(bottomOf(first));
         const secondTopAtStart = topOf(second);
 
-        await dragPictureTo(first, { x: 200, y: 700 });
+        await dragPictureTo(first, { x: 200, y: bottomOfBlockOnPage(group) });
 
         // The first is at the very bottom, and the second has not moved.
         expect(bottomOf(first)).toBeLessThanOrEqual(blockBottom);
@@ -847,12 +862,15 @@ describe("dragging an inline image to the bottom of its block", () => {
         expect(Math.round(topOf(second))).toBe(Math.round(secondTopAtStart));
         const firstTopAtBottom = topOf(first);
 
-        // This drag is slow, as a person's is. The place below the block is taken, and a move
+        // This drag is slow, as a person's is. The bottom of the block is taken, and a move
         // that asks for it is undone, so one movement straight there would leave the picture
         // where it started.
         const secondTops: number[] = [secondTopAtStart];
-        await dragSlowly(centerOf(imgOf(second)), { x: 200, y: 700 }, 60, () =>
-            secondTops.push(topOf(second)),
+        await dragSlowly(
+            centerOf(imgOf(second)),
+            { x: 200, y: bottomOfBlockInViewport(group) },
+            60,
+            () => secondTops.push(topOf(second)),
         );
         secondTops.forEach((top, i) => {
             if (i > 0)
