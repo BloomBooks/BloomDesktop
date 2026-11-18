@@ -112,6 +112,7 @@ import {
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { removeNiceScrollArtifacts } from "./niceScrollCleanup";
+import { removeScrollOffsets, trackScrollOffsets } from "./scrollOffset";
 import { removeEditorChromeFromClone } from "./editorChromeCleanup";
 import { sendSnapshotNow, stopWatchingPageForSnapshots } from "./pageSnapshot";
 import { setupBookLinkGrids } from "./linkGrid";
@@ -1361,6 +1362,7 @@ export function bootstrap() {
     if ($("div.bloom-page").length === 1) {
         addScrollbarsToPage($("div.bloom-page")[0]);
     }
+    trackScrollOffsets(document);
     setupWheelZooming();
 }
 // The minimum time between two zoom requests to the server, in milliseconds.
@@ -1574,6 +1576,7 @@ function cleanCloneOfPageForSave(
     getToolboxBundleExports()?.removeToolMarkupFromPageClone(clonedPage);
 
     removeNiceScrollArtifacts(clonedPage);
+    removeScrollOffsets(clonedPage);
 
     removeEditingDebrisFromClone(clonedPage);
 }
