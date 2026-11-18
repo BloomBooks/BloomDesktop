@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
@@ -327,8 +328,9 @@ namespace BloomTests.WebLibraryIntegration
                 ResponseStatus = ResponseStatus.Completed,
                 StatusCode = HttpStatusCode.Accepted,
             };
+            // Constructing a Parameter directly is obsolete in RestSharp.
             response.Headers.Add(
-                new Parameter("Operation-Location", "status", ParameterType.HttpHeader)
+                new RestRequest().AddHeader("Operation-Location", "status").Parameters.Single()
             );
             return response;
         }
