@@ -9,7 +9,8 @@
 # "Build"), and the API lists a composite action as ONE step, so a build inside this action would
 # drop out of the report. The setup steps can live here because the report only ever adds them up:
 # it counts everything before "Build browser UI (production)" as setup. The builds are therefore
-# repeated in both workflows; when you change one, change the other.
+# repeated in nightly.yml (its build-and-test job and its BloomE2E shards) and in bot-verify.yml;
+# when you change one, change the others.
 #
 # The caller must check out the repository first: a local action is read from the checkout.
 

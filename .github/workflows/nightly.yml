@@ -564,7 +564,7 @@ jobs:
         name: BloomE2E shard ${{ matrix.shard }}
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e_tests }}
         runs-on: windows-latest
-        # A shard takes about half an hour, builds included. A job killed at this limit uploads
+        # A shard takes about 40 minutes, builds included. A job killed at this limit uploads
         # nothing, but the report job still says the shard was cancelled.
         timeout-minutes: 75
 
@@ -577,7 +577,7 @@ jobs:
             fail-fast: false
             matrix:
                 # Playwright's --shard splits by spec file, not by time, so the shards are only
-                # roughly even. Changing the count means changing the "/3" in the run step too.
+                # roughly even. The run step takes the count from strategy.job-total.
                 shard: [1, 2, 3]
 
         env:
@@ -595,7 +595,8 @@ jobs:
                   test-fonts: true
 
             # The same two builds as build-and-test; when you change how that job builds, change
-            # these too.
+            # these too. SkipBloomTests, as in bot-verify.yml: a shard only launches Bloom.exe, so it
+            # has no use for the C# test assembly.
             - name: Build browser UI (production)
               working-directory: src/BloomBrowserUI
               run: pnpm run build-prod
@@ -608,13 +609,12 @@ jobs:
             - name: Build
               working-directory: build
               shell: pwsh
-              run: msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER
+              run: msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER /p:SkipBloomTests=true
 
             # ----- BloomE2E tests -----
             # src/BloomE2E launches a real Bloom.exe on a throwaway copy of a collection, attaches
             # Playwright to its embedded WebView2 over CDP, and clicks through the UI the way a
-            # person would. Nothing ran these until now, so the suite could rot silently between the
-            # days a developer happened to run it — exactly what the component-tester harness did.
+            # person would.
             #
             # Like the visual-regression suite it needs BOTH builds (the Bloom.exe it launches, and
             # the front-end assets that Bloom loads its UI from) and the testing inputs fetched
@@ -630,7 +630,6 @@ jobs:
             # chromium.connectOverCDP, so Playwright launches no browser of its own and needs no
             # downloaded one.
             - name: Set up BloomE2E tests
-              id: setup_e2e_tests
               working-directory: src/BloomE2E
               shell: bash
               run: pnpm install --frozen-lockfile
@@ -643,8 +642,9 @@ jobs:
               working-directory: src/BloomE2E
               shell: bash
               env:
-                  PLAYWRIGHT_JUNIT_OUTPUT_NAME: ../../output/Tests/e2e-junit.xml
-                  SHARD: ${{ matrix.shard }}
+                  # Named for the shard, because the report job gathers every shard's file into
+                  # one folder, where files of one name would overwrite each other.
+                  PLAYWRIGHT_JUNIT_OUTPUT_NAME: ../../output/Tests/e2e-junit-shard-${{ matrix.shard }}.xml
                   # The html reporter would otherwise try to serve the report at the end of a
                   # failing run, which on a runner means a step that never returns.
                   PLAYWRIGHT_HTML_OPEN: never
@@ -667,7 +667,7 @@ jobs:
                   # at User scope; a developer without it has those tests skipped, while a run on CI
                   # without it fails, so a missing secret is noticed.
                   BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD: ${{ secrets.BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD }}
-              run: pnpm test --shard=$SHARD/3 --reporter=list,junit,html,./reporters/slowSteps.ts
+              run: pnpm test --shard=${{ matrix.shard }}/${{ strategy.job-total }} --reporter=list,junit,html,./reporters/slowSteps.ts
 
             # What explains an e2e failure: Playwright's HTML report, plus the trace and failure
             # screenshot its config keeps (trace: retain-on-failure, screenshot: only-on-failure),
@@ -714,7 +714,7 @@ jobs:
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: e2e-junit-shard-${{ matrix.shard }}
-                  path: output/Tests/e2e-junit.xml
+                  path: output/Tests/e2e-junit-shard-${{ matrix.shard }}.xml
                   retention-days: 14
                   if-no-files-found: ignore
 
@@ -825,15 +825,34 @@ jobs:
                   # too. A miss costs only that one timing, never the report.
                   $frontendBuildStep = "Build browser UI (production)"
                   $e2eStep = "Run BloomE2E tests"
-                  $stepTimes = $null
+                  # Every timing starts out unknown, and stays so if the lookup below fails.
+                  $stepTimes = @{}
                   $jobStarted = $null
                   $lastStepEnded = $null
-                  $mainStarted = $null
-                  $mainLastStepEnded = $null
+                  $mainSeconds = $null
                   $setupSeconds = $null
                   $reportingSeconds = $null
+                  $e2eStepSeconds = $null
                   $e2eJobSeconds = $null
                   $e2eJobCount = 0
+
+                  # Seconds from a job's or step's start to its end, or $null if it has not both.
+                  function Get-Span($item) {
+                      if (-not ($item.started_at -and $item.completed_at)) { return $null }
+                      return ([datetimeoffset]::Parse($item.completed_at) - [datetimeoffset]::Parse($item.started_at)).TotalSeconds
+                  }
+
+                  # When a job's last finished step ended, or $null if none has.
+                  function Get-LastStepEnd($job) {
+                      $last = $null
+                      foreach ($step in $job.steps) {
+                          if (-not $step.completed_at) { continue }
+                          $ended = [datetimeoffset]::Parse($step.completed_at)
+                          if ($null -eq $last -or $ended -gt $last) { $last = $ended }
+                      }
+                      return $last
+                  }
+
                   try {
                       $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = "application/vnd.github+json" }
                       $uri = "$($env:API_URL)/repos/$($env:REPO)/actions/runs/$($env:RUN_ID)/attempts/$($env:RUN_ATTEMPT)/jobs?per_page=100"
@@ -850,43 +869,29 @@ jobs:
                           if (-not $anyJob) { continue }
                           if ($anyJob.started_at) {
                               $started = [datetimeoffset]::Parse($anyJob.started_at)
-                              if ($null -eq $jobStarted -or $started -lt [datetimeoffset]::Parse($jobStarted)) { $jobStarted = $anyJob.started_at }
+                              if ($null -eq $jobStarted -or $started -lt $jobStarted) { $jobStarted = $started }
                           }
-                          foreach ($step in $anyJob.steps) {
-                              if ($step.completed_at) {
-                                  $ended = [datetimeoffset]::Parse($step.completed_at)
-                                  if ($null -eq $lastStepEnded -or $ended -gt $lastStepEnded) { $lastStepEnded = $ended }
-                              }
-                          }
+                          $ended = Get-LastStepEnd $anyJob
+                          if ($null -ne $ended -and ($null -eq $lastStepEnded -or $ended -gt $lastStepEnded)) { $lastStepEnded = $ended }
                       }
 
                       # BloomE2E takes as long as its slowest shard. Its suite line shows that
-                      # shard's test step; the "Also" line shows that shard's whole job.
-                      $e2eStepSeconds = $null
+                      # shard's test step; the last line of the report shows that shard's whole job.
+                      $e2eJobCount = $e2eJobs.Count
                       foreach ($e2eJob in $e2eJobs) {
-                          if ($e2eJob.started_at -and $e2eJob.completed_at) {
-                              $e2eJobCount++
-                              $span = ([datetimeoffset]::Parse($e2eJob.completed_at) - [datetimeoffset]::Parse($e2eJob.started_at)).TotalSeconds
-                              if ($null -eq $e2eJobSeconds -or $span -gt $e2eJobSeconds) { $e2eJobSeconds = $span }
-                          }
-                          $step = $e2eJob.steps | Where-Object { $_.name -eq $e2eStep } | Select-Object -First 1
-                          if ($step -and $step.started_at -and $step.completed_at) {
-                              $span = ([datetimeoffset]::Parse($step.completed_at) - [datetimeoffset]::Parse($step.started_at)).TotalSeconds
-                              if ($null -eq $e2eStepSeconds -or $span -gt $e2eStepSeconds) { $e2eStepSeconds = $span }
-                          }
+                          $span = Get-Span $e2eJob
+                          if ($null -ne $span -and ($null -eq $e2eJobSeconds -or $span -gt $e2eJobSeconds)) { $e2eJobSeconds = $span }
+                          $span = Get-Span ($e2eJob.steps | Where-Object { $_.name -eq $e2eStep } | Select-Object -First 1)
+                          if ($null -ne $span -and ($null -eq $e2eStepSeconds -or $span -gt $e2eStepSeconds)) { $e2eStepSeconds = $span }
                       }
 
                       if ($job) {
-                          $mainStarted = $job.started_at
-                          $stepTimes = @{}
                           foreach ($step in $job.steps) {
-                              if ($step.started_at -and $step.completed_at) {
-                                  $span = [datetimeoffset]::Parse($step.completed_at) - [datetimeoffset]::Parse($step.started_at)
-                                  $stepTimes[$step.name] = $span.TotalSeconds
-                                  $ended = [datetimeoffset]::Parse($step.completed_at)
-                                  if ($null -eq $mainLastStepEnded -or $ended -gt $mainLastStepEnded) { $mainLastStepEnded = $ended }
-                              }
+                              $span = Get-Span $step
+                              if ($null -ne $span) { $stepTimes[$step.name] = $span }
                           }
+                          $mainEnded = Get-LastStepEnd $job
+                          if ($job.started_at -and $mainEnded) { $mainSeconds = ($mainEnded - [datetimeoffset]::Parse($job.started_at)).TotalSeconds }
                           # Everything before the front-end build is toolchain setup and dependency
                           # installation: checkout, the dotnet/msbuild/pnpm/node actions, the binary
                           # dependencies and test inputs, pnpm install. Worth its own figure because it
@@ -908,10 +913,6 @@ jobs:
                               }
                           }
                       }
-                      if ($null -ne $e2eStepSeconds) {
-                          if (-not $stepTimes) { $stepTimes = @{} }
-                          $stepTimes[$e2eStep] = $e2eStepSeconds
-                      }
                   } catch {
                       # A report with no timings still tells you what broke, so never let this be
                       # the thing that silences the night.
@@ -931,10 +932,10 @@ jobs:
                       return "{0}s" -f $whole
                   }
 
-                  # Returns " (2m 50s)", ready to append, or "" when that step's timing is unknown.
-                  function Format-StepTime([string] $stepName) {
-                      if ($stepTimes -and $stepTimes.ContainsKey($stepName)) {
-                          return " ($(Format-Duration $stepTimes[$stepName]))"
+                  # Returns " (2m 50s)", ready to append, or "" when the timing is unknown ($null).
+                  function Format-SuiteTime($seconds) {
+                      if ($null -ne $seconds) {
+                          return " ($(Format-Duration $seconds))"
                       }
                       return ""
                   }
@@ -970,7 +971,6 @@ jobs:
                   }
 
                   function Get-FileCounts([string] $path) {
-                      if (-not (Test-Path -LiteralPath $path)) { return $null }
                       try { $xml = [xml](Get-Content -LiteralPath $path -Raw) } catch { return $null }
                       # A zero-byte file needs its own check and cannot rely on the catch above:
                       # Get-Content -Raw returns $null for one, and casting $null to [xml] yields
@@ -1018,7 +1018,7 @@ jobs:
                   # suite that failed without any individual test failing -- an inconclusive or empty
                   # result that only the publish step objected to -- where the numbers alone would
                   # look like a pass, so say plainly what happened.
-                  function Format-Suite([string] $label, [string] $outcome, [string] $resultsPath, [string] $stepName) {
+                  function Format-Suite([string] $label, [string] $outcome, [string] $resultsPath, $seconds) {
                       # No timing for a suite that never ran: GitHub reports a skipped step as
                       # having started and finished at the same instant, so it would read "(0s)",
                       # which looks like a suite that ran impossibly fast rather than one that sat
@@ -1026,7 +1026,7 @@ jobs:
                       if (-not $outcome -or $outcome -eq "skipped" -or $outcome -eq "cancelled") {
                           return Format-Outcome $label $outcome
                       }
-                      $time = Format-StepTime $stepName
+                      $time = Format-SuiteTime $seconds
 
                       $counts = Get-SuiteCounts $resultsPath
                       if (-not $counts) { return "$($glyphs["failure"]) $label - no results file$time" }
@@ -1057,11 +1057,11 @@ jobs:
                   # it got runners of its own. Paths match the five publish-test-results steps, as
                   # downloaded into this job; if you move a results file, move it in both places or
                   # this reports "no results file" for a suite that ran perfectly well.
-                  $lines += Format-Suite "TypeScript unit tests" $env:FRONTEND_TESTS "output/Tests/vitest-junit.xml" "Run browser UI tests"
-                  $lines += Format-Suite "C# unit tests" $env:CSHARP_TESTS "output/Tests/Release/x64/TestResults.xml" "Run C# tests"
-                  $lines += Format-Suite "BloomE2E tests" $e2eOutcome "output/Tests/e2e/*.xml" $e2eStep
-                  $lines += Format-Suite "React component tests" $env:COMPONENT_TESTS "output/Tests/component-tester-junit.xml" "Run component-tester tests"
-                  $lines += Format-Suite "Visual regression tests" $env:VISUAL_REGRESSION "output/Tests/visual-regression-junit.xml" "Run visual regression tests"
+                  $lines += Format-Suite "TypeScript unit tests" $env:FRONTEND_TESTS "output/Tests/vitest-junit.xml" $stepTimes["Run browser UI tests"]
+                  $lines += Format-Suite "C# unit tests" $env:CSHARP_TESTS "output/Tests/Release/x64/TestResults.xml" $stepTimes["Run C# tests"]
+                  $lines += Format-Suite "BloomE2E tests" $e2eOutcome "output/Tests/e2e/*.xml" $e2eStepSeconds
+                  $lines += Format-Suite "React component tests" $env:COMPONENT_TESTS "output/Tests/component-tester-junit.xml" $stepTimes["Run component-tester tests"]
+                  $lines += Format-Suite "Visual regression tests" $env:VISUAL_REGRESSION "output/Tests/visual-regression-junit.xml" $stepTimes["Run visual regression tests"]
                   # build-and-test's four suite steps, for the accounting at the end. BloomE2E ran
                   # in jobs of its own, so it is not part of that job's time.
                   $suiteSteps = @("Run browser UI tests", "Run C# tests", "Run component-tester tests", "Run visual regression tests")
@@ -1083,10 +1083,8 @@ jobs:
                   # answer when this script is replayed against a past run's API data, which is how
                   # it gets tested.
                   $elapsed = ""
-                  $total = $null
                   if ($jobStarted -and $lastStepEnded) {
-                      $total = $lastStepEnded - [datetimeoffset]::Parse($jobStarted)
-                      $elapsed = " · $(Format-Duration $total.TotalSeconds)"
+                      $elapsed = " · $(Format-Duration ($lastStepEnded - $jobStarted).TotalSeconds)"
                   }
 
                   # Built up as a list of lines and joined once, rather than as one array literal:
@@ -1102,13 +1100,11 @@ jobs:
                   # per-suite installs, the diagnostics and screenshot uploads, and the gaps between
                   # steps -- so the parts always add up. Then how long the slowest BloomE2E shard's
                   # whole job took, which ran alongside.
-                  $mainTotal = $null
-                  if ($mainStarted -and $mainLastStepEnded) { $mainTotal = $mainLastStepEnded - [datetimeoffset]::Parse($mainStarted) }
                   $restTimes = @()
                   $accounted = 0
                   if ($null -ne $setupSeconds) { $restTimes += "setup and install $(Format-Duration $setupSeconds)"; $accounted += $setupSeconds }
-                  if ($stepTimes -and $stepTimes.ContainsKey($frontendBuildStep)) { $restTimes += "front-end build $(Format-Duration $stepTimes[$frontendBuildStep])"; $accounted += $stepTimes[$frontendBuildStep] }
-                  if ($stepTimes -and $stepTimes.ContainsKey("Build")) {
+                  if ($stepTimes.ContainsKey($frontendBuildStep)) { $restTimes += "front-end build $(Format-Duration $stepTimes[$frontendBuildStep])"; $accounted += $stepTimes[$frontendBuildStep] }
+                  if ($stepTimes.ContainsKey("Build")) {
                       # Restoring the build tasks is the first thing the C# build needs, so it counts
                       # as part of that build.
                       $csharpBuild = $stepTimes["Build"]
@@ -1116,11 +1112,11 @@ jobs:
                       $restTimes += "C# build $(Format-Duration $csharpBuild)"; $accounted += $csharpBuild
                   }
                   if ($null -ne $reportingSeconds) { $restTimes += "reporting $(Format-Duration $reportingSeconds)"; $accounted += $reportingSeconds }
-                  if ($stepTimes -and $mainTotal) {
+                  if ($null -ne $mainSeconds) {
                       foreach ($suiteStep in $suiteSteps) {
                           if ($stepTimes.ContainsKey($suiteStep)) { $accounted += $stepTimes[$suiteStep] }
                       }
-                      $otherSeconds = [math]::Round($mainTotal.TotalSeconds) - [math]::Round($accounted)
+                      $otherSeconds = [math]::Round($mainSeconds) - [math]::Round($accounted)
                       if ($otherSeconds -gt 0) { $restTimes += "other $(Format-Duration $otherSeconds)" }
                   }
                   if ($restTimes.Count -gt 0) {
