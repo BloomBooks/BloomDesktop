@@ -67,13 +67,16 @@ One cause can break several tests at once; give them one card and list each test
 `**Test:**` line.
 
 A first look means about one level down, no deeper. Usually that is the error and the trace,
-plus the screenshot or the Bloom log from the run's artifacts (`e2e-report`,
-`component-tester-traces`, `bloom-diagnostics`). `bloom-diagnostics` is uploaded on every run
-that reached the visual-regression suite, green ones included. It holds Bloom's own logs
-(`Log*.txt` from `%TEMP%\SIL\Bloom`, one per Bloom the e2e and visual-regression suites
-launched), the Windows application event log, and the hung-Bloom watchdog's samples. It does not
-hold anything from the C# tests: they point `TEMP` at a folder of their own, which the nightly
-does not upload.
+plus the screenshot or the Bloom log from the run's artifacts (`e2e-report-shard-<n>`,
+`component-tester-traces`, `bloom-diagnostics`, `e2e-bloom-logs-shard-<n>`). The e2e suite runs
+in three shards, each a job of its own ("BloomE2E shard 1" and so on), so a failed e2e test's
+report and logs are in the artifacts of the shard that ran it. `bloom-diagnostics` is uploaded
+on every run that reached the visual-regression suite, green ones included. It holds Bloom's own
+logs (`Log*.txt` from `%TEMP%\SIL\Bloom`, one per Bloom the visual-regression suite launched),
+the Windows application event log, and the hung-Bloom watchdog's samples; each shard's
+`e2e-bloom-logs-shard-<n>` holds the same logs for the Blooms that shard launched. Neither holds
+anything from the C# tests: they point `TEMP` at a folder of their own, which the nightly does
+not upload.
 
 ```
 gh run download <id> --repo BloomBooks/BloomDesktop -n <artifact> -D <scratchpad folder>
