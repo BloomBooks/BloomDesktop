@@ -52,6 +52,8 @@ export function resetAbovePageControls(): void {
     // Off-screen (e.g. process-book) there is no workspace frame, so this is a no-op there.
     // (Reached via pageUnloading() in bloomEditing.ts.)
     tryGetWorkspaceBundleExports()?.setToolboxEnabled(true);
+    // A game page that was in Play is going away; the next page sets this again if it is one.
+    tryGetWorkspaceBundleExports()?.setEditingDisabledForPlay(false);
 
     const container = document.getElementsByClassName(
         "above-page-control-container",

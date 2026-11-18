@@ -13,7 +13,7 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
 import { editablePageFrame, waitForEditablePage } from "./bookMaking";
-import { realClick } from "./realClick";
+import { realClick, waitForClickToSettle } from "./realClick";
 
 /** The book's appearance settings that tests here change. Only these fields. */
 export interface IBookAppearance {
@@ -258,6 +258,27 @@ export async function followEdgeToEdgeFullBleedWarningLink(
     ).toBeVisible();
     await realClick(warning.getByRole("button"));
     await expectBookSettingsPageShowing(page, "Print Publishing");
+}
+
+/**
+ * Press the Book and Page Settings button with a real mouse click, then wait two animation frames
+ * in the shell document, and no longer. For a test of whether the button responds at all, such as
+ * while a game is being played and the top bar's editing controls are disabled. The button's click
+ * handler opens the dialog by setting React state in this same document, so by then the dialog is
+ * in the DOM if the click reached the button: isBookSettingsDialogShowing can be asked at once,
+ * for either answer. Found by its test id: disabled (inert) controls are out of the accessibility
+ * tree, where openBookSettings looks.
+ */
+export async function pressBookSettingsButton(page: Page): Promise<void> {
+    await realClick(page.getByTestId("book-settings-button"));
+    await waitForClickToSettle(page);
+}
+
+/** True while the Book and Page Settings dialog is open. */
+export async function isBookSettingsDialogShowing(
+    page: Page,
+): Promise<boolean> {
+    return (await bookSettingsDialog(page).count()) > 0;
 }
 
 /** Close Book and Page Settings with Cancel, so nothing changed in it is saved. */

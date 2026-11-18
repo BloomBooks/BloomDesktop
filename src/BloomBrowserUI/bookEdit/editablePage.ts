@@ -17,6 +17,7 @@ import {
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
+import { installPlayModeEditBlocker } from "./js/playModeEditBlocker";
 import {
     getPageLoadId,
     isSnapshotStreamIdle,
@@ -460,6 +461,8 @@ $(document).ready(() => {
     // The one undo stack lives in this frame and starts empty with each page load (see
     // undo/pageUndo.ts). This registers the pre-existing undo mechanisms with it and binds Ctrl+Y.
     setUpPageUndo();
+    // Keys and clipboard actions don't edit a game page while it is being played.
+    installPlayModeEditBlocker(window);
     // Start sending the page's content to C# (see pageSnapshot.ts), but not until C# has accepted
     // this load, or it would refuse what we send. (The notice normally went at DOMContentLoaded;
     // asking again just returns that post.)

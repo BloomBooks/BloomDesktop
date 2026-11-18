@@ -1,8 +1,5 @@
 import { getImageFromCanvasElement } from "../bloomImages";
-import {
-    kBackgroundImageClass,
-    kCanvasElementClass,
-} from "../../toolbox/canvas/canvasElementConstants";
+import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 
 export type ComicEditingSuspendedState =
     | "none"
@@ -36,9 +33,18 @@ export class CanvasElementEditingSuspension {
     // process that affects layout is happening (current example: origami layout tool is active),
     // or because we're testing a bloom game.
     // When in one of the latter states, it may be inferred that isComicEditingOn was true when
-    // suspendComicEditing was called, that it is now false, and that resumeComicEditing should
-    // turn it on again.
+    // suspendComicEditing was called, that it is now false, and that resuming should turn it on
+    // again: resumeComicEditing for every state but forGamePlayMode, which only
+    // endGamePlayModeSuspension ends.
+    // Only one reason is remembered, so two must never overlap. A game's Play tab is the one that
+    // could: the game page's tabs stay usable whatever tool is open. Image descriptions, the only
+    // tool suspension a game page can have, disable Play while they are showing, and end it if they
+    // come on during it (GameTool's leavePlayBeforeShowingImageDescriptions); drags of origami
+    // splitters and jQuery resizes don't happen on game pages.
     private suspendedState: ComicEditingSuspendedState = "none";
+
+    // The page's text boxes that Play made uneditable, to make editable again when it ends.
+    private textDisabledForPlay: Element[] = [];
 
     private splitterResizeObservers: ResizeObserver[] = [];
     private draggingSplitter = false;
@@ -121,23 +127,35 @@ export class CanvasElementEditingSuspension {
         }
 
         if (forWhat === "forGamePlayMode") {
-            const allCanvasElements = Array.from(
-                document.getElementsByClassName(kCanvasElementClass),
-            );
-            allCanvasElements.forEach((element) => {
-                const editables = Array.from(
-                    element.getElementsByClassName("bloom-editable"),
-                );
-                editables.forEach((editable) => {
-                    editable.removeAttribute("contenteditable");
-                });
-            });
+            this.disablePageTextForPlay();
         }
 
         this.suspendedState = forWhat;
     };
 
+    // Resume comic editing after a suspension for anything but a game's Play mode, which only the
+    // game's tab control may end (endGamePlayModeSuspension). Hiding the toolbox during Play (its
+    // toggle stays usable) closes the open tool, and some tools call this as they close whether or
+    // not they suspended anything (the Talking Book tool does); that must not make the game's text
+    // editable mid-Play.
     public resumeComicEditing = (): void => {
+        if (this.suspendedState === "forGamePlayMode") {
+            return;
+        }
+        this.resume();
+    };
+
+    // End the suspension of comic editing for a game's Play mode, and no other. (Choosing a game tab
+    // other than Play calls this, and must not end, say, the suspension for showing image
+    // descriptions.)
+    public endGamePlayModeSuspension = (): void => {
+        if (this.suspendedState !== "forGamePlayMode") {
+            return;
+        }
+        this.resume();
+    };
+
+    private resume = (): void => {
         if (this.suspendedState === "none") {
             return;
         }
@@ -151,21 +169,35 @@ export class CanvasElementEditingSuspension {
             this.setupSplitterEventHandling();
         }
         if (this.suspendedState === "forGamePlayMode") {
-            const allCanvasElements = Array.from(
-                document.getElementsByClassName(kCanvasElementClass),
-            );
-            allCanvasElements.forEach((element) => {
-                const editables = Array.from(
-                    element.getElementsByClassName("bloom-editable"),
-                );
-                editables.forEach((editable) => {
-                    editable.setAttribute("contenteditable", "true");
-                });
-            });
+            this.restorePageTextAfterPlay();
             this.host.setupControlFrame();
         }
         this.suspendedState = "none";
         this.host.turnOnCanvasElementEditing();
+    };
+
+    // Play mode is for trying the page out, not editing it, so it makes every text box on the page
+    // uneditable. It sets the attribute to "false" rather than removing it: an attribute put back
+    // is put back last, and Bloom saves a page only when its HTML has changed, so a page that had
+    // been played would look edited on its next visits. (gamePlayMode.ts sets it back to "true" in
+    // a copy of the page saved during Play.) Only the boxes that were editable are touched, and
+    // only those are made editable again: a read-only field has no contenteditable to begin with.
+    private disablePageTextForPlay = (): void => {
+        this.textDisabledForPlay = Array.from(
+            document.querySelectorAll(
+                '.bloom-page .bloom-editable[contenteditable="true"]',
+            ),
+        );
+        this.textDisabledForPlay.forEach((bloomEditable) =>
+            bloomEditable.setAttribute("contenteditable", "false"),
+        );
+    };
+
+    private restorePageTextAfterPlay = (): void => {
+        this.textDisabledForPlay.forEach((bloomEditable) =>
+            bloomEditable.setAttribute("contenteditable", "true"),
+        );
+        this.textDisabledForPlay = [];
     };
 
     private dividerMouseDown = (_ev: Event) => {

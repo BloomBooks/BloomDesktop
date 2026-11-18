@@ -19,6 +19,7 @@
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiPost } from "./api";
 import { editBook } from "./bookMaking";
+import { realClick, waitForClickToSettle } from "./realClick";
 
 /** The tool ids Bloom's toolbox uses, as the accordion headers carry them in data-toolid. */
 export type ToolId =
@@ -233,20 +234,12 @@ export async function getExpandedTool(page: Page): Promise<ToolId | undefined> {
 }
 
 /**
- * Wait until the toolbox has finished reacting to what just happened in it: two animation frames
- * in the toolbox's own document, by which time React has committed any re-render a click caused.
- * This is for a test that has to show a click changed NOTHING, where there is no new state to
- * wait for.
+ * Wait until the toolbox has finished reacting to what just happened in it (waitForClickToSettle
+ * in the toolbox's own document). This is for a test that has to show a click changed NOTHING,
+ * where there is no new state to wait for.
  */
 async function waitForToolboxToSettle(page: Page): Promise<void> {
-    await toolboxFrame(page).evaluate(
-        () =>
-            new Promise<void>((resolve) =>
-                requestAnimationFrame(() =>
-                    requestAnimationFrame(() => resolve()),
-                ),
-            ),
-    );
+    await waitForClickToSettle(toolboxFrame(page));
 }
 
 /**
@@ -260,6 +253,19 @@ export async function clickToolHeader(page: Page, tool: ToolId): Promise<void> {
     const frame = await showToolbox(page);
     const header = await waitForToolHeader(page, frame, tool);
     await header.click();
+    await waitForToolboxToSettle(page);
+}
+
+/**
+ * Press a tool's header with a real mouse click and wait only for the toolbox to settle, not for
+ * anything to change. For a test of whether the toolbox responds at all, such as while a game is
+ * being played and the toolbox is disabled (inert, so a Playwright click would wait for it to be
+ * clickable and time out).
+ */
+export async function pressToolHeader(page: Page, tool: ToolId): Promise<void> {
+    const frame = await showToolbox(page);
+    const header = await waitForToolHeader(page, frame, tool);
+    await realClick(header);
     await waitForToolboxToSettle(page);
 }
 
