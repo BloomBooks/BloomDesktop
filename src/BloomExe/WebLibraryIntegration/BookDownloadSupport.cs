@@ -47,9 +47,8 @@ namespace Bloom.WebLibraryIntegration
                 }
                 catch (CollectionFolderNotWritableException notWritable)
                 {
-                    // This runs at startup, before any collection opens, and Bloom can't go on
-                    // without somewhere to save; like the startup check of Documents, explain and
-                    // exit. (BL-16728)
+                    // This runs at startup, before any collection opens. Explain, then exit as
+                    // Bloom always has when it couldn't make this folder. (BL-16728)
                     DefenderFolderProtectionCheck.ReportProblem(notWritable);
                     Environment.Exit(-1);
                 }

@@ -3043,12 +3043,12 @@
       <trans-unit id="Errors.DefenderFolderProtection">
         <source xml:lang="en">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</source>
         <note>ID: Errors.DefenderFolderProtection</note>
-        <note>Second paragraph of a message whose first line is Errors.DefenderFolderProtectionHeading. Shown when Bloom cannot write in a collection's folder and antivirus may be the cause. "Controlled Folder Access" is the name of a setting in Windows Security; use the name Windows shows in your language, if it is translated.</note>
+        <note>Second paragraph of a message whose first line is Errors.DefenderFolderProtectionHeading. Shown when Bloom cannot write in a folder it needs (a collection's folder, or Documents) and antivirus may be the cause. "Controlled Folder Access" is the name of a setting in Windows Security; use the name Windows shows in your language, if it is translated.</note>
       </trans-unit>
       <trans-unit id="Errors.DefenderFolderProtectionHeading">
         <source xml:lang="en">This program cannot write to the folder {0}.</source>
         <note>ID: Errors.DefenderFolderProtectionHeading</note>
-        <note>First line of a message shown on Windows when Bloom cannot write in a collection's folder, for example because it is read-only, the user lacks permission, or antivirus blocks it. {0} is the folder that Bloom failed to write to.</note>
+        <note>First line of a message shown on Windows when Bloom cannot write in a folder it needs (a collection's folder, or Documents), for example because it is read-only, the user lacks permission, or antivirus blocks it. {0} is the folder that Bloom failed to write to.</note>
       </trans-unit>
       <trans-unit id="Errors.FolderNotWritable" translate="no">
         <source xml:lang="en">You may not have permission to change files there, or the folder may be read-only. Move the collection to a folder you can change, such as Documents, or ask whoever manages this computer or network for permission.</source>

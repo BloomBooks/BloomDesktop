@@ -100,7 +100,7 @@ namespace BloomTests.Collection
         /// </summary>
         [Test]
         [Platform(Include = "Win")]
-        public void ThrowIfFolderNotWritable_CollectionFolderDenied_Throws()
+        public void ThrowIfCollectionFolderNotWritable_CollectionFolderDenied_Throws()
         {
             var settingsPath = CreateCollectionSettings(
                 _folder.Path,
@@ -117,7 +117,9 @@ namespace BloomTests.Collection
             using (DenyWrite(folder))
             {
                 var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
-                    CollectionSettings.ThrowIfFolderNotWritable(folder.FullName)
+                    DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(
+                        folder.FullName
+                    )
                 );
                 Assert.That(thrown.FolderPath, Is.EqualTo(folder.FullName));
                 // What DefenderFolderProtectionCheck.IsPermissionProblem treats as a permission

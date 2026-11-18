@@ -14,6 +14,7 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.FontProcessing;
 using Bloom.ImageProcessing;
+using Bloom.MiscUI;
 using Bloom.Publish;
 using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.BloomPub;
@@ -90,12 +91,14 @@ namespace Bloom
                 if (RobustFile.Exists(SettingsPath))
                 {
                     _collectionLock.Lock();
-                    // Before the Team Collection manager syncs the collection's files, so that an
-                    // unwritable folder is reported as such rather than as a Team Collection
-                    // failure. (BL-16728)
-                    CollectionSettings.ThrowIfFolderNotWritable(
-                        Path.GetDirectoryName(SettingsPath)
-                    );
+                    // Editing needs a writable folder; a command-line run (the harvester, font
+                    // analytics, bulk upload) may only read. Check before the Team Collection
+                    // manager syncs the collection's files, so that an unwritable folder is
+                    // reported as such rather than as a Team Collection failure. (BL-16728)
+                    if (!Program.RunningInConsoleMode)
+                        DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(
+                            Path.GetDirectoryName(SettingsPath)
+                        );
                 }
 
                 // BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.

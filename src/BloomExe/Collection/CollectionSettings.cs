@@ -331,22 +331,11 @@ namespace Bloom.Collection
                     throw new CollectionFolderNotWritableException(collectionDirectory, e);
                 }
 
-                ThrowIfFolderNotWritable(FolderPath);
+                DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(
+                    collectionDirectory
+                );
                 Save();
             }
-        }
-
-        /// <summary>
-        /// Throws CollectionFolderNotWritableException if Bloom cannot write in collectionFolder (it
-        /// may be read-only, lack write permission, or be protected by antivirus). Opening a
-        /// collection for editing (ProjectContext) and creating one call it; callers that can
-        /// recover report it with DefenderFolderProtectionCheck.ReportProblem. (BL-16728)
-        /// </summary>
-        public static void ThrowIfFolderNotWritable(string collectionFolder)
-        {
-            var problem = DefenderFolderProtectionCheck.GetWriteProblem(collectionFolder);
-            if (problem != null)
-                throw new CollectionFolderNotWritableException(collectionFolder, problem);
         }
 
         // The initializer provides a default for collections (like in unit tests)

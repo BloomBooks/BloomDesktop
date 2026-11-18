@@ -11,9 +11,9 @@ using SIL.Reporting;
 namespace Bloom.MiscUI
 {
     /// <summary>
-    /// Thrown when Bloom cannot write in a collection's folder, so the collection cannot be opened.
-    /// The caller that opens collections reports it (see ReportProblem) and offers the collection
-    /// chooser, rather than Bloom exiting. (BL-16728)
+    /// Thrown when Bloom cannot write in a collection's folder, so the collection cannot be opened
+    /// or created there. Callers report it with DefenderFolderProtectionCheck.ReportProblem.
+    /// (BL-16728)
     /// </summary>
     public class CollectionFolderNotWritableException : ApplicationException
     {
@@ -53,10 +53,22 @@ namespace Bloom.MiscUI
         }
 
         /// <summary>
+        /// Throws CollectionFolderNotWritableException if Bloom cannot write in collectionFolder (it
+        /// may be read-only, lack write permission, or be protected by antivirus). Shows nothing
+        /// to the user; callers report it with ReportProblem. (BL-16728)
+        /// </summary>
+        public static void ThrowIfCollectionFolderNotWritable(string collectionFolder)
+        {
+            var problem = GetWriteProblem(collectionFolder);
+            if (problem != null)
+                throw new CollectionFolderNotWritableException(collectionFolder, problem);
+        }
+
+        /// <summary>
         /// Try to create a file in the folder. Returns null if that works (or we are not on
         /// Windows), otherwise the exception we got. Shows nothing to the user.
         /// </summary>
-        public static Exception GetWriteProblem(string folder)
+        private static Exception GetWriteProblem(string folder)
         {
             if (!Platform.IsWindows)
             {
