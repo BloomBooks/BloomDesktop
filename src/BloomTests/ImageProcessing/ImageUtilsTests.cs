@@ -1216,6 +1216,27 @@ namespace BloomTests.ImageProcessing
         }
 
         /// <summary>
+        /// BL-17093: cropping, rotating and trimming a picture copy its credits into a file
+        /// Bloom has just written, which antivirus may still be scanning. Rather than silently
+        /// dropping the credits, the copy must wait for the file to be free.
+        /// </summary>
+        [Test]
+        public void CopyCoreMetadata_DestinationBrieflyHeldOpenByAnotherReader_WaitsAndCopies()
+        {
+            AssertSaveWaitsForFileHeldOpenBriefly(
+                (imagePath, copyright) =>
+                {
+                    // The reader only blocks writing, so the destination can serve as the source's
+                    // starting point.
+                    var sourcePath = Path.Combine(Path.GetDirectoryName(imagePath), "source.jpg");
+                    RobustFile.Copy(imagePath, sourcePath);
+                    new Metadata { CopyrightNotice = copyright }.Write(sourcePath);
+                    ImageUtils.CopyCoreMetadata(sourcePath, imagePath);
+                }
+            );
+        }
+
+        /// <summary>
         /// Copy a test image into a temporary folder and call save(imagePath, copyright) while
         /// another reader holds the image open for four seconds: longer than libpalaso's own
         /// retries (about two seconds) but only a few seconds in all, as a virus scan of a fresh

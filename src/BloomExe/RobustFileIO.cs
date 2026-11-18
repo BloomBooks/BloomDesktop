@@ -59,6 +59,28 @@ namespace Bloom
         }
 
         /// <summary>
+        /// Replace all the metadata in the image file at path with just the intellectual-property
+        /// fields (copyright, license, creator...) of meta. Existing tags are cleared first because
+        /// stray tags can trip up TagLib when we write (BL-16058). The file has usually just been
+        /// written, so this waits for it if something else still has it open (BL-17093).
+        /// </summary>
+        public static void ReplaceMetadataWithIntellectualPropertyOnly(Metadata meta, string path)
+        {
+            RetryOnceIfFileInUse(
+                path,
+                () =>
+                {
+                    using (var tagFile = CreateTaglibFile(path))
+                    {
+                        tagFile.RemoveTags(TagLib.TagTypes.AllTags);
+                        SaveTaglibFile(tagFile);
+                    }
+                    meta.WriteIntellectualPropertyOnly(path);
+                }
+            );
+        }
+
+        /// <summary>
         /// Get the image metadata from the file as reliably as possible.
         /// </summary>
         public static Metadata MetadataFromFile(string path)

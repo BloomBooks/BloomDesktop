@@ -1982,11 +1982,18 @@ namespace Bloom.ImageProcessing
                     if (makeTransparent)
                         ApplyBloomTransparencyToFile(path);
                     // Copy metadata from older file to the new one.  GraphicsMagick does a poor job on metadata.
-                    using (var newMeta = RobustFileIO.CreateTaglibFile(path))
-                    {
-                        CopyTags(oldMetaData, newMeta);
-                        RobustFileIO.SaveTaglibFile(newMeta);
-                    }
+                    // We just rewrote the file, so something may still have it open. (BL-17093)
+                    RobustFileIO.RetryOnceIfFileInUse(
+                        path,
+                        () =>
+                        {
+                            using (var newMeta = RobustFileIO.CreateTaglibFile(path))
+                            {
+                                CopyTags(oldMetaData, newMeta);
+                                RobustFileIO.SaveTaglibFile(newMeta);
+                            }
+                        }
+                    );
                     if (progress != null)
                         Application.DoEvents(); // allow progress report to work
                     return true;
@@ -3503,14 +3510,6 @@ namespace Bloom.ImageProcessing
                 {
                     try
                     {
-                        // Remove all metadata that came from the source file and then restore the
-                        // minimal metadata we care about.  The existing metadata can sometimes
-                        // cause problems in the the TagSharp library.  (BL-16058)
-                        using (var tagFile = RobustFileIO.CreateTaglibFile(destPath))
-                        {
-                            tagFile.RemoveTags(TagTypes.AllTags);
-                            RobustFileIO.SaveTaglibFile(tagFile);
-                        }
                         var newMeta = new Metadata
                         {
                             Creator = metadata.Creator,
@@ -3520,7 +3519,9 @@ namespace Bloom.ImageProcessing
                             CollectionName = metadata.CollectionName,
                             CollectionUri = metadata.CollectionUri,
                         };
-                        newMeta.WriteIntellectualPropertyOnly(destPath);
+                        // Remove all metadata that came from the source file and then restore the
+                        // minimal metadata we care about.
+                        RobustFileIO.ReplaceMetadataWithIntellectualPropertyOnly(newMeta, destPath);
                     }
                     catch (Exception e)
                     {
