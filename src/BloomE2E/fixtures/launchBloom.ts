@@ -126,6 +126,12 @@ export interface ICollectionSpec {
      */
     bookshelf?: string;
     /**
+     * The tags, among `languages`, of the languages the collection writes right to left. Bloom
+     * does not work this out from the tag: it is a setting of its own in the collection, which a
+     * person ticks in the Settings dialog.
+     */
+    rightToLeftLanguages?: string[];
+    /**
      * True for a collection whose Language 1 is written right to left (Arabic, Hebrew), as ticked
      * in the language's settings. Bloom then lays books out to be read from the other side.
      */
@@ -695,6 +701,8 @@ export interface ICollectionXmlExtras {
     subscriptionCode?: string;
     /** See ICollectionSpec.bookshelf. */
     bookshelf?: string;
+    /** See ICollectionSpec.rightToLeftLanguages. */
+    rightToLeftLanguages?: string[];
     /** See ICollectionSpec.rightToLeft. */
     rightToLeft?: boolean;
 }
@@ -713,6 +721,7 @@ export interface ICollectionXmlExtras {
  * from SubscriptionCode alone; BrandingProjectName is written for older Blooms). See
  * kEnterpriseSubscriptionCode in helpers/collectionSettings.ts. `extras.bookshelf`, also written
  * only when given, becomes a "bookshelf:" tag in DefaultBookTags, which is how Bloom keeps it.
+ * `extras.rightToLeftLanguages` marks those of `languages` as written right to left.
  */
 export function makeCollectionXml(
     languages: string[],
@@ -729,7 +738,10 @@ export function makeCollectionXml(
                 `  <Language${index + 1}Name>${nameForTag(tag)}</Language${index + 1}Name>\n` +
                 `  <Language${index + 1}IsCustomName>false</Language${index + 1}IsCustomName>\n` +
                 `  <Language${index + 1}Iso639Code>${tag}</Language${index + 1}Iso639Code>\n` +
-                `  <DefaultLanguage${index + 1}FontName>Andika</DefaultLanguage${index + 1}FontName>`,
+                `  <DefaultLanguage${index + 1}FontName>Andika</DefaultLanguage${index + 1}FontName>` +
+                (extras.rightToLeftLanguages?.includes(tag)
+                    ? `\n  <IsLanguage${index + 1}Rtl>true</IsLanguage${index + 1}Rtl>`
+                    : ""),
         )
         .join("\n");
     return (
@@ -765,6 +777,7 @@ function nameForTag(tag: string): string {
         fr: "French",
         es: "Spanish",
         de: "German",
+        ar: "Arabic",
     };
     return names[tag] ?? tag;
 }

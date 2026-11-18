@@ -267,80 +267,69 @@ function SetupDeletable(containerDiv) {
     return $(containerDiv);
 }
 
-// Add various editing key handlers
-function AddEditKeyHandlers(container) {
+// The key handlers a bloom-editable gets for editing: F6 superscript, F7/F8 and Ctrl+Alt+0/1/2
+// paragraph styles, and Ctrl+Shift+Space to show invisibles. Page load gives them to every box
+// (AddEditKeyHandlers); setUpBoxesBuiltAfterLoad gives them to a box added later.
+export function addEditKeyHandlersToBoxes(boxes: JQuery) {
     //Make F6 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
     //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isF6 = e.key === "F6";
-            if (!isF6) return;
-            const selection = document.getSelection();
-            if (selection) {
-                // NB: by using execCommand, we get undo-ability
-                document.execCommand(
-                    "insertHTML",
-                    false,
-                    "<sup>" + document.getSelection() + "</sup>",
-                );
-            }
-        });
+    boxes.on("keydown", (e) => {
+        const isF6 = e.key === "F6";
+        if (!isF6) return;
+        const selection = document.getSelection();
+        if (selection) {
+            // NB: by using execCommand, we get undo-ability
+            document.execCommand(
+                "insertHTML",
+                false,
+                "<sup>" + document.getSelection() + "</sup>",
+            );
+        }
+    });
 
     //ctrl alt 0 is from google drive for "normal text"
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isCtrlAlt0 =
-                e.ctrlKey && e.altKey && !e.shiftKey && e.key === "0";
-            if (!isCtrlAlt0) return;
-            e.preventDefault();
-            document.execCommand("formatBlock", false, "P");
-        });
+    boxes.on("keydown", (e) => {
+        const isCtrlAlt0 =
+            e.ctrlKey && e.altKey && !e.shiftKey && e.key === "0";
+        if (!isCtrlAlt0) return;
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "P");
+    });
 
     // Make F7 apply top-level header style (H1)
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isF7 = e.key === "F7";
-            if (!isF7) return;
-            e.preventDefault();
-            document.execCommand("formatBlock", false, "H1");
-        });
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isCtrlAlt1 =
-                e.ctrlKey && e.altKey && !e.shiftKey && e.key === "1";
-            if (!isCtrlAlt1) return;
-            // ctrl alt 1 is from google drive
-            e.preventDefault();
-            document.execCommand("formatBlock", false, "H1");
-        });
+    boxes.on("keydown", (e) => {
+        const isF7 = e.key === "F7";
+        if (!isF7) return;
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H1");
+    });
+    boxes.on("keydown", (e) => {
+        const isCtrlAlt1 =
+            e.ctrlKey && e.altKey && !e.shiftKey && e.key === "1";
+        if (!isCtrlAlt1) return;
+        // ctrl alt 1 is from google drive
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H1");
+    });
 
     // Make F8 apply header style (H2)
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isF8 = e.key === "F8";
-            if (!isF8) return;
-            e.preventDefault();
-            document.execCommand("formatBlock", false, "H2");
-        });
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isCtrlAlt2 =
-                e.ctrlKey && e.altKey && !e.shiftKey && e.key === "2";
-            if (!isCtrlAlt2) return;
-            // ctrl alt 2 is from google drive
-            e.preventDefault();
-            document.execCommand("formatBlock", false, "H2");
-        });
+    boxes.on("keydown", (e) => {
+        const isF8 = e.key === "F8";
+        if (!isF8) return;
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H2");
+    });
+    boxes.on("keydown", (e) => {
+        const isCtrlAlt2 =
+            e.ctrlKey && e.altKey && !e.shiftKey && e.key === "2";
+        if (!isCtrlAlt2) return;
+        // ctrl alt 2 is from google drive
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H2");
+    });
 
     // for testing only: show invisibles
-    $(container)
-        .find("div.bloom-editable")
+    boxes
         .on("keydown", (e) => {
             const isCtrlShiftSpace =
                 e.ctrlKey && e.shiftKey && !e.altKey && e.key === " ";
@@ -352,6 +341,11 @@ function AddEditKeyHandlers(container) {
         .on("keyup blur", (e) => {
             hideInvisibles(e);
         });
+}
+
+// Add various editing key handlers
+function AddEditKeyHandlers(container) {
+    addEditKeyHandlersToBoxes($(container).find("div.bloom-editable"));
 
     // Ctrl+Space: "clear formatting" on the current selection. We route this through the CKEditor
     // instance that currently has focus (rather than the browser's document.execCommand) so that
@@ -398,6 +392,111 @@ function AddEditKeyHandlers(container) {
 
     // Note, CTRL+N is also caught, but up on the Shell where it is turned into an event,
     // so that it can be caught even when the focus isn't on the browser
+}
+
+// Lets whichever toolbox tool is open (Talking Book, the readers and others) set up the elements
+// in `container`. The tools bind handlers
+// to every box in `container` and to `container` itself when it is a box, so a box added later
+// is passed alone: passing its group would bind them a second time on the group's other boxes.
+export function configureElementsForTools(container: HTMLElement) {
+    doWhenWorkspaceBundleLoaded((rootFrameExports) => {
+        rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
+            const toolbox = toolboxFrameExports.getTheOneToolbox();
+            // toolbox might be undefined in unit testing?
+
+            if (toolbox) {
+                toolbox.configureElementsForTools(container);
+                const page = container.getElementsByClassName(
+                    "bloom-page",
+                )[0] as HTMLElement;
+                // When this is called initially on page load, container is the body,
+                // and we will find a bloom-page and adjust the tool list.
+                // If it is called later to adjust something like an image-container,
+                // the toolbox should already be set for this page.
+                // In that case we won't find a page inside it, which is fine since
+                // we don't need to adjust the tool list again.
+                if (page) {
+                    toolbox.adjustToolListForPage(page);
+                }
+            }
+        });
+    });
+}
+
+// Keeps a data-text attribute on each box equal to its text, for stylesheets that need to see the
+// text (a translation group with bloom-text-for-css).
+export function keepDataTextUpToDate(boxes: JQuery) {
+    boxes.each(function () {
+        // initially fill it
+        $(this).attr("data-text", this.textContent);
+        // keep it up to date
+        $(this).on("blur paste input", function () {
+            $(this).attr("data-text", this.textContent);
+        });
+    });
+}
+
+//Convert Standard Format Markers in the pasted text to html spans
+// Also (see BL-5575), if the parent div has .bloom-userCannotModifyStyles,
+// only allow plain text paste.
+export function addPlainTextPasteHandler(boxes: JQuery) {
+    boxes.on("paste", function (e) {
+        const theEvent = e.originalEvent as ClipboardEvent;
+        if (!theEvent.clipboardData) return;
+
+        const s = theEvent.clipboardData.getData("text/plain");
+        if (s === null || s === "") return;
+
+        if ($(this).parent().hasClass("bloom-userCannotModifyStyles")) {
+            e.preventDefault();
+            document.execCommand("insertText", false, s);
+            //NB: odd that this doesn't work?! document.execCommand("paste", false, s);
+            return;
+        }
+    });
+}
+
+//html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
+//So one of our foundational stylesheets looks for @data-placeholder and simulates the
+//@placeholder behavior.
+//Now, what's going on here is that we also support
+//<label class='placeholder'> inside a div.bloom-translationGroup to get this placeholder
+//behavior on each of the fields inside the group .
+//Using <label> instead of the attribute makes the html much easier to read, write, and add additional
+//behaviors through classes.
+//So the job of this bit here is to take the label.placeholder and create the data-placeholders.
+export function addPlaceholdersFromLabels(labels: JQuery) {
+    labels.each(function () {
+        const labelText = $(this).text();
+
+        //put the attributes on the individual child divs
+        $(this)
+            .parent()
+            .find(".bloom-editable")
+            .each(function () {
+                //enhance: it would make sense to allow each of these to be customized for their div
+                //so that you could have a placeholder that said "Name in {lang}", for example.
+                $(this).attr("data-placeholder", labelText);
+                //next, it's up to CSS to draw the placeholder when the field is empty.
+            });
+    });
+}
+
+// Bloom needs to make some fields readonly. E.g., the original license when the user is translating a shellbook
+// Normally, we'd control this is a style in editTranslationMode.css/editOriginalMode.css. However, "readonly" isn't a style, just
+// an attribute, so it can't be included in css.
+// The solution here is to add the readonly attribute when we detect that the css has set the cursor to "not-allowed".
+export function makeReadOnlyWhenCursorIsNotAllowed(elements: JQuery) {
+    elements.focus(function () {
+        //        if ($(this).css('border-bottom-color') == 'transparent') {
+        if ($(this).css("cursor") === "not-allowed") {
+            $(this).attr("readonly", "true");
+            $(this).removeAttr("contentEditable");
+        } else {
+            $(this).removeAttr("readonly");
+            //review: do we need to add contentEditable... that could lead to making things editable that shouldn't be
+        }
+    });
 }
 
 // Add little language tags. (At one point we limited this to visible .bloom-editable divs,
@@ -680,6 +779,9 @@ function hasOrigami(container: HTMLElement) {
 // can add new elements (such as during layout mode) and call this on only newly added elements.
 // Now document.load calls this with $('body') as the container.
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
+// A box (bloom-editable) added to a translation group after load is set up by
+// setUpBoxesBuiltAfterLoad (translationGroupLanguages.ts), which calls the same per-box helpers in
+// the same order; a per-box step added here belongs there too.
 export function SetupElements(
     container: HTMLElement,
     // undefined means it will do its best to find something to focus. "none" means don't focus anything.
@@ -754,44 +856,18 @@ export function SetupElements(
             this.innerHTML = this.value;
         });
 
-    doWhenWorkspaceBundleLoaded((rootFrameExports) => {
-        rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
-            const toolbox = toolboxFrameExports.getTheOneToolbox();
-            // toolbox might be undefined in unit testing?
-
-            if (toolbox) {
-                toolbox.configureElementsForTools(container);
-                const page = container.getElementsByClassName(
-                    "bloom-page",
-                )[0] as HTMLElement;
-                // When this is called initially on page load, container is the body,
-                // and we will find a bloom-page and adjust the tool list.
-                // If it is called later to adjust something like an image-container,
-                // the toolbox should already be set for this page.
-                // In that case we won't find a page inside it, which is fine since
-                // we don't need to adjust the tool list again.
-                if (page) {
-                    toolbox.adjustToolListForPage(page);
-                }
-            }
-        });
-    });
+    configureElementsForTools(container);
 
     SetBookCopyrightAndLicenseButtonVisibility(container);
 
     //CSS normally can't get at the text in order to, for example, show something different if it is empty.
     //This allows you to add .bloom-needs-data-text to a bloom-translationGroup in order to get
     //its child bloom-editable's to have data-placeholders on them
-    $(container)
-        .find(".bloom-translationGroup.bloom-text-for-css .bloom-editable")
-        .each(function () {
-            // initially fill it
-            $(this).attr("data-text", this.textContent);
-            // keep it up to date
-            $(this).on("blur paste input", function () {
-                $(this).attr("data-text", this.textContent);
-            });
-        });
+    keepDataTextUpToDate(
+        $(container).find(
+            ".bloom-translationGroup.bloom-text-for-css .bloom-editable",
+        ),
+    );
     SetupThingsSensitiveToStyleChanges(container);
 
     $(container)
@@ -834,25 +910,7 @@ export function SetupElements(
             }
         });
 
-    //Convert Standard Format Markers in the pasted text to html spans
-    // Also (see BL-5575), if the parent div has .bloom-userCannotModifyStyles,
-    // only allow plain text paste.
-    $(container)
-        .find("div.bloom-editable")
-        .on("paste", function (e) {
-            const theEvent = e.originalEvent as ClipboardEvent;
-            if (!theEvent.clipboardData) return;
-
-            const s = theEvent.clipboardData.getData("text/plain");
-            if (s === null || s === "") return;
-
-            if ($(this).parent().hasClass("bloom-userCannotModifyStyles")) {
-                e.preventDefault();
-                document.execCommand("insertText", false, s);
-                //NB: odd that this doesn't work?! document.execCommand("paste", false, s);
-                return;
-            }
-        });
+    addPlainTextPasteHandler($(container).find("div.bloom-editable"));
 
     AddEditKeyHandlers(container);
 
@@ -869,31 +927,9 @@ export function SetupElements(
             $(this).CenterVerticallyInParent();
         });
 
-    //html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
-    //So one of our foundational stylesheets looks for @data-placeholder and simulates the
-    //@placeholder behavior.
-    //Now, what's going on here is that we also support
-    //<label class='placeholder'> inside a div.bloom-translationGroup to get this placeholder
-    //behavior on each of the fields inside the group .
-    //Using <label> instead of the attribute makes the html much easier to read, write, and add additional
-    //behaviors through classes.
-    //So the job of this bit here is to take the label.placeholder and create the data-placeholders.
-    $(container)
-        .find("*.bloom-translationGroup > label.placeholder")
-        .each(function () {
-            const labelText = $(this).text();
-
-            //put the attributes on the individual child divs
-            $(this)
-                .parent()
-                .find(".bloom-editable")
-                .each(function () {
-                    //enhance: it would make sense to allow each of these to be customized for their div
-                    //so that you could have a placeholder that said "Name in {lang}", for example.
-                    $(this).attr("data-placeholder", labelText);
-                    //next, it's up to CSS to draw the placeholder when the field is empty.
-                });
-        });
+    addPlaceholdersFromLabels(
+        $(container).find("*.bloom-translationGroup > label.placeholder"),
+    );
 
     $(container)
         .find("div.bloom-editable")
@@ -901,22 +937,7 @@ export function SetupElements(
             $(this).attr("contentEditable", "true");
         });
 
-    // Bloom needs to make some fields readonly. E.g., the original license when the user is translating a shellbook
-    // Normally, we'd control this is a style in editTranslationMode.css/editOriginalMode.css. However, "readonly" isn't a style, just
-    // an attribute, so it can't be included in css.
-    // The solution here is to add the readonly attribute when we detect that the css has set the cursor to "not-allowed".
-    $(container)
-        .find("textarea, div")
-        .focus(function () {
-            //        if ($(this).css('border-bottom-color') == 'transparent') {
-            if ($(this).css("cursor") === "not-allowed") {
-                $(this).attr("readonly", "true");
-                $(this).removeAttr("contentEditable");
-            } else {
-                $(this).removeAttr("readonly");
-                //review: do we need to add contentEditable... that could lead to making things editable that shouldn't be
-            }
-        });
+    makeReadOnlyWhenCursorIsNotAllowed($(container).find("textarea, div"));
 
     AddLanguageTags(container);
 
