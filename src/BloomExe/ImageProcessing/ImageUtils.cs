@@ -902,8 +902,8 @@ namespace Bloom.ImageProcessing
             }
             // We can't tell what has the file open (it could even be Bloom), hence "possibly".
             var msgFmt = LocalizationManager.GetString(
-                "EditTab.ImageMetadata.FileInUse",
-                "Bloom could not save the copyright and license information in {0}, possibly because another program is using that file. It may help to wait a moment and try again, or you may need to restart your computer."
+                "Errors.CouldNotModifyFileBecauseItIsInUse",
+                "Bloom could not change {0}, possibly because another program is using that file, so your changes to it were not saved. Wait a moment, then make the same change again. If that does not work, restarting your computer may help."
             );
             NotifyUserOfImageMetadataProblem(string.Format(msgFmt, Path.GetFileName(filePath)), ex);
         }
@@ -3489,6 +3489,28 @@ namespace Bloom.ImageProcessing
         }
 
         /// <summary>
+        /// Replace all the metadata in the image file at path with just the intellectual-property
+        /// fields (copyright, license, creator...) of meta. Existing tags are cleared first because
+        /// stray tags can trip up TagLib when we write (BL-16058). The file has usually just been
+        /// written, so this waits for it if something else still has it open (BL-17093).
+        /// </summary>
+        public static void ReplaceMetadataWithIntellectualPropertyOnly(Metadata meta, string path)
+        {
+            RobustFileIO.RetryOnceIfFileInUse(
+                path,
+                () =>
+                {
+                    using (var tagFile = RobustFileIO.CreateTaglibFile(path))
+                    {
+                        tagFile.RemoveTags(TagTypes.AllTags);
+                        RobustFileIO.SaveTaglibFile(tagFile);
+                    }
+                    meta.WriteIntellectualPropertyOnly(path);
+                }
+            );
+        }
+
+        /// <summary>
         /// Copy the handful of intellectual-property and collection fields Bloom cares about from
         /// one image file onto another, discarding everything else the source carried. Used both
         /// when trimming an image on its way into a publication and to carry an image's credits
@@ -3521,7 +3543,7 @@ namespace Bloom.ImageProcessing
                         };
                         // Remove all metadata that came from the source file and then restore the
                         // minimal metadata we care about.
-                        RobustFileIO.ReplaceMetadataWithIntellectualPropertyOnly(newMeta, destPath);
+                        ReplaceMetadataWithIntellectualPropertyOnly(newMeta, destPath);
                     }
                     catch (Exception e)
                     {

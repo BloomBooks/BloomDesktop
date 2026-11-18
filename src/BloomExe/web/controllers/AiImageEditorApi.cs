@@ -2579,7 +2579,7 @@ namespace Bloom.web.controllers
             try
             {
                 // Clear whatever the generator left in the file, then write just the IP fields.
-                RobustFileIO.ReplaceMetadataWithIntellectualPropertyOnly(source, newPath);
+                ImageUtils.ReplaceMetadataWithIntellectualPropertyOnly(source, newPath);
             }
             catch (Exception e)
             {
