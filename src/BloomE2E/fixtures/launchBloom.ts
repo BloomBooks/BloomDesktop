@@ -725,7 +725,7 @@ export function makeCollectionXml(
                 `  <Language${index + 1}IsCustomName>false</Language${index + 1}IsCustomName>\n` +
                 `  <Language${index + 1}Iso639Code>${tag}</Language${index + 1}Iso639Code>\n` +
                 `  <DefaultLanguage${index + 1}FontName>Andika</DefaultLanguage${index + 1}FontName>` +
-                (tag && extras.rightToLeftLanguages?.includes(tag)
+                (extras.rightToLeftLanguages?.includes(tag)
                     ? `\n  <IsLanguage${index + 1}Rtl>true</IsLanguage${index + 1}Rtl>`
                     : ""),
         )

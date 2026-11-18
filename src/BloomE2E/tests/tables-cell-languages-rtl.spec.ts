@@ -1,6 +1,5 @@
 // A right-to-left language ticked for a table's text cell (BL-17105). The cell gets a new box for
-// that language at once, without a page load, and the box has to run right to left from the start:
-// Bloom's page-load code is what normally gives a box its direction, and it has not run.
+// that language at once, without a page load, and the box has to run right to left from the start.
 //
 // A file of its own because the collection needs a right-to-left language, and a collection is
 // fixed for a whole file. See tables-cell-languages.spec.ts for the rest of the feature, and
@@ -9,12 +8,10 @@
 import { expect, test } from "../fixtures/bloomTest";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
-    closeAnyMenu,
     getCellLanguages,
     getCellTextDirection,
     makeBookWithTableOnCanvasPage,
-    rightClickCell,
-    toggleMenuCellLanguage,
+    toggleCellLanguageInCellMenu,
     typeInCell,
 } from "../helpers/tables";
 
@@ -41,9 +38,7 @@ test("a right-to-left language ticked for a cell runs right to left before the p
     });
 
     await step("Tick L2, which is Arabic, in a cell's menu", async () => {
-        await rightClickCell(page, 0, 0);
-        await toggleMenuCellLanguage(page, "L2");
-        await closeAnyMenu(page);
+        await toggleCellLanguageInCellMenu(page, 0, 0, "L2");
         expect(await getCellLanguages(page, 0, 0)).toEqual(["en", "ar"]);
     });
 

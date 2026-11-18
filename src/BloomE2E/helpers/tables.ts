@@ -2001,6 +2001,56 @@ export async function toggleMenuCellLanguage(
 }
 
 /**
+ * Tick or untick one language in one cell's Cell menu, as a person does: right-click the cell,
+ * click the language's check box in the Languages submenu, and close the menu.
+ */
+export async function toggleCellLanguageInCellMenu(
+    page: Page,
+    row: number,
+    column: number,
+    role: CellLanguageRole,
+    tableIndex = 0,
+): Promise<void> {
+    await rightClickCell(page, row, column, tableIndex);
+    await toggleMenuCellLanguage(page, role);
+    await closeAnyMenu(page);
+}
+
+/**
+ * The languages every text cell of a table shows, row by row: for each cell, the tags of its
+ * shown boxes in the order they are drawn, as getCellLanguages gives one cell. Reads the whole
+ * table at once, for a test that checks many cells.
+ */
+export async function getTableCellLanguages(
+    page: Page,
+    tableIndex = 0,
+): Promise<string[][][]> {
+    const table = editablePageFrame(page)
+        .locator(".bloom-table")
+        .nth(tableIndex);
+    await table.waitFor({ state: "attached", timeout: kTableWaitMs });
+    return table.evaluate((element) => {
+        const widths = element.getAttribute("data-column-widths") ?? "";
+        // An empty attribute means no columns yet.
+        if (widths === "") return [];
+        const columns = widths.split(",").length;
+        const cells = Array.from(
+            element.querySelectorAll(":scope > .bloom-cell"),
+        ).map((cellElement) =>
+            Array.from(
+                cellElement.querySelectorAll(
+                    ".bloom-editable.bloom-visibility-code-on",
+                ),
+            ).map((box) => box.getAttribute("lang") ?? ""),
+        );
+        const rows: string[][][] = [];
+        for (let start = 0; start < cells.length; start += columns)
+            rows.push(cells.slice(start, start + columns));
+        return rows;
+    });
+}
+
+/**
  * Copy one cell's format onto another with Paint format, as a person does: choose Paint format in
  * the source cell's Cell menu, press on the target cell, and press Escape to stop painting.
  * Returns when the table has left its painting mode.
@@ -2027,15 +2077,8 @@ export async function paintFormatFromCellOntoCell(
         body,
         "Choosing Paint format did not put the table into its painting mode.",
     ).toHaveClass(/\bbloom-paint-format\b/, { timeout: kTableWaitMs });
-    const target = await cell(page, onto.row, onto.column, tableIndex);
-    const box = await requireBox(
-        target,
-        `the cell at row ${onto.row}, column ${onto.column}`,
-    );
     // A real press, for the same reason as in clickCell.
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.down();
-    await page.mouse.up();
+    await realClick(await cell(page, onto.row, onto.column, tableIndex));
     await body.press("Escape");
     await expect(
         body,
@@ -2071,7 +2114,6 @@ export async function getCellTextDirection(
     tableIndex = 0,
 ): Promise<string> {
     const box = await cellTextBox(page, row, column, languageTag, tableIndex);
-    await box.waitFor({ state: "attached", timeout: kTableWaitMs });
     return box.evaluate((element) => getComputedStyle(element).direction);
 }
 

@@ -7,6 +7,7 @@
 // the first failure is the one to read. Tables are a Pro-tier feature behind the "tables"
 // experiment; see tables-core.spec.ts for why the collection is given both this way.
 
+import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import { getShownPageId, reloadPageBeingEdited } from "../helpers/bookMaking";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
@@ -23,11 +24,12 @@ import {
     getCellLanguagesShownIn,
     getCellText,
     getMenuCellLanguages,
+    getTableCellLanguages,
     getTableShape,
     makeBookWithTableOnCanvasPage,
     openTableMenu,
     paintFormatFromCellOntoCell,
-    rightClickCell,
+    toggleCellLanguageInCellMenu,
     toggleMenuCellLanguage,
     typeInCell,
     waitForTableAttached,
@@ -49,6 +51,16 @@ test.describe.configure({ mode: "serial" });
 const L1_ONLY = ["en"];
 const L1_AND_L2 = ["en", "fr"];
 
+/** Fail, with `why` and the languages of every cell, unless every text cell of the table shows `languages`. */
+async function expectEveryCellShows(
+    page: Page,
+    languages: string[],
+    why: string,
+): Promise<void> {
+    const shown = await getTableCellLanguages(page);
+    expect(shown, why).toEqual(shown.map((row) => row.map(() => languages)));
+}
+
 test.describe("the languages of a table's text cells", () => {
     test("a new table's cells show L1 only in a bilingual book", async ({
         page,
@@ -64,13 +76,11 @@ test.describe("the languages of a table's text cells", () => {
         );
 
         await step("Check every cell shows English only", async () => {
-            for (let row = 0; row < 2; row++)
-                for (let column = 0; column < 2; column++)
-                    expect(
-                        await getCellLanguages(page, row, column),
-                        `The new cell at row ${row}, column ${column} should show L1 only, ` +
-                            `although the toolbar makes the book bilingual.`,
-                    ).toEqual(L1_ONLY);
+            await expectEveryCellShows(
+                page,
+                L1_ONLY,
+                "Every new cell should show L1 only, although the toolbar makes the book bilingual",
+            );
         });
 
         await step(
@@ -107,10 +117,10 @@ test.describe("the languages of a table's text cells", () => {
         await step(
             "Check the first column shows L1 and L2, and the second is unchanged",
             async () => {
-                expect(await getCellLanguages(page, 0, 0)).toEqual(L1_AND_L2);
-                expect(await getCellLanguages(page, 1, 0)).toEqual(L1_AND_L2);
-                expect(await getCellLanguages(page, 0, 1)).toEqual(L1_ONLY);
-                expect(await getCellLanguages(page, 1, 1)).toEqual(L1_ONLY);
+                expect(await getTableCellLanguages(page)).toEqual([
+                    [L1_AND_L2, L1_ONLY],
+                    [L1_AND_L2, L1_ONLY],
+                ]);
             },
         );
 
@@ -142,9 +152,7 @@ test.describe("the languages of a table's text cells", () => {
     test("the Cell menu changes one cell, and Undo puts it back", async ({
         page,
     }) => {
-        await rightClickCell(page, 0, 1);
-        await toggleMenuCellLanguage(page, "L3");
-        await closeAnyMenu(page);
+        await toggleCellLanguageInCellMenu(page, 0, 1, "L3");
 
         expect(await getCellLanguages(page, 0, 1)).toEqual(["en", "es"]);
         expect(
@@ -164,16 +172,19 @@ test.describe("the languages of a table's text cells", () => {
         name: string;
         /** A cell that shows L1 only before, and should show L1 and L2 after. */
         target: { row: number; column: number };
-        carry: (page: Parameters<typeof clickCell>[0]) => Promise<void>;
+        carry: (
+            page: Page,
+            target: { row: number; column: number },
+        ) => Promise<void>;
     }[] = [
         {
             name: "Paint format",
             target: { row: 1, column: 1 },
-            carry: (page) =>
+            carry: (page, target) =>
                 paintFormatFromCellOntoCell(
                     page,
                     { row: 0, column: 0 },
-                    { row: 1, column: 1 },
+                    target,
                 ),
         },
         {
@@ -190,7 +201,7 @@ test.describe("the languages of a table's text cells", () => {
             expect(await getCellLanguages(page, 0, 0)).toEqual(L1_AND_L2);
             expect(await getCellLanguages(page, row, column)).toEqual(L1_ONLY);
 
-            await way.carry(page);
+            await way.carry(page, way.target);
 
             expect(await getCellLanguages(page, row, column)).toEqual(
                 L1_AND_L2,
@@ -205,15 +216,8 @@ test.describe("the languages of a table's text cells", () => {
         page,
         step,
     }) => {
-        const everyCellShows = async (languages: string[], why: string) => {
-            const shape = await getTableShape(page);
-            for (let row = 0; row < shape.rows; row++)
-                for (let column = 0; column < shape.columns; column++)
-                    expect(
-                        await getCellLanguages(page, row, column),
-                        `${why} (the cell at row ${row}, column ${column})`,
-                    ).toEqual(languages);
-        };
+        const everyCellShows = (languages: string[], why: string) =>
+            expectEveryCellShows(page, languages, why);
         const toggleL2InTableMenu = async () => {
             await openTableMenu(page, "table");
             await toggleMenuCellLanguage(page, "L2");
@@ -282,7 +286,7 @@ test.describe("the languages of a table's text cells", () => {
                     "The hidden French box should still hold text, or the preview has nothing " +
                         "to hide.",
                 ).toBe("Poire");
-                return (await getShownPageId(page))!;
+                return await getShownPageId(page);
             },
         );
 
@@ -320,9 +324,9 @@ test.describe("the languages of a table's text cells", () => {
         });
     });
 
-    // The tests from here on add rows. They come last because a language box made after a row was
-    // added is the subject of tables-cell-languages-after-new-row.spec.ts, and the tests above
-    // check other things. The BloomPUB test leaves the first column showing L1 and L2 and the
+    // The tests from here on add rows. They come last because an added row leaves each row of the
+    // table shorter, too short for a language box added afterwards to fit in its cell (the subject
+    // of tables-cell-languages-after-new-row.spec.ts), and the tests above add language boxes. The BloomPUB test leaves the first column showing L1 and L2 and the
     // second L1 only.
     test("a row added to the table copies the languages of the row it was added beside", async ({
         page,
@@ -346,9 +350,7 @@ test.describe("the languages of a table's text cells", () => {
         const rowsBefore = (await getTableShape(page)).rows;
 
         await step("Tick L3 in one cell, then add a row", async () => {
-            await rightClickCell(page, 0, 1);
-            await toggleMenuCellLanguage(page, "L3");
-            await closeAnyMenu(page);
+            await toggleCellLanguageInCellMenu(page, 0, 1, "L3");
             expect(await getCellLanguages(page, 0, 1)).toEqual(["en", "es"]);
             await clickCell(page, 0, 0);
             const shape = await clickAddButton(page, "row");
@@ -383,9 +385,7 @@ test.describe("the languages of a table's text cells", () => {
         );
 
         await step("Check Undo still works for a later change", async () => {
-            await rightClickCell(page, 1, 1);
-            await toggleMenuCellLanguage(page, "L3");
-            await closeAnyMenu(page);
+            await toggleCellLanguageInCellMenu(page, 1, 1, "L3");
             expect(await getCellLanguages(page, 1, 1)).toEqual(["en", "es"]);
             await clickUndoButton(page);
             await expect

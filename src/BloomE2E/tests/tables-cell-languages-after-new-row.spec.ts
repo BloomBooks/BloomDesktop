@@ -12,13 +12,11 @@ import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
     clickAddButton,
     clickCell,
-    closeAnyMenu,
     getCellLanguages,
     getCellText,
     getTableShape,
     makeBookWithTableOnCanvasPage,
-    rightClickCell,
-    toggleMenuCellLanguage,
+    toggleCellLanguageInCellMenu,
     typeInCell,
 } from "../helpers/tables";
 
@@ -35,10 +33,11 @@ test("a language ticked for a cell after a row was added gives a box a person ca
     page,
     step,
 }) => {
-    // Known failure, BL-17105: after a row is added with "+", a language box that a cell gains
-    // afterwards (from the Cell menu, Paint format or Paste properties) does not take the caret
-    // when clicked, though it is contenteditable and focus() from code works. On a table with no
-    // added row the same steps work. Remove test.fail() when that is fixed.
+    // Known failure, BL-17105: the table's canvas element keeps its height, so the added row
+    // leaves each row too short for a second language's box, and the French box runs past the
+    // bottom of its cell. The middle of the box then lies within 5 px of the cell's bottom edge,
+    // where a press starts a row resize (CanvasElementPointerInteractions.onMouseDown hands it to
+    // the table) instead of putting the caret in the box. Remove test.fail() when that is fixed.
     test.fail();
     // This test also pays for launching Bloom and making the book.
     test.setTimeout(300000);
@@ -52,9 +51,7 @@ test("a language ticked for a cell after a row was added gives a box a person ca
     await step(
         "Tick L2 in the menu of a cell that was there before",
         async () => {
-            await rightClickCell(page, 1, 1);
-            await toggleMenuCellLanguage(page, "L2");
-            await closeAnyMenu(page);
+            await toggleCellLanguageInCellMenu(page, 1, 1, "L2");
             expect(await getCellLanguages(page, 1, 1)).toEqual(["en", "fr"]);
         },
     );
