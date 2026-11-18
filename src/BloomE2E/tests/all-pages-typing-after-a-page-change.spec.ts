@@ -30,6 +30,12 @@ import {
     getStatusOfFocusedEditor,
     holdCkEditorStartup,
 } from "../helpers/ckeditorStartup";
+import {
+    commitInputMethodText,
+    composeWithInputMethod,
+    insertTextWithNoKeyPress,
+    pressProcessKey,
+} from "../helpers/keys";
 import { clickPageThumbnail } from "../helpers/pageList";
 import { choosePdfMode, getPdfPreviewPageCount } from "../helpers/pdfPrint";
 import {
@@ -238,6 +244,119 @@ test.describe("straight after a page change", () => {
         ).toBeUndefined();
         await hideToolbox(page);
     });
+
+    // Text from an input method or voice typing, which may come with no key press at all. The page
+    // gets the text before its editors are ready, then more once they are. Both pieces must stay
+    // together in the box.
+    for (const input of [
+        {
+            name: "voice typing or Keyman, which press no key",
+            target: 1,
+            composes: false,
+            pressesKey: false,
+            composingWhenReady: false,
+        },
+        {
+            name: "an input method that presses no key",
+            target: 2,
+            composes: true,
+            pressesKey: false,
+            composingWhenReady: false,
+        },
+        {
+            name: "an input method that sends Windows' key press for each change",
+            target: 3,
+            composes: true,
+            pressesKey: true,
+            composingWhenReady: false,
+        },
+        {
+            name: "an input method still composing a word when the editors are ready",
+            target: 5,
+            composes: true,
+            pressesKey: true,
+            composingWhenReady: true,
+        },
+    ]) {
+        test(`with All Pages, text from ${input.name}, given before and after the clicked page is ready, stays together in the box`, async ({
+            page,
+        }) => {
+            // What can go wrong (BL-17139):
+            // - The click that opened the page is replayed once its editors are ready, unless the
+            //   person acted in the meantime (replayOpeningClick() in bookGridView.ts). Text that
+            //   comes with no key press must count, or the replay moves the cursor from the end of
+            //   that text back to where the page was clicked, and the next words go in there.
+            // - When the editors finish starting, keepTypingWhenCkEditorLoads() and CKEditor
+            //   rewrite the text box. A word still being composed must not stay in the box as
+            //   typed letters, or the word the person chooses goes in beside them.
+            const leaving = textPages[input.target - 1];
+            const target = textPages[input.target];
+            await goToPage(page, leaving.id);
+            await expectGridToMatchBook(page);
+            await waitForEditTabSettled(page);
+            const textBefore = (
+                await (await textBoxOfOtherPage(page, target.id)).innerText()
+            ).trim();
+            const textOfLeftPage = await textOfShownPage(page);
+            const hold = await holdCkEditorStartup(page);
+
+            // THE ACTION UNDER TEST: click the other page's text and give text at once, before the
+            // page's editors are ready; then, once they are, give more.
+            await clickTextOfPageInGrid(page, target.id);
+            await waitForPageToBeShown(page, target.id);
+            await hold.requested;
+            await waitForFocusInGroup(page, 0);
+            expect(
+                await getStatusOfFocusedEditor(page),
+                "test setup: the text box's editor should still be starting when the text arrives",
+            ).not.toBe("ready");
+            const first = "FIRST WORDS";
+            const second = " AND MORE";
+            const editorsAreReady = async () => {
+                await hold.release();
+                await waitForClickedPageToSettle(page);
+                await waitForEditTabSettled(page);
+            };
+            // A word as an input method gives it: the letters typed so far, shown but not yet
+            // committed, then the word chosen, which replaces them.
+            const composeWord = async (
+                word: string,
+                then?: () => Promise<void>,
+            ) => {
+                if (input.pressesKey) await pressProcessKey(page);
+                await composeWithInputMethod(page, word.slice(0, 3));
+                if (then) await then();
+                if (input.pressesKey) await pressProcessKey(page);
+                await commitInputMethodText(page, word);
+            };
+            if (!input.composes) {
+                await insertTextWithNoKeyPress(page, first);
+                await editorsAreReady();
+                await insertTextWithNoKeyPress(page, second);
+            } else if (input.composingWhenReady) {
+                await composeWord(first, editorsAreReady);
+                await composeWord(second);
+            } else {
+                await composeWord(first);
+                await editorsAreReady();
+                await composeWord(second);
+            }
+
+            const text = await textOfShownPage(page);
+            expect(
+                text.replace(first + second, ""),
+                `The two pieces of text should be side by side in the box, which held "${textBefore}" before, but it now reads "${text}".`,
+            ).toBe(textBefore);
+            await expect(await textBoxOfOtherPage(page, leaving.id)).toHaveText(
+                textOfLeftPage,
+            );
+            await waitForBloomToHaveTyping(page, first + second);
+            await goToPage(page, leaving.id);
+            await expect
+                .poll(() => savedTextOfPage(page, target.id))
+                .toContain(first + second);
+        });
+    }
 
     for (const view of ["one", "all"] as const) {
         test(`clicking quickly through five pages in the page list ends on the last one, ready to type in (${view === "one" ? "One Page" : "All Pages"})`, async ({

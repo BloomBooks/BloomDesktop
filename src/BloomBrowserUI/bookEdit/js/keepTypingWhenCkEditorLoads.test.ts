@@ -248,6 +248,44 @@ describe("keepTypingWhenCkEditorLoads", () => {
         expect(selection.focusOffset).toBe(box.childNodes.length);
     });
 
+    it("leaves out the letters of a word still being composed, keeping the caret where they began", () => {
+        const box = makeBox("<p>a</p>");
+        const editor = new FakeInlineEditor(box);
+        keepTypingWhenCkEditorLoads(editor, box);
+        // An input method composing "FIR" at the start of "words": the letters are in the box.
+        box.innerHTML = "<p>FIRwords</p>";
+        box.dispatchEvent(
+            new CompositionEvent("compositionstart", { data: "" }),
+        );
+        box.dispatchEvent(
+            new CompositionEvent("compositionupdate", { data: "FIR" }),
+        );
+        putCaret(box.firstChild!.firstChild!, 3);
+        editor.fire("loaded");
+        expect(box.innerHTML).toBe("<p>words</p>");
+        const selection = window.getSelection()!;
+        expect(selection.focusNode).toBe(box.firstChild!.firstChild);
+        expect(selection.focusOffset).toBe(0);
+        expect(markerLeft()).toBe(false);
+    });
+
+    it("keeps the letters of a word whose composition has ended", () => {
+        const box = makeBox("<p>a</p>");
+        const editor = new FakeInlineEditor(box);
+        keepTypingWhenCkEditorLoads(editor, box);
+        box.innerHTML = "<p>FIRSTwords</p>";
+        box.dispatchEvent(
+            new CompositionEvent("compositionupdate", { data: "FIR" }),
+        );
+        box.dispatchEvent(
+            new CompositionEvent("compositionend", { data: "FIRST" }),
+        );
+        putCaret(box.firstChild!.firstChild!, 5);
+        editor.fire("loaded");
+        expect(box.innerHTML).toBe("<p>FIRSTwords</p>");
+        expect(window.getSelection()!.focusOffset).toBe(5);
+    });
+
     it("leaves the selection alone when the caret was not in the box", () => {
         const box = makeBox("<p>a</p>");
         const elsewhere = makeBox("<p>elsewhere</p>");

@@ -46,13 +46,29 @@ export function keepTypingWhenCkEditorLoads(
     element: HTMLElement,
 ): void {
     let caretWasInBox = false;
+    // The letters an input method is showing but has not committed yet, while it composes a word.
+    let composition: string | undefined;
+    const noteComposition = (event: CompositionEvent) => {
+        composition = event.type === "compositionend" ? undefined : event.data;
+    };
+    const compositionEvents = [
+        "compositionstart",
+        "compositionupdate",
+        "compositionend",
+    ] as const;
+    compositionEvents.forEach((name) =>
+        element.addEventListener(name, noteComposition),
+    );
     editor.on("loaded", () => {
-        caretWasInBox = markCaretIn(element);
+        caretWasInBox = markCaretIn(element, composition);
         editor.setData(element.innerHTML, null, true);
     });
     editor.on("instanceReady", () => {
         if (caretWasInBox) restoreCaretIn(element);
         caretWasInBox = false;
+        compositionEvents.forEach((name) =>
+            element.removeEventListener(name, noteComposition),
+        );
     });
 }
 
@@ -61,14 +77,30 @@ export function keepTypingWhenCkEditorLoads(
  * true. A caret that sits directly in a box that holds paragraphs (between two of them, say) gets
  * no marker, because there CKEditor would wrap the marker in a paragraph of its own; it still
  * counts as in the box, and restoreCaretIn() puts it at the end.
+ *
+ * If an input method is composing a word, `composition` is the letters it shows just before the
+ * caret. The rewrite would turn them into ordinary text, and the word the person then chooses
+ * would go in beside them, so they are taken out; the chosen word goes in at the caret.
  */
-function markCaretIn(element: HTMLElement): boolean {
+function markCaretIn(
+    element: HTMLElement,
+    composition: string | undefined,
+): boolean {
     const selection = element.ownerDocument.getSelection();
     if (!selection || selection.rangeCount === 0 || !selection.isCollapsed)
         return false;
     const range = selection.getRangeAt(0);
     const container = range.startContainer;
     if (!element.contains(container)) return false;
+    if (composition && container.nodeType === Node.TEXT_NODE) {
+        const text = container as Text;
+        const offset = range.startOffset;
+        if (text.data.slice(0, offset).endsWith(composition)) {
+            text.deleteData(offset - composition.length, composition.length);
+            range.setStart(text, offset - composition.length);
+            range.collapse(true);
+        }
+    }
     const host =
         container.nodeType === Node.TEXT_NODE
             ? container.parentNode
