@@ -928,7 +928,19 @@ namespace Bloom.Collection
             // (See https://issues.bloomlibrary.org/youtrack/issue/BL-7868.)
             // If we ever have to do another one of these, we should call a method based on OneTimeCheckVersionNumber.
             OneTimeCheckVersionNumber = kCurrentOneTimeCheckVersionNumber;
-            Save(); // save updated settings
+            try
+            {
+                Save(); // save updated settings
+            }
+            catch (Exception e) when (FileAccessDiagnostics.IsRefusal(e))
+            {
+                // Reading a collection whose folder we may not change (a command-line run on a
+                // read-only share, say) must still work; the check just runs again next time.
+                // (BL-16728)
+                Logger.WriteEvent(
+                    $"Could not record the one-time settings check in {SettingsFilePath}: {e.Message}"
+                );
+            }
         }
 
         internal static bool ReadBoolean(XElement xml, string id, bool defaultValue)

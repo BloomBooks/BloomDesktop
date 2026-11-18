@@ -96,7 +96,8 @@ namespace BloomTests.Collection
         /// <summary>
         /// Checking a collection folder Bloom may not write in must throw, so the caller can
         /// recover (it offers the collection chooser), and must not show anything itself. Reading
-        /// the collection's settings, which doesn't need to write, still works. (BL-16728)
+        /// the collection's settings, which a command-line run may do on a read-only share, still
+        /// works, even when loading would like to save the one-time settings check. (BL-16728)
         /// </summary>
         [Test]
         [Platform(Include = "Win")]
@@ -110,9 +111,11 @@ namespace BloomTests.Collection
                 RobustFile.Exists(settingsPath),
                 "Sanity check: the collection should exist"
             );
-            // The first load of a new collection saves once (a one-time settings migration), as
-            // has happened long since for any real collection.
-            new CollectionSettings(settingsPath);
+            Assert.That(
+                RobustFile.ReadAllText(settingsPath),
+                Does.Contain("<OneTimeCheckVersionNumber>0<"),
+                "Sanity check: loading should want to save the one-time settings check"
+            );
             var folder = new DirectoryInfo(Path.GetDirectoryName(settingsPath));
             using (DenyWrite(folder))
             {
@@ -132,6 +135,11 @@ namespace BloomTests.Collection
                 Assert.DoesNotThrow(
                     () => new CollectionSettings(settingsPath),
                     "Reading an existing collection's settings should not need a writable folder"
+                );
+                Assert.That(
+                    RobustFile.ReadAllText(settingsPath),
+                    Does.Contain("<OneTimeCheckVersionNumber>0<"),
+                    "The settings file should be unchanged, since Windows refused the save"
                 );
             }
         }
