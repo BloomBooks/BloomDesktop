@@ -16,6 +16,7 @@ import {
     waitForEditablePage,
     type IBookPage,
 } from "./bookMaking";
+import { waitForTableAttached } from "./tables";
 
 /** The types origami offers an empty section, by the i18n key each link carries. */
 const TYPE_KEY = {
@@ -300,4 +301,21 @@ export async function addCustomTextPage(page: Page): Promise<IBookPage> {
     await chooseSectionType(page, "text");
     await setChangeLayoutMode(page, false);
     return added;
+}
+
+/**
+ * Add a table above what the page being edited already holds, the way a person does in Change
+ * Layout: turn the mode on, split the first section from its top edge, choose Table for the empty
+ * half, and turn the mode off. Returns once the page has been rebuilt and the table is ready to
+ * use.
+ *
+ * The page must allow a custom layout, such as one added with addPage(page, "Just Text").
+ */
+export async function addTableInChangeLayout(page: Page): Promise<void> {
+    await setChangeLayoutMode(page, true);
+    // Origami offers the list of types only for a section with nothing in it yet.
+    await splitSection(page, "top", 0);
+    await chooseSectionType(page, "table", 0);
+    await setChangeLayoutMode(page, false);
+    await waitForTableAttached(page);
 }

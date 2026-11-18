@@ -567,8 +567,7 @@ namespace Bloom.web.controllers
                     Value = pack.Key,
                     Label = LocalizationManager.GetDynamicString(
                         "Bloom",
-                        "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."
-                            + pack.EnglishLabel,
+                        pack.NameL10nId,
                         pack.EnglishLabel,
                         "Name of a Front/Back Matter Pack"
                     ),

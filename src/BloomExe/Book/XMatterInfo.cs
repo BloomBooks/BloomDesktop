@@ -1,7 +1,9 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
+using Bloom.Api;
 using L10NSharp;
 using SIL.IO;
 
@@ -11,10 +13,19 @@ namespace Bloom.Book
     {
         public readonly string PathToFolder;
 
-        public XMatterInfo(string pathToFolder)
+        /// <summary>
+        /// Whether the pack ships with Bloom, rather than being one a user installed.
+        /// </summary>
+        public readonly bool ShipsWithBloom;
+
+        public XMatterInfo(string pathToFolder, bool shipsWithBloom)
         {
             PathToFolder = pathToFolder;
+            ShipsWithBloom = shipsWithBloom;
         }
+
+        private const string kL10nIdPrefix =
+            "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.";
 
         public override string ToString()
         {
@@ -39,20 +50,17 @@ namespace Bloom.Book
         /// <summary>
         /// The key split into words for display, e.g. "Paper Saver" for "Factory-XMatter".
         /// </summary>
-        public string EnglishLabel
-        {
-            get
-            {
-                var x = Path.GetFileName(PathToFolder);
-                var end = x.IndexOf("-xmatter", StringComparison.OrdinalIgnoreCase);
-                var label = x.Substring(0, end);
-                if (label == "Factory") //historical name
-                {
-                    label = "PaperSaver";
-                }
-                return SplitCamelCase(label);
-            }
-        }
+        public string EnglishLabel => SplitCamelCase(KeyWithCurrentName);
+
+        /// <summary>
+        /// The key, except for the pack whose folder still has its historical name.
+        /// </summary>
+        private string KeyWithCurrentName => Key == "Factory" ? "PaperSaver" : Key;
+
+        /// <summary>
+        /// The localization id of this pack's name.
+        /// </summary>
+        public string NameL10nId => kL10nIdPrefix + EnglishLabel;
 
         // from http://stackoverflow.com/a/5796793/723299
         private static string SplitCamelCase(string str)
@@ -64,7 +72,37 @@ namespace Bloom.Book
             );
         }
 
+        /// <summary>
+        /// The localization id of this pack's description: the words of its key, with hyphens
+        /// dropped and camel case split, e.g. "...ABC Reader Device.Description" for
+        /// ABC-Reader-Device-XMatter. Every pack that ships with Bloom has its description in one
+        /// of the XLF files under this id. (The name ids keep their older form, hyphens and all,
+        /// because they are already translated.)
+        /// </summary>
+        public string DescriptionL10nId =>
+            kL10nIdPrefix
+            + string.Join(" ", KeyWithCurrentName.Split('-').Select(SplitCamelCase))
+            + ".Description";
+
+        /// <summary>
+        /// The description of the pack in the current UI language, if available, otherwise in English.
+        /// Packs that ship with Bloom have their descriptions in the XLF files. A pack a user
+        /// installed themselves may instead have description-{lang}.txt files in its folder, even
+        /// when it has the same name as a pack that ships with Bloom.
+        /// </summary>
         public string GetDescription()
+        {
+            return ShipsWithBloom
+                ? I18NApi.GetTranslation(DescriptionL10nId)
+                : GetDescriptionFromFiles();
+        }
+
+        /// <summary>
+        /// Read the description from the description-{lang}.txt files in the pack's folder, as
+        /// a pack the user installed may provide. A translation is used only when its [Vn] version
+        /// prefix is at least the English file's.
+        /// </summary>
+        private string GetDescriptionFromFiles()
         {
             const string desc = "description";
             try

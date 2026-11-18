@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import { addRow, getTableInfo, setupContentsOfCell } from "bloom-table";
+import {
+    addRow,
+    getTableInfo,
+    setGetLocalizations,
+    setupContentsOfCell,
+} from "bloom-table";
+import { getLocalizations } from "../../lib/localizationManager/getLocalizations";
 // A new video cell asks the server to put the video placeholder in the book
 // folder; there is no server here, and the call is also what proves the wiring
 // ran.
@@ -20,6 +26,13 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => ({
 vi.mock("./bloomEditing", async (importOriginal) => ({
     ...((await importOriginal()) as object),
     activateLongPressFor: () => {},
+}));
+// SetupTableEditing hands the library Bloom's getLocalizations, which asks the
+// server. Mocked, the library keeps its English, and the SetupTableEditing test
+// below can see what it was handed.
+vi.mock("bloom-table", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("bloom-table")>()),
+    setGetLocalizations: vi.fn(() => Promise.resolve()),
 }));
 
 import {
@@ -62,6 +75,32 @@ class NoopResizeObserver {
         ui: { addButton: () => {} },
     }),
 };
+
+describe("SetupTableEditing", () => {
+    it("hands the library Bloom's getLocalizations once, when a page has tables", () => {
+        const page = document.createElement("div");
+        document.body.appendChild(page);
+        SetupTableEditing(page);
+        // A page without tables does not ask for the table's translations.
+        expect(setGetLocalizations).not.toHaveBeenCalled();
+
+        for (let i = 0; i < 2; i++) {
+            const tableDiv = document.createElement("div");
+            tableDiv.classList.add("bloom-table");
+            page.appendChild(tableDiv);
+        }
+        SetupTableEditing(page);
+        // A second setup on the same page, as when a canvas element is added,
+        // must not ask again.
+        SetupTableEditing(page);
+
+        expect(setGetLocalizations).toHaveBeenCalledExactlyOnceWith(
+            getLocalizations,
+        );
+        TeardownTableEditing(page);
+        page.remove();
+    });
+});
 
 describe("AttachNewTableThatFillsItsSpace", () => {
     it("gives every row and column the growing size", () => {

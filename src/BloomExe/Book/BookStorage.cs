@@ -1497,20 +1497,7 @@ namespace Bloom.Book
             //Delete any files still in the list
             foreach (var fileName in audioFilesToDeleteIfNotUsed)
             {
-                var path = Path.Combine(audioFolderPath, fileName);
-                try
-                {
-                    Debug.WriteLine("Removed unused audio file: " + path);
-                    Logger.WriteEvent("Removed unused audio file: " + path);
-                    RobustFile.Delete(path);
-                }
-                catch (Exception ex) when (ex is IOException || ex is SecurityException)
-                {
-                    // It's not worth bothering the user about, we'll get it someday.
-                    // We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
-                    Debug.WriteLine("Could not remove unused audio file: " + path);
-                    Logger.WriteEvent("Could not remove unused audio file: " + path);
-                }
+                TryDeleteUnusedFile(Path.Combine(audioFolderPath, fileName), "audio");
             }
         }
 
@@ -1678,20 +1665,28 @@ namespace Bloom.Book
             //Delete any files still in the list
             foreach (var fileName in videoFilesToDeleteIfNotUsed)
             {
-                var path = Path.Combine(videoFolderPath, fileName);
-                try
-                {
-                    Debug.WriteLine("Removed unused video file: " + path);
-                    Logger.WriteEvent("Removed unused video file: " + path);
-                    RobustFile.Delete(path);
-                }
-                catch (Exception ex) when (ex is IOException || ex is SecurityException)
-                {
-                    // It's not worth bothering the user about, we'll get it someday.
-                    // We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
-                    Debug.WriteLine("Could not remove unused video file: " + path);
-                    Logger.WriteEvent("Could not remove unused video file: " + path);
-                }
+                TryDeleteUnusedFile(Path.Combine(videoFolderPath, fileName), "video");
+            }
+        }
+
+        /// <summary>
+        /// Delete a file the book no longer uses. If Windows refuses (antivirus folder protection
+        /// often does), log it and go on: it's not worth bothering the user about, and a later
+        /// cleanup will try again. kind names the sort of file for the log.
+        /// </summary>
+        private static void TryDeleteUnusedFile(string path, string kind)
+        {
+            try
+            {
+                RobustFile.Delete(path);
+                Debug.WriteLine($"Removed unused {kind} file: {path}");
+                Logger.WriteEvent($"Removed unused {kind} file: {path}");
+            }
+            catch (Exception ex) when (FileAccessDiagnostics.IsRefusal(ex))
+            {
+                // We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
+                Debug.WriteLine($"Could not remove unused {kind} file: {path}");
+                Logger.WriteEvent($"Could not remove unused {kind} file: {path}: {ex.Message}");
             }
         }
 
@@ -2262,7 +2257,23 @@ namespace Bloom.Book
             return Path.Combine(folderPath, Path.GetFileName(folderPath) + ".htm");
         }
 
+        /// <summary>
+        /// The book's HTML file in <paramref name="folderPath"/>, or an empty string if there is
+        /// none. A missing folder tells the user Bloom can't save the book, and throws.
+        /// </summary>
         public static string FindBookHtmlInFolder(string folderPath)
+        {
+            return FindBookHtmlInFolder(folderPath, true);
+        }
+
+        /// <summary>
+        /// <see cref="FindBookHtmlInFolder(string)"/>, but code that only reads a book, which the
+        /// user may rename or delete while it reads (e.g. the Apps screen's size estimates,
+        /// BL-17097), passes false for <paramref name="notifyIfFolderMissing"/>: then a missing
+        /// folder throws DirectoryNotFoundException, like other failed reads, rather than telling
+        /// the user that Bloom can't save the book.
+        /// </summary>
+        public static string FindBookHtmlInFolder(string folderPath, bool notifyIfFolderMissing)
         {
             string p = GetHtmCandidate(folderPath);
             if (RobustFile.Exists(p))
@@ -2273,6 +2284,8 @@ namespace Bloom.Book
 
             if (!Directory.Exists(folderPath)) //bl-291 (user had 4 month-old version, so the bug may well be long gone)
             {
+                if (!notifyIfFolderMissing)
+                    throw new DirectoryNotFoundException($"The book folder {folderPath} is gone.");
                 //in version 1.012 I got this because I had tried to delete the folder on disk that had a book
                 //open in Bloom.
                 ErrorReport.NotifyUserOfProblem(
@@ -3652,10 +3665,6 @@ namespace Bloom.Book
                 "Errors.CannotUpdateFile",
                 "There was a problem updating a support file"
             );
-            var howToTroubleshoot = LocalizationManager.GetString(
-                "Errors.CannotUpdateTroubleshoot",
-                "How to troubleshoot file updating errors"
-            );
 
             var longerMsgTemplate = LocalizationManager.GetString(
                 "Errors.CannotUpdateFileLonger",
@@ -3664,12 +3673,12 @@ namespace Bloom.Book
             var longerMsg = string.Format(
                 longerMsgTemplate,
                 Path.GetFileName(documentPath),
-                $"<a href='https://docs.bloomlibrary.org/troubleshooting-file-access' target='_blank'>{howToTroubleshoot}</a>"
+                FileAccessDiagnostics.TroubleshootingLinkHtml()
             );
 
             // Something like this was called for in the comment on BL-11863 that led to this,
             // but we finally decided not to.
-            // var avProgs = MiscUtils.InstalledAntivirusProgramNames();
+            // var avProgs = string.Join(", ", FileAccessDiagnostics.GetActiveAntivirusNames());
             //if (!string.IsNullOrEmpty(avProgs))
             //{
             //	var avTemplate = LocalizationManager.GetString("Errors.TryPausingAV",
