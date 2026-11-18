@@ -1185,29 +1185,14 @@ namespace BloomTests.ImageProcessing
         [Test]
         public void SaveImageMetadataIfNeeded_FileBrieflyHeldOpenByAnotherReader_WaitsAndSaves()
         {
-            using (var folder = new TemporaryFolder("SaveImageMetadataWhileFileHeldOpen"))
-            {
-                var imagePath = CopyTestImageTo(folder, kPastedImageName);
-                const string copyright = "Copyright © 2026 BL-17093 Test";
-                Assert.That(
-                    Metadata.FromFile(imagePath).CopyrightNotice,
-                    Is.Not.EqualTo(copyright),
-                    "The test image should not start out with the copyright this test saves"
-                );
-                var metadata = new Metadata { CopyrightNotice = copyright };
-
-                HoldOpenBrieflyWhile(
-                    imagePath,
-                    () =>
-                        ImageUtils.SaveImageMetadataIfNeeded(
-                            metadata,
-                            folder.Path,
-                            kPastedImageName
-                        )
-                );
-
-                Assert.That(Metadata.FromFile(imagePath).CopyrightNotice, Is.EqualTo(copyright));
-            }
+            AssertSaveWaitsForFileHeldOpenBriefly(
+                (imagePath, copyright) =>
+                    ImageUtils.SaveImageMetadataIfNeeded(
+                        new Metadata { CopyrightNotice = copyright },
+                        Path.GetDirectoryName(imagePath),
+                        Path.GetFileName(imagePath)
+                    )
+            );
         }
 
         /// <summary>
@@ -1218,52 +1203,57 @@ namespace BloomTests.ImageProcessing
         [Test]
         public void SaveImageMetadata_FileBrieflyHeldOpenByAnotherReader_WaitsAndSaves()
         {
-            using (var folder = new TemporaryFolder("SaveImageMetadataOnPasteWhileFileHeldOpen"))
+            AssertSaveWaitsForFileHeldOpenBriefly(
+                (imagePath, copyright) =>
+                {
+                    using (var image = PalasoImage.FromFileRobustly(imagePath))
+                    {
+                        image.Metadata.CopyrightNotice = copyright;
+                        ImageUtils.SaveImageMetadata(image, imagePath);
+                    }
+                }
+            );
+        }
+
+        /// <summary>
+        /// Copy a test image into a temporary folder and call save(imagePath, copyright) while
+        /// another reader holds the image open for four seconds: longer than libpalaso's own
+        /// retries (about two seconds) but only a few seconds in all, as a virus scan of a fresh
+        /// photo might. The save must succeed and leave the copyright in the file.
+        /// </summary>
+        private static void AssertSaveWaitsForFileHeldOpenBriefly(Action<string, string> save)
+        {
+            using (var folder = new TemporaryFolder("SaveImageMetadataWhileFileHeldOpen"))
             {
                 var imagePath = CopyTestImageTo(folder, kPastedImageName);
-                const string copyright = "Copyright © 2026 BL-17093 Paste Test";
+                const string copyright = "Copyright © 2026 BL-17093 Test";
                 Assert.That(
                     Metadata.FromFile(imagePath).CopyrightNotice,
                     Is.Not.EqualTo(copyright),
                     "The test image should not start out with the copyright this test saves"
                 );
-                using (var image = PalasoImage.FromFileRobustly(imagePath))
-                {
-                    image.Metadata.CopyrightNotice = copyright;
 
-                    HoldOpenBrieflyWhile(
-                        imagePath,
-                        () => ImageUtils.SaveImageMetadata(image, imagePath)
-                    );
+                var reader = new FileStream(
+                    imagePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read
+                );
+                var releaseReader = System.Threading.Tasks.Task.Run(() =>
+                {
+                    System.Threading.Thread.Sleep(4000);
+                    reader.Dispose();
+                });
+                try
+                {
+                    save(imagePath, copyright);
+                }
+                finally
+                {
+                    releaseReader.Wait();
                 }
 
                 Assert.That(Metadata.FromFile(imagePath).CopyrightNotice, Is.EqualTo(copyright));
-            }
-        }
-
-        /// <summary>
-        /// Run save while another reader holds the file at path open for four seconds: longer
-        /// than libpalaso's own retries (about two seconds) but only a few seconds in all, as a
-        /// virus scan of a fresh photo might. The save must succeed.
-        /// </summary>
-        private static void HoldOpenBrieflyWhile(string path, Action save)
-        {
-            var reader = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var releaseReader = System.Threading.Tasks.Task.Run(() =>
-            {
-                System.Threading.Thread.Sleep(4000);
-                reader.Dispose();
-            });
-            try
-            {
-                Assert.DoesNotThrow(
-                    () => save(),
-                    "Saving should wait until the other reader lets go of the file"
-                );
-            }
-            finally
-            {
-                releaseReader.Wait();
             }
         }
 
@@ -1310,16 +1300,6 @@ namespace BloomTests.ImageProcessing
                 RobustFileIO.IsFileInUseError(new InvalidOperationException("other")),
                 Is.False
             );
-        }
-
-        [Test]
-        public void GetImageFileInUseMessage_NamesTheFile()
-        {
-            var message = ImageUtils.GetImageFileInUseMessage(
-                Path.Combine("some", "folder", kPastedImageName)
-            );
-            Assert.That(message, Does.Contain(kPastedImageName));
-            Assert.That(message, Does.Not.Contain("folder"));
         }
 
         private const string kPastedImageName = "pasted.jpg";

@@ -34,6 +34,31 @@ namespace Bloom
         }
 
         /// <summary>
+        /// Run write, which writes to the file at path. If that fails because something else has
+        /// the file open, wait for the file to come free and try once more; if it does not come
+        /// free, rethrow the in-use error. A file that was written recently (a picture just
+        /// pasted, say) may still be held open by something else (antivirus, a thumbnailer, a sync
+        /// program) for longer than libpalaso's own retries wait. RobustIO.IsFileLocked waits
+        /// about five seconds for the file before saying it is still locked. (BL-17093)
+        /// </summary>
+        public static void RetryOnceIfFileInUse(string path, Action write)
+        {
+            try
+            {
+                write();
+            }
+            catch (Exception e) when (IsFileInUseError(e))
+            {
+                SIL.Reporting.Logger.WriteEvent(
+                    $"{Path.GetFileName(path)} is in use; waiting for it to come free"
+                );
+                if (RobustIO.IsFileLocked(path))
+                    throw;
+                write();
+            }
+        }
+
+        /// <summary>
         /// Get the image metadata from the file as reliably as possible.
         /// </summary>
         public static Metadata MetadataFromFile(string path)

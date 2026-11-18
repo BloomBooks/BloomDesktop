@@ -895,23 +895,17 @@ namespace Bloom.ImageProcessing
         /// </summary>
         public static void ReportImageMetadataSaveProblem(string filePath, Exception ex)
         {
-            if (RobustFileIO.IsFileInUseError(ex))
-                NotifyUserOfImageMetadataProblem(GetImageFileInUseMessage(filePath), ex);
-            else
+            if (!RobustFileIO.IsFileInUseError(ex))
+            {
                 ReportImageMetadataProblem(filePath, ex);
-        }
-
-        /// <summary>
-        /// The message for a failure to save an image's copyright and license because something
-        /// has the file open. We can't tell what (it could even be Bloom), hence "possibly".
-        /// </summary>
-        internal static string GetImageFileInUseMessage(string filePath)
-        {
+                return;
+            }
+            // We can't tell what has the file open (it could even be Bloom), hence "possibly".
             var msgFmt = LocalizationManager.GetString(
                 "EditTab.ImageMetadata.FileInUse",
                 "Bloom could not save the copyright and license information in {0}, possibly because another program is using that file. It may help to wait a moment and try again, or you may need to restart your computer."
             );
-            return string.Format(msgFmt, Path.GetFileName(filePath));
+            NotifyUserOfImageMetadataProblem(string.Format(msgFmt, Path.GetFileName(filePath)), ex);
         }
 
         /// <summary>
@@ -3125,7 +3119,7 @@ namespace Bloom.ImageProcessing
             {
                 imageBeingModified.Metadata = metadata;
                 imageBeingModified.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
-                RetryOnceIfFileInUse(
+                RobustFileIO.RetryOnceIfFileInUse(
                     Path.Combine(folderPath, filename),
                     () =>
                     {
@@ -3147,7 +3141,7 @@ namespace Bloom.ImageProcessing
 
         public static void SaveImageMetadata(PalasoImage imageInfo, string imagePath)
         {
-            RetryOnceIfFileInUse(
+            RobustFileIO.RetryOnceIfFileInUse(
                 imagePath,
                 () =>
                 {
@@ -3169,30 +3163,6 @@ namespace Bloom.ImageProcessing
                     }
                 }
             );
-        }
-
-        /// <summary>
-        /// Run writeMetadata, which writes metadata into the image file at imagePath. If that
-        /// fails because something else has the file open, wait for the file to come free and
-        /// try once more. A file that was written recently (a picture just pasted, say) may still
-        /// be held open by something else (antivirus, a thumbnailer, a sync program) for longer
-        /// than libpalaso's own retries wait, and writing the metadata needs the file to ourselves.
-        /// IsFileLocked waits about five seconds for it. (BL-17093)
-        /// </summary>
-        private static void RetryOnceIfFileInUse(string imagePath, Action writeMetadata)
-        {
-            try
-            {
-                writeMetadata();
-            }
-            catch (Exception e) when (RobustFileIO.IsFileInUseError(e))
-            {
-                Logger.WriteEvent(
-                    $"{Path.GetFileName(imagePath)} is in use; waiting for it so its metadata can be saved"
-                );
-                RobustIO.IsFileLocked(imagePath);
-                writeMetadata();
-            }
         }
 
         /// <summary>
