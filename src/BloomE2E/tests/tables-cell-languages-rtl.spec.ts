@@ -8,8 +8,8 @@
 import { expect, test } from "../fixtures/bloomTest";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
+    cellTextBox,
     getCellLanguages,
-    getCellTextBoxDirAttribute,
     getCellTextDirection,
     makeBookWithTableOnCanvasPage,
     toggleCellLanguageInCellMenu,
@@ -53,7 +53,7 @@ test("a right-to-left language ticked for a cell runs right to left before the p
             "The English box beside it should still run left to right.",
         ).toBe("ltr");
         expect(
-            await getCellTextBoxDirAttribute(page, 0, 0, "ar"),
+            await (await cellTextBox(page, 0, 0, "ar")).getAttribute("dir"),
             "The new Arabic box should be marked dir=rtl, as page load marks the others.",
         ).toBe("rtl");
         // A box a person can type in, not only one that is drawn.

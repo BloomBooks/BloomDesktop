@@ -3,11 +3,12 @@ import {
     cellLanguagesOfCollection,
     ICellLanguage,
     menuLanguages,
-    roleIsLastLanguageSomewhere,
     roleState,
     rolesFromSetting,
     rolesOfGroup,
     showRolesInGroup,
+    showSettingInGroup,
+    someGroupHasOneLanguage,
     toggleRole,
 } from "./tableCellLanguages";
 import { theOneUndoStack } from "../undo/UndoStack";
@@ -226,7 +227,8 @@ describe("toggleRole", () => {
             makeGroup("V", ["tpi"]),
             makeGroup("V,N1", ["tpi", "en"]),
         ];
-        expect(roleIsLastLanguageSomewhere(groups, "V", kLanguages)).toBe(true);
+        expect(roleState(groups, "V", kLanguages)).toBe("all");
+        expect(someGroupHasOneLanguage(groups, kLanguages)).toBe(true);
 
         toggleRole(groups, "V", kLanguages, noWiring);
 
@@ -283,5 +285,61 @@ describe("toggleRole", () => {
 
         expect(rebuilt[1].getAttribute("data-default-languages")).toBe("V,N1");
         expect(visibleTagsOf(rebuilt[1])).toEqual(["tpi", "en"]);
+    });
+});
+
+describe("when the toolbar's first language is the collection's L2", () => {
+    // V and N1 then name the same language, English, and the menu lists it once, as L1.
+    const languages = cellLanguagesOfCollection(
+        {
+            language1Name: "Tok Pisin",
+            language1Tag: "tpi",
+            language2Name: "English",
+            language2Tag: "en",
+            language3Name: "Spanish",
+            language3Tag: "es",
+        },
+        ["en"],
+    );
+
+    it("ticks L1 for a cell stored as N1, since it shows that language", () => {
+        expect(
+            menuLanguages(languages).map((language) => language.role),
+        ).toEqual(["V", "N2"]);
+        const group = makeGroup("N1", ["en"]);
+
+        expect(roleState([group], "V", languages)).toBe("all");
+        expect(someGroupHasOneLanguage([group], languages)).toBe(true);
+    });
+
+    it("unticking L1 hides the language even where N1 also names it", () => {
+        const group = makeGroup("V,N1,N2", ["en", "es"]);
+        expect(visibleTagsOf(group)).toEqual(["en", "es"]);
+
+        toggleRole([group], "V", languages, noWiring);
+
+        expect(group.getAttribute("data-default-languages")).toBe("N2");
+        expect(visibleTagsOf(group)).toEqual(["es"]);
+        expect(roleState([group], "V", languages)).toBe("none");
+    });
+});
+
+describe("showSettingInGroup", () => {
+    it("leaves a group given no setting with none, showing the toolbar's languages", () => {
+        const group = makeGroup("N2", ["es"]);
+
+        showSettingInGroup(group, null, kLanguages);
+
+        expect(group.hasAttribute("data-default-languages")).toBe(false);
+        expect(visibleTagsOf(group)).toEqual(["tpi"]);
+    });
+
+    it("stores a setting exactly as given", () => {
+        const group = makeGroup(null, ["tpi"]);
+
+        showSettingInGroup(group, "N1,V", kLanguages);
+
+        expect(group.getAttribute("data-default-languages")).toBe("N1,V");
+        expect(visibleTagsOf(group)).toEqual(["tpi", "en"]);
     });
 });

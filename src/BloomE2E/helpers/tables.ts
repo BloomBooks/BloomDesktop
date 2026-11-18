@@ -84,7 +84,6 @@ export type TableMenuCommand =
     | "Delete Column"
     | "Copy properties"
     | "Paste properties"
-    | "Paint format"
     | "Copy Table"
     | "Cut Table"
     | "Delete Table";
@@ -2078,19 +2077,10 @@ export async function paintFormatFromCellOntoCell(
             `Right-clicking the cell at row ${from.row}, column ${from.column} did not open the ` +
                 `Cell menu. Menus that did open: ${describeMenus(menus)}.`,
         );
-    await clickTableMenuCommand(page, "Paint format");
-    const body = editablePageFrame(page).locator("body");
-    await expect(
-        body,
-        "Choosing Paint format did not put the table into its painting mode.",
-    ).toHaveClass(/\bbloom-paint-format\b/, { timeout: kTableWaitMs });
+    await startPaintFormat(page, "Paint format");
     // A real press, for the same reason as in clickCell.
     await realClick(await cell(page, onto.row, onto.column, tableIndex));
-    await body.press("Escape");
-    await expect(
-        body,
-        "Escape did not end the table's painting mode.",
-    ).not.toHaveClass(/\bbloom-paint-format\b/, { timeout: kTableWaitMs });
+    await endPaintFormat(page);
 }
 
 /**
@@ -2122,18 +2112,6 @@ export async function getCellTextDirection(
 ): Promise<string> {
     const box = await cellTextBox(page, row, column, languageTag, tableIndex);
     return box.evaluate((element) => getComputedStyle(element).direction);
-}
-
-/** The dir attribute of one language's box in a cell, or null when it has none. */
-export async function getCellTextBoxDirAttribute(
-    page: Page,
-    row: number,
-    column: number,
-    languageTag: string,
-    tableIndex = 0,
-): Promise<string | null> {
-    const box = await cellTextBox(page, row, column, languageTag, tableIndex);
-    return box.getAttribute("dir");
 }
 
 /**

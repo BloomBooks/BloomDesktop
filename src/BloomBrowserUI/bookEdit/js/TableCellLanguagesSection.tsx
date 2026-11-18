@@ -7,8 +7,8 @@ import { useL10n } from "../../react_components/l10nHooks";
 import {
     ICellLanguage,
     menuLanguages,
-    roleIsLastLanguageSomewhere,
     roleState,
+    someGroupHasOneLanguage,
     toggleRole,
 } from "./tableCellLanguages";
 
@@ -36,11 +36,9 @@ const LanguageRow: React.FunctionComponent<{
         props.language.tooltipL10nId,
     );
     const state = roleState(props.groups, props.language.role, props.languages);
-    const locked = roleIsLastLanguageSomewhere(
-        props.groups,
-        props.language.role,
-        props.languages,
-    );
+    const locked =
+        state === "all" &&
+        someGroupHasOneLanguage(props.groups, props.languages);
     const label = `${props.language.shortName} - ${props.language.name}`;
     return (
         <label

@@ -45,9 +45,7 @@ import { ILanguageNameValues } from "../toolbox/canvas/canvasControlTypes";
 import {
     cellLanguagesOfCollection,
     ICellLanguage,
-    rolesFromSetting,
-    rolesOfGroup,
-    showRolesInGroup,
+    showSettingInGroup,
     textGroupOfCell,
 } from "./tableCellLanguages";
 import { TableCellLanguagesSection } from "./TableCellLanguagesSection";
@@ -193,24 +191,31 @@ function installHostHooks(): void {
     // A text cell's languages travel with the cell's other settings: into a new row or column
     // from the one it was inserted beside, and by Paint format and Copy / Paste properties.
     setHostCellSettings({
+        // The setting is copied as stored, so a cell with none (it shows the toolbar's languages)
+        // gives the cell it is copied to none either.
         snapshot: (cell) => {
             const group = textGroupOfCell(cell);
-            if (!group || !cellLanguages) return undefined;
-            return rolesOfGroup(group, cellLanguages).join(",");
+            if (!group) return undefined;
+            return group.getAttribute("data-default-languages") ?? kNoSetting;
         },
         apply: (cell, value) => {
             const group = textGroupOfCell(cell);
-            if (!group || !cellLanguages) return;
+            // undefined: the cell copied from is not a text cell, so it has no languages to give.
+            if (!group || !cellLanguages || value === undefined) return;
             wireNewEditables(
-                showRolesInGroup(
+                showSettingInGroup(
                     group,
-                    rolesFromSetting(value, cellLanguages),
+                    value === kNoSetting ? null : value,
                     cellLanguages,
                 ),
             );
         },
     });
 }
+
+// What setHostCellSettings carries for a text cell with no data-default-languages. The library
+// uses undefined for a cell with nothing to copy, so "no setting" needs a value of its own.
+const kNoSetting = "";
 
 // The collection's languages as a table cell can show them. Asked for once per page load, like
 // the table feature's status; until it arrives, the menus have no Languages item.
@@ -238,14 +243,15 @@ function refreshCellLanguages(): void {
 }
 
 // An editable added to a cell for a newly chosen language gets the wiring that page load gives
-// the others. They are wired from their table, which is where the wiring looks.
+// the others. Only the cells that gained one are wired: Paste properties over many cells calls
+// this once per cell.
 function wireNewEditables(editables: HTMLElement[]): void {
-    const tables = new Set<HTMLElement>();
+    const cells = new Set<HTMLElement>();
     editables.forEach((editable) => {
-        const table = editable.closest<HTMLElement>(".bloom-table");
-        if (table) tables.add(outermostTable(table));
+        const cell = editable.closest<HTMLElement>(".bloom-cell");
+        if (cell) cells.add(cell);
     });
-    tables.forEach((table) => wireBloomContentOfNewCells(table));
+    cells.forEach((cell) => wireBloomContentOfNewCells(cell));
 }
 
 /**
@@ -271,21 +277,35 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
     // mode's text boxes, which origami makes not contenteditable. Leaving the
     // mode rebuilds the page, and the page-load pass wires these cells then.
     if (root.closest(".origami-layout-mode")) return;
+    // `root` is a cell or a table, so everything below it that is a
+    // bloom-editable belongs to some cell of some table.
+    const newEditables = Array.from(
+        root.querySelectorAll<HTMLElement>(
+            ".bloom-editable:not([contenteditable])",
+        ),
+    );
     // Every language of a group holds the same inline pictures, so an editable
     // made since the page loaded (a language newly chosen for a cell, say) gets
     // copies of them, as page load gives the others. Before CKEditor attaches,
-    // as at page load.
-    setupInlineImages(root);
-    // `root` is a cell or a table, so everything below it that is a
-    // bloom-editable belongs to some cell of some table.
-    root.querySelectorAll<HTMLElement>(
-        ".bloom-editable:not([contenteditable])",
-    ).forEach((editable) => {
-        // Page load marks a box in a right-to-left language dir="rtl", and the Format dialog's
-        // alignment and the paragraph marks of editMode.less go by that. The collection's
-        // stylesheet already gives the language its direction by [lang], so read it from there.
-        if (getComputedStyle(editable).direction === "rtl")
-            editable.setAttribute("dir", "rtl");
+    // as at page load, and only in the cells that have such an editable.
+    new Set(
+        newEditables.map((editable) =>
+            editable.closest<HTMLElement>(".bloom-cell"),
+        ),
+    ).forEach((cell) => {
+        if (cell) setupInlineImages(cell);
+    });
+    // Page load marks a box in a right-to-left language dir="rtl", and the Format dialog's
+    // alignment and the paragraph marks of editMode.less go by that. The collection's
+    // stylesheet already gives the language its direction by [lang], so read it from there,
+    // for every box before the loop below writes to any, so the styles are worked out once.
+    const rightToLeft = new Set(
+        newEditables.filter(
+            (editable) => getComputedStyle(editable).direction === "rtl",
+        ),
+    );
+    newEditables.forEach((editable) => {
+        if (rightToLeft.has(editable)) editable.setAttribute("dir", "rtl");
         // Must come before attachToCkEditor: CKEditor's inline mode decides
         // whether the editor is read-only from the element's contenteditable
         // state at the moment it attaches.

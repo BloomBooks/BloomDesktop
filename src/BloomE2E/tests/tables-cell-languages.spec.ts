@@ -225,8 +225,6 @@ test.describe("the languages of a table's text cells", () => {
         page,
         step,
     }) => {
-        const everyCellShows = (languages: string[], why: string) =>
-            expectEveryCellShows(page, languages, why);
         const toggleL2InTableMenu = async () => {
             await openTableMenu(page, "table");
             await toggleMenuCellLanguage(page, "L2");
@@ -235,14 +233,26 @@ test.describe("the languages of a table's text cells", () => {
 
         await step("Untick L2 in the Table menu", async () => {
             // Pasting properties, in the test before this one, left every cell showing L2.
-            await everyCellShows(L1_AND_L2, "Every cell should start with L2");
+            await expectEveryCellShows(
+                page,
+                L1_AND_L2,
+                "Every cell should start with L2",
+            );
             await toggleL2InTableMenu();
-            await everyCellShows(L1_ONLY, "Unticking L2 should hide it");
+            await expectEveryCellShows(
+                page,
+                L1_ONLY,
+                "Unticking L2 should hide it",
+            );
         });
 
         await step("Tick L2 in the Table menu and type in French", async () => {
             await toggleL2InTableMenu();
-            await everyCellShows(L1_AND_L2, "Ticking L2 should show it");
+            await expectEveryCellShows(
+                page,
+                L1_AND_L2,
+                "Ticking L2 should show it",
+            );
             await typeInCell(page, 1, 0, "fr", "Pomme");
         });
 
@@ -250,15 +260,24 @@ test.describe("the languages of a table's text cells", () => {
             "Untick L2, leave the page and come back, and tick it again",
             async () => {
                 await toggleL2InTableMenu();
-                await everyCellShows(L1_ONLY, "Unticking L2 should hide it");
+                await expectEveryCellShows(
+                    page,
+                    L1_ONLY,
+                    "Unticking L2 should hide it",
+                );
                 await reloadPageBeingEdited(page);
                 await waitForTableAttached(page);
-                await everyCellShows(
+                await expectEveryCellShows(
+                    page,
                     L1_ONLY,
                     "The saved page should still show L1 only",
                 );
                 await toggleL2InTableMenu();
-                await everyCellShows(L1_AND_L2, "Ticking L2 should show it");
+                await expectEveryCellShows(
+                    page,
+                    L1_AND_L2,
+                    "Ticking L2 should show it",
+                );
                 expect(
                     await getCellText(page, 1, 0, "fr"),
                     "The French typed before L2 was unticked should still be in its box.",
