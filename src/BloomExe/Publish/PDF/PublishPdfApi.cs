@@ -365,7 +365,7 @@ namespace Bloom.Publish.PDF
                         "3. More settings > Paper size: \"Letter\""
                     );
                 result.helps[3] = LocalizationManager.GetString(
-                    "PublishTab.PDF.Booklet.Scale.Actual Size",
+                    "PublishTab.PDF.Booklet.Scale.ActualSize",
                     "4. More settings > Scale: \"Actual size\""
                 );
             }

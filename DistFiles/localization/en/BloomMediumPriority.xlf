@@ -34,6 +34,11 @@
         <note>ID: Common.Working</note>
         <note>Shown next to a spinner while an operation is in progress.</note>
       </trans-unit>
+      <trans-unit id="Common.ClickHereForHelp" translate="no">
+        <source xml:lang="en">Please click [here] to get help from the Bloom support team.</source>
+        <note>ID: Common.ClickHereForHelp</note>
+        <note>Added to the end of some error messages. [here] will become a link. Keep the brackets to mark the translated text that should form the link.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder">
         <source xml:lang="en">App Builder</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
@@ -124,6 +129,26 @@
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>
         <note>Name of the AI image editing feature, used in subscription messages.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyrightThisDerivedVersion" translate="no">
+        <source xml:lang="en">Copyright and license this translated version</source>
+        <note>ID: EditTab.CopyrightThisDerivedVersion</note>
+        <note>Checkbox at the top of the dialog for editing a book's copyright and license, when the book is a translation of a book someone else made. Checking it lets the user give the translation its own copyright and license.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.ImageFailed" translate="no">
+        <source xml:lang="en">Failed to load image</source>
+        <note>ID: EditTab.Image.ImageFailed</note>
+        <note>Short message in the problem report shown when Bloom cannot load a picture in the Edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.CannotEditEmbeddedImage" translate="no">
+        <source xml:lang="en">Bloom can't edit image information for this image because it is embedded data, not a file image.</source>
+        <note>ID: EditTab.ImageMetadata.CannotEditEmbeddedImage</note>
+        <note>Shown when the user tries to edit the credits, copyright and license of a picture that is stored inside the page itself rather than in its own file.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.NoGifOnClipboard" translate="no">
+        <source xml:lang="en">To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element</source>
+        <note>ID: EditTab.NoGifOnClipboard</note>
+        <note>Shown when the user pastes into an animated GIF picture on a page but the clipboard does not hold a GIF. "Gif" and "GIF" are the name of an image file format.</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.RotateRight" translate="no">
         <source xml:lang="en">Rotate right</source>

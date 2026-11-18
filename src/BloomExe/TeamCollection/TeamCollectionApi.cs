@@ -1076,7 +1076,7 @@ namespace Bloom.TeamCollection
                     );
                     var msgFmt = LocalizationManager.GetString(
                         "TeamCollection.ConflictingEditOrCheckout",
-                        "Someone else has edited the book {0} or checked it out even though it was being editing here! Local changes have been saved to Lost and Found"
+                        "Someone else has edited the book {0} or checked it out even though it was being edited here! Local changes have been saved to Lost and Found"
                     );
                     var msg = string.Format(
                         msgFmt,
@@ -1260,10 +1260,12 @@ namespace Bloom.TeamCollection
             {
                 // This might also catch errors such as not having permission to enumerate things
                 // in the directory.
-                return LocalizationManager.GetString(
-                    "TeamCollection.NoWriteAccess",
-                    "Bloom does not have permission to write to the selected folder. The system reported "
-                        + ex.Message
+                return string.Format(
+                    LocalizationManager.GetString(
+                        "TeamCollection.NoWriteAccess",
+                        "Bloom does not have permission to write to the selected folder. The system reported {0}"
+                    ),
+                    ex.Message
                 );
             }
 
