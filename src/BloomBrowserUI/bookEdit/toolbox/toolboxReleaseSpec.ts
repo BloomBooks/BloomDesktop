@@ -65,3 +65,34 @@ describe("ToolBox.releaseElementsForTools (BL-16840)", () => {
         getTheOneToolbox().releaseElementsForTools(otherPage);
     });
 });
+
+describe("ToolBox.configureElementsForTools", () => {
+    // A box added after the page loaded is passed alone (setUpBoxesBuiltAfterLoad), so that the
+    // boxes page load already set up do not get every handler a second time.
+    it("given a box, sets up that box and none of its neighbours", () => {
+        const pageBody = makePageBody();
+        const [oldBox, newBox] = Array.from(
+            pageBody.querySelectorAll<HTMLElement>(".bloom-editable"),
+        );
+        const keydownHandlers = (box: HTMLElement): number =>
+            (
+                (
+                    $ as unknown as {
+                        _data: (
+                            e: HTMLElement,
+                            n: string,
+                        ) => Record<string, unknown[]> | undefined;
+                    }
+                )._data(box, "events")?.keydown ?? []
+            ).length;
+        // sanity check: neither box has a handler yet
+        expect(keydownHandlers(oldBox)).toBe(0);
+        expect(keydownHandlers(newBox)).toBe(0);
+
+        getTheOneToolbox().configureElementsForTools(newBox);
+
+        expect(keydownHandlers(newBox)).toBeGreaterThan(0);
+        expect(keydownHandlers(oldBox)).toBe(0);
+        getTheOneToolbox().releaseElementsForTools(pageBody);
+    });
+});

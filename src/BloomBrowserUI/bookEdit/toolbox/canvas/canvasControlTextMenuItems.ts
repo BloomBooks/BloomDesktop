@@ -9,6 +9,7 @@ import { get } from "../../../utils/bloomApi";
 import { saveChangesAndRethinkPage } from "../../js/pageSnapshot";
 import { wrapWithRequestPageContentDelay } from "../../js/pageContentDelays";
 import { getCanvasElementManager } from "./canvasElementPageBridge";
+import { getEditablePageBundleExports } from "../../js/workspaceFrames";
 import { IControlContext, IControlMenuCommandRow } from "./canvasControlTypes";
 
 const fieldsControlledByAppearanceSystem = ["bookTitle"];
@@ -80,49 +81,31 @@ function removeClassesByPrefix(element: HTMLElement, prefix: string): void {
     });
 }
 
+// Make the canvas element's text show `langCode` alone. A box for that language is added if the
+// group has none, set up as page load sets up every box.
 function updateTranslationGroupLanguage(
     translationGroup: HTMLElement,
     langCode: string,
-    langName: string,
     dataDefaultLang: string,
     classes: string[],
     appearanceClasses: string[],
 ): void {
     translationGroup.setAttribute("data-default-languages", dataDefaultLang);
-    const editables = Array.from(
-        translationGroup.getElementsByClassName("bloom-editable"),
-    ) as HTMLElement[];
-    if (editables.length === 0) {
+    if (
+        translationGroup.getElementsByClassName("bloom-editable").length === 0
+    ) {
         return;
     }
-
-    let editableInLang = editables.find(
-        (editableElement) => editableElement.getAttribute("lang") === langCode,
-    );
-    if (editableInLang) {
-        editables.splice(editables.indexOf(editableInLang), 1);
-    } else {
-        let editableToClone = editables.find(
-            (editableElement) => editableElement.getAttribute("lang") === "z",
-        );
-        if (!editableToClone) {
-            editableToClone = editables[0];
-        }
-        editableInLang = editableToClone.cloneNode(true) as HTMLElement;
-        editableInLang.innerHTML = "<p><br></p>";
-        editableInLang.setAttribute("lang", langCode);
-        editableInLang.setAttribute("data-languagetipcontent", langName);
-        translationGroup.appendChild(editableInLang);
-    }
-
+    // This menu runs in the toolbox frame; the boxes are set up by the page's own code.
+    const page = getEditablePageBundleExports()!;
+    const added = page.showLanguagesInTranslationGroup(translationGroup, [
+        langCode,
+    ]);
+    const editableInLang = translationGroup.querySelector<HTMLElement>(
+        `:scope > .bloom-editable[lang="${langCode}"]`,
+    )!;
     removeClassesByPrefix(editableInLang, "bloom-content");
-    removeClassesByPrefix(editableInLang, "bloom-visibility-code-");
-    editableInLang.classList.add("bloom-visibility-code-on");
-    editables.forEach((editableElement) => {
-        removeClassesByPrefix(editableElement, "bloom-visibility-code-");
-        editableElement.classList.add("bloom-visibility-code-off");
-    });
-    classes.forEach((className) => editableInLang?.classList.add(className));
+    classes.forEach((className) => editableInLang.classList.add(className));
 
     const dataBookValue = editableInLang.getAttribute("data-book");
     if (
@@ -130,9 +113,10 @@ function updateTranslationGroupLanguage(
         fieldsControlledByAppearanceSystem.includes(dataBookValue)
     ) {
         appearanceClasses.forEach((className) =>
-            editableInLang?.classList.add(className),
+            editableInLang.classList.add(className),
         );
     }
+    page.setUpBoxesBuiltAfterLoad(added);
 }
 
 function clearFieldTypeClasses(translationGroup: HTMLElement): void {
@@ -230,7 +214,6 @@ export function makeLanguageMenuItem(
                 updateTranslationGroupLanguage(
                     translationGroup,
                     languageNameValues.language1Tag,
-                    languageNameValues.language1Name,
                     "V",
                     ["bloom-content1"],
                     ["bloom-contentFirst"],
@@ -260,7 +243,6 @@ export function makeLanguageMenuItem(
                 updateTranslationGroupLanguage(
                     translationGroup,
                     languageNameValues.language2Tag,
-                    languageNameValues.language2Name,
                     "N1",
                     ["bloom-contentNational1"],
                     ["bloom-contentSecond"],
@@ -291,7 +273,6 @@ export function makeLanguageMenuItem(
                 updateTranslationGroupLanguage(
                     translationGroup,
                     languageNameValues.language3Tag!,
-                    languageNameValues.language3Name!,
                     "N2",
                     ["bloom-contentNational2"],
                     ["bloom-contentThird"],

@@ -44,12 +44,12 @@ let lastUndoRedoMarkupStartTime = 0;
 const minMillisecondsBetweenUndoRedoMarkups = 150;
 
 /**
- * Installs on the .bloom-editable elements of the given container the handlers that keep
- * the running tool's markup up to date as the user types and pastes. Called by
+ * Installs on the given .bloom-editable elements the handlers that keep the running tool's
+ * markup up to date as the user types and pastes. Called by
  * ToolBox.configureElementsForTools, which passes the toolbox so we can find its running tool.
  */
 export function configurePageEditingHandlers(
-    container: HTMLElement,
+    boxes: JQuery,
     theToolbox: ToolBox,
 ): void {
     toolbox = theToolbox;
@@ -109,8 +109,7 @@ export function configurePageEditingHandlers(
                 This should be safe because ctrl-V should not interact with longpress.
         */
 
-    $(container)
-        .find(".bloom-editable")
+    boxes
         .keydown((event) => {
             // Repair a split paragraph BEFORE this keystroke lands in it. Chromium drops
             // glyphs from a ligature when the paragraph's text is in two adjacent text
