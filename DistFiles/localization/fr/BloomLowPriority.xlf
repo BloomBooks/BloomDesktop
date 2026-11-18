@@ -796,12 +796,12 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader.Description" sil:dynamic="true">
         <source xml:lang="en">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</source>
-        <target xml:lang="fr" state="needs-translation">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</target>
+        <target xml:lang="fr" state="translated">Utilisés par SIL LEAD dans le projet ABC+ Philippines, 2020.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader Device.Description" sil:dynamic="true">
         <source xml:lang="en">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</source>
-        <target xml:lang="fr" state="needs-translation">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</target>
+        <target xml:lang="fr" state="translated">Utilisés par SIL LEAD dans le projet ABC+ Philippines, 2020.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader Device.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari.Description" sil:dynamic="true">
