@@ -10,7 +10,17 @@
 # independent results rather than one merged total. See the "Test reports" steps at the end.
 #
 # Every night is then reported to Slack -- pass or fail, all in one channel -- with each
-# suite's counts and how long it took. See "The nightly report" at the end.
+# suite's counts and how long it took. See the `report` job at the end.
+#
+# Three jobs. `build-and-test` runs every suite but BloomE2E. `e2e` runs BloomE2E split into
+# shards, each on a runner of its own, in parallel with it. `report` waits for both, publishes the
+# BloomE2E results and posts the report. BloomE2E got runners of its own on 2026-11-18, when it
+# had grown to 82 minutes and taken the single job past its 120-minute timeout, killing the
+# visual regression suite and the report with it. The suite runs one Bloom at a time (two would
+# fight over ports and settings on one machine), so separate runners are the way to run it in
+# parallel. Each shard does its own setup and builds rather than receiving a built Bloom: that
+# costs runner minutes, which this public repository does not pay for, and keeps every shard's
+# machine set up exactly as the main job's is.
 #
 # Schedule: 04:00 UTC daily. GitHub cron is always UTC (== GMT, no DST), so this is a
 # literal 4am GMT. Note GitHub may delay scheduled runs during peak load; exact timing is
@@ -33,6 +43,10 @@
 # a machine which has NOT just spent thirteen minutes being hammered by the C# tests is being
 # sampled under different conditions. For an intermittent, possibly load-sensitive failure that matters, so
 # the scheduled run keeps its shape and manual runs vary only in what they skip.
+#
+# Moving BloomE2E to runners of its own did change that shape, once, on purpose: since 2026-11-18
+# BloomE2E runs on a machine that has only just built Bloom, and visual regression no longer runs
+# after BloomE2E. Failure rates from before and after that date are not strictly comparable.
 #
 # The component-tester suite is the one deliberate exception, moved ahead of visual regression on
 # 2026-09-04. Two reasons. It depends on nothing above it -- its own Vite dev server serves the
@@ -58,7 +72,7 @@ on:
                 type: boolean
                 default: true
             run_e2e_tests:
-                description: "BloomE2E tests (~80 min)"
+                description: "BloomE2E tests (~80 min, split over 3 parallel runners)"
                 type: boolean
                 default: true
             run_component_tests:
@@ -84,12 +98,18 @@ jobs:
         runs-on: windows-latest
         timeout-minutes: 120
 
-        # checks: write lets the test-report step create its check run.
         permissions:
             contents: read
-            checks: write
-            # For the nightly report's step timings, which come from the jobs API.
-            actions: read
+
+        # What the report job says about this job's builds and suites. A job killed at its timeout
+        # sets none of these, and the report then says each "did not run".
+        outputs:
+            frontend_build: ${{ steps.build_frontend.outcome }}
+            csharp_build: ${{ steps.build_csharp.outcome }}
+            frontend_tests: ${{ steps.frontend_tests.outcome }}
+            csharp_tests: ${{ steps.csharp_tests.outcome }}
+            component_tests: ${{ steps.component_tests.outcome }}
+            visual_regression: ${{ steps.visual_regression.outcome }}
 
         env:
             # VersionNumbers requires a 4-part BUILD_NUMBER; nightlies never publish, so a
@@ -100,7 +120,6 @@ jobs:
             # compared as strings at the point of use because env values are always strings.
             RUN_FRONTEND_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_frontend_tests }}
             RUN_CSHARP_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_csharp_tests }}
-            RUN_E2E_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e_tests }}
             RUN_COMPONENT_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_component_tests }}
             RUN_VISUAL_REGRESSION: ${{ github.event_name != 'workflow_dispatch' || inputs.run_visual_regression }}
 
@@ -115,8 +134,8 @@ jobs:
             - name: Set up toolchains and dependencies
               uses: ./.github/actions/bloom-setup
               with:
-                  testing-inputs: ${{ env.RUN_E2E_TESTS == 'true' || env.RUN_VISUAL_REGRESSION == 'true' }}
-                  test-fonts: ${{ env.RUN_E2E_TESTS == 'true' }}
+                  testing-inputs: ${{ env.RUN_VISUAL_REGRESSION == 'true' }}
+                  test-fonts: false
 
             # ----- Front-end build + tests -----
             # bot-verify.yml repeats this build and the C# build below, so a change to how either
@@ -151,7 +170,7 @@ jobs:
                   New-ItemProperty -Path $key -Name DumpType -PropertyType DWord -Value 1 -Force | Out-Null
                   New-ItemProperty -Path $key -Name DumpCount -PropertyType DWord -Value 3 -Force | Out-Null
 
-            # The junit file feeds this suite's "Publish ..." step at the end of the job.
+            # The junit file feeds this suite's "Publish ..." step in the report job.
             #
             # Two easy ways to get a silently-empty report here, both of which we have hit:
             #
@@ -167,8 +186,8 @@ jobs:
             #    it — vitest again falls back to the config path. The string form overrides
             #    correctly and vitest creates the directory.
             #
-            # The publish step below sets action_fail_on_inconclusive, so if this ever regresses
-            # again the job goes red instead of quietly under-reporting.
+            # The report job's publish step sets action_fail_on_inconclusive, so if this ever
+            # regresses again the night goes red instead of quietly under-reporting.
             - name: Run browser UI tests
               id: frontend_tests
               # success() reproduces the default gating this step had before the condition was added.
@@ -214,6 +233,18 @@ jobs:
             # not see them. RestartBuild=false stops RestoreBuildTasks from ALSO running
             # BuildInternal (it does that when the dlls were missing), which would compile
             # the whole app twice — once here and once in the Build step below.
+            #
+            # These steps repeat .github/actions/bloom-build, NuGet cache included; that action says
+            # why this job keeps its own copy. When you change one, change the other.
+            - name: Restore NuGet packages from cache
+              id: nuget_cache
+              if: ${{ !cancelled() && steps.build_frontend.outcome == 'success' }}
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: ~/.nuget/packages
+                  key: nuget-${{ runner.os }}-${{ hashFiles('src/*/*.csproj', 'Directory.Build.props', '.nuget/NuGet.Config', 'build/Bloom.proj') }}
+                  restore-keys: nuget-${{ runner.os }}-
+
             - name: Restore MSBuild build tasks
               id: restore_build_tasks
               if: ${{ !cancelled() && steps.build_frontend.outcome == 'success' }}
@@ -227,6 +258,13 @@ jobs:
               working-directory: build
               shell: pwsh
               run: msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER
+
+            - name: Save NuGet packages to cache
+              if: ${{ !cancelled() && steps.nuget_cache.outputs.cache-hit != 'true' && steps.build_csharp.outcome == 'success' }}
+              uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: ~/.nuget/packages
+                  key: ${{ steps.nuget_cache.outputs.cache-primary-key }}
 
             # The nightly is the run that pays for the slow tests, so it excludes as little as
             # possible: only SkipOnTeamCity. It deliberately keeps Integration (the tests that
@@ -242,94 +280,6 @@ jobs:
                   msbuild Bloom.proj /t:TestOnly `
                     /p:BUILD_NUMBER=$env:BUILD_NUMBER `
                     /p:excludedCategories=SkipOnTeamCity
-
-            # ----- BloomE2E tests -----
-            # src/BloomE2E launches a real Bloom.exe on a throwaway copy of a collection, attaches
-            # Playwright to its embedded WebView2 over CDP, and clicks through the UI the way a
-            # person would. Nothing ran these until now, so the suite could rot silently between the
-            # days a developer happened to run it — exactly what the component-tester harness did.
-            #
-            # Like the visual-regression suite it needs BOTH builds (the Bloom.exe it launches, and
-            # the front-end assets that Bloom loads its UI from) and the testing inputs fetched
-            # above; workspace-tabs.spec.ts opens the prepared "basic" collection, and the fixture
-            # copies it before Bloom sees it. !cancelled() lets it run even when an earlier suite
-            # failed, so one bad night still reports every stack.
-            #
-            # It runs BEFORE the visual-regression group on purpose, even though that group was
-            # here first. Visual regression is the suite that hangs (BL-16612): when it does, it
-            # burns ~24 minutes and can take the job's whole timeout with it, so anything placed
-            # after it is hostage to a failure that has nothing to do with it. Running first means
-            # this suite always reports. It also keeps the Bloom logs the diagnostics steps collect
-            # for that hunt as the visual-regression Bloom's own: both suites write
-            # %TEMP%\SIL\Bloom\Log.txt, and whoever ran last is what is left there to collect.
-            #
-            # No `playwright install`: the fixture attaches to Bloom's WebView2 with
-            # chromium.connectOverCDP, so Playwright launches no browser of its own and needs no
-            # downloaded one.
-            - name: Set up BloomE2E tests
-              id: setup_e2e_tests
-              if: ${{ !cancelled() && steps.build_frontend.outcome == 'success' && steps.build_csharp.outcome == 'success' && env.RUN_E2E_TESTS == 'true' }}
-              working-directory: src/BloomE2E
-              shell: bash
-              run: pnpm install --frozen-lockfile
-
-            # Playwright takes its junit path from PLAYWRIGHT_JUNIT_OUTPUT_NAME, not from a CLI flag:
-            # it has no --outputFile (that is vitest's). The path is relative to the working
-            # directory, so it climbs back to the repo root's output/Tests like the other suites.
-            - name: Run BloomE2E tests
-              id: e2e_tests
-              if: ${{ !cancelled() && steps.setup_e2e_tests.outcome == 'success' }}
-              working-directory: src/BloomE2E
-              shell: bash
-              env:
-                  PLAYWRIGHT_JUNIT_OUTPUT_NAME: ../../output/Tests/e2e-junit.xml
-                  # The html reporter would otherwise try to serve the report at the end of a
-                  # failing run, which on a runner means a step that never returns.
-                  PLAYWRIGHT_HTML_OPEN: never
-                  # Put every window this run opens off every monitor. Bloom obeys this variable
-                  # only under --automation, which is what the fixture launches; see
-                  # src/BloomE2E/README.md. The runner has a desktop, so a visible window would
-                  # also work, but asking for it here says what the run needs instead of leaving
-                  # it to whatever the runner happens to do.
-                  #
-                  # Unlike a developer's run, this one launches Bloom WITHOUT --dont-disturb
-                  # (the fixture sees CI set), so Bloom's windows take the foreground as they would
-                  # for a user. A test that fails here but passes locally may depend on that; to
-                  # reproduce, run with BLOOM_E2E_DONT_DISTURB=0 and BLOOM_AUTOMATION_MONITOR=headless
-                  # (src/BloomE2E/README.md, "In CI").
-                  BLOOM_AUTOMATION_MONITOR: headless
-                  # The password of the Bloom Library test account (e2e-tester@example.org on
-                  # dev.bloomlibrary.org), for the tests that sign in and upload for real. The
-                  # account exists only for this; the email is a constant in the suite
-                  # (src/BloomE2E/helpers/bloomLibraryAccount.ts). Locally the same variable is set
-                  # at User scope; a developer without it has those tests skipped, while a run on CI
-                  # without it fails, so a missing secret is noticed.
-                  BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD: ${{ secrets.BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD }}
-              run: pnpm test --reporter=list,junit,html,./reporters/slowSteps.ts
-
-            # What explains an e2e failure: Playwright's HTML report, plus the trace and failure
-            # screenshot its config keeps (trace: retain-on-failure, screenshot: only-on-failure),
-            # and what the fixture keeps beside them for a failed test (fixtures/bloomTest.ts,
-            # keepEvidenceOnFailure): Bloom's Log.txt and a copy of the collection folder as Bloom
-            # left it. Not the user-settings folder: this artifact is public, and user.config holds
-            # the Bloom Library login of a Bloom that signed in for real.
-            # On failure only: a green run's report says nothing a green check has not already said,
-            # the same reason the visual-regression screenshots below go up only on failure.
-            #
-            # !cancelled() is load-bearing, not decoration. A step `if:` with no status-check
-            # function in it gets an implicit `success()` AND-ed in, and success() is already false
-            # once the e2e step has failed -- so `outcome == 'failure'` alone would skip this upload
-            # on precisely the night we want the report, and show as "skipped" rather than red.
-            - name: Upload BloomE2E report
-              if: ${{ !cancelled() && steps.e2e_tests.outcome == 'failure' }}
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-              with:
-                  name: e2e-report
-                  path: |
-                      src/BloomE2E/playwright-report/**
-                      src/BloomE2E/test-results/**
-                  retention-days: 4
-                  if-no-files-found: ignore
 
             # ----- Component-tester tests -----
             # src/BloomBrowserUI/react_components/component-tester renders one React component at a
@@ -542,10 +492,266 @@ jobs:
                   retention-days: 4
                   if-no-files-found: ignore
 
+            - name: Upload test results
+              if: ${{ always() }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: nightly-test-results
+                  # Forward slashes: upload-artifact treats the path as a glob, where a
+                  # backslash is an escape character (not a separator) even on Windows, so
+                  # back-slashed paths can silently match nothing. The report job's publish steps read
+                  # these files, downloaded to the same paths.
+                  path: |
+                      output/Tests/Release/x64/TestResults.xml
+                      output/Tests/vitest-junit.xml
+                      output/Tests/visual-regression-junit.xml
+                      output/Tests/component-tester-junit.xml
+                  retention-days: 14
+
+    # BloomE2E, split into shards that each run on a runner of their own, in parallel with
+    # build-and-test. See the top of this file for why. Each shard sets up and builds exactly as
+    # build-and-test does, then runs its share of the spec files.
+    e2e:
+        # The report job finds these jobs by this name's start (its E2E_JOB_PREFIX).
+        name: BloomE2E shard ${{ matrix.shard }}
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e_tests }}
+        runs-on: windows-latest
+        # A shard takes about 40 minutes, builds included. A job killed at this limit uploads
+        # nothing, but the report job still says the shard was cancelled.
+        timeout-minutes: 75
+
+        permissions:
+            contents: read
+
+        strategy:
+            # Without this, one shard's failing test would cancel the other shards, and the night
+            # would report only the first failure.
+            fail-fast: false
+            matrix:
+                # Playwright's --shard splits by spec file, not by time, so the shards are only
+                # roughly even. The run step takes the count from strategy.job-total.
+                shard: [1, 2, 3]
+
+        env:
+            # As in build-and-test.
+            BUILD_NUMBER: 0.0.${{ github.run_number }}.0
+
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            # As in build-and-test, plus the testing inputs and the fonts that BloomE2E needs.
+            - name: Set up toolchains and dependencies
+              uses: ./.github/actions/bloom-setup
+              with:
+                  testing-inputs: true
+                  test-fonts: true
+
+            # The same builds as build-and-test, the C# one through the shared action. A shard only
+            # launches Bloom.exe, so it has no use for the C# test assembly.
+            - name: Build browser UI (production)
+              working-directory: src/BloomBrowserUI
+              run: pnpm run build-prod
+
+            - name: Build
+              uses: ./.github/actions/bloom-build
+              with:
+                  skip-bloom-tests: true
+
+            # ----- BloomE2E tests -----
+            # src/BloomE2E launches a real Bloom.exe on a throwaway copy of a collection, attaches
+            # Playwright to its embedded WebView2 over CDP, and clicks through the UI the way a
+            # person would.
+            #
+            # Like the visual-regression suite it needs BOTH builds (the Bloom.exe it launches, and
+            # the front-end assets that Bloom loads its UI from) and the testing inputs fetched
+            # above; workspace-tabs.spec.ts opens the prepared "basic" collection, and the fixture
+            # copies it before Bloom sees it.
+            #
+            # Running on runners of their own also keeps these suites out of each other's way:
+            # visual regression is the suite that hangs (BL-16612), and a hang can no longer take
+            # BloomE2E's results with it; and the Bloom logs build-and-test collects for that hunt
+            # are the visual-regression Bloom's alone.
+            #
+            # No `playwright install`: the fixture attaches to Bloom's WebView2 with
+            # chromium.connectOverCDP, so Playwright launches no browser of its own and needs no
+            # downloaded one.
+            - name: Set up BloomE2E tests
+              working-directory: src/BloomE2E
+              shell: bash
+              run: pnpm install --frozen-lockfile
+
+            # Playwright takes its junit path from PLAYWRIGHT_JUNIT_OUTPUT_NAME, not from a CLI flag:
+            # it has no --outputFile (that is vitest's). The path is relative to the working
+            # directory, so it climbs back to the repo root's output/Tests like the other suites.
+            - name: Run BloomE2E tests
+              id: e2e_tests
+              working-directory: src/BloomE2E
+              shell: bash
+              env:
+                  # Named for the shard, because the report job gathers every shard's file into
+                  # one folder, where files of one name would overwrite each other.
+                  PLAYWRIGHT_JUNIT_OUTPUT_NAME: ../../output/Tests/e2e-junit-shard-${{ matrix.shard }}.xml
+                  # The html reporter would otherwise try to serve the report at the end of a
+                  # failing run, which on a runner means a step that never returns.
+                  PLAYWRIGHT_HTML_OPEN: never
+                  # Put every window this run opens off every monitor. Bloom obeys this variable
+                  # only under --automation, which is what the fixture launches; see
+                  # src/BloomE2E/README.md. The runner has a desktop, so a visible window would
+                  # also work, but asking for it here says what the run needs instead of leaving
+                  # it to whatever the runner happens to do.
+                  #
+                  # Unlike a developer's run, this one launches Bloom WITHOUT --dont-disturb
+                  # (the fixture sees CI set), so Bloom's windows take the foreground as they would
+                  # for a user. A test that fails here but passes locally may depend on that; to
+                  # reproduce, run with BLOOM_E2E_DONT_DISTURB=0 and BLOOM_AUTOMATION_MONITOR=headless
+                  # (src/BloomE2E/README.md, "In CI").
+                  BLOOM_AUTOMATION_MONITOR: headless
+                  # The password of the Bloom Library test account (e2e-tester@example.org on
+                  # dev.bloomlibrary.org), for the tests that sign in and upload for real. The
+                  # account exists only for this; the email is a constant in the suite
+                  # (src/BloomE2E/helpers/bloomLibraryAccount.ts). Locally the same variable is set
+                  # at User scope; a developer without it has those tests skipped, while a run on CI
+                  # without it fails, so a missing secret is noticed.
+                  BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD: ${{ secrets.BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD }}
+              run: pnpm test --shard=${{ matrix.shard }}/${{ strategy.job-total }} --reporter=list,junit,html,./reporters/slowSteps.ts
+
+            # What explains an e2e failure: Playwright's HTML report, plus the trace and failure
+            # screenshot its config keeps (trace: retain-on-failure, screenshot: only-on-failure),
+            # and what the fixture keeps beside them for a failed test (fixtures/bloomTest.ts,
+            # keepEvidenceOnFailure): Bloom's Log.txt and a copy of the collection folder as Bloom
+            # left it. Not the user-settings folder: this artifact is public, and user.config holds
+            # the Bloom Library login of a Bloom that signed in for real.
+            # On failure only: a green run's report says nothing a green check has not already said,
+            # the same reason the visual-regression screenshots go up only on failure.
+            #
+            # !cancelled() is load-bearing, not decoration. A step `if:` with no status-check
+            # function in it gets an implicit `success()` AND-ed in, and success() is already false
+            # once the e2e step has failed -- so `outcome == 'failure'` alone would skip this upload
+            # on precisely the night we want the report, and show as "skipped" rather than red.
+            - name: Upload BloomE2E report
+              if: ${{ !cancelled() && steps.e2e_tests.outcome == 'failure' }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: e2e-report-shard-${{ matrix.shard }}
+                  path: |
+                      src/BloomE2E/playwright-report/**
+                      src/BloomE2E/test-results/**
+                  retention-days: 4
+                  if-no-files-found: ignore
+
+            # The logs of every Bloom this shard launched, green nights included, as build-and-test
+            # keeps them for visual regression (see its "Collect Bloom diagnostics"). Bloom writes
+            # them to %TEMP%\SIL\Bloom, which on the runner is ~/AppData/Local/Temp/SIL/Bloom (the
+            # env context does not hold the machine's TEMP, and runner.temp is a different folder).
+            # Not the user-settings folders, for the reason given above.
+            - name: Upload Bloom logs
+              if: ${{ !cancelled() && steps.e2e_tests.outcome != 'skipped' }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: e2e-bloom-logs-shard-${{ matrix.shard }}
+                  path: ~/AppData/Local/Temp/SIL/Bloom/Log*.txt
+                  retention-days: 4
+                  if-no-files-found: ignore
+
+            # For the report job, which publishes all the shards' results together. Uploaded even
+            # when the step failed or was cut short, since that is when the results matter most.
+            - name: Upload BloomE2E results
+              if: ${{ always() }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: e2e-junit-shard-${{ matrix.shard }}
+                  path: output/Tests/e2e-junit-shard-${{ matrix.shard }}.xml
+                  retention-days: 14
+                  if-no-files-found: ignore
+
+    # Publishes every suite's results, which the other jobs uploaded, and reports the whole night.
+    report:
+        needs: [build-and-test, e2e]
+        # always(), so a failed or cancelled night reports too -- that is the whole point.
+        if: ${{ always() }}
+        runs-on: windows-latest
+        timeout-minutes: 15
+
+        permissions:
+            contents: read
+            # The five suites' check runs.
+            checks: write
+            # For the nightly report's step timings, which come from the jobs API.
+            actions: read
+
+        # For the jobs API, which both the stand-in step and the report read.
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            API_URL: ${{ github.api_url }}
+            REPO: ${{ github.repository }}
+            RUN_ID: ${{ github.run_id }}
+            # How the e2e job's `name:` begins; both steps find the shards' jobs by it.
+            E2E_JOB_PREFIX: "BloomE2E shard "
+
+        steps:
+            # The shards' junit files, one per shard, gathered into one folder. None at all when
+            # BloomE2E was not run; a shard that left none gets a stand-in below.
+            - name: Download BloomE2E results
+              continue-on-error: true
+              uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+              with:
+                  pattern: e2e-junit-shard-*
+                  path: output/Tests/e2e
+                  merge-multiple: true
+
+            # The other suites' results, for the counts in the report. A failure here still lets the
+            # report post, and the report then says it could not read them.
+            - name: Download the other results
+              id: download_other
+              continue-on-error: true
+              uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+              with:
+                  name: nightly-test-results
+                  path: output/Tests
+
+            # A shard that died before writing its junit file (in setup, say, or killed at its
+            # timeout, when none of its later steps run) would otherwise just be missing from the
+            # check, which would pass on the other shards' results with part of the suite unrun.
+            # So for each shard job that left no file, write one holding a single failing test that
+            # says so, and fail this step, so the run is red even when every shard's job passed
+            # (its results failed to download, say): the publish action reports failing tests but
+            # does not fail on them. The shards are found from the jobs API, so this needs no
+            # shard count of its own.
+            - name: Stand in for any shard that left no results
+              if: ${{ !cancelled() && needs.e2e.result != 'skipped' }}
+              shell: pwsh
+              run: |
+                  $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = "application/vnd.github+json" }
+                  # Every attempt's jobs, keeping each job's latest: re-running only this job makes a
+                  # new attempt that does not run the shards again, and their results still count.
+                  $uri = "$($env:API_URL)/repos/$($env:REPO)/actions/runs/$($env:RUN_ID)/jobs?filter=all&per_page=100"
+                  $jobs = (Invoke-RestMethod -Uri $uri -Headers $headers).jobs | Group-Object name | ForEach-Object { $_.Group | Sort-Object run_attempt -Descending | Select-Object -First 1 }
+                  $shards = @($jobs | Where-Object { $_.name.StartsWith($env:E2E_JOB_PREFIX) })
+                  # BloomE2E ran, so there are shards; finding none means E2E_JOB_PREFIX no longer
+                  # matches the e2e job's name, and this guard would silently do nothing.
+                  if ($shards.Count -eq 0) { throw "Found no jobs named '$($env:E2E_JOB_PREFIX)*'. Has the e2e job's name changed?" }
+                  New-Item -ItemType Directory -Force -Path output/Tests/e2e | Out-Null
+                  $missing = 0
+                  foreach ($shard in $shards) {
+                      $n = $shard.name.Substring($env:E2E_JOB_PREFIX.Length)
+                      $file = "output/Tests/e2e/e2e-junit-shard-$n.xml"
+                      if (Test-Path -LiteralPath $file) { continue }
+                      $missing++
+                      $message = "$($shard.name) ended ($($shard.conclusion)) without uploading its results, so its tests did not run or were not recorded. See that job's log."
+                      Write-Host $message
+                      $xml = "<?xml version=""1.0"" encoding=""UTF-8""?>`n" +
+                          "<testsuites><testsuite name=""$($shard.name)"" tests=""1"" failures=""1"" skipped=""0"" errors=""0"">" +
+                          "<testcase classname=""$($shard.name)"" name=""shard $n reported its results"">" +
+                          "<failure message=""$message"" /></testcase></testsuite></testsuites>`n"
+                      [System.IO.File]::WriteAllText((Join-Path (Get-Location) $file), $xml, [System.Text.UTF8Encoding]::new($false))
+                  }
+                  if ($missing -gt 0) { throw "$missing BloomE2E shard(s) left no results; a failing stand-in was written for each." }
+
             # ----- Test reports, one per suite -----
             # Each suite gets its OWN invocation of the publish action, and therefore its own
             # check run on the commit and its own section in the job summary: pass/fail/skip
-            # counts plus per-test annotations for failures.
+            # counts plus per-test annotations for failures. They all run here, from the results
+            # the other jobs uploaded, so every suite reaches its check the same way.
             #
             # Why not one combined report (what we used to do)? A single merged total hides
             # which stack broke, and — worse — hides a suite that contributed *nothing*. When
@@ -555,10 +761,11 @@ jobs:
             # missing suite obvious, and let a red check name the guilty stack directly.
             #
             # Each report shares these conventions:
-            #   - always()/!cancelled() plus a check that the suite's test step was not skipped.
-            #     Without always() a failing test step would skip its own report, hiding exactly
-            #     the run we care about; without the skipped check we would publish an empty
-            #     report for a suite that never ran because an earlier build failed.
+            #   - !cancelled() plus a check that the suite's test step ran (its outcome, passed
+            #     on from its job, is neither skipped nor empty). Without the !cancelled() a failing
+            #     job would skip its own report, hiding exactly the run we care about; without the
+            #     outcome check we would publish an empty report for a suite that never ran
+            #     because a build failed, a box was unticked, or its job died.
             #   - check_name must be unique per invocation, or the reports overwrite each other.
             #   - action_fail_on_inconclusive: true — the action treats a missing/empty results
             #     file as "inconclusive", which by default passes green. Since the whole point
@@ -571,7 +778,7 @@ jobs:
             #   - files uses the unified input (junit_files/nunit_files are deprecated); the
             #     action auto-detects each file's format (JUnit for vitest, NUnit3 for C#).
             - name: Publish front-end test results
-              if: ${{ !cancelled() && steps.frontend_tests.outcome != 'skipped' }}
+              if: ${{ !cancelled() && needs.build-and-test.outputs.frontend_tests != '' && needs.build-and-test.outputs.frontend_tests != 'skipped' }}
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
                   # Quoted: an unquoted YAML scalar cannot contain ": ".
@@ -581,7 +788,7 @@ jobs:
                   files: output/Tests/vitest-junit.xml
 
             - name: Publish C# test results
-              if: ${{ !cancelled() && steps.csharp_tests.outcome != 'skipped' }}
+              if: ${{ !cancelled() && needs.build-and-test.outputs.csharp_tests != '' && needs.build-and-test.outputs.csharp_tests != 'skipped' }}
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
                   check_name: "Nightly run: C# unit tests"
@@ -589,26 +796,18 @@ jobs:
                   action_fail_on_inconclusive: true
                   files: output/Tests/Release/x64/TestResults.xml
 
+            # From every shard's file, a stand-in included.
             - name: Publish BloomE2E test results
-              if: ${{ !cancelled() && steps.e2e_tests.outcome != 'skipped' }}
+              if: ${{ !cancelled() && needs.e2e.result != 'skipped' }}
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
                   check_name: "Nightly run: BloomE2E tests"
                   comment_mode: "off"
                   action_fail_on_inconclusive: true
-                  files: output/Tests/e2e-junit.xml
-
-            - name: Publish visual regression test results
-              if: ${{ !cancelled() && steps.visual_regression.outcome != 'skipped' }}
-              uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
-              with:
-                  check_name: "Nightly run: Visual regression tests"
-                  comment_mode: "off"
-                  action_fail_on_inconclusive: true
-                  files: output/Tests/visual-regression-junit.xml
+                  files: output/Tests/e2e/*.xml
 
             - name: Publish component-tester test results
-              if: ${{ !cancelled() && steps.component_tests.outcome != 'skipped' }}
+              if: ${{ !cancelled() && needs.build-and-test.outputs.component_tests != '' && needs.build-and-test.outputs.component_tests != 'skipped' }}
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
                   check_name: "Nightly run: React component tests"
@@ -616,21 +815,14 @@ jobs:
                   action_fail_on_inconclusive: true
                   files: output/Tests/component-tester-junit.xml
 
-            - name: Upload test results
-              if: ${{ always() }}
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+            - name: Publish visual regression test results
+              if: ${{ !cancelled() && needs.build-and-test.outputs.visual_regression != '' && needs.build-and-test.outputs.visual_regression != 'skipped' }}
+              uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
-                  name: nightly-test-results
-                  # Forward slashes: upload-artifact treats the path as a glob, where a
-                  # backslash is an escape character (not a separator) even on Windows, so
-                  # back-slashed paths can silently match nothing. Matches the publish step.
-                  path: |
-                      output/Tests/Release/x64/TestResults.xml
-                      output/Tests/vitest-junit.xml
-                      output/Tests/e2e-junit.xml
-                      output/Tests/visual-regression-junit.xml
-                      output/Tests/component-tester-junit.xml
-                  retention-days: 14
+                  check_name: "Nightly run: Visual regression tests"
+                  comment_mode: "off"
+                  action_fail_on_inconclusive: true
+                  files: output/Tests/visual-regression-junit.xml
 
             # ----- The nightly report -----
             # Post a report of EVERY night to Slack's #bloom-team-developers, rather than speaking
@@ -640,17 +832,16 @@ jobs:
             # length is news before it is a failure. Slack's own date dividers separate the nights,
             # so the report carries no date of its own.
             #
-            # A night that dies on the job timeout reports nothing: a morning with no message in a
-            # channel that has one every other day.
+            # Because this is a job of its own, a night whose build-and-test or BloomE2E job dies on
+            # its timeout still reports, as cancelled. Only this job dying reports nothing: a
+            # morning with no message in a channel that has one every other day.
             #
             # Two steps: compose the message here, post it below. Gathering the outcomes, counts
             # and timings is one job; talking to Slack's API is another.
             #
-            # This pair is deliberately the LAST thing in the job, because it reports the job as it
-            # stands when it runs. By this point that includes the five publish-test-results steps
-            # above, which are what turn "a suite reported nothing at all" into a red run
-            # (action_fail_on_inconclusive). Put this any earlier and that entire class of failure --
-            # the one the per-suite reports exist to catch -- would be reported as a good night.
+            # The report reads each suite's results the way its publish step above did, and a suite
+            # that reported nothing (no file, an unreadable one, a BloomE2E shard's stand-in) shows
+            # as a failure in it, so the night cannot read as good while such a suite is red.
             #
             # Scheduled runs always post. A manual run posts only if post_report is ticked, so
             # iterating on this workflow cannot fill the channel with noise.
@@ -660,27 +851,26 @@ jobs:
               if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.post_report) }}
               shell: pwsh
               env:
-                  # job.status, not success()/failure(): the status FUNCTIONS are only legal in an
-                  # `if`, and using one here fails the whole workflow at parse time. The job context
-                  # is legal in a step env and carries the same fact.
-                  JOB_STATUS: ${{ job.status }}
+                  # How the night went is how the other two jobs went, plus whether each suite's line
+                  # reports a failure; see $headline below. The jobs API settings for the timings come
+                  # from the job's env.
+                  BUILD_AND_TEST_RESULT: ${{ needs.build-and-test.result }}
+                  # Whether an earlier step of this job failed (a stand-in, a publish request). The
+                  # status function is not allowed here, but the job context is.
+                  REPORT_JOB_STATUS: ${{ job.status }}
+                  E2E_RESULT: ${{ needs.e2e.result }}
+                  DOWNLOAD_OTHER: ${{ steps.download_other.outcome }}
                   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
                   BRANCH: ${{ github.ref_name }}
-                  # For the timings lookup below.
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  API_URL: ${{ github.api_url }}
-                  REPO: ${{ github.repository }}
-                  RUN_ID: ${{ github.run_id }}
-                  RUN_ATTEMPT: ${{ github.run_attempt }}
-                  # Step outcomes. The two builds earn a line only when they are the reason a suite
-                  # has nothing to say; the five suites always get one.
-                  FRONTEND_BUILD: ${{ steps.build_frontend.outcome }}
-                  CSHARP_BUILD: ${{ steps.build_csharp.outcome }}
-                  FRONTEND_TESTS: ${{ steps.frontend_tests.outcome }}
-                  CSHARP_TESTS: ${{ steps.csharp_tests.outcome }}
-                  E2E_TESTS: ${{ steps.e2e_tests.outcome }}
-                  COMPONENT_TESTS: ${{ steps.component_tests.outcome }}
-                  VISUAL_REGRESSION: ${{ steps.visual_regression.outcome }}
+                  # Step outcomes, from build-and-test's outputs. The two builds earn a line only
+                  # when they are the reason a suite has nothing to say; the five suites always get
+                  # one. BloomE2E's is the result of its shards together.
+                  FRONTEND_BUILD: ${{ needs.build-and-test.outputs.frontend_build }}
+                  CSHARP_BUILD: ${{ needs.build-and-test.outputs.csharp_build }}
+                  FRONTEND_TESTS: ${{ needs.build-and-test.outputs.frontend_tests }}
+                  CSHARP_TESTS: ${{ needs.build-and-test.outputs.csharp_tests }}
+                  COMPONENT_TESTS: ${{ needs.build-and-test.outputs.component_tests }}
+                  VISUAL_REGRESSION: ${{ needs.build-and-test.outputs.visual_regression }}
               run: |
                   # ---- timings -------------------------------------------------------------
                   # GitHub does not expose a step's own duration to a later step, but it does
@@ -689,32 +879,76 @@ jobs:
                   # the suites alike, with no stopwatch instrumentation scattered through the
                   # workflow. It needs `actions: read`, granted in this job's permissions.
                   #
-                  # The steps are matched BY NAME, so renaming a step below means renaming it here
+                  # The steps and jobs are matched BY NAME, so renaming one means renaming it here
                   # too. A miss costs only that one timing, never the report.
                   $frontendBuildStep = "Build browser UI (production)"
-                  $stepTimes = $null
+                  $e2eStep = "Run BloomE2E tests"
+                  # Every timing starts out unknown, and stays so if the lookup below fails.
+                  $stepTimes = @{}
                   $jobStarted = $null
                   $lastStepEnded = $null
+                  $mainSeconds = $null
                   $setupSeconds = $null
-                  $reportingSeconds = $null
+                  $e2eStepSeconds = $null
+                  $e2eJobSeconds = $null
+                  $e2eJobCount = 0
+
+                  # Seconds from a job's or step's start to its end, or $null if it has not both.
+                  function Get-Span($item) {
+                      if (-not ($item.started_at -and $item.completed_at)) { return $null }
+                      return ([datetimeoffset]::Parse($item.completed_at) - [datetimeoffset]::Parse($item.started_at)).TotalSeconds
+                  }
+
+                  # When a job's last finished step ended, or $null if none has.
+                  function Get-LastStepEnd($job) {
+                      $last = $null
+                      foreach ($step in $job.steps) {
+                          if (-not $step.completed_at) { continue }
+                          $ended = [datetimeoffset]::Parse($step.completed_at)
+                          if ($null -eq $last -or $ended -gt $last) { $last = $ended }
+                      }
+                      return $last
+                  }
+
                   try {
                       $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = "application/vnd.github+json" }
-                      $uri = "$($env:API_URL)/repos/$($env:REPO)/actions/runs/$($env:RUN_ID)/attempts/$($env:RUN_ATTEMPT)/jobs?per_page=100"
-                      $response = Invoke-RestMethod -Uri $uri -Headers $headers
-                      # The publish-test-results steps create their own check runs, which show up in
-                      # this same list, so pick our job out by name rather than taking the first.
+                      # Every attempt's jobs, keeping each job's latest, as the stand-in step does.
+                      $uri = "$($env:API_URL)/repos/$($env:REPO)/actions/runs/$($env:RUN_ID)/jobs?filter=all&per_page=100"
+                      $response = [pscustomobject]@{ jobs = @((Invoke-RestMethod -Uri $uri -Headers $headers).jobs | Group-Object name | ForEach-Object { $_.Group | Sort-Object run_attempt -Descending | Select-Object -First 1 }) }
+                      # Pick the jobs out by name: build-and-test, the BloomE2E shards and this one.
                       $job = $response.jobs | Where-Object { $_.name -eq "build-and-test" } | Select-Object -First 1
-                      if ($job) {
-                          $jobStarted = $job.started_at
-                          $stepTimes = @{}
-                          foreach ($step in $job.steps) {
-                              if ($step.started_at -and $step.completed_at) {
-                                  $span = [datetimeoffset]::Parse($step.completed_at) - [datetimeoffset]::Parse($step.started_at)
-                                  $stepTimes[$step.name] = $span.TotalSeconds
-                                  $ended = [datetimeoffset]::Parse($step.completed_at)
-                                  if ($null -eq $lastStepEnded -or $ended -gt $lastStepEnded) { $lastStepEnded = $ended }
-                              }
+                      $e2eJobs = @($response.jobs | Where-Object { $_.name.StartsWith($env:E2E_JOB_PREFIX) })
+                      $thisJob = $response.jobs | Where-Object { $_.name -eq "report" } | Select-Object -First 1
+
+                      # The night runs from the first of these jobs to start to the last step any of
+                      # them has finished.
+                      foreach ($anyJob in @($job) + $e2eJobs + @($thisJob)) {
+                          if (-not $anyJob) { continue }
+                          if ($anyJob.started_at) {
+                              $started = [datetimeoffset]::Parse($anyJob.started_at)
+                              if ($null -eq $jobStarted -or $started -lt $jobStarted) { $jobStarted = $started }
                           }
+                          $ended = Get-LastStepEnd $anyJob
+                          if ($null -ne $ended -and ($null -eq $lastStepEnded -or $ended -gt $lastStepEnded)) { $lastStepEnded = $ended }
+                      }
+
+                      # BloomE2E takes as long as its slowest shard. Its suite line shows that
+                      # shard's test step; the last line of the report shows that shard's whole job.
+                      $e2eJobCount = $e2eJobs.Count
+                      foreach ($e2eJob in $e2eJobs) {
+                          $span = Get-Span $e2eJob
+                          if ($null -ne $span -and ($null -eq $e2eJobSeconds -or $span -gt $e2eJobSeconds)) { $e2eJobSeconds = $span }
+                          $span = Get-Span ($e2eJob.steps | Where-Object { $_.name -eq $e2eStep } | Select-Object -First 1)
+                          if ($null -ne $span -and ($null -eq $e2eStepSeconds -or $span -gt $e2eStepSeconds)) { $e2eStepSeconds = $span }
+                      }
+
+                      if ($job) {
+                          foreach ($step in $job.steps) {
+                              $span = Get-Span $step
+                              if ($null -ne $span) { $stepTimes[$step.name] = $span }
+                          }
+                          $mainEnded = Get-LastStepEnd $job
+                          if ($job.started_at -and $mainEnded) { $mainSeconds = ($mainEnded - [datetimeoffset]::Parse($job.started_at)).TotalSeconds }
                           # Everything before the front-end build is toolchain setup and dependency
                           # installation: checkout, the dotnet/msbuild/pnpm/node actions, the binary
                           # dependencies and test inputs, pnpm install. Worth its own figure because it
@@ -725,14 +959,6 @@ jobs:
                               $setupSeconds = 0
                               foreach ($step in $job.steps[0..($buildIndex - 1)]) {
                                   if ($stepTimes.ContainsKey($step.name)) { $setupSeconds += $stepTimes[$step.name] }
-                              }
-                          }
-                          # Publishing the results: the per-suite check runs, the results artifact, and
-                          # this report. Roughly a minute a night, and none of it is testing.
-                          $reportingSeconds = 0
-                          foreach ($step in $job.steps) {
-                              if ($stepTimes.ContainsKey($step.name) -and ($step.name -like "Publish *" -or $step.name -eq "Upload test results" -or $step.name -like "*the nightly report*")) {
-                                  $reportingSeconds += $stepTimes[$step.name]
                               }
                           }
                       }
@@ -755,10 +981,10 @@ jobs:
                       return "{0}s" -f $whole
                   }
 
-                  # Returns " (2m 50s)", ready to append, or "" when that step's timing is unknown.
-                  function Format-StepTime([string] $stepName) {
-                      if ($stepTimes -and $stepTimes.ContainsKey($stepName)) {
-                          return " ($(Format-Duration $stepTimes[$stepName]))"
+                  # Returns " (2m 50s)", ready to append, or "" when the timing is unknown ($null).
+                  function Format-SuiteTime($seconds) {
+                      if ($null -ne $seconds) {
+                          return " ($(Format-Duration $seconds))"
                       }
                       return ""
                   }
@@ -775,8 +1001,25 @@ jobs:
                   # A missing or unparseable file returns $null, and that is itself the news: it is
                   # the "a suite reported nothing at all" case these per-suite reports exist to
                   # catch, so it must read as such and never as a quiet zero.
+                  #
+                  # $path may be a wildcard, for a suite whose results come in several files (one
+                  # per BloomE2E shard); their counts are added up, and if any one of them is
+                  # unreadable the suite counts as having reported nothing.
                   function Get-SuiteCounts([string] $path) {
-                      if (-not (Test-Path -LiteralPath $path)) { return $null }
+                      $files = @(Get-ChildItem -Path $path -File -ErrorAction SilentlyContinue)
+                      if ($files.Count -eq 0) { return $null }
+                      $sum = [pscustomobject]@{ Failed = 0; Passed = 0; Skipped = 0 }
+                      foreach ($file in $files) {
+                          $counts = Get-FileCounts $file.FullName
+                          if (-not $counts) { return $null }
+                          $sum.Failed += $counts.Failed
+                          $sum.Passed += $counts.Passed
+                          $sum.Skipped += $counts.Skipped
+                      }
+                      return $sum
+                  }
+
+                  function Get-FileCounts([string] $path) {
                       try { $xml = [xml](Get-Content -LiteralPath $path -Raw) } catch { return $null }
                       # A zero-byte file needs its own check and cannot rely on the catch above:
                       # Get-Content -Raw returns $null for one, and casting $null to [xml] yields
@@ -824,7 +1067,7 @@ jobs:
                   # suite that failed without any individual test failing -- an inconclusive or empty
                   # result that only the publish step objected to -- where the numbers alone would
                   # look like a pass, so say plainly what happened.
-                  function Format-Suite([string] $label, [string] $outcome, [string] $resultsPath, [string] $stepName) {
+                  function Format-Suite([string] $label, [string] $outcome, [string] $resultsPath, $seconds) {
                       # No timing for a suite that never ran: GitHub reports a skipped step as
                       # having started and finished at the same instant, so it would read "(0s)",
                       # which looks like a suite that ran impossibly fast rather than one that sat
@@ -832,7 +1075,7 @@ jobs:
                       if (-not $outcome -or $outcome -eq "skipped" -or $outcome -eq "cancelled") {
                           return Format-Outcome $label $outcome
                       }
-                      $time = Format-StepTime $stepName
+                      $time = Format-SuiteTime $seconds
 
                       $counts = Get-SuiteCounts $resultsPath
                       if (-not $counts) { return "$($glyphs["failure"]) $label - no results file$time" }
@@ -844,7 +1087,10 @@ jobs:
                       if ($outcome -eq "failure" -and $counts.Failed -eq 0) {
                           $parts += "reported failure with no failing test"
                       }
-                      return "$($glyphs[$outcome]) $label - " + ($parts -join ", ") + $time
+                      # A failing test is a failure whatever its job's result says, such as a
+                      # BloomE2E shard's stand-in, which this job wrote after the shards finished.
+                      $glyph = if ($counts.Failed -gt 0) { $glyphs["failure"] } else { $glyphs[$outcome] }
+                      return "$glyph $label - " + ($parts -join ", ") + $time
                   }
 
                   # The two builds are prerequisites rather than suites, so they earn a line here
@@ -853,36 +1099,50 @@ jobs:
                   $lines = @()
                   if ($env:FRONTEND_BUILD -ne "success") { $lines += Format-Outcome "Front-end build" $env:FRONTEND_BUILD }
                   if ($env:CSHARP_BUILD -ne "success") { $lines += Format-Outcome "C# build" $env:CSHARP_BUILD }
+                  # Says why build-and-test's suites below read "no results file" when it is this job,
+                  # not theirs, that failed. A run with all four of its suites unticked writes no
+                  # results, so for it there is nothing to download and nothing missing.
+                  $otherSuitesRan = @($env:FRONTEND_TESTS, $env:CSHARP_TESTS, $env:COMPONENT_TESTS, $env:VISUAL_REGRESSION | Where-Object { $_ -and $_ -ne "skipped" }).Count -gt 0
+                  # A failed step of this job (a shard's stand-in, a publish that could not reach
+                  # GitHub) leaves the run red, so the report must not say the night passed.
+                  if ($env:REPORT_JOB_STATUS -eq "failure") { $lines += "$($glyphs["failure"]) A step of this report's own job failed (see the report job's log)." }
+                  if ($env:DOWNLOAD_OTHER -eq "failure" -and $otherSuitesRan) { $lines += "$($glyphs["failure"]) This report could not download build-and-test's results (see the report job's log), so its suites' counts are missing." }
 
-                  # Suites in the order the job runs them. Paths match the five
-                  # publish-test-results steps above; if you move a results file, move it in both
-                  # places or this reports "no results file" for a suite that ran perfectly well.
-                  $lines += Format-Suite "TypeScript unit tests" $env:FRONTEND_TESTS "output/Tests/vitest-junit.xml" "Run browser UI tests"
-                  $lines += Format-Suite "C# unit tests" $env:CSHARP_TESTS "output/Tests/Release/x64/TestResults.xml" "Run C# tests"
-                  $lines += Format-Suite "BloomE2E tests" $env:E2E_TESTS "output/Tests/e2e-junit.xml" "Run BloomE2E tests"
-                  $lines += Format-Suite "React component tests" $env:COMPONENT_TESTS "output/Tests/component-tester-junit.xml" "Run component-tester tests"
-                  $lines += Format-Suite "Visual regression tests" $env:VISUAL_REGRESSION "output/Tests/visual-regression-junit.xml" "Run visual regression tests"
-                  # The same five step names, for the accounting at the end.
-                  $suiteSteps = @("Run browser UI tests", "Run C# tests", "Run BloomE2E tests", "Run component-tester tests", "Run visual regression tests")
+                  # Suites in the order build-and-test runs them, with BloomE2E where it ran before
+                  # it got runners of its own. Paths match the five publish steps above; if you move
+                  # a results file, move it in both places or this reports "no results file" for a
+                  # suite that ran perfectly well.
+                  $lines += Format-Suite "TypeScript unit tests" $env:FRONTEND_TESTS "output/Tests/vitest-junit.xml" $stepTimes["Run browser UI tests"]
+                  $lines += Format-Suite "C# unit tests" $env:CSHARP_TESTS "output/Tests/Release/x64/TestResults.xml" $stepTimes["Run C# tests"]
+                  $lines += Format-Suite "BloomE2E tests" $env:E2E_RESULT "output/Tests/e2e/*.xml" $e2eStepSeconds
+                  $lines += Format-Suite "React component tests" $env:COMPONENT_TESTS "output/Tests/component-tester-junit.xml" $stepTimes["Run component-tester tests"]
+                  $lines += Format-Suite "Visual regression tests" $env:VISUAL_REGRESSION "output/Tests/visual-regression-junit.xml" $stepTimes["Run visual regression tests"]
+                  # build-and-test's four suite steps, for the accounting at the end. BloomE2E ran
+                  # in jobs of its own, so it is not part of that job's time.
+                  $suiteSteps = @("Run browser UI tests", "Run C# tests", "Run component-tester tests", "Run visual regression tests")
 
-                  if ($env:JOB_STATUS -eq "cancelled") {
+                  # A job's result is success, failure, cancelled or skipped (BloomE2E, when a
+                  # manual run left it out).
+                  $e2eFine = $env:E2E_RESULT -eq "success" -or $env:E2E_RESULT -eq "skipped"
+                  # A night is good only if no line above reports a failure, whatever the jobs'
+                  # results say: a suite whose results could not be read shows as failed there.
+                  $anyLineFailed = @($lines | Where-Object { $_.StartsWith($glyphs["failure"]) }).Count -gt 0
+                  if ($env:BUILD_AND_TEST_RESULT -eq "cancelled" -or $env:E2E_RESULT -eq "cancelled") {
                       $headline = "🚫 **Nightly run cancelled**"
-                  } elseif ($env:JOB_STATUS -eq "success") {
+                  } elseif ($env:BUILD_AND_TEST_RESULT -eq "success" -and $e2eFine -and -not $anyLineFailed) {
                       $headline = "✅ **Nightly run passed**"
                   } else {
                       $headline = "❌ **Nightly run failed**"
                   }
 
                   # How long the night took overall. Measured to the last step that has finished
-                  # rather than to "now": this step is the last in the job, so the two are the same
+                  # rather than to "now": this step is the last of the night, so the two are the same
                   # to within a second on a real run -- but only the former also gives the right
                   # answer when this script is replayed against a past run's API data, which is how
                   # it gets tested.
                   $elapsed = ""
-                  $total = $null
                   if ($jobStarted -and $lastStepEnded) {
-                      $total = $lastStepEnded - [datetimeoffset]::Parse($jobStarted)
-                      $elapsed = " · $(Format-Duration $total.TotalSeconds)"
+                      $elapsed = " · $(Format-Duration ($lastStepEnded - $jobStarted).TotalSeconds)"
                   }
 
                   # Built up as a list of lines and joined once, rather than as one array literal:
@@ -891,34 +1151,38 @@ jobs:
                   $message = @("$headline on $($env:BRANCH)$elapsed", "")
                   $message += $lines | ForEach-Object { "* $_" }
 
-                  # Where the rest of the night went, as one line in job order: none of it is a
-                  # suite, so none of it deserves a bullet, but these timings are the first place a
-                  # slowing nightly shows up. Together with the suite timings above they account for
-                  # the whole of the headline total; "other" is whatever is left over -- the
-                  # per-suite installs, the diagnostics and screenshot uploads, and the gaps between
-                  # steps -- so the parts always add up.
+                  # Where the rest of build-and-test's time went, as one line in job order: none of
+                  # it is a suite, so none of it deserves a bullet, but these timings are the first
+                  # place a slowing nightly shows up. Together with that job's suite timings above
+                  # they account for the whole of that job; "other" is whatever is left over -- the
+                  # per-suite installs, the NuGet cache, the diagnostics, screenshot and results uploads,
+                  # and the gaps between steps -- so the parts always add up. Then how long the slowest BloomE2E shard's
+                  # whole job took, which ran alongside.
                   $restTimes = @()
                   $accounted = 0
                   if ($null -ne $setupSeconds) { $restTimes += "setup and install $(Format-Duration $setupSeconds)"; $accounted += $setupSeconds }
-                  if ($stepTimes -and $stepTimes.ContainsKey($frontendBuildStep)) { $restTimes += "front-end build $(Format-Duration $stepTimes[$frontendBuildStep])"; $accounted += $stepTimes[$frontendBuildStep] }
-                  if ($stepTimes -and $stepTimes.ContainsKey("Build")) {
+                  if ($stepTimes.ContainsKey($frontendBuildStep)) { $restTimes += "front-end build $(Format-Duration $stepTimes[$frontendBuildStep])"; $accounted += $stepTimes[$frontendBuildStep] }
+                  if ($stepTimes.ContainsKey("Build")) {
                       # Restoring the build tasks is the first thing the C# build needs, so it counts
                       # as part of that build.
                       $csharpBuild = $stepTimes["Build"]
                       if ($stepTimes.ContainsKey("Restore MSBuild build tasks")) { $csharpBuild += $stepTimes["Restore MSBuild build tasks"] }
                       $restTimes += "C# build $(Format-Duration $csharpBuild)"; $accounted += $csharpBuild
                   }
-                  if ($null -ne $reportingSeconds) { $restTimes += "reporting $(Format-Duration $reportingSeconds)"; $accounted += $reportingSeconds }
-                  if ($stepTimes -and $total) {
+                  if ($null -ne $mainSeconds) {
                       foreach ($suiteStep in $suiteSteps) {
                           if ($stepTimes.ContainsKey($suiteStep)) { $accounted += $stepTimes[$suiteStep] }
                       }
-                      $otherSeconds = [math]::Round($total.TotalSeconds) - [math]::Round($accounted)
+                      $otherSeconds = [math]::Round($mainSeconds) - [math]::Round($accounted)
                       if ($otherSeconds -gt 0) { $restTimes += "other $(Format-Duration $otherSeconds)" }
                   }
                   if ($restTimes.Count -gt 0) {
                       $message += ""
                       $message += "Also: " + ($restTimes -join " · ")
+                  }
+                  if ($null -ne $e2eJobSeconds) {
+                      $message += ""
+                      $message += "BloomE2E ran in $e2eJobCount parallel jobs; the slowest took $(Format-Duration $e2eJobSeconds), its own setup and builds included."
                   }
 
                   $message += ""

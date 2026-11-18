@@ -17,8 +17,8 @@
 # describes its fields.
 #
 # The machine setup is the nightly's own, through .github/actions/bloom-setup, so a fix proved here is
-# proved on the setup the nightly failed on. The builds are repeated from nightly.yml rather than
-# shared (that action says why); when you change how the nightly builds, change it here too.
+# proved on the setup the nightly failed on. The C# build is shared too, through
+# .github/actions/bloom-build; the front-end build is one line, repeated from nightly.yml.
 
 name: Bot verify
 
@@ -159,19 +159,7 @@ jobs:
                   testing-inputs: ${{ steps.plan.outputs.bloom }}
                   test-fonts: ${{ steps.plan.outputs.e2e }}
 
-            # The nightly does not cache NuGet packages, so this is ours. Restore and save are separate
-            # steps because the combined actions/cache saves only when the whole job succeeds, and the
-            # runs that most need a warm cache are the ones whose tests are still failing.
-            - name: Restore NuGet packages from cache
-              id: nuget_cache
-              if: ${{ steps.plan.outputs.build == 'true' }}
-              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-              with:
-                  path: ~/.nuget/packages
-                  key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props', '.nuget/NuGet.Config', 'build/Bloom.proj') }}
-                  restore-keys: nuget-${{ runner.os }}-
-
-            # ----- Builds (repeated from nightly.yml) -----
+            # ----- Builds -----
             # Every suite but the component tests needs the front end: the Bloom-driving suites load
             # Bloom's UI from it, and the C# tests find content by walking up to it from their own
             # folder. A run of component tests alone builds nothing.
@@ -181,34 +169,13 @@ jobs:
               working-directory: src/BloomBrowserUI
               run: pnpm run build-prod
 
-            # See the nightly's "Restore MSBuild build tasks" for why this is its own invocation.
-            - name: Restore MSBuild build tasks
-              id: restore_build_tasks
-              if: ${{ steps.plan.outputs.build == 'true' }}
-              working-directory: build
-              shell: pwsh
-              run: msbuild Bloom.proj /t:RestoreBuildTasks /p:RestartBuild=false
-
-            # The nightly's Build, less the test assembly when no C# test was asked for. Bloom still
-            # needs BloomPdfMaker.exe beside it even for a test that makes no PDF, because
-            # BloomIntegrityChecker refuses to start without it, so the app is always built whole.
+            # Less the test assembly when no C# test was asked for.
             - name: Build
               id: build_csharp
               if: ${{ steps.plan.outputs.build == 'true' }}
-              working-directory: build
-              shell: pwsh
-              env:
-                  BUILD_TESTS: ${{ steps.plan.outputs.csharp }}
-              run: |
-                  $skip = if ($env:BUILD_TESTS -eq "true") { "false" } else { "true" }
-                  msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER /p:SkipBloomTests=$skip
-
-            - name: Save NuGet packages to cache
-              if: ${{ !cancelled() && steps.nuget_cache.outputs.cache-hit != 'true' && steps.build_csharp.outcome == 'success' }}
-              uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              uses: ./.github/actions/bloom-build
               with:
-                  path: ~/.nuget/packages
-                  key: ${{ steps.nuget_cache.outputs.cache-primary-key }}
+                  skip-bloom-tests: ${{ steps.plan.outputs.csharp != 'true' }}
 
             # ----- The tests -----
             # In the nightly's order. Each suite runs even when an earlier one failed (!cancelled()),

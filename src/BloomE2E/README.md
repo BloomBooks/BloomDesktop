@@ -402,8 +402,11 @@ So stop a Bloom that is already using 5173 before a run, rather than moving the 
 ## In CI
 
 `.github/workflows/nightly.yml` runs the whole suite every night against the Release build it has
-just made, and reports it as its own check run, "Nightly run: BloomE2E tests". A failing
-night uploads Playwright's HTML report and traces as the `e2e-report` artifact. A manual run of
+just made, and reports it as its own check run, "Nightly run: BloomE2E tests". It splits the
+suite by spec file into three shards (Playwright's `--shard`), each on a runner of its own that
+makes its own build, because one runner could not fit the whole suite into the night's job.
+A shard with a failing test uploads Playwright's HTML report and traces as the
+`e2e-report-shard-<n>` artifact. A manual run of
 that workflow can tick this suite alone, which is the quick way to see how a test behaves on the
 runner rather than on your machine.
 
