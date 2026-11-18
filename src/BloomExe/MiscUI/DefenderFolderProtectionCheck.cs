@@ -40,9 +40,6 @@ namespace Bloom.MiscUI
         /// <summary>
         /// Returns 'true' unless Bloom can't write in Documents, where a new collection goes, in
         /// which case it reports the condition and the caller should exit Bloom.
-        /// In Oct of 2017, a Windows update to Defender on some machines set Protections on certain
-        /// basic folders, like MyDocuments! This resulted in throwing an exception any time Bloom tried
-        /// to write out CollectionSettings files!
         /// </summary>
         public static bool CanWriteToDocuments()
         {

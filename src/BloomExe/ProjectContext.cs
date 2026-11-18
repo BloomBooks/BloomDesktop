@@ -88,7 +88,15 @@ namespace Bloom
                 // file in ..." that GetCollectionSettings throws with a bare FileNotFoundException
                 // about the lock, sending the next developer to look in the wrong place. (BL-16678)
                 if (RobustFile.Exists(SettingsPath))
+                {
                     _collectionLock.Lock();
+                    // Before the Team Collection manager syncs the collection's files, so that an
+                    // unwritable folder is reported as such rather than as a Team Collection
+                    // failure. (BL-16728)
+                    CollectionSettings.ThrowIfFolderNotWritable(
+                        Path.GetDirectoryName(SettingsPath)
+                    );
+                }
 
                 // BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.
                 // While we are starting (or restarting, in the case of switching collections) BloomServer we need to use
@@ -294,12 +302,6 @@ namespace Bloom
                     builder
                         .Register<CollectionSettings>(c =>
                         {
-                            // Before the Team Collection manager syncs the collection's files, so
-                            // that an unwritable folder is reported as such rather than as a Team
-                            // Collection failure. (BL-16728)
-                            CollectionSettings.ThrowIfFolderNotWritable(
-                                Path.GetDirectoryName(projectSettingsPath)
-                            );
                             c.Resolve<TeamCollectionManager>();
                             return GetCollectionSettings(projectSettingsPath);
                         })

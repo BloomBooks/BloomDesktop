@@ -311,7 +311,7 @@ namespace Bloom.Collection
 
             if (RobustFile.Exists(desiredOrExistingSettingsFilePath))
             {
-                CheckFolderIsWritable();
+                ThrowIfFolderNotWritable(FolderPath);
                 Load();
             }
             else
@@ -322,24 +322,15 @@ namespace Bloom.Collection
                 if (!Directory.Exists(collectionDirectory))
                     Directory.CreateDirectory(collectionDirectory);
 
-                CheckFolderIsWritable();
+                ThrowIfFolderNotWritable(FolderPath);
                 Save();
             }
         }
 
-        private void CheckFolderIsWritable()
-        {
-            // 'FolderPath' is the directory part of 'SettingsFilePath'.
-            ThrowIfFolderNotWritable(FolderPath);
-        }
-
         /// <summary>
-        /// Check that Bloom can write in a collection's folder: it may be read-only, lack write
-        /// permission, or be protected by antivirus such as Windows Defender's "Controlled Folder
-        /// Access". Throws CollectionFolderNotWritableException so the caller can recover: when
-        /// opening a collection this runs inside building the ProjectContext, and the caller
-        /// (Program.OpenProjectWindow) tears that down, reports the problem, and offers the
-        /// collection chooser; code that creates a collection reports it too. (BL-16728)
+        /// Throws CollectionFolderNotWritableException if Bloom cannot write in collectionFolder (it
+        /// may be read-only, lack write permission, or be protected by antivirus). Callers that
+        /// can recover report it with DefenderFolderProtectionCheck.ReportProblem. (BL-16728)
         /// </summary>
         public static void ThrowIfFolderNotWritable(string collectionFolder)
         {
