@@ -41,6 +41,8 @@ export interface IImagePlacement {
     slotWidth: number;
     /** True when the image has been cropped: it is wider or taller than the slot showing it. */
     cropped: boolean;
+    /** True when the browser has the image's picture: it loaded rather than failed. */
+    loaded: boolean;
 }
 
 /**
@@ -132,6 +134,7 @@ export async function getImagePlacement(
             cropped:
                 image.clientWidth > slot.clientWidth + 1 ||
                 image.clientHeight > slot.clientHeight + 1,
+            loaded: image.complete && image.naturalWidth > 0,
         };
     });
 }
