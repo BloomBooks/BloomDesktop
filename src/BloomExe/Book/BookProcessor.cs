@@ -62,6 +62,30 @@ namespace Bloom.Book
         // See NeedsPageLayoutUpdate.
         internal const string kPageLayoutUpdateLevelMeta = "pageLayoutUpdateLevel";
 
+        // How many times, in this Bloom session, anything has recorded that a book's page layout
+        // changed (RecordPageLayoutChanged). See PageLayoutChangeCount.
+        private static int s_pageLayoutChangeCount;
+
+        /// <summary>
+        /// How many times, in this Bloom session, anything has recorded that a book's page layout
+        /// changed. A caller that remembers this when it runs the page layout update can tell, later,
+        /// whether a book still needing the update has changed since (and is worth another try) or
+        /// is one whose update failed (see EditingModel.UpdatePageLayoutForAllPagesIfNeeded).
+        /// </summary>
+        public static int PageLayoutChangeCount => Volatile.Read(ref s_pageLayoutChangeCount);
+
+        /// <summary>
+        /// True while an automatic page layout update (UpdatePageLayoutIfNeededThen) is rewriting
+        /// <paramref name="book"/> on another thread. Nothing else may read or change the book then.
+        /// </summary>
+        public static bool IsPageLayoutUpdateUnderway(Book book)
+        {
+            if (book == null)
+                return false;
+            lock (s_automaticPageLayoutUpdateLock)
+                return s_automaticPageLayoutUpdateUnderway.Contains(book.ID);
+        }
+
         // Books whose automatic page layout update has been started and has not yet finished. While a
         // book is here, its pass owns it: the pass rebuilds the book on a background thread, and
         // anything else that brought the book up to date meanwhile would do so at the same time.
@@ -272,12 +296,18 @@ namespace Bloom.Book
             if (!string.IsNullOrEmpty(book.CheckForErrors()))
                 return false;
 
-            if (
-                !int.TryParse(
-                    book.OurHtmlDom.GetMetaValue(kPageLayoutUpdateLevelMeta, "0"),
-                    out var level
-                )
-            )
+            return RecordsPageLayoutUpdateLevelBelowOurs(book.OurHtmlDom);
+        }
+
+        /// <summary>
+        /// True if the page layout update level that <paramref name="dom"/> records is missing,
+        /// unreadable, or below BookStorage.kPageLayoutUpdateLevel. This reads one meta element, so
+        /// a caller that runs often can ask it before the more expensive checks in
+        /// NeedsPageLayoutUpdate; when it is false, NeedsPageLayoutUpdate is false too.
+        /// </summary>
+        internal static bool RecordsPageLayoutUpdateLevelBelowOurs(HtmlDom dom)
+        {
+            if (!int.TryParse(dom.GetMetaValue(kPageLayoutUpdateLevelMeta, "0"), out var level))
                 level = 0; // missing or unreadable: treat as never done
             return level < BookStorage.kPageLayoutUpdateLevel;
         }
@@ -290,6 +320,7 @@ namespace Bloom.Book
         internal static void RecordPageLayoutChanged(HtmlDom dom)
         {
             dom.UpdateMetaElement(kPageLayoutUpdateLevelMeta, "0");
+            Interlocked.Increment(ref s_pageLayoutChangeCount);
         }
 
         /// <summary>

@@ -118,6 +118,58 @@ export async function chooseVideoFile(
 }
 
 /**
+ * Record a video into `videoBox` with the Sign Language tool's record button, the way a person
+ * does: click the box (which opens the tool and turns the camera on), press record, wait out the
+ * three-second countdown and about a second of recording, press stop, and wait until the box
+ * shows the recording. Returns its source.
+ *
+ * Needs a Bloom launched with a fake camera, test.use({ fakeCamera: true }): otherwise Bloom
+ * refuses the camera under --e2e and the record button never comes on.
+ */
+export async function recordVideo(
+    page: Page,
+    videoBox: Locator,
+): Promise<string> {
+    const before = await getVideoSource(videoBox);
+    await realClick(videoBox);
+    const toolbox = toolboxFrame(page);
+    const recordButton = toolbox.locator("#videoToggleRecording");
+    await expect(
+        recordButton,
+        "The Sign Language tool's record button never came on: the camera did not start. Was Bloom " +
+            "launched with test.use({ fakeCamera: true })?",
+    ).toHaveClass(/\benabled\b/, { timeout: 30000 });
+    await recordButton.click();
+    await expect(
+        recordButton,
+        "Pressing record never started recording.",
+    ).toHaveClass(/\brecordingNow\b/, { timeout: 15000 });
+    // A second of recording: the tool's own clock says when.
+    await expect(toolbox.locator("#timeWrapper")).toHaveText(
+        /\d:(0[1-9]|[1-5]\d)\s*$/,
+        { timeout: 15000 },
+    );
+    await recordButton.click();
+    const source = videoBox.locator("video source");
+    await expect
+        .poll(
+            async () =>
+                (await source.count()) > 0
+                    ? ((await source.first().getAttribute("src")) ?? "")
+                    : "",
+            {
+                timeout: 120000,
+                message: "The recording never went into the video box.",
+            },
+        )
+        .not.toBe(before);
+    await expect(videoBox).not.toHaveClass(/bloom-noVideoSelected/, {
+        timeout: 30000,
+    });
+    return (await source.first().getAttribute("src")) ?? "";
+}
+
+/**
  * The book-relative source of the video in a box, trim fragment included, or "" when it has none.
  * Bloom records the trim as a `#t=` fragment on the src, which is why this returns the whole thing.
  */

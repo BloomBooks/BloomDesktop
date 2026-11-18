@@ -101,6 +101,26 @@ export async function setBookAppearance(
 }
 
 /**
+ * Give the page being edited a background colour, e.g. "#fdf3c5", as the Book and Page Settings
+ * dialog's page colour does: it sets --page-background-color on the page itself
+ * (PageSettingsConfigrPages.tsx). SETUP: Bloom saves it with the page when the page is left.
+ */
+export async function setPageBackgroundColor(
+    page: Page,
+    color: string,
+): Promise<void> {
+    await editablePageFrame(page)
+        .locator(".bloom-page")
+        .first()
+        .evaluate((element, value) => {
+            (element as HTMLElement).style.setProperty(
+                "--page-background-color",
+                value,
+            );
+        }, color);
+}
+
+/**
  * True when the page being edited is drawn for full bleed: enlarged past the cut line, with the
  * 3mm bleed around it. False when the book has full bleed off, or Bloom does not allow it here.
  */
