@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
+using Bloom.MiscUI;
 using Microsoft.Win32;
 
 namespace Bloom.WebLibraryIntegration
@@ -40,7 +41,21 @@ namespace Bloom.WebLibraryIntegration
                 };
                 settings.Language1.Tag = "en";
                 settings.Language1.SetName("English", false);
-                CollectionSettings.CreateNewCollection(settings);
+                try
+                {
+                    CollectionSettings.CreateNewCollection(settings);
+                }
+                catch (CollectionFolderNotWritableException notWritable)
+                {
+                    // This runs at startup, before any collection opens, and Bloom can't go on
+                    // without somewhere to save; like the startup check of Documents, explain and
+                    // exit. (BL-16728)
+                    DefenderFolderProtectionCheck.ReportProblem(
+                        notWritable.InnerException,
+                        notWritable.FolderPath
+                    );
+                    Environment.Exit(-1);
+                }
                 ProjectContext.ClearUserInstalledDirectoriesCache();
             }
         }
