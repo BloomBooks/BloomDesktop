@@ -151,32 +151,34 @@ export function rolesFromSetting(
 /** Whether every group shows a language, none does, or only some do. */
 export type RoleState = "all" | "none" | "some";
 
-// The language tag of a role a cell stores, or undefined when the collection gives that role no
-// language: a cell keeps its roles when its collection drops its third language, say.
-function tagOfStoredRole(
-    role: LanguageRole,
-    languages: ICellLanguage[],
-): string | undefined {
-    return languages.find((other) => other.role === role)?.tag;
-}
-
 // The language tag of a role the menu lists, which always has one.
 function tagOfRole(role: LanguageRole, languages: ICellLanguage[]): string {
-    const tag = tagOfStoredRole(role, languages);
-    if (tag === undefined) {
+    const language = languages.find((other) => other.role === role);
+    if (!language) {
         throw new Error(`The collection gives role ${role} no language`);
     }
-    return tag;
+    return language.tag;
+}
+
+// The languages, among `languages`, that `roles` name. A role the collection gives no language
+// names none: a cell keeps its roles when its collection drops its third language, say.
+function languagesOfRoles(
+    roles: LanguageRole[],
+    languages: ICellLanguage[],
+): ICellLanguage[] {
+    return languages.filter((language) => roles.includes(language.role));
 }
 
 // The languages a group shows, by tag, each once. Two roles can name one language: V, the
-// toolbar's first language, is often the collection's L2 as well. A stored role with no language
-// shows nothing.
+// toolbar's first language, is often the collection's L2 as well.
 function tagsOfGroup(group: HTMLElement, languages: ICellLanguage[]): string[] {
-    const tags = rolesOfGroup(group, languages)
-        .map((role) => tagOfStoredRole(role, languages))
-        .filter((tag): tag is string => tag !== undefined);
-    return [...new Set(tags)];
+    return [
+        ...new Set(
+            languagesOfRoles(rolesOfGroup(group, languages), languages).map(
+                (language) => language.tag,
+            ),
+        ),
+    ];
 }
 
 /**
@@ -241,9 +243,9 @@ export function showSettingInGroup(
     } else {
         group.setAttribute("data-default-languages", setting);
     }
-    const roles = rolesFromSetting(setting, languages);
-    const wanted = languages.filter((language) =>
-        roles.includes(language.role),
+    const wanted = languagesOfRoles(
+        rolesFromSetting(setting, languages),
+        languages,
     );
     const added = wanted
         .filter((language) => !editableInLanguage(group, language.tag))
@@ -313,6 +315,10 @@ export function toggleRole(
 ): void {
     const tick = roleState(groups, role, languages) !== "all";
     const tag = tagOfRole(role, languages);
+    // Every role that names this language: V and N1 often name the same one.
+    const rolesNamingTag = languages
+        .filter((language) => language.tag === tag)
+        .map((language) => language.role);
     const changing = groups.filter((group) => {
         const tags = tagsOfGroup(group, languages);
         if (tick) return !tags.includes(tag);
@@ -330,9 +336,7 @@ export function toggleRole(
         const before = rolesOfGroup(group, languages);
         const after = tick
             ? [...before, role]
-            : before.filter(
-                  (other) => tagOfStoredRole(other, languages) !== tag,
-              );
+            : before.filter((other) => !rolesNamingTag.includes(other));
         return {
             place: places[index],
             // Undo puts back the attribute exactly as it was, including no attribute at all.
