@@ -98,16 +98,17 @@ function ensureTableLibrarySetUp(): void {
     // Text cells hold a bloom-translationGroup rather than the library's bare
     // contenteditable, so text in a table participates in Bloom's multilingual
     // system and its styles. The group gets one bloom-editable of its own here,
-    // in the language new text boxes use, because nothing else would give the
+    // in the collection's first language, because nothing else would give the
     // cell one until the page is next loaded: TranslationGroupManager (C#) adds
     // the editables for the book's other languages then. Without that first
     // editable a new cell has nothing to type in, and so no format button and no
     // language name either. This is what a text canvas element does too; see
     // makeTranslationGroup in CanvasElementFactories.ts.
-    // The group shows the toolbar's first language only (data-default-languages V), which is the
-    // language new text boxes use, until the user picks others in the table's menus; see
-    // tableCellLanguages.ts.
-    const languageForNewText = GetSettings().languageForNewTextBoxes;
+    // The group shows the collection's first language only (data-default-languages V) until the
+    // user picks others in the table's menus; see tableCellLanguages.ts. That is the collection's
+    // first language even when the toolbar shows another one first, which languageForNewTextBoxes
+    // follows: a box in any other language would be hidden when the page next loads.
+    const languageForNewText = GetSettings().collectionLanguage1;
     replaceCellContentType(
         "text",
         "<div class='bloom-translationGroup bloom-trailingElement normal-style' data-default-languages='V'>" +
@@ -195,18 +196,13 @@ function installHostHooks(): void {
     setHostCellSettings({
         snapshot: (cell) => {
             const group = textGroupOfCell(cell);
-            if (!group || !cellLanguages) return undefined;
-            return rolesOfGroup(group, cellLanguages).join(",");
+            return group ? rolesOfGroup(group).join(",") : undefined;
         },
         apply: (cell, value) => {
             const group = textGroupOfCell(cell);
             if (!group || !cellLanguages) return;
             wireNewEditables(
-                showRolesInGroup(
-                    group,
-                    rolesFromSetting(value, cellLanguages),
-                    cellLanguages,
-                ),
+                showRolesInGroup(group, rolesFromSetting(value), cellLanguages),
             );
         },
     });
@@ -222,17 +218,9 @@ let cellLanguagesRequested = false;
 function refreshCellLanguages(): void {
     if (cellLanguagesRequested) return;
     cellLanguagesRequested = true;
-    const settings = GetSettings();
-    // The languages ticked in the toolbar, the first one first.
-    const toolbarTags = [
-        settings.languageForNewTextBoxes,
-        settings.currentCollectionLanguage2,
-        settings.currentCollectionLanguage3,
-    ].filter((tag) => !!tag);
     get("settings/languageNames", (result) => {
         cellLanguages = cellLanguagesOfCollection(
             result.data as ILanguageNameValues,
-            toolbarTags,
         );
     });
 }

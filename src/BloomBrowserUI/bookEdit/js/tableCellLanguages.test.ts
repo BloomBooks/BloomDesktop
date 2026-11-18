@@ -12,17 +12,14 @@ import {
 } from "./tableCellLanguages";
 import { theOneUndoStack } from "../undo/UndoStack";
 
-const kLanguages: ICellLanguage[] = cellLanguagesOfCollection(
-    {
-        language1Name: "Tok Pisin",
-        language1Tag: "tpi",
-        language2Name: "English",
-        language2Tag: "en",
-        language3Name: "Spanish",
-        language3Tag: "es",
-    },
-    ["tpi"],
-);
+const kLanguages: ICellLanguage[] = cellLanguagesOfCollection({
+    language1Name: "Tok Pisin",
+    language1Tag: "tpi",
+    language2Name: "English",
+    language2Tag: "en",
+    language3Name: "Spanish",
+    language3Tag: "es",
+});
 
 // A text cell's group the way Bloom saves it: an editable for each of the book's languages,
 // with only the ones the cell shows marked visible.
@@ -69,40 +66,13 @@ describe("cellLanguagesOfCollection", () => {
         ).toEqual(["V L1 - Tok Pisin", "N1 L2 - English", "N2 L3 - Spanish"]);
     });
 
-    it("gives L1 the toolbar's first language, which need not be the collection's first", () => {
-        const languages = cellLanguagesOfCollection(
-            {
-                language1Name: "Tok Pisin",
-                language1Tag: "tpi",
-                language2Name: "English",
-                language2Tag: "en",
-            },
-            ["en"],
-        );
-        expect(
-            languages.map(
-                (language) =>
-                    `${language.role} ${language.shortName} - ${language.name} (${language.tooltipEnglish})`,
-            ),
-        ).toEqual([
-            "V L1 - English (Language 2 (e.g. National Language))",
-            "N1 L2 - English (Language 2 (e.g. National Language))",
-        ]);
-        expect(
-            menuLanguages(languages).map((language) => language.role),
-        ).toEqual(["V"]);
-    });
-
     it("keeps a role whose language repeats L1 but leaves out a missing L3, and the menu lists the language once", () => {
-        const languages = cellLanguagesOfCollection(
-            {
-                language1Name: "English",
-                language1Tag: "en",
-                language2Name: "English",
-                language2Tag: "en",
-            },
-            ["en"],
-        );
+        const languages = cellLanguagesOfCollection({
+            language1Name: "English",
+            language1Tag: "en",
+            language2Name: "English",
+            language2Tag: "en",
+        });
         expect(languages.map((language) => language.role)).toEqual(["V", "N1"]);
         expect(
             menuLanguages(languages).map((language) => language.role),
@@ -111,15 +81,12 @@ describe("cellLanguagesOfCollection", () => {
 
     it("still shows a cell whose stored role's language repeats L1, after L1 is ticked and unticked", () => {
         // The cell was set to L2 in a collection where L2 was another language.
-        const languages = cellLanguagesOfCollection(
-            {
-                language1Name: "English",
-                language1Tag: "en",
-                language2Name: "English",
-                language2Tag: "en",
-            },
-            ["en"],
-        );
+        const languages = cellLanguagesOfCollection({
+            language1Name: "English",
+            language1Tag: "en",
+            language2Name: "English",
+            language2Tag: "en",
+        });
         const group = makeGroup("N1", ["en"]);
 
         toggleRole([group], "V", languages, noWiring);
@@ -131,28 +98,16 @@ describe("cellLanguagesOfCollection", () => {
 });
 
 describe("rolesFromSetting", () => {
-    it("reads no setting, an empty one and auto as the languages ticked in the toolbar", () => {
-        // A bilingual book: the toolbar ticks Tok Pisin, then Spanish.
-        const languages = cellLanguagesOfCollection(
-            {
-                language1Name: "Tok Pisin",
-                language1Tag: "tpi",
-                language2Name: "English",
-                language2Tag: "en",
-                language3Name: "Spanish",
-                language3Tag: "es",
-            },
-            ["tpi", "es"],
-        );
-        expect(rolesFromSetting(null, languages)).toEqual(["V", "N2"]);
-        expect(rolesFromSetting("", languages)).toEqual(["V", "N2"]);
-        expect(rolesFromSetting("auto", languages)).toEqual(["V", "N2"]);
+    it("reads no setting, an empty one and auto as L1 only", () => {
+        expect(rolesFromSetting(null)).toEqual(["V"]);
+        expect(rolesFromSetting("")).toEqual(["V"]);
+        expect(rolesFromSetting("auto")).toEqual(["V"]);
     });
 
     it("reads a list in role order whatever order it was written in", () => {
-        expect(rolesFromSetting("N2,V", kLanguages)).toEqual(["V", "N2"]);
-        expect(rolesFromSetting("N1", kLanguages)).toEqual(["N1"]);
-        expect(rolesFromSetting("L1, N1", kLanguages)).toEqual(["V", "N1"]);
+        expect(rolesFromSetting("N2,V")).toEqual(["V", "N2"]);
+        expect(rolesFromSetting("N1")).toEqual(["N1"]);
+        expect(rolesFromSetting("L1, N1")).toEqual(["V", "N1"]);
     });
 });
 
@@ -201,11 +156,11 @@ describe("toggleRole", () => {
             makeGroup("V", ["tpi"]),
             makeGroup("V,N1", ["tpi", "en"]),
         ];
-        expect(roleState(groups, "N1", kLanguages)).toBe("some");
+        expect(roleState(groups, "N1")).toBe("some");
 
         toggleRole(groups, "N1", kLanguages, noWiring);
 
-        expect(roleState(groups, "N1", kLanguages)).toBe("all");
+        expect(roleState(groups, "N1")).toBe("all");
         expect(groups.map(visibleTagsOf)).toEqual([
             ["tpi", "en"],
             ["tpi", "en"],
@@ -213,7 +168,7 @@ describe("toggleRole", () => {
 
         toggleRole(groups, "N1", kLanguages, noWiring);
 
-        expect(roleState(groups, "N1", kLanguages)).toBe("none");
+        expect(roleState(groups, "N1")).toBe("none");
         expect(groups.map(visibleTagsOf)).toEqual([["tpi"], ["tpi"]]);
         // Hiding a language does not throw its text away.
         expect(groups[1].querySelector("[lang='en']")?.textContent).toBe(
@@ -226,13 +181,13 @@ describe("toggleRole", () => {
             makeGroup("V", ["tpi"]),
             makeGroup("V,N1", ["tpi", "en"]),
         ];
-        expect(roleIsLastLanguageSomewhere(groups, "V", kLanguages)).toBe(true);
+        expect(roleIsLastLanguageSomewhere(groups, "V")).toBe(true);
 
         toggleRole(groups, "V", kLanguages, noWiring);
 
         // The second cell could lose L1, but the first could not; the box is locked, and a
         // toggle that gets through anyway leaves the first cell alone.
-        expect(rolesOfGroup(groups[0], kLanguages)).toEqual(["V"]);
+        expect(rolesOfGroup(groups[0])).toEqual(["V"]);
     });
 
     it("is one undo step, which puts back the setting exactly as it was, and can be redone", () => {

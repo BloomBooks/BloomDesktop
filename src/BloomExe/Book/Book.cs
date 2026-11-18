@@ -3237,6 +3237,15 @@ namespace Bloom.Book
         {
             var dataDefaultLanguages = parent.GetAttribute("data-default-languages");
 
+            // A table's text cell shows only the collection languages the user chose for it, the
+            // first one if they chose none, whatever the toolbar shows.
+            if (TranslationGroupManager.IsTableTextCell(parent))
+            {
+                return TranslationGroupManager
+                    .LanguagesOfTableTextCell(dataDefaultLanguages, _bookData)
+                    .Contains(lang);
+            }
+
             if (String.IsNullOrEmpty(dataDefaultLanguages) || dataDefaultLanguages == "auto")
                 return true; // assume we want everything
 

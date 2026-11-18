@@ -338,6 +338,177 @@ namespace BloomTests.Book
                 );
         }
 
+        /// <summary>
+        /// A table's text cell with no setting (every cell of a table made before cells had one)
+        /// shows the collection's first language only, even in a book that the toolbar makes
+        /// bilingual, while an ordinary text box beside it on the page follows the toolbar.
+        /// </summary>
+        [Test]
+        public void UpdateContentLanguageClasses_TableTextCellWithNoSetting_ShowsL1OnlyWhateverTheToolbarSays()
+        {
+            var contents =
+                @"<html><body><div class='bloom-page'>
+						<div class='bloom-table'><div class='bloom-cell'>
+							<div class='bloom-translationGroup' id='cell'>
+								<div class='bloom-editable' lang='xyz'></div>
+								<div class='bloom-editable' lang='fr'></div>
+								<div class='bloom-editable' lang='es'></div>
+							</div>
+						</div></div>
+						<div class='bloom-translationGroup' id='box'>
+							<div class='bloom-editable' lang='xyz'></div>
+							<div class='bloom-editable' lang='fr'></div>
+							<div class='bloom-editable' lang='es'></div>
+						</div>
+					</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+            var pageDiv = (SafeXmlElement)
+                dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+
+            // A bilingual book: the toolbar shows xyz and fr.
+            TranslationGroupManager.UpdateContentLanguageClasses(
+                pageDiv,
+                bookData,
+                LegacyAppearanceSettings,
+                "xyz",
+                "fr",
+                null
+            );
+
+            // Sanity check: the ordinary text box follows the toolbar, so the book is bilingual.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='box']/div[contains(@class, 'bloom-visibility-code-on')]",
+                    2
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='cell']/div[contains(@class, 'bloom-visibility-code-on')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='cell']/div[@lang='xyz' and contains(@class, 'bloom-visibility-code-on')]",
+                    1
+                );
+        }
+
+        /// <summary>
+        /// A table's text cell set to L1 and L3 shows both in a book that the toolbar makes
+        /// monolingual.
+        /// </summary>
+        [Test]
+        public void UpdateContentLanguageClasses_TableTextCellSetToL1AndL3_ShowsBothInAMonolingualBook()
+        {
+            var contents =
+                @"<html><body><div class='bloom-page'>
+						<div class='bloom-table'><div class='bloom-cell'>
+							<div class='bloom-translationGroup' id='cell' data-default-languages='V,N2'>
+								<div class='bloom-editable' lang='xyz'></div>
+								<div class='bloom-editable' lang='fr'></div>
+								<div class='bloom-editable' lang='es'></div>
+							</div>
+						</div></div>
+					</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+            var pageDiv = (SafeXmlElement)
+                dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+
+            TranslationGroupManager.UpdateContentLanguageClasses(
+                pageDiv,
+                bookData,
+                LegacyAppearanceSettings,
+                "xyz",
+                null,
+                null
+            );
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='cell']/div[contains(@class, 'bloom-visibility-code-on')]",
+                    2
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='cell']/div[@lang='es' and contains(@class, 'bloom-visibility-code-on')]",
+                    1
+                );
+        }
+
+        /// <summary>
+        /// A table cell that has no box for the collection's first language (an older Bloom made
+        /// it while the toolbar showed only L2) gets one when the page is prepared, so it does not
+        /// show nothing; and the languages it shows are ordered by the collection, not by the
+        /// toolbar.
+        /// </summary>
+        [Test]
+        public void UpdateContentLanguageClasses_TableTextCell_GetsItsLanguagesBoxesInCollectionOrder()
+        {
+            var contents =
+                @"<html><body><div class='bloom-page'>
+						<div class='bloom-table'>
+							<div class='bloom-cell'>
+								<div class='bloom-translationGroup' id='old'>
+									<div class='bloom-editable' lang='fr'></div>
+								</div>
+							</div>
+							<div class='bloom-cell'>
+								<div class='bloom-translationGroup' id='both' data-default-languages='V,N1'>
+									<div class='bloom-editable' lang='xyz'></div>
+									<div class='bloom-editable' lang='fr'></div>
+								</div>
+							</div>
+						</div>
+					</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+            var pageDiv = (SafeXmlElement)
+                dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+            Assert.That(
+                _collectionSettings.Language1Tag,
+                Is.EqualTo("xyz"),
+                "The test relies on xyz being the collection's first language."
+            );
+
+            // The toolbar shows French only.
+            bookData.SetMultilingualContentLanguages("fr");
+            TranslationGroupManager.PrepareElementsInPageOrDocument(pageDiv, bookData);
+            TranslationGroupManager.UpdateContentLanguageClasses(
+                pageDiv,
+                bookData,
+                LegacyAppearanceSettings,
+                "fr",
+                null,
+                null
+            );
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='old']/div[@lang='xyz' and contains(@class, 'bloom-visibility-code-on')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='both']/div[@lang='xyz' and contains(@class, 'bloom-content1')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='both']/div[@lang='fr' and contains(@class, 'bloom-content2')]",
+                    1
+                );
+        }
+
         [Test]
         public void UpdateContentLanguageClasses_Legacy_TurnsOnCorrectLanguages()
         {

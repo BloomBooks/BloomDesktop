@@ -1,13 +1,12 @@
 // The languages a table's text cell shows (BL-17105).
 //
 // A text cell holds a bloom-translationGroup, and the roles it shows are stored on that group in
-// data-default-languages, with the meanings that Bloom gives them in every translation group
-// (TranslationGroupManager.ShouldNormallyShowEditable in C#): V for the first language ticked in the
-// toolbar, N1 for the collection's second language and N2 for its third, whatever the toolbar
-// shows, or a list such as "V,N1". Roles rather than language tags, so that a cell keeps its role
-// when the book is translated in another collection. A group with no setting shows the languages
-// ticked in the toolbar, as any translation group does. C# applies these rules when a page loads,
-// and this module applies them at once when the user changes a cell.
+// data-default-languages: V for the collection's first language, N1 for its second and N2 for its
+// third, or a list such as "V,N1". Roles rather than language tags, so that a cell keeps its role
+// when the book is translated in another collection. A group with no setting shows the first
+// language only. Unlike every other translation group, a table cell does not follow the toolbar's
+// language choice; TranslationGroupManager.LanguagesOfTableTextCell (C#) applies the same rule when
+// a page loads, and this module applies it at once when the user changes a cell.
 
 import { ILanguageNameValues } from "../toolbox/canvas/canvasControlTypes";
 import { theOneUndoStack } from "../undo/UndoStack";
@@ -27,8 +26,6 @@ export interface ICellLanguage {
     /** The Collection Settings label for the role, used as the entry's tooltip. */
     tooltipEnglish: string;
     tooltipL10nId: string;
-    /** True when the language is ticked in the toolbar, so a cell with no setting shows it. */
-    tickedInToolbar: boolean;
 }
 
 /**
@@ -36,17 +33,14 @@ export interface ICellLanguage {
  * even one whose language is the same as an earlier role's, since a cell can have that role
  * stored (it was set in another collection) and must still show its language. The menu lists
  * each language once; see menuLanguages.
- *
- * `toolbarTags` are the languages ticked in the toolbar, the first one first. V is that first
- * language, which need not be the collection's first; its tooltip is the Collection Settings
- * label of the collection language it is.
  */
 export function cellLanguagesOfCollection(
     names: ILanguageNameValues,
-    toolbarTags: string[],
 ): ICellLanguage[] {
-    const collectionLanguages = [
+    const candidates: ICellLanguage[] = [
         {
+            role: "V",
+            shortName: "L1",
             tag: names.language1Tag,
             name: names.language1Name,
             tooltipEnglish: "Local Language",
@@ -54,6 +48,8 @@ export function cellLanguagesOfCollection(
                 "CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel",
         },
         {
+            role: "N1",
+            shortName: "L2",
             tag: names.language2Tag,
             name: names.language2Name,
             tooltipEnglish: "Language 2 (e.g. National Language)",
@@ -61,6 +57,8 @@ export function cellLanguagesOfCollection(
                 "CollectionSettingsDialog.LanguageTab._language2Label",
         },
         {
+            role: "N2",
+            shortName: "L3",
             tag: names.language3Tag ?? "",
             name: names.language3Name ?? "",
             tooltipEnglish: "Language 3 (e.g. Regional Language)   (Optional)",
@@ -68,29 +66,7 @@ export function cellLanguagesOfCollection(
                 "CollectionSettingsDialog.LanguageTab._language3Label",
         },
     ];
-    const toolbarFirst = collectionLanguages.find(
-        (language) => language.tag === toolbarTags[0],
-    );
-    if (!toolbarFirst) {
-        throw new Error(
-            `The toolbar's first language, "${toolbarTags[0]}", is not one of the collection's languages`,
-        );
-    }
-    const candidates: Omit<ICellLanguage, "tickedInToolbar">[] = [
-        { role: "V", shortName: "L1", ...toolbarFirst },
-        {
-            role: "N1",
-            shortName: "L2",
-            ...collectionLanguages[1],
-        },
-        { role: "N2", shortName: "L3", ...collectionLanguages[2] },
-    ];
-    return candidates
-        .filter((candidate) => !!candidate.tag)
-        .map((candidate) => ({
-            ...candidate,
-            tickedInToolbar: toolbarTags.includes(candidate.tag),
-        }));
+    return candidates.filter((candidate) => !!candidate.tag);
 }
 
 /**
@@ -113,37 +89,19 @@ export function textGroupOfCell(cell: HTMLElement): HTMLElement | undefined {
     );
 }
 
-/**
- * The roles a text cell's group shows, in role order. A group with no setting shows the languages
- * ticked in the toolbar.
- */
-export function rolesOfGroup(
-    group: HTMLElement,
-    languages: ICellLanguage[],
-): LanguageRole[] {
-    return rolesFromSetting(
-        group.getAttribute("data-default-languages"),
-        languages,
-    );
+/** The roles a text cell's group shows, in role order. A group with no setting shows L1. */
+export function rolesOfGroup(group: HTMLElement): LanguageRole[] {
+    return rolesFromSetting(group.getAttribute("data-default-languages"));
 }
 
-/**
- * The roles that a value of data-default-languages on a text cell's group stands for. No setting,
- * like "auto", stands for the languages ticked in the toolbar, each by the role that the menu
- * lists it under.
- */
-export function rolesFromSetting(
-    setting: string | null,
-    languages: ICellLanguage[],
-): LanguageRole[] {
+/** The roles that a value of data-default-languages on a text cell's group stands for. */
+export function rolesFromSetting(setting: string | null): LanguageRole[] {
     const tokens = (setting ?? "")
         .split(/[,\s]+/)
         .filter((token) => token.length > 0)
         .map((token) => (token === "L1" ? "V" : token));
     if (tokens.length === 0 || tokens[0].toLowerCase() === "auto") {
-        return menuLanguages(languages)
-            .filter((language) => language.tickedInToolbar)
-            .map((language) => language.role);
+        return ["V"];
     }
     return kRoleOrder.filter((role) => tokens.includes(role));
 }
@@ -155,10 +113,9 @@ export type RoleState = "all" | "none" | "some";
 export function roleState(
     groups: HTMLElement[],
     role: LanguageRole,
-    languages: ICellLanguage[],
 ): RoleState {
     const count = groups.filter((group) =>
-        rolesOfGroup(group, languages).includes(role),
+        rolesOfGroup(group).includes(role),
     ).length;
     if (count === 0) return "none";
     if (count === groups.length) return "all";
@@ -172,11 +129,10 @@ export function roleState(
 export function roleIsLastLanguageSomewhere(
     groups: HTMLElement[],
     role: LanguageRole,
-    languages: ICellLanguage[],
 ): boolean {
     return (
-        roleState(groups, role, languages) === "all" &&
-        groups.some((group) => rolesOfGroup(group, languages).length === 1)
+        roleState(groups, role) === "all" &&
+        groups.some((group) => rolesOfGroup(group).length === 1)
     );
 }
 
@@ -262,9 +218,9 @@ export function toggleRole(
     languages: ICellLanguage[],
     onNewEditables: (editables: HTMLElement[]) => void,
 ): void {
-    const tick = roleState(groups, role, languages) !== "all";
+    const tick = roleState(groups, role) !== "all";
     const changing = groups.filter((group) => {
-        const roles = rolesOfGroup(group, languages);
+        const roles = rolesOfGroup(group);
         if (tick) return !roles.includes(role);
         return roles.includes(role) && roles.length > 1;
     });
@@ -283,7 +239,7 @@ export function toggleRole(
         );
     const pageGroups = allGroups();
     const changes = changing.map((group) => {
-        const before = rolesOfGroup(group, languages);
+        const before = rolesOfGroup(group);
         return {
             place: pageGroups.indexOf(group),
             // Undo puts back the attribute exactly as it was, including no attribute at all.
@@ -329,7 +285,7 @@ export function toggleRole(
                 // Hiding languages never adds an editable.
                 showRolesInGroup(
                     group,
-                    rolesFromSetting(beforeAttribute, languages),
+                    rolesFromSetting(beforeAttribute),
                     languages,
                 );
                 if (beforeAttribute === null) {

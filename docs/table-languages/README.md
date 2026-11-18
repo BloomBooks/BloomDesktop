@@ -16,11 +16,9 @@ Languages
   [ ] L3 - Spanish
 ```
 
-- One check box per role the book has: L1, then L2 and L3 when the collection has them. L1 is
-  the first language ticked in the toolbar, which is usually the collection's first language but
-  need not be; L2 and L3 are the collection's second and third. If L2 or L3 is the same language
-  as L1, only one entry is shown (the canvas element's Language submenu already drops duplicates
-  this way, in `canvasControlTextMenuItems.ts`).
+- One check box per role the book has: L1, then L2 and L3 when the collection has them. If L2 or
+  L3 is the same language as L1, only one entry is shown (the canvas element's Language submenu
+  already drops duplicates this way, in `canvasControlTextMenuItems.ts`).
 - Each entry's tooltip is the Collection Settings label for that language.
 - At least one box stays ticked: a box is disabled when unticking it would leave some cell with
   no language.
@@ -33,25 +31,19 @@ Languages
 ## What is stored
 
 The ticked roles go into `data-default-languages` on the cell's `bloom-translationGroup`, as the
-roles Bloom already uses: `V` for L1, `N1` for L2, `N2` for L3, or a list such as `V,N1`. They
-mean here what they mean in every translation group (`ShouldNormallyShowEditable` in
-`TranslationGroupManager.cs`): `V` is the first language ticked in the toolbar, and `N1` and `N2`
-are the collection's second and third languages, whether or not the toolbar ticks them.
+roles Bloom already uses: `V` for L1, `N1` for L2, `N2` for L3, or a list such as `V,N1`.
 Storing roles rather than language tags means a cell keeps its role when the book is translated in
 another collection: a word-list column set to L1 shows the new collection's L1.
 
-Bloom's C# already reads a comma list in this attribute and shows the languages it names, so the
-feature needs no change to the C#.
+Bloom's C# already reads a comma list in this attribute (`TranslationGroupManager.cs`).
 
 ## Defaults and the toolbar
 
 - A new text cell shows L1 only.
 - A table text cell with no `data-default-languages` (every cell of a table made before this
-  feature) shows the languages ticked in the toolbar, as any translation group with no setting
-  does, and its menu ticks those.
-- Turning a language on or off in the toolbar changes what a cell set to `V` shows only when it
-  changes which language is ticked first. It does not change what a cell set to `N1` or `N2`
-  shows.
+  feature) is read as L1 only, so existing tables follow the same rule without editing their files.
+- Table text cells ignore the toolbar's language dropdown. A cell shows exactly the roles it has
+  ticked, whatever languages the toolbar has turned on or off for the book.
 
 ## Setting a value at a higher level
 
@@ -96,3 +88,9 @@ let Bloom add what the library knows nothing about:
 - `src/BloomBrowserUI/bookEdit/js/TableCellLanguagesSection.tsx`: the menu item and its submenu.
 - `src/BloomBrowserUI/bookEdit/js/tableEditing.ts`: installs both hooks; new text cells start
   with `data-default-languages="V"`.
+- `src/BloomExe/Book/TranslationGroupManager.cs`: `LanguagesOfTableTextCell`, the same rule
+  when a page loads. `V` there means the collection's first language, because elsewhere `V`
+  means the first language ticked in the toolbar.
+- `src/BloomExe/Book/Book.cs`: `IsLanguageWantedInContent` applies the same rule when publishing
+  asks which languages the book's pages are complete in, so a language that a cell does not show is
+  not missing from it.

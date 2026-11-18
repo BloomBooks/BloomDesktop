@@ -1404,6 +1404,74 @@ namespace BloomTests.Publish.Epub
         }
 
         /// <summary>
+        /// Each text cell of a table shows the languages chosen for that cell, whatever the
+        /// book's own languages are (BL-17105), and the ePUB carries exactly the text the cell
+        /// shows: a cell set to L1 and L2 keeps its L2 text even in a monolingual book, while a
+        /// cell set to L1 only, and a cell with no setting (from a table made before cells had
+        /// one), lose their L2 text even in a bilingual book.
+        /// </summary>
+        [TestCase("xyz")]
+        [TestCase("xyz", "en")]
+        public void TableTextCells_KeepOnlyTheLanguagesChosenForEachCell(
+            params string[] bookLanguages
+        )
+        {
+            var book = SetupBookLong(
+                "Text outside the table",
+                "xyz",
+                extraContentOutsideTranslationGroup: @"
+					<div class='bloom-table' data-column-widths='34,33,33'>
+						<div class='bloom-cell'>
+							<div class='bloom-translationGroup' data-default-languages='V,N1'>
+								<div class='bloom-editable' lang='xyz'><p>first cell vernacular</p></div>
+								<div class='bloom-editable' lang='en'><p>first cell English</p></div>
+							</div>
+						</div>
+						<div class='bloom-cell'>
+							<div class='bloom-translationGroup' data-default-languages='V'>
+								<div class='bloom-editable' lang='xyz'><p>second cell vernacular</p></div>
+								<div class='bloom-editable' lang='en'><p>second cell English</p></div>
+							</div>
+						</div>
+						<div class='bloom-cell'>
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable' lang='xyz'><p>third cell vernacular</p></div>
+								<div class='bloom-editable' lang='en'><p>third cell English</p></div>
+							</div>
+						</div>
+					</div>",
+                defaultLanguages: "V",
+                createPhysicalFile: true
+            );
+            book.SetMultilingualContentLanguages(bookLanguages);
+
+            MakeEpub("output", "TableTextCells_KeepOnlyTheLanguagesChosenForEachCell", book);
+
+            var assertThatPage2 = AssertThatXmlIn.String(GetPageNData(2));
+            // Sanity check: the cells reached the ePUB.
+            assertThatPage2.HasSpecifiedNumberOfMatchesForXpath(
+                "//xhtml:div[contains(@class,'bloom-cell')]",
+                _ns,
+                3
+            );
+            foreach (var shown in new[] { "first", "second", "third" })
+            {
+                assertThatPage2.HasSpecifiedNumberOfMatchesForXpath(
+                    $"//xhtml:div[@lang='xyz' and contains(., '{shown} cell vernacular')]",
+                    _ns,
+                    1
+                );
+            }
+            assertThatPage2.HasSpecifiedNumberOfMatchesForXpath(
+                "//xhtml:div[@lang='en' and contains(., 'first cell English')]",
+                _ns,
+                1
+            );
+            assertThatPage2.HasNoMatchForXpath("//*[contains(., 'second cell English')]", _ns);
+            assertThatPage2.HasNoMatchForXpath("//*[contains(., 'third cell English')]", _ns);
+        }
+
+        /// <summary>
         /// Content whose display properties resolves to display:None should be removed.
         /// This should not include National1 in XMatter.
         /// </summary>
