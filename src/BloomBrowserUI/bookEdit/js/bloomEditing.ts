@@ -2103,23 +2103,6 @@ export function attachToCkEditor(element) {
         return;
     }
 
-    // Cover-title investigation (BL-17022): when an editor becomes ready it
-    // writes its copy of the box back into the box, and keepTypingWhenCkEditorLoads makes that copy
-    // include a title typed before then (BL-17022). These two lines
-    // announce every attach on a title box, with what the box holds going in and what it holds
-    // once the editor is ready, so that if the nightly loses a title again, its trace (Playwright
-    // keeps the page's console) shows whether this is still where. Remove with the rest of this
-    // investigation once the nightly has gone several runs without losing a title (the reminder
-    // is on BL-17022).
-    const isBookTitleBox =
-        !!element.getAttribute &&
-        element.getAttribute("data-book") === "bookTitle";
-    const titleBoxText = () => (element.innerText || "").trim();
-    if (isBookTitleBox)
-        console.warn(
-            `[cover-title] attaching an editor; box holds "${titleBoxText()}"`,
-        );
-
     // For any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup),
     // we never want to show the toolbar.  We do want to allow pasting and other editing tasks. (BL-14947)
     const alwaysHideToolbar =
@@ -2240,12 +2223,6 @@ export function attachToCkEditor(element) {
         const editor = evt["editor"];
         const bar = $("body").find("." + editor.id);
         bar.hide();
-
-        // Cover-title investigation: see the note at the top of this function.
-        if (isBookTitleBox)
-            console.warn(
-                `[cover-title] editor ready; box now holds "${titleBoxText()}"`,
-            );
 
         // Protect Bloom's structural spans from the removeFormat ("clear formatting") command.
         // The only spans the format toolbar itself produces are bare <span style="color:..."> (and

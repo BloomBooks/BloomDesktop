@@ -382,6 +382,25 @@ namespace BloomTests.Publish.Rab
             Assert.That(estimate, Is.EqualTo(0));
         }
 
+        [Test]
+        public void FindBookHtmlInFolder_NotNotifying_FolderGone_ThrowsDirectoryNotFound()
+        {
+            // The estimator and BloomPubCache use this, so a book folder deleted while they read
+            // it is an ordinary IO failure that the Apps size request survives, not an
+            // ApplicationException and a "can't save this book" message (Greptile, PR 8587).
+            Assert.Throws<DirectoryNotFoundException>(() =>
+                BookStorage.FindBookHtmlInFolder(
+                    Path.Combine(_tempFolder.Path, "no-such-book"),
+                    false
+                )
+            );
+            Assert.That(
+                BookStorage.FindBookHtmlInFolder(_bookFolder, false),
+                Does.EndWith("book.htm"),
+                "an existing book is found as before"
+            );
+        }
+
         /// <summary>
         /// Write a picture full of random (opaque) colors, so it doesn't compress to almost
         /// nothing.

@@ -3104,7 +3104,16 @@ namespace Bloom
                         // Screen out the benign unobserved-Task socket/IO abort noise
                         // (Sentry BLOOM-DESKTOP-EQ4/E4J/E9K). See IsBenignUnobservedTaskSocketNoise.
                         options.BeforeSend = sentryEvent =>
-                            IsBenignUnobservedTaskSocketNoise(sentryEvent) ? null : sentryEvent;
+                        {
+                            if (IsBenignUnobservedTaskSocketNoise(sentryEvent))
+                                return null;
+                            // Antivirus folder protection is behind many file access errors.
+                            // Only once known, so sending an event never waits for Windows.
+                            var antivirus = FileAccessDiagnostics.AntivirusSummaryIfKnown;
+                            if (antivirus != null)
+                                sentryEvent.SetExtra("antivirus", antivirus);
+                            return sentryEvent;
+                        };
                     });
                     SentrySdk.ConfigureScope(scope =>
                     {

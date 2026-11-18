@@ -24,7 +24,14 @@
 // Measurement follows the rule in geometry.ts: relative, never absolute. Nothing here returns or
 // asserts a pixel size as a number a test compares with a constant.
 
-import { expect, type Frame, type Locator, type Page } from "@playwright/test";
+import {
+    expect,
+    type Frame,
+    type Locator,
+    type Page,
+    type Request,
+} from "@playwright/test";
+import { holdBackAnswers, type IHeldBackAnswers } from "./api";
 import {
     addPage,
     editablePageFrame,
@@ -2319,4 +2326,328 @@ export async function getTableEditingMarkup(page: Page): Promise<string[]> {
             ),
         kTableEditingMarkupSelectors,
     );
+}
+
+// ── What the table's own UI says ────────────────────────────────────────
+
+/** One piece of wording the table's own UI is showing, and what it was read from. */
+export interface ITableUiText {
+    /** The wording itself. Empty for a control that has no name at all. */
+    text: string;
+    /** Where it was read: the element, and whether it is its text, tooltip or accessible name. */
+    where: string;
+}
+
+/**
+ * Everything a person can read on the table's own UI as it stands right now: the round menu
+ * buttons, the "+" buttons, any open Row, Column, Table or Cell menu, and the badge that Paint
+ * format puts above the table. For each element showing, this gives its text, its tooltip
+ * (`title`) and its accessible name (`aria-label`), which is what a screen reader says.
+ *
+ * A button, menu command, tab or slider that has none of the three comes back with empty text, so
+ * a caller can tell a control with no name from one that is absent.
+ *
+ * This reads only what is showing, so open the menu, or bring the pointer to the table, first.
+ */
+export async function getTableUiTexts(page: Page): Promise<ITableUiText[]> {
+    return editablePageFrame(page).evaluate(() => {
+        const found: { text: string; where: string }[] = [];
+        const describe = (element: Element) => {
+            const hints = [
+                "role",
+                "data-label-id",
+                "data-btable-menu-pill",
+                "data-btable-menu",
+                "data-table-overlay",
+                "data-scope",
+                "data-ct-id",
+                "type",
+            ]
+                .filter((name) => element.hasAttribute(name))
+                .map((name) => `${name}="${element.getAttribute(name)}"`);
+            return `<${[element.tagName.toLowerCase(), ...hints].join(" ")}>`;
+        };
+        // Everything the library draws around a table is inside an element it marks with
+        // data-table-overlay. Start from the outermost of those, so nothing is read twice.
+        const roots = Array.from(
+            document.querySelectorAll("[data-table-overlay]"),
+        ).filter(
+            (element) =>
+                !element.parentElement?.closest("[data-table-overlay]"),
+        );
+        for (const root of roots) {
+            const elements = [root, ...Array.from(root.querySelectorAll("*"))];
+            for (const element of elements) {
+                if (!element.checkVisibility({ visibilityProperty: true }))
+                    continue;
+                // A drawing has no wording of its own.
+                if (element.closest("svg")) continue;
+                const names: string[] = [];
+                for (const attribute of [
+                    "aria-label",
+                    "title",
+                    "placeholder",
+                ]) {
+                    const value = element.getAttribute(attribute)?.trim();
+                    if (value) {
+                        names.push(value);
+                        found.push({
+                            text: value,
+                            where: `${attribute} of ${describe(element)}`,
+                        });
+                    }
+                }
+                for (const node of Array.from(element.childNodes)) {
+                    const text =
+                        node.nodeType === Node.TEXT_NODE
+                            ? (node.textContent ?? "").trim()
+                            : "";
+                    if (text)
+                        found.push({
+                            text,
+                            where: `text of ${describe(element)}`,
+                        });
+                }
+                const isControl = element.matches(
+                    'button, input, select, [role="menuitem"], [role="menuitemradio"], [role="tab"], [role="radio"]',
+                );
+                if (
+                    isControl &&
+                    names.length === 0 &&
+                    !(element.textContent ?? "").trim()
+                )
+                    found.push({ text: "", where: describe(element) });
+            }
+        }
+        return found;
+    });
+}
+
+/**
+ * Bring the pointer onto a table, near its bottom edge, and wait until the table shows its "+"
+ * buttons and its round menu buttons there, which is what a person sees on moving onto a table
+ * they may change the shape of.
+ *
+ * Finds the buttons by what they are, not by their wording, so it works in any UI language.
+ */
+export async function showTableButtons(
+    page: Page,
+    tableIndex = 0,
+): Promise<void> {
+    await movePointerOntoTable(page, tableIndex);
+    await expectTableButtonsShowing(page);
+}
+
+/**
+ * Bring the pointer onto a table, just inside the bottom edge of its last row, and wait for nothing. Where the pointer
+ * goes is where showTableButtons puts it, so the table would show its buttons there.
+ */
+export async function movePointerOntoTable(
+    page: Page,
+    tableIndex = 0,
+): Promise<void> {
+    // Aim by the cells, not by the table element: a table that fills a page section is taller
+    // than its rows, and the table notices the pointer by its distance from the cells.
+    const cells = (await measureTable(page, tableIndex)).cells;
+    if (cells.length === 0)
+        throw new Error(
+            "The table has no cells, so there is nowhere on it to point.",
+        );
+    const left = Math.min(...cells.map((c) => c.rect.x));
+    const rightEdge = Math.max(...cells.map((c) => right(c.rect)));
+    const bottomEdge = Math.max(...cells.map((c) => bottom(c.rect)));
+    await page.mouse.move((left + rightEdge) / 2, bottomEdge - 8);
+}
+
+/** How many of the table's "+" buttons and round menu buttons are showing right now. */
+export async function getTableButtonsShowingCount(page: Page): Promise<number> {
+    return editablePageFrame(page)
+        .locator(
+            'button[data-table-overlay="add-button"]:visible, button[data-btable-menu-pill]:visible',
+        )
+        .count();
+}
+
+/**
+ * Wait until the table is showing a "+" button and a round menu button, without moving the
+ * pointer. Fails if they do not come.
+ */
+export async function expectTableButtonsShowing(page: Page): Promise<void> {
+    const frame = editablePageFrame(page);
+    await expect(
+        frame.locator('button[data-table-overlay="add-button"]:visible'),
+        'The table did not show a "+" button with the pointer resting on it.',
+    ).not.toHaveCount(0, { timeout: kTableWaitMs });
+    await expect(
+        frame.locator("button[data-btable-menu-pill]:visible"),
+        "The table did not show a round menu button with the pointer resting on it.",
+    ).not.toHaveCount(0, { timeout: kTableWaitMs });
+}
+
+/** The table menu that is open, whichever it is. */
+function openTableMenuPanel(page: Page): Locator {
+    return editablePageFrame(page)
+        .locator("[data-btable-menu]:visible")
+        .first();
+}
+
+/** The tabs above a menu's border controls, by the scope each one stands for. */
+export type BorderScope = "all" | "outer" | "inner" | "brush";
+
+/**
+ * The border tabs the open table menu offers, in the order it shows them. A menu for something
+ * with no inside edges (a single cell) offers fewer than four.
+ */
+export async function getBorderScopesOffered(
+    page: Page,
+): Promise<BorderScope[]> {
+    return openTableMenuPanel(page)
+        .locator('[role="tab"][data-scope]:visible')
+        .evaluateAll((tabs) =>
+            tabs.map((tab) => tab.getAttribute("data-scope") as BorderScope),
+        );
+}
+
+/**
+ * Click one of the border tabs (All, Outer, Inner, Border Brush) in the open table menu, and wait
+ * until the menu marks it as the chosen one. The explanation under the tabs changes with it.
+ */
+export async function chooseBorderScope(
+    page: Page,
+    scope: BorderScope,
+): Promise<void> {
+    const tab = openTableMenuPanel(page).locator(
+        `[role="tab"][data-scope="${scope}"]`,
+    );
+    await clickChrome(tab, `the "${scope}" border tab`);
+    await expect(
+        tab,
+        `Clicking the "${scope}" border tab did not make it the chosen one.`,
+    ).toHaveAttribute("aria-selected", "true", { timeout: kTableWaitMs });
+}
+
+/**
+ * Click the control in the open table menu whose accessible name is `label`, such as the Size
+ * control's "Fixed size" button, and leave the menu as the click leaves it.
+ *
+ * `label` is the wording in the UI language Bloom is running in; get it from getUiStrings
+ * (helpers/uiLanguage.ts) by the string's id, so the test names no English.
+ */
+export async function clickTableMenuControl(
+    page: Page,
+    label: string,
+): Promise<void> {
+    const menu = openTableMenuPanel(page);
+    const control = menu.locator(`[aria-label=${JSON.stringify(label)}]`);
+    if ((await control.count()) === 0) {
+        const named = await menu
+            .locator("[aria-label]")
+            .evaluateAll((items) =>
+                items.map((item) => item.getAttribute("aria-label")),
+            );
+        throw new Error(
+            `The open table menu has nothing named "${label}". It names: ${named.join(", ")}.`,
+        );
+    }
+    await clickChrome(control.first(), `"${label}" in the table menu`);
+}
+
+/** The badge above the table that says format painting is on, and ends it when clicked. */
+function paintFormatBadge(page: Page): Locator {
+    return editablePageFrame(page).locator(
+        '[data-table-overlay="paint-format-badge"]',
+    );
+}
+
+/**
+ * Choose Paint format from the open table menu and wait for the badge it puts above the table.
+ * `commandLabel` is the command's wording in the UI language Bloom is running in (see
+ * clickTableMenuControl). End it with endPaintFormat.
+ */
+export async function startPaintFormat(
+    page: Page,
+    commandLabel: string,
+): Promise<void> {
+    await clickTableMenuControl(page, commandLabel);
+    await expect(
+        paintFormatBadge(page),
+        `Choosing "${commandLabel}" did not put the format painting badge above the table.`,
+    ).toBeVisible({ timeout: kTableWaitMs });
+}
+
+/** End format painting by clicking its badge, and wait for the badge to go. */
+export async function endPaintFormat(page: Page): Promise<void> {
+    await clickChrome(paintFormatBadge(page), "the format painting badge");
+    await expect(
+        paintFormatBadge(page),
+        "Clicking the format painting badge did not end format painting.",
+    ).toHaveCount(0, { timeout: kTableWaitMs });
+}
+
+// ── The two answers a table waits for when a page opens ─────────────────
+
+/**
+ * The two things a page asks Bloom before a table shows its buttons: whether this user may change
+ * the shape of tables ("permission", the features/status answer for tables), and the wording of
+ * the table's UI in the UI language ("wording", the i18n/loadStrings answer for the table's
+ * strings).
+ */
+export type TableStartupAnswer = "permission" | "wording";
+
+const kFeatureStatusRequest = /\/bloom\/api\/features\/status\?/;
+const kLoadStringsRequest = /\/bloom\/api\/i18n\/loadStrings/;
+const isTablePermissionRequest = (request: Request) =>
+    /[?&]featureName=table(&|$)/.test(request.url());
+const isTableWordingRequest = (request: Request) =>
+    (request.postData() ?? "").includes("EditTab.Table.Pill.");
+
+/**
+ * Hold back one of the two answers a table waits for (see TableStartupAnswer) on the pages opened
+ * from now on, so a test can bring the pointer to a table before that answer has arrived. Open the
+ * page with the table after calling this, then await `onlyTheseAreMissing()`: it returns once the
+ * page has asked for the held-back answer and has had the other one, so the held-back answer is
+ * all the table still lacks. `release()` lets Bloom's answer through; call it in a `finally`.
+ */
+export async function holdBackTableStartupAnswer(
+    page: Page,
+    which: TableStartupAnswer,
+): Promise<IHeldBackAnswers> {
+    return which === "permission"
+        ? holdBackAnswers(
+              page,
+              kFeatureStatusRequest,
+              isTablePermissionRequest,
+              kLoadStringsRequest,
+              isTableWordingRequest,
+          )
+        : holdBackAnswers(
+              page,
+              kLoadStringsRequest,
+              isTableWordingRequest,
+              kFeatureStatusRequest,
+              isTablePermissionRequest,
+          );
+}
+
+/**
+ * Bring the pointer onto a table as movePointerOntoTable does, give the page the chance to draw
+ * what that calls for, and return how many of the table's "+" buttons and round menu buttons are
+ * showing. For the moment in which a table should be showing none.
+ */
+export async function countTableButtonsAfterMovingOntoTable(
+    page: Page,
+    tableIndex = 0,
+): Promise<number> {
+    await movePointerOntoTable(page, tableIndex);
+    // Two frames: the library decides what to show in answer to the pointer, and the page then
+    // draws it. Counting before that would find no buttons whatever the table meant to show.
+    await editablePageFrame(page).evaluate(
+        () =>
+            new Promise<void>((resolve) =>
+                requestAnimationFrame(() =>
+                    requestAnimationFrame(() => resolve()),
+                ),
+            ),
+    );
+    return getTableButtonsShowingCount(page);
 }

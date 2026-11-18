@@ -415,25 +415,50 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
         <note>Name of a Front/Back Matter Pack used for Bloom Reader</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device.Description" sil:dynamic="true">
+        <source xml:lang="en">This is automatically applied when publishing to Bloom Reader (Android). It moves front matter pages (other than the cover) to the back.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device.Description</note>
+        <note>Description of the "Device" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog. Bloom Reader is a product name.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed to save paper, this puts the credits on the inside of the front cover.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver.Description</note>
+        <note>Description of the "Paper Saver" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true">
         <source xml:lang="en">SIL-PNG</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
         <note>Name of a Front/Back Matter Pack that has SIL Papua New Guinea customizations</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL PNG.Description" sil:dynamic="true">
+        <source xml:lang="en">Has SIL Papua New Guinea customizations, including hiding some fields and changing instructions in others.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL PNG.Description</note>
+        <note>Description of the "SIL-PNG" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts title page on the inside of the front cover and credits on the inside of the back cover</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed to save paper, this puts the title page on the inside of the front cover, and the credits on the inside of the back cover.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver.Description</note>
+        <note>Description of the "Super Paper Saver" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true">
         <source xml:lang="en">Traditional</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
         <note>Name of the default Front/Back Matter Pack</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description" sil:dynamic="true">
+        <source xml:lang="en">Like a printed book, this puts the credits on the back side of the title page.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description</note>
+        <note>Description of the "Traditional" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true">
         <source xml:lang="en">Video</source>
@@ -596,6 +621,61 @@
         <source xml:lang="en">Front &amp; Back Matter</source>
         <note>ID: CollectionSettingsDialog.FrontBackMatterPage</note>
         <note>Name of one of the pages (tabs) of the Settings dialog, the one about the pages Bloom adds at the front and back of every book. "&amp;" is an abbreviation symbol for "and".</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.Alphabet" translate="no">
+        <source xml:lang="en">Alphabet</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.Alphabet</note>
+        <note>On the "More" page of the first language in the Collection Settings dialog: the label of the box where the user types the language's letters and letter combinations, which the Decodable and Leveled Reader tools use.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.DefaultFont" translate="no">
+        <source xml:lang="en">Default Font</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.DefaultFont</note>
+        <note>On the Languages page of the Collection Settings dialog: the label of the font a language's text is shown in, unless a book chooses another.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.Fonts" translate="no">
+        <source xml:lang="en">Fonts</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.Fonts</note>
+        <note>On the "More" page of one language in the Collection Settings dialog: the heading of the group of settings about the size and spacing of the language's text.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.More" translate="no">
+        <source xml:lang="en">More</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.More</note>
+        <note>On the Languages page of the Collection Settings dialog: a link, under each language, to a page of that language's less common settings (text size and spacing, script direction). It is also the title of that page.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.RightToLeft" translate="no">
+        <source xml:lang="en">This is a right to left script</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.RightToLeft</note>
+        <note>On the "More" page of one language in the Collection Settings dialog: a checkbox the user ticks when the language is written from right to left, as Arabic and Hebrew are. "Script" means a writing system.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.Script" translate="no">
+        <source xml:lang="en">Script</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.Script</note>
+        <note>On the "More" page of one language in the Collection Settings dialog: the heading of the settings about how the language is written (word breaking, right-to-left). "Script" means a writing system, such as Latin, Arabic or Thai.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.SentenceEndingPunctuation" translate="no">
+        <source xml:lang="en">Sentence ending punctuation</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.SentenceEndingPunctuation</note>
+        <note>On the "More" page of the first language in the Collection Settings dialog: the label of the box where the user adds characters that end a sentence in this language, for the Decodable and Leveled Reader tools.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ToolFontSize" translate="no">
+        <source xml:lang="en">Font size when displayed in tools</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ToolFontSize</note>
+        <note>On the "More" page of one language in the Collection Settings dialog: the label of the size of the language's text where Bloom's tools (such as the Decodable Reader Tool) show it.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage1" translate="no">
+        <source xml:lang="en">Written Language 1</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage1</note>
+        <note>On the Languages page of the Collection Settings dialog: the heading of the collection's first language, the main language its books are written in.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage2" translate="no">
+        <source xml:lang="en">Written Language 2</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage2</note>
+        <note>On the Languages page of the Collection Settings dialog: the heading of the collection's second language.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage3" translate="no">
+        <source xml:lang="en">Written Language 3</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage3</note>
+        <note>On the Languages page of the Collection Settings dialog: the heading of the collection's third language, which a collection need not have.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
         <source xml:lang="en">Change...</source>

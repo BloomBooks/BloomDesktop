@@ -58,7 +58,7 @@ on:
                 type: boolean
                 default: true
             run_e2e_tests:
-                description: "BloomE2E tests (~9 min)"
+                description: "BloomE2E tests (~80 min)"
                 type: boolean
                 default: true
             run_component_tests:
@@ -305,7 +305,7 @@ jobs:
                   # at User scope; a developer without it has those tests skipped, while a run on CI
                   # without it fails, so a missing secret is noticed.
                   BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD: ${{ secrets.BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD }}
-              run: pnpm test --reporter=list,junit,html
+              run: pnpm test --reporter=list,junit,html,./reporters/slowSteps.ts
 
             # What explains an e2e failure: Playwright's HTML report, plus the trace and failure
             # screenshot its config keeps (trace: retain-on-failure, screenshot: only-on-failure),
