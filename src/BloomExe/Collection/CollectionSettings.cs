@@ -309,18 +309,27 @@ namespace Bloom.Collection
             var collectionDirectory = Path.GetDirectoryName(desiredOrExistingSettingsFilePath);
             var parentDirectoryPath = Path.GetDirectoryName(collectionDirectory);
 
+            // Reading an existing collection's settings doesn't need its folder to be writable; the
+            // ProjectContext checks that when it opens the collection for editing.
             if (RobustFile.Exists(desiredOrExistingSettingsFilePath))
             {
-                ThrowIfFolderNotWritable(FolderPath);
                 Load();
             }
             else
             {
-                if (!Directory.Exists(parentDirectoryPath))
-                    Directory.CreateDirectory(parentDirectoryPath);
+                try
+                {
+                    if (!Directory.Exists(parentDirectoryPath))
+                        Directory.CreateDirectory(parentDirectoryPath);
 
-                if (!Directory.Exists(collectionDirectory))
-                    Directory.CreateDirectory(collectionDirectory);
+                    if (!Directory.Exists(collectionDirectory))
+                        Directory.CreateDirectory(collectionDirectory);
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    // Where the user may not write, Windows won't even make the folder.
+                    throw new CollectionFolderNotWritableException(collectionDirectory, e);
+                }
 
                 ThrowIfFolderNotWritable(FolderPath);
                 Save();
@@ -329,8 +338,9 @@ namespace Bloom.Collection
 
         /// <summary>
         /// Throws CollectionFolderNotWritableException if Bloom cannot write in collectionFolder (it
-        /// may be read-only, lack write permission, or be protected by antivirus). Callers that
-        /// can recover report it with DefenderFolderProtectionCheck.ReportProblem. (BL-16728)
+        /// may be read-only, lack write permission, or be protected by antivirus). Opening a
+        /// collection for editing (ProjectContext) and creating one call it; callers that can
+        /// recover report it with DefenderFolderProtectionCheck.ReportProblem. (BL-16728)
         /// </summary>
         public static void ThrowIfFolderNotWritable(string collectionFolder)
         {

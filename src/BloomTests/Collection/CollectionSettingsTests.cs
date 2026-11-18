@@ -94,12 +94,13 @@ namespace BloomTests.Collection
         }
 
         /// <summary>
-        /// Loading a collection whose folder Bloom may not write in must throw, so the caller can
-        /// recover (it offers the collection chooser), and must not show anything itself. (BL-16728)
+        /// Checking a collection folder Bloom may not write in must throw, so the caller can
+        /// recover (it offers the collection chooser), and must not show anything itself. Reading
+        /// the collection's settings, which doesn't need to write, still works. (BL-16728)
         /// </summary>
         [Test]
         [Platform(Include = "Win")]
-        public void Constructor_CollectionFolderNotWritable_Throws()
+        public void ThrowIfFolderNotWritable_CollectionFolderDenied_Throws()
         {
             var settingsPath = CreateCollectionSettings(
                 _folder.Path,
@@ -109,7 +110,62 @@ namespace BloomTests.Collection
                 RobustFile.Exists(settingsPath),
                 "Sanity check: the collection should exist"
             );
+            // The first load of a new collection saves once (a one-time settings migration), as
+            // has happened long since for any real collection.
+            new CollectionSettings(settingsPath);
             var folder = new DirectoryInfo(Path.GetDirectoryName(settingsPath));
+            using (DenyWrite(folder))
+            {
+                var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
+                    CollectionSettings.ThrowIfFolderNotWritable(folder.FullName)
+                );
+                Assert.That(thrown.FolderPath, Is.EqualTo(folder.FullName));
+                // What DefenderFolderProtectionCheck.IsPermissionProblem treats as a permission
+                // problem when nothing else is suspected; see DefenderFolderProtectionCheckTests.
+                Assert.That(
+                    thrown.InnerException,
+                    Is.InstanceOf<System.UnauthorizedAccessException>(),
+                    "Windows should refuse a denied folder with access denied"
+                );
+                Assert.DoesNotThrow(
+                    () => new CollectionSettings(settingsPath),
+                    "Reading an existing collection's settings should not need a writable folder"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Creating a collection where Bloom may not write must throw the same exception, which
+        /// the New Collection wizard reports, even though Windows refuses to make the collection's
+        /// folder before Bloom gets as far as checking it. (BL-16728)
+        /// </summary>
+        [Test]
+        [Platform(Include = "Win")]
+        public void Constructor_NewCollectionInDeniedFolder_Throws()
+        {
+            var parent = new DirectoryInfo(Path.Combine(_folder.Path, "DeniedParent"));
+            parent.Create();
+            var collectionFolder = Path.Combine(parent.FullName, "New");
+            var settingsPath = Path.Combine(collectionFolder, "New.bloomCollection");
+            using (DenyWrite(parent))
+            {
+                var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
+                    new CollectionSettings(settingsPath)
+                );
+                Assert.That(thrown.FolderPath, Is.EqualTo(collectionFolder));
+                Assert.That(
+                    Directory.Exists(collectionFolder),
+                    Is.False,
+                    "Windows should not have made the collection's folder"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Deny the current user write access to folder and everything in it, until disposed.
+        /// </summary>
+        private static System.IDisposable DenyWrite(DirectoryInfo folder)
+        {
             var security = folder.GetAccessControl();
             var denyWrite = new FileSystemAccessRule(
                 WindowsIdentity.GetCurrent().Name,
@@ -120,24 +176,33 @@ namespace BloomTests.Collection
             );
             security.AddAccessRule(denyWrite);
             folder.SetAccessControl(security);
-            try
+            return new RestoreAccess(folder, security, denyWrite);
+        }
+
+        /// <summary>
+        /// Removes the rule DenyWrite added.
+        /// </summary>
+        private sealed class RestoreAccess : System.IDisposable
+        {
+            private readonly DirectoryInfo _folder;
+            private readonly DirectorySecurity _security;
+            private readonly FileSystemAccessRule _rule;
+
+            public RestoreAccess(
+                DirectoryInfo folder,
+                DirectorySecurity security,
+                FileSystemAccessRule rule
+            )
             {
-                var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
-                    new CollectionSettings(settingsPath)
-                );
-                Assert.That(thrown.FolderPath, Is.EqualTo(folder.FullName));
-                // What DefenderFolderProtectionCheck.IsPermissionProblem treats as a permission
-                // problem when nothing else is suspected; see DefenderFolderProtectionCheckTests.
-                Assert.That(
-                    thrown.InnerException,
-                    Is.InstanceOf<System.UnauthorizedAccessException>(),
-                    "Windows should refuse a denied folder with access denied"
-                );
+                _folder = folder;
+                _security = security;
+                _rule = rule;
             }
-            finally
+
+            public void Dispose()
             {
-                security.RemoveAccessRule(denyWrite);
-                folder.SetAccessControl(security);
+                _security.RemoveAccessRule(_rule);
+                _folder.SetAccessControl(_security);
             }
         }
 

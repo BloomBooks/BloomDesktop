@@ -3050,6 +3050,11 @@
         <note>ID: Errors.DefenderFolderProtectionHeading</note>
         <note>First line of a message shown on Windows when Bloom cannot write in a collection's folder, for example because it is read-only, the user lacks permission, or antivirus blocks it. {0} is the folder that Bloom failed to write to.</note>
       </trans-unit>
+      <trans-unit id="Errors.FolderNotWritable" translate="no">
+        <source xml:lang="en">You may not have permission to change files there, or the folder may be read-only. Move the collection to a folder you can change, such as Documents, or ask whoever manages this computer or network for permission.</source>
+        <note>ID: Errors.FolderNotWritable</note>
+        <note>Second paragraph of a message whose first line is "This program cannot write to the folder {0}." (Errors.DefenderFolderProtectionHeading). Shown when Bloom cannot open or create a collection because it is not allowed to save in the collection's folder. "Documents" is the Windows Documents folder.</note>
+      </trans-unit>
       <trans-unit id="Errors.DeniedAccess">
         <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>
         <note>ID: Errors.DeniedAccess</note>

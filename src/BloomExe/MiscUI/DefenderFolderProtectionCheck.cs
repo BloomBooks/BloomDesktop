@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Windows.Forms;
+using Bloom.Book;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
@@ -145,8 +146,11 @@ namespace Bloom.MiscUI
                 + mainMsg;
             var caption = LocalizationManager.GetString("Common.ProblemTitle", "Bloom Problem");
             MessageBox.Show(msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-            if (!isPermissionProblem)
-                SIL.Program.Process.SafeStart(FileAccessDiagnostics.kTroubleshootingUrl);
+            SIL.Program.Process.SafeStart(
+                isPermissionProblem
+                    ? BookStorage.kFileAccessPermissionHelpUrl
+                    : FileAccessDiagnostics.kTroubleshootingUrl
+            );
         }
 
         private static void Cleanup(string testPath)
