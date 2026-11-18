@@ -136,6 +136,10 @@ namespace BloomTests
             }
         }
 
+        /// <summary>
+        /// The scan must not see calls inside comments, and must not take "//" or "/*" inside a
+        /// string or char literal (such as an XPath) for the start of a comment.
+        /// </summary>
         [TestCase("a(); // x(\"id\")", "a();           ")]
         [TestCase("a(); /* x(\"id\") */ b();", "a();               b();")]
         [TestCase("/* one\ntwo */b();", "      \n      b();")]
