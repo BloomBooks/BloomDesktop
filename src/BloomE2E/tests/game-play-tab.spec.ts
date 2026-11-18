@@ -57,6 +57,8 @@ test("dragging items in Play, then pressing Play again, does not move them in th
     // afterwards, so the author's layout was lost when the page was saved.
     await clickGameTab(page, "Play");
 
+    // Leaving the page saves it: Bloom writes the book before it answers the jump to the other
+    // page (EditingModel.JumpToPage), so the file read next is the one this visit saved.
     await goToPage(page, book.otherPageId);
 
     expect(
@@ -86,19 +88,19 @@ test("Play disables the toolbox, the top bar's editing controls and editing keys
     const itemId = await selectFirstDraggableItem(page);
 
     await clickGameTab(page, "Play");
-    // The settings button first: a dialog it wrongly opened would have had the time the other
-    // presses take to show up by the time it is checked for.
+    // pressBookSettingsButton returns once a click that reached the button would have put the
+    // dialog in the page; the same check in Start below shows that it does.
     await pressBookSettingsButton(page);
+    expect(
+        await isBookSettingsDialogShowing(page),
+        "In Play, the Book and Page Settings button should not open its dialog",
+    ).toBe(false);
     await pressToolHeader(page, "talkingBook");
     expect(
         await getExpandedTool(page),
         "In Play, clicking a tool's header should not expand it",
     ).toBe(toolBefore);
     await pressKeyOnDraggableItem(page, itemId, "Delete");
-    expect(
-        await isBookSettingsDialogShowing(page),
-        "In Play, the Book and Page Settings button should not open its dialog",
-    ).toBe(false);
 
     await clickGameTab(page, "Start");
     await expectDraggableItem(
@@ -110,14 +112,13 @@ test("Play disables the toolbox, the top bar's editing controls and editing keys
 
     // The same three in Start, where they work. This also shows the presses above reached
     // controls Bloom would have acted on.
+    // Checked at once, with no waiting, so that the same check in Play had the same time to see a
+    // dialog the click wrongly opened.
     await pressBookSettingsButton(page);
-    await expect
-        .poll(async () => isBookSettingsDialogShowing(page), {
-            timeout: 30000,
-            message:
-                "In Start, the Book and Page Settings button should open its dialog",
-        })
-        .toBe(true);
+    expect(
+        await isBookSettingsDialogShowing(page),
+        "In Start, the Book and Page Settings button should have opened its dialog by the time it returns",
+    ).toBe(true);
     await cancelBookSettings(page);
     await pressToolHeader(page, "talkingBook");
     await expectExpandedTool(

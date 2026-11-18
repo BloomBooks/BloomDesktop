@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { prepareActivity, undoPrepareActivity } from "bloom-player";
 
-// What the game tool's save path needs from bloom-player, pinned here because getting it wrong is
+// What play mode's save path (gamePlayMode.ts) needs from bloom-player, pinned here because getting it wrong is
 // invisible from Bloom's side until a user loses work.
 //
 // gamePlayMode.ts calls undoPrepareActivity on a CLONE of the page when Bloom gathers the page to

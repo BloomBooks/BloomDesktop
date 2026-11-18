@@ -27,7 +27,7 @@ const kModifierKeys = ["Control", "Shift", "Alt", "Meta"];
 const kHarmlessControlKeys = ["c", "C", "=", "+", "-", "0"];
 
 // True if this key would (or could) edit the page.
-export function isEditingKey(e: KeyboardEvent): boolean {
+function isEditingKey(e: KeyboardEvent): boolean {
     if (kModifierKeys.includes(e.key)) {
         return false; // pressed on its own, before the key it modifies
     }

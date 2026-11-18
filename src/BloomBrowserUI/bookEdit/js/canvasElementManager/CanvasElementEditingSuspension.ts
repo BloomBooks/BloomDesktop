@@ -33,8 +33,9 @@ export class CanvasElementEditingSuspension {
     // process that affects layout is happening (current example: origami layout tool is active),
     // or because we're testing a bloom game.
     // When in one of the latter states, it may be inferred that isComicEditingOn was true when
-    // suspendComicEditing was called, that it is now false, and that resumeComicEditing should
-    // turn it on again.
+    // suspendComicEditing was called, that it is now false, and that resuming should turn it on
+    // again: resumeComicEditing for every state but forGamePlayMode, which only
+    // endGamePlayModeSuspension ends.
     // Only one reason is remembered, so two must never overlap. A game's Play tab is the one that
     // could: the game page's tabs stay usable whatever tool is open. Image descriptions, the only
     // tool suspension a game page can have, disable Play while they are showing, and end it if they

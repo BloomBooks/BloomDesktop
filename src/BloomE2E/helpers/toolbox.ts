@@ -19,7 +19,7 @@
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiPost } from "./api";
 import { editBook } from "./bookMaking";
-import { realClick } from "./realClick";
+import { realClick, waitForClickToSettle } from "./realClick";
 
 /** The tool ids Bloom's toolbox uses, as the accordion headers carry them in data-toolid. */
 export type ToolId =
@@ -234,20 +234,12 @@ export async function getExpandedTool(page: Page): Promise<ToolId | undefined> {
 }
 
 /**
- * Wait until the toolbox has finished reacting to what just happened in it: two animation frames
- * in the toolbox's own document, by which time React has committed any re-render a click caused.
- * This is for a test that has to show a click changed NOTHING, where there is no new state to
- * wait for.
+ * Wait until the toolbox has finished reacting to what just happened in it (waitForClickToSettle
+ * in the toolbox's own document). This is for a test that has to show a click changed NOTHING,
+ * where there is no new state to wait for.
  */
 async function waitForToolboxToSettle(page: Page): Promise<void> {
-    await toolboxFrame(page).evaluate(
-        () =>
-            new Promise<void>((resolve) =>
-                requestAnimationFrame(() =>
-                    requestAnimationFrame(() => resolve()),
-                ),
-            ),
-    );
+    await waitForClickToSettle(toolboxFrame(page));
 }
 
 /**

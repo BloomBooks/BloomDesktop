@@ -13,6 +13,7 @@ import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for d
 import $ from "jquery";
 import * as React from "react";
 import { css, SerializedStyles } from "@emotion/react";
+import { kBloomDisabledOpacity } from "../utils/colorUtils";
 
 export interface IWorkspaceExports {
     showDialog(
@@ -285,7 +286,7 @@ export function disabledWhilePlayingProps(
 
 export function disabledWhilePlayingCss(disabled: boolean): SerializedStyles {
     return css`
-        opacity: ${disabled ? 0.4 : 1};
+        opacity: ${disabled ? kBloomDisabledOpacity : 1};
     `;
 }
 

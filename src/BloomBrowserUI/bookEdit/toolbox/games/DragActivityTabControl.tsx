@@ -9,11 +9,8 @@ import {
 import { getToolboxBundleExports } from "../../js/workspaceFrames";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { default as PencilIcon } from "@mui/icons-material/Edit";
-import {
-    kShowImageDescriptionsClass,
-    playTabIndex,
-    showGamePromptDialog,
-} from "../games/GameTool";
+import { playTabIndex, showGamePromptDialog } from "../games/GameTool";
+import { areImageDescriptionsShowing } from "../imageDescription/imageDescriptionUtils";
 import BloomButton from "../../../react_components/bloomButton";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 
@@ -104,9 +101,7 @@ export const DragActivityTabControl: React.FunctionComponent<{
                     // leavePlayBeforeShowingImageDescriptions). This renders in the page
                     // iframe, so document.body is the page's body.
                     disabledTabs={
-                        document.body.classList.contains(
-                            kShowImageDescriptionsClass,
-                        )
+                        areImageDescriptionsShowing(document.body)
                             ? [playTabIndex]
                             : []
                     }

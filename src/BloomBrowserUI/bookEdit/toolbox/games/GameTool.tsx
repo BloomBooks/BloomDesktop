@@ -31,6 +31,7 @@ import {
     shuffle,
 } from "bloom-player";
 import { preparePageForPlay, takePageOutOfPlayMode } from "./gamePlayMode";
+import { areImageDescriptionsShowing } from "../imageDescription/imageDescriptionUtils";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import {
     getWithPromise,
@@ -1992,7 +1993,10 @@ export function setActiveDragActivityTab(tab: number) {
     let effectiveTab = isDragActivityPage ? tab : startTabIndex;
     // Play is not available while image descriptions are showing (see
     // leavePlayBeforeShowingImageDescriptions); this catches a page load that would restore it.
-    if (effectiveTab === playTabIndex && areImageDescriptionsShowing()) {
+    if (
+        effectiveTab === playTabIndex &&
+        areImageDescriptionsShowing(page.ownerDocument.body)
+    ) {
         effectiveTab = startTabIndex;
     }
     window.top!["dragActivityPage"] = effectiveTab;
@@ -2076,15 +2080,6 @@ export function leavePlayBeforeShowingImageDescriptions(): void {
 export function redrawGameTabs(): void {
     getEditablePageBundleExports()?.renderDragActivityTabControl(
         getActiveDragActivityTab(),
-    );
-}
-
-// The class on the page iframe's body that shows the image descriptions.
-export const kShowImageDescriptionsClass = "bloom-showImageDescriptions";
-
-function areImageDescriptionsShowing(): boolean {
-    return !!getPageIframeBody()?.classList.contains(
-        kShowImageDescriptionsClass,
     );
 }
 

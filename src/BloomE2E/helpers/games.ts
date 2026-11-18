@@ -18,6 +18,7 @@ import {
     goToPage,
     makeBookFromTemplate,
 } from "./bookMaking";
+import { selectCanvasElementAt } from "./canvasElements";
 import { realClick } from "./realClick";
 import { expandToolByHeader } from "./toolbox";
 
@@ -114,12 +115,10 @@ export async function clickGameTab(page: Page, tab: GameTab): Promise<void> {
  * marks it as the selected canvas element. Returns its draggable id.
  */
 export async function selectFirstDraggableItem(page: Page): Promise<string> {
-    const item = editablePageFrame(page).locator("[data-draggable-id]").first();
-    await realClick(item);
-    await expect(
-        item,
-        "Clicking the first draggable item did not select it.",
-    ).toHaveAttribute("data-bloom-active", "true", { timeout: 15000 });
+    const item = await selectCanvasElementAt(
+        editablePageFrame(page).locator("[data-draggable-id]").first(),
+        "the first draggable item",
+    );
     return (await item.getAttribute("data-draggable-id"))!;
 }
 
@@ -159,19 +158,7 @@ export async function expectDraggableItem(
 export async function getDraggablePositions(
     page: Page,
 ): Promise<DraggablePositions> {
-    return editablePageFrame(page)
-        .locator("[data-draggable-id]")
-        .evaluateAll((items) =>
-            Object.fromEntries(
-                items.map((item) => [
-                    item.getAttribute("data-draggable-id")!,
-                    {
-                        left: (item as HTMLElement).style.left,
-                        top: (item as HTMLElement).style.top,
-                    },
-                ]),
-            ),
-        );
+    return draggablePositionsIn(page);
 }
 
 /** Where each draggable item on one page of the book is, as the book's file records it. */
@@ -180,26 +167,41 @@ export async function readSavedDraggablePositions(
     bookFolder: string,
     pageId: string,
 ): Promise<DraggablePositions> {
-    const source = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
-    return page.evaluate(
-        ({ html, id }) => {
-            const doc = new DOMParser().parseFromString(html, "text/html");
-            const bookPage = doc.getElementById(id);
+    return draggablePositionsIn(page, {
+        html: fs.readFileSync(bookHtmlPath(bookFolder), "utf8"),
+        pageId,
+    });
+}
+
+/**
+ * The positions of the draggable items on the page being edited or, given `saved`, on the page
+ * with that id in that book HTML.
+ */
+async function draggablePositionsIn(
+    page: Page,
+    saved?: { html: string; pageId: string },
+): Promise<DraggablePositions> {
+    return editablePageFrame(page).evaluate((saved) => {
+        let root: ParentNode = document;
+        if (saved) {
+            const bookPage = new DOMParser()
+                .parseFromString(saved.html, "text/html")
+                .getElementById(saved.pageId);
             if (!bookPage)
-                throw new Error(`The saved book has no page with id ${id}.`);
-            return Object.fromEntries(
-                Array.from(
-                    bookPage.querySelectorAll<HTMLElement>(
-                        "[data-draggable-id]",
-                    ),
-                ).map((item) => [
-                    item.getAttribute("data-draggable-id")!,
-                    { left: item.style.left, top: item.style.top },
-                ]),
-            );
-        },
-        { html: source, id: pageId },
-    );
+                throw new Error(
+                    `The saved book has no page with id ${saved.pageId}.`,
+                );
+            root = bookPage;
+        }
+        return Object.fromEntries(
+            Array.from(
+                root.querySelectorAll<HTMLElement>("[data-draggable-id]"),
+            ).map((item) => [
+                item.getAttribute("data-draggable-id")!,
+                { left: item.style.left, top: item.style.top },
+            ]),
+        );
+    }, saved);
 }
 
 /**
