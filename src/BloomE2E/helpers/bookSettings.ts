@@ -260,6 +260,23 @@ export async function followEdgeToEdgeFullBleedWarningLink(
     await expectBookSettingsPageShowing(page, "Print Publishing");
 }
 
+/**
+ * Press the Book and Page Settings button with a real mouse click, without waiting for the dialog.
+ * For a test of whether the button responds at all, such as while a game is being played and the
+ * top bar's editing controls are disabled. Found by its test id: disabled (inert) controls are out
+ * of the accessibility tree, where openBookSettings looks.
+ */
+export async function pressBookSettingsButton(page: Page): Promise<void> {
+    await realClick(page.getByTestId("book-settings-button"));
+}
+
+/** True while the Book and Page Settings dialog is open. */
+export async function isBookSettingsDialogShowing(
+    page: Page,
+): Promise<boolean> {
+    return (await bookSettingsDialog(page).count()) > 0;
+}
+
 /** Close Book and Page Settings with Cancel, so nothing changed in it is saved. */
 export async function cancelBookSettings(page: Page): Promise<void> {
     await realClick(bookSettingsDialog(page).getByTestId("dialog-cancel"));
