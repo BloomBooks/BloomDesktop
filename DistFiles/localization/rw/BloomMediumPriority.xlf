@@ -170,6 +170,26 @@
         <target xml:lang="rw" state="needs-translation">Do Not Indent This Paragraph</target>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
       </trans-unit>
+      <trans-unit id="EditTab.PageView.OnePage.Tooltip" translate="no">
+        <source xml:lang="en">Show one page at a time</source>
+        <target xml:lang="rw" state="needs-translation">Show one page at a time</target>
+        <note>ID: EditTab.PageView.OnePage.Tooltip</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.AllPages.Tooltip" translate="no">
+        <source xml:lang="en">Show all pages</source>
+        <target xml:lang="rw" state="needs-translation">Show all pages</target>
+        <note>ID: EditTab.PageView.AllPages.Tooltip</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.BlankPage" translate="no">
+        <source xml:lang="en">Blank page</source>
+        <target xml:lang="rw" state="needs-translation">Blank page</target>
+        <note>ID: EditTab.PageView.BlankPage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.BlankPage.Note" translate="no">
+        <source xml:lang="en">The printed book has an empty page here, so that the inside back cover and the back cover are the two sides of one sheet.</source>
+        <target xml:lang="rw" state="needs-translation">The printed book has an empty page here, so that the inside back cover and the back cover are the two sides of one sheet.</target>
+        <note>ID: EditTab.PageView.BlankPage.Note</note>
+      </trans-unit>
       <trans-unit id="EditTab.InlineImage.InsertImage" translate="no">
         <source xml:lang="en">Insert Image</source>
         <target xml:lang="rw" state="needs-translation">Insert Image</target>
