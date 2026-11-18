@@ -122,7 +122,9 @@ export async function getImagePlacement(
     return img.evaluate((element) => {
         const image = element as HTMLImageElement;
         const slot = image.closest(".bloom-canvas-element") as HTMLElement;
-        const src = image.getAttribute("src") ?? "";
+        // Without any query: Bloom adds one to some pictures, e.g. "?transparent=yes" to a PNG it
+        // shows as line art, and that is not part of the file's name.
+        const src = (image.getAttribute("src") ?? "").split("?")[0];
         return {
             fileName: decodeURIComponent(src.split("/").pop() ?? src),
             imageWidth: image.clientWidth,
