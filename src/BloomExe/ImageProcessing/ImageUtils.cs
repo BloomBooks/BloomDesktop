@@ -3125,49 +3125,73 @@ namespace Bloom.ImageProcessing
             {
                 imageBeingModified.Metadata = metadata;
                 imageBeingModified.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
-                // A file that was written recently (a picture just pasted, say) may still be held
-                // open by something else (antivirus, a thumbnailer, a sync program) for longer than
-                // the saving code's own retries wait, and writing the metadata needs the file to
-                // ourselves. IsFileLocked waits about five seconds for it to come free. (BL-17093)
-                RobustIO.IsFileLocked(Path.Combine(folderPath, filename));
-                try
-                {
-                    imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
-                }
-                catch (Exception e) when (e.Source == "TagLibSharp")
-                {
-                    // The metadata is corrupt in a way that prevents writing it back to the file.
-                    // Try to remove the old, corrupt metadata from the file and write the new metadata.
-                    ImageUtils.StripMetadataFromImageFile(imageBeingModified);
-                    imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
-                }
+                RetryOnceIfFileInUse(
+                    Path.Combine(folderPath, filename),
+                    () =>
+                    {
+                        try
+                        {
+                            imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
+                        }
+                        catch (Exception e) when (e.Source == "TagLibSharp")
+                        {
+                            // The metadata is corrupt in a way that prevents writing it back to the file.
+                            // Try to remove the old, corrupt metadata from the file and write the new metadata.
+                            ImageUtils.StripMetadataFromImageFile(imageBeingModified);
+                            imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
+                        }
+                    }
+                );
             }
         }
 
         public static void SaveImageMetadata(PalasoImage imageInfo, string imagePath)
         {
+            RetryOnceIfFileInUse(
+                imagePath,
+                () =>
+                {
+                    try
+                    {
+                        // It would seem more natural to use a metadata-saving method on imageInfo,
+                        // but the imageInfo has the source file's path locked into it, and the API
+                        // gives us no way to change it, so such a save would go to the wrong file.
+                        imageInfo.Metadata.Write(imagePath);
+                    }
+                    catch (Exception ex) when (ex.Source == "TagLibSharp")
+                    {
+                        // We must have bad metadata in the original file.
+                        // The metadata is corrupt in a way that prevents writing it back to the file.
+                        // Try to remove the old, corrupt metadata from the file and write the new metadata.
+                        imageInfo.SetCurrentFilePath(imagePath);
+                        ImageUtils.StripMetadataFromImageFile(imageInfo);
+                        imageInfo.Metadata.Write(imagePath);
+                    }
+                }
+            );
+        }
+
+        /// <summary>
+        /// Run writeMetadata, which writes metadata into the image file at imagePath. If that
+        /// fails because something else has the file open, wait for the file to come free and
+        /// try once more. A file that was written recently (a picture just pasted, say) may still
+        /// be held open by something else (antivirus, a thumbnailer, a sync program) for longer
+        /// than libpalaso's own retries wait, and writing the metadata needs the file to ourselves.
+        /// IsFileLocked waits about five seconds for it. (BL-17093)
+        /// </summary>
+        private static void RetryOnceIfFileInUse(string imagePath, Action writeMetadata)
+        {
             try
             {
-                // It would seem more natural to use a metadata-saving method on imageInfo,
-                // but the imageInfo has the source file's path locked into it, and the API
-                // gives us no way to change it, so such a save would go to the wrong file.
-                imageInfo.Metadata.Write(imagePath);
+                writeMetadata();
             }
-            catch (Exception ex)
+            catch (Exception e) when (RobustFileIO.IsFileInUseError(e))
             {
-                // We must have bad metadata in the original file.
-                if (ex.Source == "TagLibSharp")
-                {
-                    // The metadata is corrupt in a way that prevents writing it back to the file.
-                    // Try to remove the old, corrupt metadata from the file and write the new metadata.
-                    imageInfo.SetCurrentFilePath(imagePath);
-                    ImageUtils.StripMetadataFromImageFile(imageInfo);
-                    imageInfo.Metadata.Write(imagePath);
-                }
-                else
-                {
-                    throw;
-                }
+                Logger.WriteEvent(
+                    $"{Path.GetFileName(imagePath)} is in use; waiting for it so its metadata can be saved"
+                );
+                RobustIO.IsFileLocked(imagePath);
+                writeMetadata();
             }
         }
 

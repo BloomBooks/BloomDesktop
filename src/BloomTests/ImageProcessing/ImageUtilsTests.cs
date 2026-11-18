@@ -1196,37 +1196,74 @@ namespace BloomTests.ImageProcessing
                 );
                 var metadata = new Metadata { CopyrightNotice = copyright };
 
-                // Another reader holds the file for longer than libpalaso's own retries (about
-                // two seconds) but only a few seconds in all, as a virus scan of a fresh photo might.
-                var reader = new FileStream(
+                HoldOpenBrieflyWhile(
                     imagePath,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.Read
+                    () =>
+                        ImageUtils.SaveImageMetadataIfNeeded(
+                            metadata,
+                            folder.Path,
+                            kPastedImageName
+                        )
                 );
-                var releaseReader = System.Threading.Tasks.Task.Run(() =>
+
+                Assert.That(Metadata.FromFile(imagePath).CopyrightNotice, Is.EqualTo(copyright));
+            }
+        }
+
+        /// <summary>
+        /// BL-17093: pasting a picture writes its metadata into the new file in the book folder
+        /// a moment after Bloom creates it, which is just when antivirus may be scanning it. That
+        /// write must also wait for the file to be free.
+        /// </summary>
+        [Test]
+        public void SaveImageMetadata_FileBrieflyHeldOpenByAnotherReader_WaitsAndSaves()
+        {
+            using (var folder = new TemporaryFolder("SaveImageMetadataOnPasteWhileFileHeldOpen"))
+            {
+                var imagePath = CopyTestImageTo(folder, kPastedImageName);
+                const string copyright = "Copyright © 2026 BL-17093 Paste Test";
+                Assert.That(
+                    Metadata.FromFile(imagePath).CopyrightNotice,
+                    Is.Not.EqualTo(copyright),
+                    "The test image should not start out with the copyright this test saves"
+                );
+                using (var image = PalasoImage.FromFileRobustly(imagePath))
                 {
-                    System.Threading.Thread.Sleep(4000);
-                    reader.Dispose();
-                });
-                try
-                {
-                    Assert.DoesNotThrow(
-                        () =>
-                            ImageUtils.SaveImageMetadataIfNeeded(
-                                metadata,
-                                folder.Path,
-                                kPastedImageName
-                            ),
-                        "Saving should wait until the other reader lets go of the file"
+                    image.Metadata.CopyrightNotice = copyright;
+
+                    HoldOpenBrieflyWhile(
+                        imagePath,
+                        () => ImageUtils.SaveImageMetadata(image, imagePath)
                     );
-                }
-                finally
-                {
-                    releaseReader.Wait();
                 }
 
                 Assert.That(Metadata.FromFile(imagePath).CopyrightNotice, Is.EqualTo(copyright));
+            }
+        }
+
+        /// <summary>
+        /// Run save while another reader holds the file at path open for four seconds: longer
+        /// than libpalaso's own retries (about two seconds) but only a few seconds in all, as a
+        /// virus scan of a fresh photo might. The save must succeed.
+        /// </summary>
+        private static void HoldOpenBrieflyWhile(string path, Action save)
+        {
+            var reader = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var releaseReader = System.Threading.Tasks.Task.Run(() =>
+            {
+                System.Threading.Thread.Sleep(4000);
+                reader.Dispose();
+            });
+            try
+            {
+                Assert.DoesNotThrow(
+                    () => save(),
+                    "Saving should wait until the other reader lets go of the file"
+                );
+            }
+            finally
+            {
+                releaseReader.Wait();
             }
         }
 
