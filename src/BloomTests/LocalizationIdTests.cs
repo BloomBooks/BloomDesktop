@@ -117,7 +117,7 @@ namespace BloomTests
         {
             foreach (var path in Directory.GetFiles(folder, "*.cs", SearchOption.AllDirectories))
             {
-                var text = BlankOutBlockComments(File.ReadAllText(path));
+                var text = BlankOutComments(File.ReadAllText(path));
                 // Matches come in file order, so count lines forward from the previous match.
                 var lineNumber = 1;
                 var countedTo = 0;
@@ -128,10 +128,6 @@ namespace BloomTests
                         if (text[countedTo] == '\n')
                             lineNumber++;
                     }
-                    var lineStart = text.LastIndexOf('\n', match.Index) + 1;
-                    var linePrefix = text.Substring(lineStart, match.Index - lineStart);
-                    if (linePrefix.Contains("//"))
-                        continue; // commented out
                     yield return (
                         match.Groups["id"].Value,
                         $"{Path.GetFileName(path)}:{lineNumber}"
@@ -140,18 +136,39 @@ namespace BloomTests
             }
         }
 
-        /// <summary>
-        /// Replaces the contents of /* */ comments with spaces, keeping newlines so that line
-        /// numbers still match the file.
-        /// </summary>
-        private static string BlankOutBlockComments(string text)
+        [TestCase("a(); // x(\"id\")", "a();           ")]
+        [TestCase("a(); /* x(\"id\") */ b();", "a();               b();")]
+        [TestCase("/* one\ntwo */b();", "      \n      b();")]
+        [TestCase("s = \"//*[@a]\"; b(); /* c */", "s = \"//*[@a]\"; b();        ")]
+        [TestCase("s = @\"a\\\"\"/*\"; b();", "s = @\"a\\\"\"/*\"; b();")]
+        [TestCase("s = \"a\\\"//\"; b();", "s = \"a\\\"//\"; b();")]
+        [TestCase("c = '\"'; b(); // d", "c = '\"'; b();     ")]
+        public void BlankOutComments_BlanksOnlyRealComments(string code, string expected)
         {
-            return Regex.Replace(
+            Assert.That(BlankOutComments(code), Is.EqualTo(expected));
+        }
+
+        /// <summary>
+        /// Replaces the text of // and /* */ comments with spaces, keeping newlines so that line
+        /// numbers still match the file. String and character literals are skipped, so an XPath
+        /// such as "//*[@class]" is not taken for a comment. (This does not handle raw string
+        /// literals or strings nested inside interpolation holes, which BloomExe doesn't need.)
+        /// </summary>
+        private static string BlankOutComments(string text)
+        {
+            // Matching literals as well as comments lets the regex step over a literal whole, so
+            // nothing inside it can start a comment; only the comment matches get blanked.
+            return s_literalOrComment.Replace(
                 text,
-                @"/\*.*?\*/",
-                m => Regex.Replace(m.Value, @"[^\n]", " "),
-                RegexOptions.Singleline
+                m => m.Value[0] == '/' ? Regex.Replace(m.Value, @"[^\n]", " ") : m.Value
             );
         }
+
+        // In order: a verbatim string (quotes doubled), a regular string, a char literal (both
+        // with backslash escapes), a line comment, a block comment.
+        private static readonly Regex s_literalOrComment = new Regex(
+            @"@""(?:[^""]|"""")*""|""(?:[^""\\\n]|\\.)*""|'(?:[^'\\\n]|\\.)*'|//[^\n]*|/\*.*?\*/",
+            RegexOptions.Compiled | RegexOptions.Singleline
+        );
     }
 }
