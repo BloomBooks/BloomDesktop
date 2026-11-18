@@ -10,7 +10,6 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
-using Bloom.Utils;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -95,9 +94,8 @@ namespace BloomTests.Collection
         }
 
         /// <summary>
-        /// Loading a collection whose folder Bloom may not write in must fail in a way the caller
-        /// can recover from (it offers the collection chooser), not end the process, which is what
-        /// it used to do. It must also not show anything itself. (BL-16728)
+        /// Loading a collection whose folder Bloom may not write in must throw, so the caller can
+        /// recover (it offers the collection chooser), and must not show anything itself. (BL-16728)
         /// </summary>
         [Test]
         [Platform(Include = "Win")]
@@ -128,22 +126,12 @@ namespace BloomTests.Collection
                     new CollectionSettings(settingsPath)
                 );
                 Assert.That(thrown.FolderPath, Is.EqualTo(folder.FullName));
-                FileAccessDiagnostics.Collect(
-                    Path.Combine(folder.FullName, "probe.txt"),
-                    out var likelyCause
-                );
+                // What DefenderFolderProtectionCheck.IsPermissionProblem treats as a permission
+                // problem when nothing else is suspected; see DefenderFolderProtectionCheckTests.
                 Assert.That(
-                    likelyCause,
-                    Is.Null,
-                    "Sanity check: nothing on this machine should be suspected of protecting a temp folder"
-                );
-                Assert.That(
-                    DefenderFolderProtectionCheck.IsPermissionProblem(
-                        thrown.InnerException,
-                        likelyCause
-                    ),
-                    Is.True,
-                    $"a denied folder should be reported as a permission problem, not Defender; got {thrown.InnerException}"
+                    thrown.InnerException,
+                    Is.InstanceOf<System.UnauthorizedAccessException>(),
+                    "Windows should refuse a denied folder with access denied"
                 );
             }
             finally

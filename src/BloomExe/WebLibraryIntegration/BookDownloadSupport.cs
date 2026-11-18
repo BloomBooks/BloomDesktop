@@ -50,10 +50,7 @@ namespace Bloom.WebLibraryIntegration
                     // This runs at startup, before any collection opens, and Bloom can't go on
                     // without somewhere to save; like the startup check of Documents, explain and
                     // exit. (BL-16728)
-                    DefenderFolderProtectionCheck.ReportProblem(
-                        notWritable.InnerException,
-                        notWritable.FolderPath
-                    );
+                    DefenderFolderProtectionCheck.ReportProblem(notWritable);
                     Environment.Exit(-1);
                 }
                 ProjectContext.ClearUserInstalledDirectoriesCache();

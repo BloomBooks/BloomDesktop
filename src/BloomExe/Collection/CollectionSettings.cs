@@ -311,7 +311,7 @@ namespace Bloom.Collection
 
             if (RobustFile.Exists(desiredOrExistingSettingsFilePath))
             {
-                DoDefenderFolderProtectionCheck();
+                CheckFolderIsWritable();
                 Load();
             }
             else
@@ -322,20 +322,20 @@ namespace Bloom.Collection
                 if (!Directory.Exists(collectionDirectory))
                     Directory.CreateDirectory(collectionDirectory);
 
-                DoDefenderFolderProtectionCheck();
+                CheckFolderIsWritable();
                 Save();
             }
         }
 
-        private void DoDefenderFolderProtectionCheck()
+        private void CheckFolderIsWritable()
         {
-            // We check for a Windows Defender "Controlled Access" problem when we start Bloom,
-            // but the user may have moved their startup collection to a "safe" place and now be opening a different
-            // collection in a "controlled" place. Test again with this settings file path.
-            // 'FolderPath' is the directory part of 'SettingsFilePath'.
-            // We throw rather than exit: this runs inside building the ProjectContext, and the
-            // caller (Program.OpenProjectWindow) tears that down, reports the problem, and offers
-            // the collection chooser. Exiting here skipped all of that. (BL-16728)
+            // Check that Bloom can write in the collection's folder: it may be read-only, lack
+            // write permission, or be protected by antivirus such as Windows Defender's
+            // "Controlled Folder Access". 'FolderPath' is the directory part of 'SettingsFilePath'.
+            // Throws so the caller can recover: when opening a collection this runs inside building
+            // the ProjectContext, and the caller (Program.OpenProjectWindow) tears that down,
+            // reports the problem, and offers the collection chooser; code that creates a
+            // collection reports it too. (BL-16728)
             var problem = DefenderFolderProtectionCheck.GetWriteProblem(FolderPath);
             if (problem != null)
                 throw new CollectionFolderNotWritableException(FolderPath, problem);

@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Windows.Forms;
-using Bloom.Properties;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
@@ -39,22 +38,19 @@ namespace Bloom.MiscUI
     public static class DefenderFolderProtectionCheck
     {
         /// <summary>
-        /// Returns 'true' unless we find we can't run Bloom, in which case it reports the condition and the caller should exit Bloom.
+        /// Returns 'true' unless Bloom can't write in Documents, where a new collection goes, in
+        /// which case it reports the condition and the caller should exit Bloom.
         /// In Oct of 2017, a Windows update to Defender on some machines set Protections on certain
         /// basic folders, like MyDocuments! This resulted in throwing an exception any time Bloom tried
         /// to write out CollectionSettings files!
         /// </summary>
-        /// <param name="folderToCheck">An optional folder to test for this problem.</param>
-        /// <returns></returns>
-        public static bool CanWriteToDirectory(string folderToCheck = null)
+        public static bool CanWriteToDocuments()
         {
-            string testPath = !string.IsNullOrEmpty(folderToCheck)
-                ? Path.Combine(folderToCheck, TestFileName)
-                : GetMruProjectTestPath;
-            var problem = GetWriteProblem(Path.GetDirectoryName(testPath));
+            var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var problem = GetWriteProblem(documents);
             if (problem == null)
                 return true;
-            ReportProblem(problem, Path.GetDirectoryName(testPath));
+            ReportProblem(problem, documents);
             return false;
         }
 
@@ -85,27 +81,6 @@ namespace Bloom.MiscUI
             return null;
         }
 
-        // We probably care about MyDocuments if we're about to create a "Bloom" directory (new installation)
-        // or a new Collection under "Bloom". But we always care about the actual bloom collection folder, which could be anywhere
-        // on disk. Indeed, one work-around is to move your collection to some place that is not under Defender lock down.
-        // This property should return the folder that either does or will contain the collection we will be opening.
-        private static string GetMruProjectTestPath
-        {
-            get
-            {
-                var path = Settings.Default.MruProjects.Latest;
-                if (!string.IsNullOrEmpty(path))
-                {
-                    return Path.Combine(Path.GetDirectoryName(path), TestFileName);
-                }
-
-                return Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                    TestFileName
-                );
-            }
-        }
-
         private static string TestFileName
         {
             get { return Path.GetFileName(TempFile.CreateAndGetPathButDontMakeTheFile().Path); }
@@ -124,14 +99,18 @@ namespace Bloom.MiscUI
         }
 
         /// <summary>
-        /// Tell the user Bloom cannot write in the folder, naming the likely cause, and log the
-        /// evidence for whoever helps them.
+        /// Tell the user Bloom cannot write in the collection folder the exception names, naming the
+        /// likely cause, and log the evidence for whoever helps them.
         /// </summary>
-        public static void ReportProblem(Exception writeProblem, string failingFolder)
+        public static void ReportProblem(CollectionFolderNotWritableException notWritable)
         {
-            // The probe file is gone by now; Collect still reports on its folder.
+            ReportProblem(notWritable.InnerException, notWritable.FolderPath);
+        }
+
+        private static void ReportProblem(Exception writeProblem, string failingFolder)
+        {
             var details = FileAccessDiagnostics.Collect(
-                Path.Combine(failingFolder, TestFileName),
+                Path.Combine(failingFolder, "probe"),
                 out var likelyCause
             );
             Logger.WriteEvent(

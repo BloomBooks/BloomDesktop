@@ -750,7 +750,7 @@ namespace Bloom
                         // Documents, where a new collection would go, when there is none.
                         if (
                             string.IsNullOrEmpty(Settings.Default.MruProjects.Latest)
-                            && !DefenderFolderProtectionCheck.CanWriteToDirectory()
+                            && !DefenderFolderProtectionCheck.CanWriteToDocuments()
                         )
                         {
                             Environment.Exit(-1);
@@ -2464,10 +2464,7 @@ namespace Bloom
             // report would only hide that. (BL-16728)
             if (originalError is CollectionFolderNotWritableException notWritable)
             {
-                DefenderFolderProtectionCheck.ReportProblem(
-                    notWritable.InnerException,
-                    notWritable.FolderPath
-                );
+                DefenderFolderProtectionCheck.ReportProblem(notWritable);
                 return;
             }
 

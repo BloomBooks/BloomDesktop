@@ -67,10 +67,7 @@ namespace Bloom.CollectionCreating
                 {
                     // Explain, and leave the user where they were (the collection chooser or the
                     // current collection) to choose somewhere else. (BL-16728)
-                    DefenderFolderProtectionCheck.ReportProblem(
-                        notWritable.InnerException,
-                        notWritable.FolderPath
-                    );
+                    DefenderFolderProtectionCheck.ReportProblem(notWritable);
                     return null;
                 }
             }
