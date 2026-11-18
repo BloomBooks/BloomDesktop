@@ -408,6 +408,20 @@ export function expectLanguageLabelAtBottom(
     ).toBeLessThanOrEqual(1);
 }
 
+/**
+ * Wait until the gray language label of `box` is at the bottom of what the box shows, as
+ * expectLanguageLabelAtBottom checks. Bloom moves the label when the box reports its scrolling,
+ * a moment after the box has scrolled.
+ */
+export async function expectLanguageLabelAtBottomOf(
+    box: Locator,
+    what: string,
+): Promise<void> {
+    await expect(async () => {
+        expectLanguageLabelAtBottom(await getTextBoxView(box), what);
+    }).toPass({ timeout: 5000 });
+}
+
 function expectSameY(actual: number, expected: number, what: string): void {
     expect(
         Math.abs(actual - expected),

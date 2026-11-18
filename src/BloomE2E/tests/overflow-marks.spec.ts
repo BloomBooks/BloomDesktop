@@ -27,7 +27,7 @@ import {
 import { goToCreditsPage } from "../helpers/creditsPage";
 import {
     emptyTextBox,
-    expectLanguageLabelAtBottom,
+    expectLanguageLabelAtBottomOf,
     expectNoOverflowMarks,
     expectPageMarkedAsOverflowing,
     expectTextBoxMarkedAsOverflowing,
@@ -44,6 +44,7 @@ import {
 import {
     chooseFontSize,
     closeFormatDialog,
+    getFontSizeChoices,
     getFontSizeShown,
     openFormatDialog,
     scrollFormatGearIntoView,
@@ -205,7 +206,7 @@ test.describe("marks on text that does not fit", () => {
         await expectNoOverflowMarks(page, "test cleanup: the box is empty");
     });
 
-    test("a smaller font that makes the text fit takes the marks away, and a bigger one brings them back", async ({
+    test("the smallest font, at which the text fits, takes the marks away, and the first size brings them back", async ({
         page,
         step,
     }) => {
@@ -214,6 +215,8 @@ test.describe("marks on text that does not fit", () => {
         await scrollTextBox(page, box, "top");
         await expectTextBoxMarkedAsOverflowing(page, box, "the box");
 
+        // The Format dialog formats the box that has the focus, which scrolling took away.
+        await clickInGroup(page, TEXT_GROUP, "en");
         await scrollFormatGearIntoView(page);
         await openFormatDialog(page);
         await showFormatDialogTab(page, "characters");
@@ -223,12 +226,16 @@ test.describe("marks on text that does not fit", () => {
             "test setup: the Characters tab should show the box's font size",
         ).toBeGreaterThan(4);
         try {
-            await step("Halve the font size", async () => {
-                await chooseFontSize(page, Math.floor(sizeBefore / 2));
+            await step("Choose the smallest font size", async () => {
+                // The smallest size the list offers.
+                await chooseFontSize(
+                    page,
+                    Math.min(...(await getFontSizeChoices(page))),
+                );
                 await expect
                     .poll(async () => (await getTextBoxView(box)).hidden, {
                         message:
-                            "test setup: at half the size all the text should fit",
+                            "test setup: at the smallest size all the text should fit",
                     })
                     .toBeLessThan(1);
                 await expectNoOverflowMarks(
@@ -244,6 +251,10 @@ test.describe("marks on text that does not fit", () => {
                             "test setup: at the first size the text should not fit again",
                     })
                     .toBeGreaterThan(1);
+                // The box shows its language label only while it has the focus, which the
+                // dialog has now.
+                await closeFormatDialog(page);
+                await clickInGroup(page, TEXT_GROUP, "en");
                 await expectTextBoxMarkedAsOverflowing(
                     page,
                     box,
@@ -421,8 +432,8 @@ test.describe("marks on text that does not fit", () => {
                 async () => {
                     for (const to of ["top", "end"] as const) {
                         await scrollTextBox(page, box, to);
-                        expectLanguageLabelAtBottom(
-                            await getTextBoxView(box),
+                        await expectLanguageLabelAtBottomOf(
+                            box,
                             `the box scrolled to its ${to}`,
                         );
                         await expectNoOverflowMarks(
