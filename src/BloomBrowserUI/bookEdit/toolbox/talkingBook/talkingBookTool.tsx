@@ -1,9 +1,13 @@
-import { unwrapDescribedImages } from "../imageDescription/imageDescriptionUtils";
+import {
+    kShowImageDescriptionsClass,
+    unwrapDescribedImages,
+} from "../imageDescription/imageDescriptionUtils";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
 import { IToolboxSettings } from "../toolbox";
 import { getPageIframeBody } from "../../../utils/shared";
+import { getToolboxBundleExports } from "../../js/workspaceFrames";
 import { getAudioRecorder, getOrCreateAudioRecorder } from "./audioRecording";
 import * as AudioRecorder from "./audioRecording";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
@@ -166,9 +170,11 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         }
         // bloom-showImageDescriptions is on the body, outside the page div that removeToolMarkup()
         // gets. Comic editing must not resume until super has removed the wrappers.
-        getPageIframeBody()?.classList.remove("bloom-showImageDescriptions");
+        getPageIframeBody()?.classList.remove(kShowImageDescriptionsClass);
         super.detachFromPage();
         getCanvasElementManager()?.resumeComicEditing();
+        // With the image descriptions gone, a game page's Play tab is available again.
+        getToolboxBundleExports()?.redrawGameTabs();
     }
 
     // Called whenever the user edits text.

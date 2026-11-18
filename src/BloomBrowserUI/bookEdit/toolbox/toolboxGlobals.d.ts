@@ -29,6 +29,8 @@ declare global {
         canUndo: unknown;
         undo: unknown;
         setActiveDragActivityTab: unknown;
+        leavePlayBeforeShowingImageDescriptions: unknown;
+        redrawGameTabs: unknown;
         getTheOneAudioRecorderForExportOnly: unknown;
         copyLeveledReaderStatsToClipboard: unknown;
         simulateBlurOnPageFrameMouseDown: unknown;

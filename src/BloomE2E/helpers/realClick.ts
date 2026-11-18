@@ -14,7 +14,7 @@
 // Tests never hand-roll Input.dispatchMouseEvent. If you need a gesture this file does not have,
 // add it here.
 
-import type { Locator, Page } from "@playwright/test";
+import type { Frame, Locator, Page } from "@playwright/test";
 
 /**
  * Click the element with a real mouse press and release at its centre, after scrolling it into
@@ -53,4 +53,23 @@ export async function realClickAt(
     await page.mouse.move(x, y);
     await page.mouse.down();
     await page.mouse.up();
+}
+
+/**
+ * Wait two animation frames in the document a click landed in, by which time React has committed
+ * any re-render the click caused. For a test that has to show a click changed NOTHING, where there
+ * is no new state to wait for, and for one that checks at once what a click opened in that same
+ * document.
+ */
+export async function waitForClickToSettle(
+    target: Page | Frame,
+): Promise<void> {
+    await target.evaluate(
+        () =>
+            new Promise<void>((resolve) =>
+                requestAnimationFrame(() =>
+                    requestAnimationFrame(() => resolve()),
+                ),
+            ),
+    );
 }

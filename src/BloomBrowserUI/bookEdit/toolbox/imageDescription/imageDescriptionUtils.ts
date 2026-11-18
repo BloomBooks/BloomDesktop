@@ -1,15 +1,30 @@
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
+import { getToolboxBundleExports } from "../../js/workspaceFrames";
 
 // This file is intended to expose some image description functions that other parts of the
 // code (in both iframes) need to use, while pulling in a minimum of dependencies.
 
+// The class on the page iframe's body that shows the image descriptions.
+export const kShowImageDescriptionsClass = "bloom-showImageDescriptions";
+
+// True while the page in this body is showing its image descriptions (and so a game page on it
+// cannot be in Play).
+export function areImageDescriptionsShowing(
+    bodyOfPageIframe: HTMLElement,
+): boolean {
+    return bodyOfPageIframe.classList.contains(kShowImageDescriptionsClass);
+}
+
 export function showImageDescriptions(bodyOfPageIframe: HTMLElement) {
+    // A game page can't be in Play with image descriptions showing; this must come first, so that
+    // leaving Play doesn't turn comic editing back on after we turn it off below.
+    getToolboxBundleExports()?.leavePlayBeforeShowingImageDescriptions();
     const canvasElementManager = getCanvasElementManager();
     canvasElementManager?.suspendComicEditing("forTool");
     // turn on special layout to make image descriptions visible (might already be on, so check first)
-    if (!bodyOfPageIframe.classList.contains("bloom-showImageDescriptions")) {
-        bodyOfPageIframe.classList.add("bloom-showImageDescriptions");
+    if (!areImageDescriptionsShowing(bodyOfPageIframe)) {
+        bodyOfPageIframe.classList.add(kShowImageDescriptionsClass);
         // for each bloom-canvas,
         // wrap the contents (except the description) with another division with class bloom-describedImage
         // See comment in editMode.less under bloom-describedImage for why we do this.
@@ -26,14 +41,16 @@ export function showImageDescriptions(bodyOfPageIframe: HTMLElement) {
             bloomCanvas.appendChild(describedImage);
         }
     }
+    getToolboxBundleExports()?.redrawGameTabs(); // Play is no longer available
 }
 export function hideImageDescriptions(bodyOfPageIframe: HTMLElement) {
     const canvasElementManager = getCanvasElementManager();
     // removing the class and wrapper should be done first; resume may not work
     // right while the extra wrapper is present.
-    bodyOfPageIframe.classList.remove("bloom-showImageDescriptions");
+    bodyOfPageIframe.classList.remove(kShowImageDescriptionsClass);
     unwrapDescribedImages(bodyOfPageIframe);
     canvasElementManager?.resumeComicEditing();
+    getToolboxBundleExports()?.redrawGameTabs(); // Play is available again
 }
 
 // Undo the bloom-describedImage wrapper that showImageDescriptions() adds around the non-description
