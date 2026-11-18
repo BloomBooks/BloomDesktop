@@ -13,22 +13,22 @@
 #   windows   every Window element the process owns, including dialogs owned by the Shell (a modal
 #             WinForms dialog is a descendant of its owner in UIA, not a child of the desktop)
 #   tree      a window's control tree (WebView2 subtrees are pruned; drive those over CDP)
-#   select    SelectionItemPattern.Select on a tab item or list item
+#   select    SelectionItemPattern.Select on a tab item, list item or radio button
 #   invoke    InvokePattern.Invoke on a button or link
 #   setvalue  ValuePattern.SetValue on an edit box (e.g. a file picker's "File name:")
 #   close     WindowPattern.Close on a window
 #
 # -Window and -Control match either the AutomationId (which for WinForms is the control's designer
-# Name, e.g. CollectionSettingsDialog, _okButton, _tab) or the visible Name (e.g. "Book Making",
-# "OK", "File name:"). Finding the window polls until -TimeoutMs (default 10 s), so a call can
+# Name, e.g. JpegWarningDialog, _okButton, _photographRadioButton) or the visible Name (e.g. "OK",
+# "File name:", a tab item's caption). Finding the window polls until -TimeoutMs (default 10 s), so a call can
 # follow the click that opens the dialog without a separate wait. When several controls share a
 # name, the outermost one that supports the command's pattern wins.
 #
 # Examples:
 #   ... windows  -ProcessId 42824
-#   ... tree     -ProcessId 42824 -Window CollectionSettingsDialog -Depth 2
-#   ... select   -ProcessId 42824 -Window CollectionSettingsDialog -Control "Book Making"
-#   ... invoke   -ProcessId 42824 -Window CollectionSettingsDialog -Control _cancelButton
+#   ... tree     -ProcessId 42824 -Window JpegWarningDialog -Depth 2
+#   ... select   -ProcessId 42824 -Window JpegWarningDialog -Control _photographRadioButton
+#   ... invoke   -ProcessId 42824 -Window JpegWarningDialog -Control _okButton
 #   ... setvalue -ProcessId 42824 -Window Open -Control "File name:" -Value "C:\full\path\to\image.png"
 #   ... invoke   -ProcessId 42824 -Window Open -Control Open
 #   ... tree     -ProcessId 42824 -Window Error -Depth 3      # read a MessageBox's text
