@@ -490,42 +490,6 @@ describe("StyleEditor", () => {
         }
     });
 
-    // A right-to-left language gets its direction from the collection's [lang] rule, and a box made
-    // in the page since it loaded (a language newly ticked for a table cell) has no dir attribute.
-    // Align Left must still put its text on the left, which for right-to-left text is "end".
-    it("changePosition aligns a box that runs right to left by stylesheet alone the way its text runs", () => {
-        (globalThis as any).GetSettings = () => ({
-            languageForNewTextBoxes: "xyz",
-        });
-        try {
-            $("body").append(
-                "<style>[lang='ar'] { direction: rtl; }</style>" +
-                    "<div id='testTarget' class='foo-style' lang='ar'></div>" +
-                    "<div id='position-left' class='selectedIcon'></div>",
-            );
-            const box = document.getElementById("testTarget")!;
-            // Sanity checks: the box runs right to left, and only the stylesheet says so.
-            expect(box.hasAttribute("dir")).toBe(false);
-            expect(getComputedStyle(box).direction).toBe("rtl");
-            const editor = new StyleEditor(
-                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
-            );
-            editor.boxBeingEdited = box;
-            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
-                () => {},
-            );
-
-            editor.changePosition();
-
-            // Alignment goes in the style's rule for every language.
-            expect(GetRuleMatchingSelector(".foo-style")?.cssText).toContain(
-                "text-align: end",
-            );
-        } finally {
-            delete (globalThis as any).GetSettings;
-        }
-    });
-
     // The Format dialog's Color control follows the same rule as bold, size and spacing: a change
     // made on a box in the collection's first language is for the style as a whole, so it goes
     // into the language-independent rule too (BL-16803). Font family is the deliberate exception.

@@ -1443,15 +1443,8 @@ export default class StyleEditor {
         ];
     }
 
-    // Whether the text of the box being edited runs right to left, as the reader sees it. The
-    // collection's stylesheet gives a right-to-left language its direction by [lang], so a box
-    // made in the page since it loaded can run right to left without a dir attribute.
-    private isBoxBeingEditedRightToLeft(): boolean {
-        return getComputedStyle(this.boxBeingEdited).direction === "rtl";
-    }
-
     public selectButtons(current) {
-        const isRightToLeft = this.isBoxBeingEditedRightToLeft();
+        const isRightToLeft = this.boxBeingEdited.getAttribute("dir") === "rtl";
 
         this.selectButton("bold", current.bold);
         this.selectButton("italic", current.italic);
@@ -2159,7 +2152,8 @@ export default class StyleEditor {
         } else if (whichButtonClicked === "justify") {
             position = "justify";
         } else {
-            const isRightToLeft = this.isBoxBeingEditedRightToLeft();
+            const textBoxDirection = this.boxBeingEdited.getAttribute("dir");
+            const isRightToLeft = textBoxDirection === "rtl";
 
             if (
                 (whichButtonClicked === "left" && !isRightToLeft) ||

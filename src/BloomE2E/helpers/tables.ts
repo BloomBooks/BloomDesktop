@@ -2124,6 +2124,18 @@ export async function getCellTextDirection(
     return box.evaluate((element) => getComputedStyle(element).direction);
 }
 
+/** The dir attribute of one language's box in a cell, or null when it has none. */
+export async function getCellTextBoxDirAttribute(
+    page: Page,
+    row: number,
+    column: number,
+    languageTag: string,
+    tableIndex = 0,
+): Promise<string | null> {
+    const box = await cellTextBox(page, row, column, languageTag, tableIndex);
+    return box.getAttribute("dir");
+}
+
 /**
  * The languages whose text a reader sees in one cell of the first table of a page in `frame`, in
  * the order they are drawn. Written for the BloomPUB preview, whose frame is bloom-player showing

@@ -269,6 +269,11 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
     root.querySelectorAll<HTMLElement>(
         ".bloom-editable:not([contenteditable])",
     ).forEach((editable) => {
+        // Page load marks a box in a right-to-left language dir="rtl", and the Format dialog's
+        // alignment and the paragraph marks of editMode.less go by that. The collection's
+        // stylesheet already gives the language its direction by [lang], so read it from there.
+        if (getComputedStyle(editable).direction === "rtl")
+            editable.setAttribute("dir", "rtl");
         // Must come before attachToCkEditor: CKEditor's inline mode decides
         // whether the editor is read-only from the element's contenteditable
         // state at the moment it attaches.
