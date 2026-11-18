@@ -148,6 +148,7 @@ namespace Bloom.web.controllers
                 licenseRights = Model.LicenseRights,
                 isTemplate = Model.IsTemplate,
                 isTitleOKToPublish = Model.IsTitleOKToPublish,
+                agreementsAccepted = Model.Book.UserPrefs.UploadAgreementsAccepted,
             };
             request.ReplyWithJson(bookInfo);
         }
@@ -495,15 +496,14 @@ namespace Bloom.web.controllers
             await HandleUpload(request);
         }
 
+        /// <summary>
+        /// Save whether the user has ticked every upload agreement for this book. The saved value
+        /// comes back to the screen in libraryPublish/getBookInfo.
+        /// </summary>
         private void HandleAgreementsAccepted(ApiRequest request)
         {
-            if (request.HttpMethod == HttpMethods.Get)
-                request.ReplyWithBoolean(Model.Book.UserPrefs.UploadAgreementsAccepted);
-            else
-            {
-                Model.Book.UserPrefs.UploadAgreementsAccepted = request.RequiredPostBooleanAsJson();
-                request.PostSucceeded();
-            }
+            Model.Book.UserPrefs.UploadAgreementsAccepted = request.RequiredPostBooleanAsJson();
+            request.PostSucceeded();
         }
 
         private void HandleGoToEditBookTitle(ApiRequest request)

@@ -162,6 +162,8 @@ export const DialogCancelButton: React.FunctionComponent<{
     // even if one is passed.
     onClick_DEPRECATED?: () => void;
     default?: boolean;
+    // Defaults to true. Set false when cancelling is no longer possible, e.g. while saving.
+    enabled?: boolean;
 }> = (props) => {
     const context = React.useContext(BloomDialogContext);
     return (
@@ -171,7 +173,7 @@ export const DialogCancelButton: React.FunctionComponent<{
             // A stable hook for the e2e suite: every dialog's Cancel button, whatever
             // language it is showing.
             data-testid="dialog-cancel"
-            enabled={true}
+            enabled={props.enabled === undefined ? true : props.enabled}
             // by default, Cancel is NOT the default button
             variant={props.default === true ? "contained" : "outlined"}
             onClick={() => {

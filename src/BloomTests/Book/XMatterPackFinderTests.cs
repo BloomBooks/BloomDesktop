@@ -45,7 +45,7 @@ namespace BloomTests.Book
         [Test]
         public void Key_ThaiCulture_IsTheNameBeforeTheSuffix()
         {
-            var info = new XMatterInfo(Path.Combine("somewhere", "Traditional-XMatter"));
+            var info = new XMatterInfo(Path.Combine("somewhere", "Traditional-XMatter"), true);
 
             Assert.That(info.Key, Is.EqualTo("Traditional"));
         }
@@ -53,7 +53,7 @@ namespace BloomTests.Book
         [Test]
         public void EnglishLabel_ThaiCulture_IsTheSplitName()
         {
-            var info = new XMatterInfo(Path.Combine("somewhere", "Factory-XMatter"));
+            var info = new XMatterInfo(Path.Combine("somewhere", "Factory-XMatter"), true);
 
             Assert.That(info.EnglishLabel, Is.EqualTo("Paper Saver"));
         }
