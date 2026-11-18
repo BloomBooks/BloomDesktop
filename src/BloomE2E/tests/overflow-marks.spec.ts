@@ -180,6 +180,10 @@ test.describe("marks on text that does not fit", () => {
             "key by key",
         );
         await expectTextBoxMarkedAsOverflowing(page, box, "the box");
+        expect(
+            await box.evaluate((e) => e.scrollTop),
+            "test setup: typing past the bottom should leave the box scrolled to the caret",
+        ).toBeGreaterThan(0);
 
         await step("Undo until the text fits", async () => {
             await pressUntilTextBoxFitsOrNot(page, box, "Control+z", "fits");
@@ -187,6 +191,12 @@ test.describe("marks on text that does not fit", () => {
                 page,
                 "After Undo the text fits, so every mark should go.",
             );
+            await expect
+                .poll(
+                    () => box.evaluate((e) => e.scrollTop),
+                    "Once the text fits, the box should scroll back to show its first line.",
+                )
+                .toBe(0);
         });
         await step("Redo until the text does not fit", async () => {
             await pressUntilTextBoxFitsOrNot(

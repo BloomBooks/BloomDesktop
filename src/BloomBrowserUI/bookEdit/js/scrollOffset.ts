@@ -9,15 +9,24 @@
 // one that is saved, or one that is measured at once) needs removeScrollOffset.
 export const kScrollTopVariable = "--bloom-scroll-top";
 
-// Starts keeping kScrollTopVariable right on every text box in `doc`: as a box scrolls, and when a
-// copy of a scrolled box is added to the page.
+// Starts keeping kScrollTopVariable right on every text box in `doc`: as a box scrolls, when a
+// copy of a scrolled box is added to the page, and when the text of a scrolled box changes.
 export function trackScrollOffsets(doc: Document): void {
     // A scroll event does not bubble, so this listens in the capture phase.
     doc.addEventListener("scroll", recordScrollOffset, true);
-    new MutationObserver(correctAddedScrollOffsets).observe(doc.body, {
+    new MutationObserver(onPageChanged).observe(doc.body, {
         childList: true,
+        characterData: true,
         subtree: true,
     });
+}
+
+// Keeps the offsets right after a change to the page's elements or text.
+function onPageChanged(mutations: MutationRecord[]): void {
+    correctAddedScrollOffsets(mutations);
+    for (const m of mutations) {
+        remeasureScrolledBox(m.target);
+    }
 }
 
 // The boxes that have the language label. Unlike the boxes that OverflowChecker checks, this
@@ -57,6 +66,24 @@ function correctAddedScrollOffsets(mutations: MutationRecord[]): void {
             }
         }
     }
+}
+
+// Measures again how far the scrolled text box holding `node` is scrolled, after its text changed.
+// The label of a scrolled box sits as far below the box's text as the box is scrolled, so it keeps
+// the box able to scroll that far even when the text no longer needs to: after Undo or deleting
+// made the text fit, the box would stay scrolled with its first lines out of sight. Without its
+// offset, the label is back inside the text, the browser scrolls the box back as far as the text
+// allows, and the offset is set again from there. A box that is not scrolled carries no offset
+// and is left alone, so typing in it costs nothing here.
+function remeasureScrolledBox(node: Node): void {
+    const element = node instanceof Element ? node : node.parentElement;
+    const box = element?.closest<HTMLElement>(kLabelledBoxSelector);
+    if (!box || !box.style.getPropertyValue(kScrollTopVariable)) {
+        return;
+    }
+    removeScrollOffset(box);
+    // Reading scrollTop lays the box out again without the offset.
+    setScrollOffset(box);
 }
 
 // Removes kScrollTopVariable from `box`, and the style attribute if that leaves it empty.
