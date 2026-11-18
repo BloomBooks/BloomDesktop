@@ -875,13 +875,51 @@ namespace Bloom.ImageProcessing
             return destPath;
         }
 
+        /// <summary>
+        /// Tell the user that Bloom could not read or write the metadata (copyright, license...)
+        /// of the image at filePath, and that the file may be corrupt.
+        /// </summary>
         public static void ReportImageMetadataProblem(string filePath, Exception ex)
         {
             var msgFmt = LocalizationManager.GetString(
                 "EditTab.ImageMetadata.Corrupt",
                 "Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer."
             );
-            var msg = string.Format(msgFmt, Path.GetFileName(filePath));
+            NotifyUserOfImageMetadataProblem(string.Format(msgFmt, Path.GetFileName(filePath)), ex);
+        }
+
+        /// <summary>
+        /// Tell the user that Bloom could not save the copyright and license they chose for the
+        /// image at filePath. A file that is merely in use is not corrupt, so that case gets a
+        /// message of its own. (BL-17093)
+        /// </summary>
+        public static void ReportImageMetadataSaveProblem(string filePath, Exception ex)
+        {
+            if (RobustFileIO.IsFileInUseError(ex))
+                NotifyUserOfImageMetadataProblem(GetImageFileInUseMessage(filePath), ex);
+            else
+                ReportImageMetadataProblem(filePath, ex);
+        }
+
+        /// <summary>
+        /// The message for a failure to save an image's copyright and license because something
+        /// has the file open. We can't tell what (it could even be Bloom), hence "possibly".
+        /// </summary>
+        internal static string GetImageFileInUseMessage(string filePath)
+        {
+            var msgFmt = LocalizationManager.GetString(
+                "EditTab.ImageMetadata.FileInUse",
+                "Bloom could not save the copyright and license information in {0}, possibly because another program is using that file. It may help to wait a moment and try again, or you may need to restart your computer."
+            );
+            return string.Format(msgFmt, Path.GetFileName(filePath));
+        }
+
+        /// <summary>
+        /// Show msg about a problem with an image's metadata, with a button that opens the docs
+        /// page about such problems.
+        /// </summary>
+        private static void NotifyUserOfImageMetadataProblem(string msg, Exception ex)
+        {
             var btnLabel = LocalizationManager.GetString(
                 "EditTab.ImageMetadata.MoreInfo",
                 "More Information"
@@ -3087,23 +3125,21 @@ namespace Bloom.ImageProcessing
             {
                 imageBeingModified.Metadata = metadata;
                 imageBeingModified.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
+                // A file that was written recently (a picture just pasted, say) may still be held
+                // open by something else (antivirus, a thumbnailer, a sync program) for longer than
+                // the saving code's own retries wait, and writing the metadata needs the file to
+                // ourselves. IsFileLocked waits about five seconds for it to come free. (BL-17093)
+                RobustIO.IsFileLocked(Path.Combine(folderPath, filename));
                 try
                 {
                     imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
                 }
-                catch (Exception e)
+                catch (Exception e) when (e.Source == "TagLibSharp")
                 {
-                    if (e.Source == "TagLibSharp")
-                    {
-                        // The metadata is corrupt in a way that prevents writing it back to the file.
-                        // Try to remove the old, corrupt metadata from the file and write the new metadata.
-                        ImageUtils.StripMetadataFromImageFile(imageBeingModified);
-                        imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    // The metadata is corrupt in a way that prevents writing it back to the file.
+                    // Try to remove the old, corrupt metadata from the file and write the new metadata.
+                    ImageUtils.StripMetadataFromImageFile(imageBeingModified);
+                    imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
                 }
             }
         }

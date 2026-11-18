@@ -1013,7 +1013,7 @@ namespace Bloom.Spreadsheet
                 when (e is IOException || e is SecurityException || e is UnauthorizedAccessException
                 )
             {
-                if (e is IOException && (e.HResult & 0x0000FFFF) == 32) //ERROR_SHARING_VIOLATION
+                if (RobustFileIO.IsFileInUseError(e))
                 {
                     Console.WriteLine(
                         "Writing Spreadsheet failed. Do you have it open in another program?"

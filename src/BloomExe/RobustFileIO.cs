@@ -20,6 +20,20 @@ namespace Bloom
     public class RobustFileIO
     {
         /// <summary>
+        /// True if e says a file could not be opened because something else (another program,
+        /// or another part of Bloom) has it open: a Windows sharing or lock violation, as opposed
+        /// to the file being bad or missing.
+        /// </summary>
+        public static bool IsFileInUseError(Exception e)
+        {
+            const int kErrorSharingViolation = 32;
+            const int kErrorLockViolation = 33;
+            var win32Error = e.HResult & 0xFFFF;
+            return e is IOException
+                && (win32Error == kErrorSharingViolation || win32Error == kErrorLockViolation);
+        }
+
+        /// <summary>
         /// Get the image metadata from the file as reliably as possible.
         /// </summary>
         public static Metadata MetadataFromFile(string path)

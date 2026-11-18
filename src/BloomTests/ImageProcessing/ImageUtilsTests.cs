@@ -14,6 +14,7 @@ using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ImageToolbox;
+using Metadata = SIL.Windows.Forms.ClearShare.Metadata;
 
 namespace BloomTests.ImageProcessing
 {
@@ -1174,6 +1175,130 @@ namespace BloomTests.ImageProcessing
                     Assert.DoesNotThrow(() => ImageUtils.SaveImageMetadata(image, tempFile.Path));
                 }
             }
+        }
+
+        /// <summary>
+        /// BL-17093: right after a photo is pasted, something (antivirus, a thumbnailer, another
+        /// reader) may still have the new file open for a few seconds. Saving the copyright and
+        /// license into it then must wait for the file to be free, not fail and call it corrupt.
+        /// </summary>
+        [Test]
+        public void SaveImageMetadataIfNeeded_FileBrieflyHeldOpenByAnotherReader_WaitsAndSaves()
+        {
+            using (var folder = new TemporaryFolder("SaveImageMetadataWhileFileHeldOpen"))
+            {
+                var imagePath = CopyTestImageTo(folder, kPastedImageName);
+                const string copyright = "Copyright © 2026 BL-17093 Test";
+                Assert.That(
+                    Metadata.FromFile(imagePath).CopyrightNotice,
+                    Is.Not.EqualTo(copyright),
+                    "The test image should not start out with the copyright this test saves"
+                );
+                var metadata = new Metadata { CopyrightNotice = copyright };
+
+                // Another reader holds the file for longer than libpalaso's own retries (about
+                // two seconds) but only a few seconds in all, as a virus scan of a fresh photo might.
+                var reader = new FileStream(
+                    imagePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read
+                );
+                var releaseReader = System.Threading.Tasks.Task.Run(() =>
+                {
+                    System.Threading.Thread.Sleep(4000);
+                    reader.Dispose();
+                });
+                try
+                {
+                    Assert.DoesNotThrow(
+                        () =>
+                            ImageUtils.SaveImageMetadataIfNeeded(
+                                metadata,
+                                folder.Path,
+                                kPastedImageName
+                            ),
+                        "Saving should wait until the other reader lets go of the file"
+                    );
+                }
+                finally
+                {
+                    releaseReader.Wait();
+                }
+
+                Assert.That(Metadata.FromFile(imagePath).CopyrightNotice, Is.EqualTo(copyright));
+            }
+        }
+
+        /// <summary>
+        /// BL-17093: when something keeps the file open for longer than Bloom waits, the save
+        /// fails, and the failure must be recognizable as the file being in use, so that the user
+        /// can be told that rather than that the file may be corrupt.
+        /// </summary>
+        [Test]
+        public void SaveImageMetadataIfNeeded_FileHeldOpenThroughout_FailsWithFileInUseError()
+        {
+            using (var folder = new TemporaryFolder("SaveImageMetadataWhileFileHeldOpenThroughout"))
+            {
+                var imagePath = CopyTestImageTo(folder, kPastedImageName);
+                var metadata = new Metadata { CopyrightNotice = "Copyright © 2026 BL-17093 Test" };
+
+                Exception error;
+                using (new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    error = Assert.Catch(
+                        () =>
+                            ImageUtils.SaveImageMetadataIfNeeded(
+                                metadata,
+                                folder.Path,
+                                kPastedImageName
+                            ),
+                        "The save should fail while the file is held open"
+                    );
+                }
+
+                Assert.That(
+                    RobustFileIO.IsFileInUseError(error),
+                    Is.True,
+                    "The failure should be recognized as the file being in use: " + error
+                );
+            }
+        }
+
+        [Test]
+        public void IsFileInUseError_OtherFailures_False()
+        {
+            Assert.That(RobustFileIO.IsFileInUseError(new IOException("disk full")), Is.False);
+            Assert.That(
+                RobustFileIO.IsFileInUseError(new InvalidOperationException("other")),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void GetImageFileInUseMessage_NamesTheFile()
+        {
+            var message = ImageUtils.GetImageFileInUseMessage(
+                Path.Combine("some", "folder", kPastedImageName)
+            );
+            Assert.That(message, Does.Contain(kPastedImageName));
+            Assert.That(message, Does.Not.Contain("folder"));
+        }
+
+        private const string kPastedImageName = "pasted.jpg";
+
+        /// <summary>
+        /// Copy the man.jpg test image into folder under fileName and return its path.
+        /// </summary>
+        private static string CopyTestImageTo(TemporaryFolder folder, string fileName)
+        {
+            var source = FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "man.jpg"
+            );
+            var imagePath = Path.Combine(folder.Path, fileName);
+            RobustFile.Copy(source, imagePath);
+            return imagePath;
         }
 
         [TestCase("myFolder", "myFile.png")]
