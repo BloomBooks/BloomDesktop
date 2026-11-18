@@ -1781,6 +1781,17 @@ function captureGesturePointer(wrapper: HTMLElement, pointerId: number): void {
 }
 
 /**
+ * Captures the pointer again if a move of the wrapper in the DOM released it. Taking an element out
+ * of the document releases its pointer capture, even when it goes straight back in. A drag moves
+ * the wrapper whenever it changes dock or the order of the floats, and tryBottomDock moves it on
+ * every move in the middle third.
+ */
+function keepGesturePointerCaptured(state: IInlineImageDragState): void {
+    if (!state.wrapper.hasPointerCapture(state.pointerId))
+        captureGesturePointer(state.wrapper, state.pointerId);
+}
+
+/**
  * Releases the pointer capture. Every path that ends a drag or resize calls this, including
  * the two that discard the state without a pointerup (setting up the page again, and the
  * cleanup before saving). A wrapper that kept the capture would go on receiving all of the
@@ -1903,6 +1914,7 @@ function continueDrag(
     );
     if (isLayoutEmpty(state)) {
         applyMove(state, pointViewportPx, imageCenterViewportPx, dock);
+        keepGesturePointerCaptured(state);
         return;
     }
     if (
@@ -1910,6 +1922,7 @@ function continueDrag(
         !tryBottomDock(state, pointViewportPx, imageCenterViewportPx)
     )
         applyMove(state, pointViewportPx, imageCenterViewportPx, dock);
+    keepGesturePointerCaptured(state);
     scrollBlockToKeepDraggedImageInView(state);
 }
 

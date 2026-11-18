@@ -569,9 +569,10 @@ test("a picture whose middle is dragged below the block is put centred straight 
             "the top of the block, not at the bottom where it was let go.",
     ).toBeLessThan(rects.block.height / 2);
     expect(
-        await getRoomBelowInlineImagePx(page, BLOCK, LANG, id),
-        "Text was left below the picture, so it is not straight after the text.",
-    ).toBeGreaterThanOrEqual(0);
+        (await getInlineImage(page, BLOCK, LANG, id)).dock,
+        "After the drag below the block, the picture should be in the dock after the text, so " +
+            "that no text is left below it.",
+    ).toBe("bottom");
 
     const line = await lineHeightOnScreen(page);
     const stepPx = Math.max(3, Math.round(line / 4));
