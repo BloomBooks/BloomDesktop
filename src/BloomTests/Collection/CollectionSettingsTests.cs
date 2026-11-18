@@ -10,6 +10,7 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
+using Bloom.Utils;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -102,8 +103,14 @@ namespace BloomTests.Collection
         [Platform(Include = "Win")]
         public void Constructor_CollectionFolderNotWritable_Throws()
         {
-            var settingsPath = CreateCollectionSettings(_folder.Path, "NotWritable").SettingsFilePath;
-            Assert.That(RobustFile.Exists(settingsPath), "Sanity check: the collection should exist");
+            var settingsPath = CreateCollectionSettings(
+                _folder.Path,
+                "NotWritable"
+            ).SettingsFilePath;
+            Assert.That(
+                RobustFile.Exists(settingsPath),
+                "Sanity check: the collection should exist"
+            );
             var folder = new DirectoryInfo(Path.GetDirectoryName(settingsPath));
             var security = folder.GetAccessControl();
             var denyWrite = new FileSystemAccessRule(
@@ -117,12 +124,24 @@ namespace BloomTests.Collection
             folder.SetAccessControl(security);
             try
             {
-                var thrown = Assert.Throws<CollectionFolderNotWritableException>(
-                    () => new CollectionSettings(settingsPath)
+                var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
+                    new CollectionSettings(settingsPath)
                 );
                 Assert.That(thrown.FolderPath, Is.EqualTo(folder.FullName));
+                FileAccessDiagnostics.Collect(
+                    Path.Combine(folder.FullName, "probe.txt"),
+                    out var likelyCause
+                );
                 Assert.That(
-                    DefenderFolderProtectionCheck.IsPermissionProblem(thrown.InnerException),
+                    likelyCause,
+                    Is.Null,
+                    "Sanity check: nothing on this machine should be suspected of protecting a temp folder"
+                );
+                Assert.That(
+                    DefenderFolderProtectionCheck.IsPermissionProblem(
+                        thrown.InnerException,
+                        likelyCause
+                    ),
                     Is.True,
                     $"a denied folder should be reported as a permission problem, not Defender; got {thrown.InnerException}"
                 );

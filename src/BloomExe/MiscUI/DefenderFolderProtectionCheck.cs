@@ -2,9 +2,11 @@ using System;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Properties;
+using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
 using SIL.PlatformUtilities;
+using SIL.Reporting;
 
 namespace Bloom.MiscUI
 {
@@ -111,25 +113,37 @@ namespace Bloom.MiscUI
 
         /// <summary>
         /// Whether the exception we got writing in a folder means the user lacks permission or the
-        /// folder is read-only, as opposed to the FileNotFoundException that Defender's Controlled
-        /// Folder Access gives.
+        /// folder is read-only, as opposed to virus protection refusing us. likelyCause is what
+        /// FileAccessDiagnostics.Collect found; when it names a suspect (Controlled Folder Access
+        /// covering the folder, Avast with the folder under Documents...) we believe it, because
+        /// antivirus folder protection also refuses with UnauthorizedAccessException (BL-17056).
         /// </summary>
-        public static bool IsPermissionProblem(Exception writeProblem)
+        public static bool IsPermissionProblem(Exception writeProblem, string likelyCause)
         {
-            return writeProblem is UnauthorizedAccessException;
+            return likelyCause == null && writeProblem is UnauthorizedAccessException;
         }
 
         /// <summary>
-        /// Tell the user Bloom cannot write in the folder, naming the likely cause.
+        /// Tell the user Bloom cannot write in the folder, naming the likely cause, and log the
+        /// evidence for whoever helps them.
         /// </summary>
         public static void ReportProblem(Exception writeProblem, string failingFolder)
         {
+            // The probe file is gone by now; Collect still reports on its folder.
+            var details = FileAccessDiagnostics.Collect(
+                Path.Combine(failingFolder, TestFileName),
+                out var likelyCause
+            );
+            Logger.WriteEvent(
+                $"Cannot write to {failingFolder}: {writeProblem.GetType().Name}: {writeProblem.Message}{Environment.NewLine}{details}"
+            );
             var heading = LocalizationManager.GetString(
                 "Errors.DefenderFolderProtectionHeading",
                 "This program cannot write to the folder {0}."
             );
+            var isPermissionProblem = IsPermissionProblem(writeProblem, likelyCause);
             string mainMsg;
-            if (IsPermissionProblem(writeProblem))
+            if (isPermissionProblem)
             {
                 mainMsg = LocalizationManager.GetString(
                     "Errors.FolderNotWritable",
@@ -142,6 +156,10 @@ namespace Bloom.MiscUI
                     "Errors.DefenderFolderProtection",
                     "This might be caused by Windows Defender \"Controlled Folder Access\" or some other virus protection."
                 );
+                // The likely cause names a product and setting, which a person helping the user
+                // needs, even though it is only in English.
+                if (likelyCause != null)
+                    mainMsg += Environment.NewLine + Environment.NewLine + likelyCause;
             }
             var msg =
                 string.Format(heading, failingFolder)
@@ -150,12 +168,8 @@ namespace Bloom.MiscUI
                 + mainMsg;
             var caption = LocalizationManager.GetString("Common.ProblemTitle", "Bloom Problem");
             MessageBox.Show(msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-            if (!IsPermissionProblem(writeProblem))
-            {
-                SIL.Program.Process.SafeStart(
-                    "https://docs.bloomlibrary.org/windows-controlled-folder-access"
-                );
-            }
+            if (!isPermissionProblem)
+                SIL.Program.Process.SafeStart(FileAccessDiagnostics.kTroubleshootingUrl);
         }
 
         private static void Cleanup(string testPath)

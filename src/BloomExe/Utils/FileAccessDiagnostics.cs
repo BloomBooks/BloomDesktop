@@ -660,6 +660,13 @@ namespace Bloom.Utils
             e is IOException || e is UnauthorizedAccessException || e is SecurityException;
 
         /// <summary>
+        /// The docs page that helps people whose files Bloom can't change, whether antivirus
+        /// (Controlled Folder Access, Avast...) or something else is refusing.
+        /// </summary>
+        public const string kTroubleshootingUrl =
+            "https://docs.bloomlibrary.org/troubleshooting-file-access";
+
+        /// <summary>
         /// A link, as HTML, to the docs page that helps people whose files Bloom can't change.
         /// </summary>
         public static string TroubleshootingLinkHtml()
@@ -668,7 +675,7 @@ namespace Bloom.Utils
                 "Errors.CannotUpdateTroubleshoot",
                 "How to troubleshoot file updating errors"
             );
-            return $"<a href='https://docs.bloomlibrary.org/troubleshooting-file-access' target='_blank'>{howToTroubleshoot}</a>";
+            return $"<a href='{kTroubleshootingUrl}' target='_blank'>{howToTroubleshoot}</a>";
         }
 
         /// <summary>
