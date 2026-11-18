@@ -8,6 +8,8 @@ import { getToolboxBundleExports } from "../../js/workspaceFrames";
 // The class on the page iframe's body that shows the image descriptions.
 export const kShowImageDescriptionsClass = "bloom-showImageDescriptions";
 
+// True while the page in this body is showing its image descriptions (and so a game page on it
+// cannot be in Play).
 export function areImageDescriptionsShowing(
     bodyOfPageIframe: HTMLElement,
 ): boolean {
