@@ -158,9 +158,9 @@
         <target xml:lang="pt-PT" state="final">Encontrar o 'Número da versão' e toque 7 vezes até que as opções do Desenvolvedor sejam habilitadas.</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions" approved="yes">
         <source xml:lang="en">Go back to Settings and open &apos;Developer options&apos;.</source>
-        <target xml:lang="pt-PT" state="translated">Volte para as Configurações e abra 'Opções de Desenvolvedor'.</target>
+        <target xml:lang="pt-PT" state="final">Volte para as Configurações e abra 'Opções de Desenvolvedor'.</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging" approved="yes">
@@ -364,19 +364,19 @@
         <target xml:lang="pt-PT" state="final">Bloom não conseguiu acessar um microfone.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation" approved="yes">
         <source xml:lang="en">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</source>
-        <target xml:lang="pt-PT" state="translated">Bloom vai abrir o arquivo de sincronização agora para que você possa editá-lo diretamente. Alternativamente, você pode usar o Audacity, importando/exportando este arquivo como um arquivo de etiquetas. Para saber como editar este arquivo usando Audacity, pesquise "Audacity" em docs.bloomlibrary.org. De qualquer forma, você precisará usar o botão "Usar Arquivo de Sincronização..." para aplicar suas alterações.</target>
+        <target xml:lang="pt-PT" state="final">Bloom vai abrir o arquivo de sincronização agora para que você possa editá-lo diretamente. Alternativamente, você pode usar o Audacity, importando/exportando este arquivo como um arquivo de etiquetas. Para saber como editar este arquivo usando Audacity, pesquise "Audacity" em docs.bloomlibrary.org. De qualquer forma, você precisará usar o botão "Usar Arquivo de Sincronização..." para aplicar suas alterações.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile" approved="yes">
         <source xml:lang="en">Current timings file is {0}</source>
-        <target xml:lang="pt-PT" state="translated">O arquivo de sincronização atual é {0}</target>
+        <target xml:lang="pt-PT" state="final">O arquivo de sincronização atual é {0}</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile" approved="yes">
         <source xml:lang="en">Current audio file is {0} (.wav or .mp3)</source>
-        <target xml:lang="pt-PT" state="translated">O arquivo de áudio atual é {0} (.wav ou .mp3)</target>
+        <target xml:lang="pt-PT" state="final">O arquivo de áudio atual é {0} (.wav ou .mp3)</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile</note>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.OneDriveProblem" approved="yes">
@@ -444,9 +444,9 @@
         <target xml:lang="pt-PT" state="final">Bloom não conseguiu baixar esta imagem. Verifique se este computador está conectado à internet e tente novamente.</target>
         <note>ID: ImageLibrary.CouldNotDownloadImage</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PreviewTooLarge">
+      <trans-unit id="ImageLibrary.PreviewTooLarge" approved="yes">
         <source xml:lang="en">This image is too large to preview here, but you can still use it.</source>
-        <target xml:lang="pt-PT" state="translated">Esta imagem é muito grande para visualização aqui, mas ainda assim pode usá-la.</target>
+        <target xml:lang="pt-PT" state="final">Esta imagem é muito grande para visualização aqui, mas ainda assim pode usá-la.</target>
         <note>ID: ImageLibrary.PreviewTooLarge</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PreviewUnavailable" approved="yes">
@@ -469,14 +469,14 @@
         <target xml:lang="pt-PT" state="final">Título do livro</target>
         <note>ID: EditTab.CustomCover.FieldType.BookTitle</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.FieldType.CoverCredits">
+      <trans-unit id="EditTab.CustomCover.FieldType.CoverCredits" approved="yes">
         <source xml:lang="en">Cover Credits</source>
-        <target xml:lang="pt-PT" state="translated">Créditos da capa</target>
+        <target xml:lang="pt-PT" state="final">Créditos da capa</target>
         <note>ID: EditTab.CustomCover.FieldType.CoverCredits</note>
       </trans-unit>
-      <trans-unit id="ImageUtils.ShrinkingImagesFailed">
+      <trans-unit id="ImageUtils.ShrinkingImagesFailed" approved="yes">
         <source xml:lang="en">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</source>
-        <target xml:lang="pt-PT" state="translated">Bloom não conseguiu reduzir o tamanho das imagens deste livro. Uma nova tentativa será feita na próxima atualização do livro.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não conseguiu reduzir o tamanho das imagens deste livro. Uma nova tentativa será feita na próxima atualização do livro.</target>
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
       </trans-unit>
       <trans-unit id="Shell.SavingBeforeWindowsShutsDown" translate="no">
@@ -624,14 +624,14 @@
         <target xml:lang="pt-PT" state="final">Processando...</target>
         <note>ID: AiImageEditor.Settings.Working</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Slot.ClearImage">
+      <trans-unit id="AiImageEditor.Slot.ClearImage" approved="yes">
         <source xml:lang="en">Clear Image</source>
-        <target xml:lang="pt-PT" state="translated">Esvaziar o espaço</target>
+        <target xml:lang="pt-PT" state="final">Esvaziar o espaço</target>
         <note>ID: AiImageEditor.Slot.ClearImage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Slot.DropImage">
+      <trans-unit id="AiImageEditor.Slot.DropImage" approved="yes">
         <source xml:lang="en">Drop image</source>
-        <target xml:lang="pt-PT" state="translated">Soltar a imagem</target>
+        <target xml:lang="pt-PT" state="final">Soltar a imagem</target>
         <note>ID: AiImageEditor.Slot.DropImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.BookImage" approved="yes">
@@ -644,9 +644,9 @@
         <target xml:lang="pt-PT" state="final">Imagens a editar: {0}</target>
         <note>ID: AiImageEditor.Source.ImagesToEdit</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Source.OriginalBookImage">
+      <trans-unit id="AiImageEditor.Source.OriginalBookImage" approved="yes">
         <source xml:lang="en">The picture this book slot started with</source>
-        <target xml:lang="pt-PT" state="translated">A imagem original que estava neste espaço</target>
+        <target xml:lang="pt-PT" state="final">A imagem original que estava neste espaço</target>
         <note>ID: AiImageEditor.Source.OriginalBookImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.PdfFile" approved="yes">
@@ -679,9 +679,9 @@
         <target xml:lang="pt-PT" state="final">Fixar esta faixa</target>
         <note>ID: AiImageEditor.Strip.Pin</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.ShowInGallery">
+      <trans-unit id="AiImageEditor.Strip.ShowInGallery" approved="yes">
         <source xml:lang="en">Show in full-screen gallery</source>
-        <target xml:lang="pt-PT" state="translated">Visualizar na galeria de tela cheia</target>
+        <target xml:lang="pt-PT" state="final">Visualizar na galeria de tela cheia</target>
         <note>ID: AiImageEditor.Strip.ShowInGallery</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.Unpin" approved="yes">
@@ -689,9 +689,9 @@
         <target xml:lang="pt-PT" state="final">Desafixar esta faixa</target>
         <note>ID: AiImageEditor.Strip.Unpin</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.break_into_pieces.Description">
+      <trans-unit id="AiImageEditor.Tool.break_into_pieces.Description" approved="yes">
         <source xml:lang="en">Extract images that you can use in a game.</source>
-        <target xml:lang="pt-PT" state="translated">Extraia imagens para poder usar em um jogo.</target>
+        <target xml:lang="pt-PT" state="final">Extraia imagens para poder usar em um jogo.</target>
         <note>ID: AiImageEditor.Tool.break_into_pieces.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.break_into_pieces.Param.furtherInstructions.Placeholder">
@@ -714,9 +714,9 @@
         <target xml:lang="pt-PT" state="final">Substitui um texto específico dentro da imagem. Use para adaptar imagens que contêm texto.</target>
         <note>ID: AiImageEditor.Tool.change_text.Description</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.make_gif.Description">
+      <trans-unit id="AiImageEditor.Tool.make_gif.Description" approved="yes">
         <source xml:lang="en">Turn one reference image into a short looping animation sheet and encode it as a GIF.</source>
-        <target xml:lang="pt-PT" state="translated">Transformar uma imagem de referência em uma folha de animação em loop e codificá-la como um GIF.</target>
+        <target xml:lang="pt-PT" state="final">Transformar uma imagem de referência em uma folha de animação em loop e codificá-la como um GIF.</target>
         <note>ID: AiImageEditor.Tool.make_gif.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending" approved="yes">
@@ -754,9 +754,9 @@
         <target xml:lang="pt-PT" state="final">PDF para imagens</target>
         <note>ID: AiImageEditor.Tool.pdf_to_images.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.remove_background.Description">
+      <trans-unit id="AiImageEditor.Tool.remove_background.Description" approved="yes">
         <source xml:lang="en">Replace the background with transparency.</source>
-        <target xml:lang="pt-PT" state="translated">Substituir o fundo por transparência.</target>
+        <target xml:lang="pt-PT" state="final">Substituir o fundo por transparência.</target>
         <note>ID: AiImageEditor.Tool.remove_background.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_background.Title" approved="yes">
@@ -764,9 +764,9 @@
         <target xml:lang="pt-PT" state="final">Remover o fundo</target>
         <note>ID: AiImageEditor.Tool.remove_background.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.remove_object.Description">
+      <trans-unit id="AiImageEditor.Tool.remove_object.Description" approved="yes">
         <source xml:lang="en">Remove unwanted objects or artifacts.</source>
-        <target xml:lang="pt-PT" state="translated">Remover objetos ou defeitos indesejados.</target>
+        <target xml:lang="pt-PT" state="final">Remover objetos ou defeitos indesejados.</target>
         <note>ID: AiImageEditor.Tool.remove_object.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Param.target" approved="yes">
@@ -774,9 +774,9 @@
         <target xml:lang="pt-PT" state="final">Objeto a remover</target>
         <note>ID: AiImageEditor.Tool.remove_object.Param.target</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.remove_object.Param.target.Placeholder">
+      <trans-unit id="AiImageEditor.Tool.remove_object.Param.target.Placeholder" approved="yes">
         <source xml:lang="en">e.g. the red ball, background clutter</source>
-        <target xml:lang="pt-PT" state="translated">ex: a bola vermelha, a bagunça no fundo</target>
+        <target xml:lang="pt-PT" state="final">ex: a bola vermelha, a bagunça no fundo</target>
         <note>ID: AiImageEditor.Tool.remove_object.Param.target.Placeholder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Title" approved="yes">
