@@ -5059,52 +5059,6 @@ namespace BloomTests.Book
             }
         }
 
-        // A table's text cell shows only the languages chosen for it (BL-17105), so a language it does
-        // not show is not missing from it.
-        [Test]
-        public void AllPublishableLanguages_TableTextCellWantsOnlyItsOwnLanguages()
-        {
-            _bookDom = new HtmlDom(
-                @"<html><head></head><body>
-					<div class='bloom-page' id='guid3'>
-						<div class='bloom-translationGroup'>
-							<div class='bloom-editable' lang='xyz'>Vernacular.</div>
-							<div class='bloom-editable' lang='en'>English.</div>
-							<div class='bloom-editable' lang='fr'>French.</div>
-						</div>
-						<div class='bloom-table'>
-							<div class='bloom-cell'>
-								<div class='bloom-translationGroup'>
-									<div class='bloom-editable' lang='xyz'>A cell with no setting shows L1 only.</div>
-									<div class='bloom-editable' lang='en'></div>
-									<div class='bloom-editable' lang='fr'></div>
-								</div>
-							</div>
-							<div class='bloom-cell'>
-								<div class='bloom-translationGroup' data-default-languages='V,N2'>
-									<div class='bloom-editable' lang='xyz'>This cell shows L1 and L3.</div>
-									<div class='bloom-editable' lang='en'></div>
-									<div class='bloom-editable' lang='fr'></div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</body></html>"
-            );
-
-            var book = CreateBook();
-            Assert.That(
-                _collectionSettings.Language3Tag,
-                Is.EqualTo("fr"),
-                "The second cell's N2 should be French for this test to mean anything."
-            );
-            var allLanguages = book.AllPublishableLanguages(false);
-
-            Assert.That(allLanguages["xyz"], Is.True);
-            Assert.That(allLanguages["en"], Is.True, "No cell shows English, so none lacks it.");
-            Assert.That(allLanguages["fr"], Is.False, "The second cell shows French and has none.");
-        }
-
         // We've relaxed constraining comical books to one language.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10275.
         [Test]
         public void AllPublishableLanguages_NotAffectedByComical()

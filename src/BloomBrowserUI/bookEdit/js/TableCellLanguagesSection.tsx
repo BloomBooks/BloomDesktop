@@ -28,16 +28,18 @@ const kHoverBackground = "#eef6f8";
 const LanguageRow: React.FunctionComponent<{
     groups: HTMLElement[];
     language: ICellLanguage;
+    languages: ICellLanguage[];
     onToggle: () => void;
 }> = (props) => {
     const tooltip = useL10n(
         props.language.tooltipEnglish,
         props.language.tooltipL10nId,
     );
-    const state = roleState(props.groups, props.language.role);
+    const state = roleState(props.groups, props.language.role, props.languages);
     const locked = roleIsLastLanguageSomewhere(
         props.groups,
         props.language.role,
+        props.languages,
     );
     const label = `${props.language.shortName} - ${props.language.name}`;
     return (
@@ -177,6 +179,7 @@ export const TableCellLanguagesSection: React.FunctionComponent<{
                             key={language.role}
                             groups={props.groups}
                             language={language}
+                            languages={props.languages}
                             onToggle={() => {
                                 toggleRole(
                                     props.groups,
