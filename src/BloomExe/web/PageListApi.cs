@@ -108,6 +108,7 @@ namespace Bloom.web
             var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
             var label = shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
 
+            var pageChangeStarted = false;
             // Note this only measures getting the change under way; the new page still has to be
             // built and displayed.
             using (
@@ -120,10 +121,30 @@ namespace Bloom.web
                 IPage page = PageFromId(pageId);
 
                 if (page != null)
+                {
                     PageList.PageClicked(page);
+                    pageChangeStarted = IsOnTheWayToPage(PageList.Model.StateMachine, pageId);
+                }
             }
 
-            request.PostSucceeded();
+            // The All Pages view shows a wait cursor from a click until the page opens. Bloom does
+            // not open the page when it cannot save the one being left (see
+            // EditingModel.MergeCurrentPageThenSave), so say whether it is opening it, and the
+            // front end takes the wait cursor away at once rather than waiting for it to time out.
+            if (!pageChangeStarted)
+                Logger.WriteEvent($"PageListApi: the click on page {pageId} did not open it.");
+            request.ReplyWithBoolean(pageChangeStarted);
+        }
+
+        /// <summary>
+        /// True if the Edit tab is on its way to the page with this id: a click on it has been taken
+        /// and the page has not loaded yet. The page cannot finish loading while a click is being
+        /// handled, because the browser's report that it has loaded (editView/pageDomLoaded) waits for
+        /// the same API lock, so straight after a click this says whether the click was taken.
+        /// </summary>
+        internal static bool IsOnTheWayToPage(EditingStateMachine stateMachine, string pageId)
+        {
+            return stateMachine.Navigating && stateMachine.CurrentPageId == pageId;
         }
 
         private void HandleContextMenuItemEnabled(ApiRequest request)
@@ -273,10 +294,11 @@ namespace Bloom.web
             request.ReplyWithJson(answer);
         }
 
-        // Requests the content that should be displayed in a single page thumbnail.
+        // Requests the content of a single page, as the page list and the All Pages view show it.
         // Parameters:
         //    page-id - the page ID
         //    book-id - the book ID (optional)
+        //    full-size - "true" to leave the pictures at full size (optional)
         public void HandlePageContentRequest(ApiRequest request)
         {
             var id = request.RequiredParam("page-id");
@@ -295,12 +317,20 @@ namespace Bloom.web
                 request.Failed(System.Net.HttpStatusCode.NotFound, "Could not find page");
                 return;
             }
+            // The page list shows pages small, and its pictures are made small to match. The All Pages
+            // view (bookGridView.ts) shows them at full size, so it asks for the pictures themselves.
+            var fullSizePictures = request.GetParamOrNull("full-size") == "true";
             dynamic answer = new ExpandoObject();
-            answer.content = GetPageContentForThumbnail(page);
+            answer.content = GetReadOnlyPageContent(page, fullSizePictures);
             request.ReplyWithJson(answer);
         }
 
-        private static string GetPageContentForThumbnail(IPage page)
+        /// <summary>
+        /// The page's HTML as the page list and the All Pages view show it: read-only, without its
+        /// videos, and with its pictures marked to be served small (see MarkPicturesToBeServedSmall)
+        /// unless <paramref name="fullSizePictures"/> is true.
+        /// </summary>
+        internal static string GetReadOnlyPageContent(IPage page, bool fullSizePictures)
         {
             if (page == null)
             {
@@ -314,7 +344,8 @@ namespace Bloom.web
                 video.ParentNode.RemoveChild(video);
             }
 
-            MarkImageNodesForThumbnail(pageElement);
+            if (!fullSizePictures)
+                MarkPicturesToBeServedSmall(pageElement);
 
             var pageNeedsTransparent = HtmlDom.PageNeedsTransparentImages(pageElement);
             foreach (
@@ -336,7 +367,7 @@ namespace Bloom.web
                 }
             }
 
-            // For WebView2, this prevents any interaction with elements in the page thumbnail.
+            // For WebView2, this prevents any interaction with elements in the page shown.
             // We put an overlay over it to try to prevent such interaction, but this is more
             // reliable. Nothing in the page will ever get focus, be tabbed to, be read by
             // screen readers, etc. In particular, we finally concluded that BL-11528 was caused
@@ -346,13 +377,12 @@ namespace Bloom.web
             return XmlHtmlConverter.ConvertElementToHtml5(pageElement);
         }
 
-        // As a further form of optimization, mark img elements as being thumbnails. The server
+        // As a further form of optimization, ask the server for small copies of the page's pictures
+        // (img elements and background images), by adding thumbnail=1 to their URLs. The server
         // produces miniatures that take up less memory.
-        internal static void MarkImageNodesForThumbnail(SafeXmlElement pageElementForThumbnail)
+        internal static void MarkPicturesToBeServedSmall(SafeXmlElement pageElement)
         {
-            var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(
-                pageElementForThumbnail
-            );
+            var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(pageElement);
             if (imgNodes != null)
             {
                 foreach (SafeXmlElement imgNode in imgNodes)

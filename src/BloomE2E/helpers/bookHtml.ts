@@ -86,6 +86,54 @@ export function bookHtmlPath(bookFolder: string): string {
 }
 
 /**
+ * The side of the printed spread each page of the saved book falls on, by page id, as Bloom marks
+ * it (side-left or side-right; see UpdateSideClass in HtmlDom.cs). The PDF takes each page's margins
+ * from this mark. Every page, front and back matter included.
+ */
+export function readPageSides(
+    bookFolder: string,
+): Record<string, "left" | "right" | "none"> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    const sides: Record<string, "left" | "right" | "none"> = {};
+    for (const tag of html.match(/<div\b[^>]*>/g) ?? []) {
+        const classes = /\sclass="([^"]*)"/.exec(tag)?.[1].split(/\s+/) ?? [];
+        if (!classes.includes("bloom-page")) continue;
+        const id = /\sid="([^"]*)"/.exec(tag)?.[1];
+        if (!id) continue;
+        sides[id] = classes.includes("side-left")
+            ? "left"
+            : classes.includes("side-right")
+              ? "right"
+              : "none";
+    }
+    return sides;
+}
+
+/**
+ * Give the saved book a meta element in its head, replacing one of the same name. Only while Bloom
+ * is stopped (see bloomApp.restart), since a running Bloom would write the book over this. A
+ * calendar, for one, is a book with `defaultBookletLayout` set to "Calendar".
+ */
+export function setBookMeta(
+    bookFolder: string,
+    name: string,
+    content: string,
+): void {
+    const path = bookHtmlPath(bookFolder);
+    const html = fs.readFileSync(path, "utf8");
+    const meta = `<meta name="${name}" content="${content}">`;
+    const existing = new RegExp(`<meta\\b[^>]*\\bname="${name}"[^>]*>`);
+    const changed = existing.test(html)
+        ? html.replace(existing, meta)
+        : html.replace(/<head\b[^>]*>/i, (head) => `${head}\n    ${meta}`);
+    if (changed === html && !existing.test(html))
+        throw new Error(
+            `The book in ${bookFolder} has no <head> to put a meta in.`,
+        );
+    fs.writeFileSync(path, changed, "utf8");
+}
+
+/**
  * The editing-only markup the table library and Bloom put on a table while it is being edited.
  * None of it should survive a save.
  */

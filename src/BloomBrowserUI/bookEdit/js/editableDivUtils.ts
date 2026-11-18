@@ -202,8 +202,13 @@ export class EditableDivUtils {
     // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
     // If target is supplied, we only want a scale based on the page scaler if the target is inside it.
     public static getPageScale(target?: HTMLElement): number {
-        // See getPageIFrame() in shared.ts for why we reach the page through parent.
-        const pageBody = getPageIframeBody();
+        // A target is measured against its own document. While the Edit tab changes pages, the page
+        // being left is still on screen, and still places its bubbles, but the frame named "page"
+        // is already the new one, so looking the page up by that name would get the wrong scale.
+        // See getPageIFrame() in shared.ts for why we otherwise reach the page through parent.
+        const pageBody = target
+            ? target.ownerDocument.body
+            : getPageIframeBody();
         const page = pageBody ? $(pageBody) : $();
         let scaler: HTMLElement | undefined = undefined;
         const getScaler = () => page.find("div#page-scaling-container").get(0);

@@ -50,6 +50,38 @@ export async function choosePdfMode(page: Page, mode: PdfMode): Promise<void> {
 }
 
 /**
+ * How many pages the PDF that the PDF & Print screen is previewing has, read from the PDF file
+ * itself (its page objects). Call it after choosePdfMode().
+ */
+export async function getPdfPreviewPageCount(page: Page): Promise<number> {
+    const preview = page.locator('iframe[src*="pdf" i]');
+    await expect(
+        preview,
+        "The PDF & Print screen is not previewing a PDF.",
+    ).toHaveCount(1, { timeout: 30000 });
+    const src = await preview.getAttribute("src");
+    const result = await page.evaluate(async (url) => {
+        const response = await fetch(url!);
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        let text = "";
+        for (let i = 0; i < bytes.length; i += 0x8000)
+            text += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+        const pageObjects = (text.match(/\/Type\s*\/Page(?![a-zA-Z])/g) ?? [])
+            .length;
+        return { status: response.status, pageObjects };
+    }, src);
+    if (result.status !== 200)
+        throw new Error(
+            `Reading the previewed PDF (${src}) gave status ${result.status}.`,
+        );
+    if (!result.pageObjects)
+        throw new Error(
+            `No pages could be read from the previewed PDF (${src}).`,
+        );
+    return result.pageObjects;
+}
+
+/**
  * Click the PDF & Print screen's Print button, which opens the browser's print dialog. Returns
  * when that dialog is showing. The click does not wait for the page to settle, because the print
  * dialog holds the page while it is open.

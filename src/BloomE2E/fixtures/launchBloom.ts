@@ -131,6 +131,11 @@ export interface ICollectionSpec {
      * person ticks in the Settings dialog.
      */
     rightToLeftLanguages?: string[];
+    /**
+     * True for a collection whose Language 1 is written right to left (Arabic, Hebrew), as ticked
+     * in the language's settings. Bloom then lays books out to be read from the other side.
+     */
+    rightToLeft?: boolean;
 }
 
 /** Options for launchBloom. Give exactly one of collectionName and collectionSpec. */
@@ -153,6 +158,13 @@ export interface ILaunchBloomOptions {
      * --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
      */
     experimentalFeatures?: string[];
+    /**
+     * True to give this Bloom's browser a fake camera and microphone, so a test can record a
+     * video. Bloom then grants the camera instead of refusing it (WebView2Browser.cs), and Chromium
+     * makes up the picture and the sound. Passed as BLOOM_E2E_FAKE_CAMERA=1, which Bloom reads only
+     * under --e2e.
+     */
+    fakeCamera?: boolean;
     /** How long to wait for Bloom to start serving the collection. Default LAUNCH_DEADLINE_MS. */
     readyTimeoutMs?: number;
 }
@@ -691,6 +703,8 @@ export interface ICollectionXmlExtras {
     bookshelf?: string;
     /** See ICollectionSpec.rightToLeftLanguages. */
     rightToLeftLanguages?: string[];
+    /** See ICollectionSpec.rightToLeft. */
+    rightToLeft?: boolean;
 }
 
 /**
@@ -734,6 +748,9 @@ export function makeCollectionXml(
         `<?xml version="1.0" encoding="utf-8"?>\n` +
         `<Collection version="0.2">\n` +
         languageElements +
+        (extras.rightToLeft
+            ? `\n  <IsLanguage1Rtl>true</IsLanguage1Rtl>`
+            : "") +
         `\n  <XMatterPack>${xmatterPack}</XMatterPack>\n` +
         `  <BrandingProjectName>Default</BrandingProjectName>\n` +
         (extras.subscriptionCode
@@ -937,6 +954,7 @@ async function startBloomOn(
     userSettingsDir: string,
     readyTimeoutMs: number,
     experimentalFeatures?: string[],
+    fakeCamera?: boolean,
 ): Promise<IRunningBloom> {
     const exe = findBloomExe();
     // findBloomExe takes the newest build in any configuration, so say which one this run uses:
@@ -978,9 +996,12 @@ async function startBloomOn(
     // setting the developer's own Bloom shares (see ILaunchBloomOptions.experimentalFeatures).
     if (experimentalFeatures?.length)
         args.push("--experimental-features", experimentalFeatures.join(","));
-    const bloomProcess: ChildProcess = execFile(exe, args, {
-        env: environmentForBloom(),
-    });
+    // BLOOM_E2E_FAKE_CAMERA: a camera and microphone made up by Chromium, which Bloom reads only
+    // under --e2e (ILaunchBloomOptions.fakeCamera). Always set, so a value left in the shell
+    // never reaches a Bloom that did not ask for it.
+    const env = environmentForBloom();
+    env.BLOOM_E2E_FAKE_CAMERA = fakeCamera ? "1" : "";
+    const bloomProcess: ChildProcess = execFile(exe, args, { env });
     let exitStatus: { code: number | null; signal: string | null } | undefined;
     bloomProcess.stdout?.on("data", (d) => recordOutput(String(d)));
     bloomProcess.stderr?.on("data", (d) => recordOutput(String(d)));
@@ -1295,6 +1316,7 @@ export async function launchBloom(
             userSettingsDir,
             readyTimeoutMs,
             experimentalFeatures,
+            options.fakeCamera,
         );
     } catch (error) {
         process.removeListener("exit", cleanUpOnExit);
@@ -1322,6 +1344,7 @@ export async function launchBloom(
                 userSettingsDir,
                 readyTimeoutMs,
                 experimentalFeatures,
+                options.fakeCamera,
             );
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;
@@ -1350,6 +1373,7 @@ export async function launchBloom(
                 userSettingsDir,
                 readyTimeoutMs,
                 experimentalFeatures,
+                options.fakeCamera,
             );
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;
