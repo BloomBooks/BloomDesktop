@@ -27,13 +27,10 @@ export const kImageFitModePaddedValue = "padded";
 export interface ILanguageNameValues {
     language1Name: string;
     language1Tag: string;
-    language1IsRightToLeft?: boolean;
     language2Name: string;
     language2Tag: string;
-    language2IsRightToLeft?: boolean;
     language3Name?: string;
     language3Tag?: string;
-    language3IsRightToLeft?: boolean;
 }
 
 export type ImageFillMode =

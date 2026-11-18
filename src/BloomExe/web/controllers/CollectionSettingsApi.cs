@@ -701,15 +701,12 @@ namespace Bloom.web.controllers
             var settings = _bookSelection.CurrentSelection.CollectionSettings;
             x["language1Name"] = settings.Language1.Name;
             x["language1Tag"] = settings.Language1.Tag;
-            x["language1IsRightToLeft"] = settings.Language1.IsRightToLeft;
             x["language2Name"] = settings.Language2.Name;
             x["language2Tag"] = settings.Language2.Tag;
-            x["language2IsRightToLeft"] = settings.Language2.IsRightToLeft;
             if (!String.IsNullOrEmpty(settings.Language3?.Name))
             {
                 x["language3Name"] = settings.Language3.Name;
                 x["language3Tag"] = settings.Language3.Tag;
-                x["language3IsRightToLeft"] = settings.Language3.IsRightToLeft;
             }
 
             request.ReplyWithJson(JsonConvert.SerializeObject(x));
