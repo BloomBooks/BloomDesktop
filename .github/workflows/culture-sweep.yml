@@ -229,19 +229,9 @@ jobs:
               working-directory: src/BloomBrowserUI
               run: pnpm run build-prod
 
-            # Restore SIL.BuildTasks separately: Bloom.proj's UsingTask declarations only load if
-            # those dlls already exist. RestartBuild=false stops RestoreBuildTasks from also running
-            # BuildInternal, which would compile the whole app twice. Same as the nightly.
-            - name: Restore MSBuild build tasks
-              working-directory: build
-              shell: pwsh
-              run: msbuild Bloom.proj /t:RestoreBuildTasks /p:RestartBuild=false
-
             - name: Build
               id: build_csharp
-              working-directory: build
-              shell: pwsh
-              run: msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER
+              uses: ./.github/actions/bloom-build
 
             # ----- The actual point of this workflow -----
             # BLOOM_TEST_CULTURE is what src/BloomTests/TestCulture.cs reads. Note it sets

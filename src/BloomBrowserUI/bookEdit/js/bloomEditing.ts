@@ -104,6 +104,10 @@ import {
     getHexColorsForPalette,
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
+import {
+    isShowingOtherPagesHere,
+    wasOpenedByClickingItInTheGrid,
+} from "./bookGridView";
 import { EditableDivUtils } from "./editableDivUtils";
 import {
     externalCaptureErrorForPendingWork,
@@ -112,6 +116,7 @@ import {
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { removeNiceScrollArtifacts } from "./niceScrollCleanup";
+import { removeScrollOffsets, trackScrollOffsets } from "./scrollOffset";
 import { removeEditorChromeFromClone } from "./editorChromeCleanup";
 import { sendSnapshotNow, stopWatchingPageForSnapshots } from "./pageSnapshot";
 import { setupBookLinkGrids } from "./linkGrid";
@@ -148,6 +153,20 @@ export function makeElement(
         result.draggable(draggableArgs);
     }
     return result;
+}
+
+// Focus the text box Bloom picks for the user when a page loads. With the other pages of the book
+// showing, bookGridView.ts has already put the page where it belongs in the view (where the user
+// clicked it, or in the middle), and the browser's usual scroll to a focused box that is off
+// screen would move it from there. So when the page does not fit in the page frame (a large zoom,
+// a small window), the box Bloom picked can have the focus while it is off screen, and the user
+// does not see the text cursor until they scroll to it or type: the browser scrolls the text
+// cursor into view when they type. (A page opened by clicking it gets its focus from that click
+// instead, so that box is one the user could see; see replayTheClickThatOpenedThisPage().)
+function focusTextBoxOnNewPage(textBox: Element): void {
+    (textBox as HTMLElement).focus({
+        preventScroll: isShowingOtherPagesHere(),
+    });
 }
 
 function isBrOrWhitespace(node) {
@@ -1016,7 +1035,7 @@ export function SetupElements(
                 // I'm not sure whether this is desirable when we found one from data-bloom-active,
                 // but there may be a case where the page gets reloaded while a text-editable canvas element is active.
                 if (elementToFocus && focusable) {
-                    focusable.focus();
+                    focusable.each((_, e) => focusTextBoxOnNewPage(e));
                     // Ideally calling focus above has this as a side effect.
                     // However, the focusin event handler doesn't seem to get called at this point
                     // for image containers, even though we have set tabindex to zero,
@@ -1026,7 +1045,8 @@ export function SetupElements(
                     BloomSourceBubbles.ShowSourceBubbleForElement(
                         elementToFocus,
                     );
-                } else {
+                } else if (!wasOpenedByClickingItInTheGrid()) {
+                    // (A page opened by clicking it in the grid gets the focus from that click.)
                     // It's OK not to focus anything.  The priority for focusing text boxes is:
                     // 1) empty canvas element "Text Box" which has no border to indicate that it's there
                     // 2) empty text box, whether canvas element or origami
@@ -1063,11 +1083,11 @@ export function SetupElements(
                         );
                         if (emptyTextBlockCanvasElement) {
                             // We want to focus on the first empty canvas element text with style "none".
-                            $(emptyTextBlockCanvasElement).focus();
+                            focusTextBoxOnNewPage(emptyTextBlockCanvasElement);
                             return;
                         } else {
                             // otherwise, focus on the first empty text box, whether canvas element or origami.
-                            $(emptyEditables[0]).focus();
+                            focusTextBoxOnNewPage(emptyEditables[0]);
                             return;
                         }
                     }
@@ -1077,7 +1097,7 @@ export function SetupElements(
                     );
                     if (editable) {
                         // focus on the first available origami text box
-                        $(editable).focus();
+                        focusTextBoxOnNewPage(editable);
                     }
                 }
             }
@@ -1361,6 +1381,7 @@ export function bootstrap() {
     if ($("div.bloom-page").length === 1) {
         addScrollbarsToPage($("div.bloom-page")[0]);
     }
+    trackScrollOffsets(document);
     setupWheelZooming();
 }
 // The minimum time between two zoom requests to the server, in milliseconds.
@@ -1574,6 +1595,7 @@ function cleanCloneOfPageForSave(
     getToolboxBundleExports()?.removeToolMarkupFromPageClone(clonedPage);
 
     removeNiceScrollArtifacts(clonedPage);
+    removeScrollOffsets(clonedPage);
 
     removeEditingDebrisFromClone(clonedPage);
 }

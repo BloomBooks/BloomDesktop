@@ -223,6 +223,43 @@ namespace BloomTests.Book
             Assert.That(LevelIn(domJunk), Is.EqualTo("not a number"));
         }
 
+        [Test]
+        public void RecordsPageLayoutUpdateLevelBelowOurs_MissingUnreadableOrLower_IsTrue()
+        {
+            Assert.That(
+                BookProcessor.RecordsPageLayoutUpdateLevelBelowOurs(DomWithLevel(null)),
+                Is.True
+            );
+            Assert.That(
+                BookProcessor.RecordsPageLayoutUpdateLevelBelowOurs(DomWithLevel("not a number")),
+                Is.True
+            );
+            var lower = (BookStorage.kPageLayoutUpdateLevel - 1).ToString(
+                CultureInfo.InvariantCulture
+            );
+            Assert.That(
+                BookProcessor.RecordsPageLayoutUpdateLevelBelowOurs(DomWithLevel(lower)),
+                Is.True
+            );
+        }
+
+        [Test]
+        public void RecordsPageLayoutUpdateLevelBelowOurs_OursOrHigher_IsFalse()
+        {
+            var same = BookStorage.kPageLayoutUpdateLevel.ToString(CultureInfo.InvariantCulture);
+            Assert.That(
+                BookProcessor.RecordsPageLayoutUpdateLevelBelowOurs(DomWithLevel(same)),
+                Is.False
+            );
+            var higher = (BookStorage.kPageLayoutUpdateLevel + 1).ToString(
+                CultureInfo.InvariantCulture
+            );
+            Assert.That(
+                BookProcessor.RecordsPageLayoutUpdateLevelBelowOurs(DomWithLevel(higher)),
+                Is.False
+            );
+        }
+
         // The ordinary single-page save streams the existing file through and replaces one page, so
         // it never rewrites the head. A book carrying a level from a newer Bloom therefore has to be
         // pushed onto the full-save path, which is where the clamp lives.

@@ -8,8 +8,8 @@
 # the jobs API by step name ("Build browser UI (production)", "Restore MSBuild build tasks",
 # "Build"), and the API lists a composite action as ONE step, so a build inside this action would
 # drop out of the report. The setup steps can live here because the report only ever adds them up:
-# it counts everything before "Build browser UI (production)" as setup. The builds are therefore
-# repeated in both workflows; when you change one, change the other.
+# it counts everything before "Build browser UI (production)" as setup. The C# build lives in
+# .github/actions/bloom-build instead.
 #
 # The caller must check out the repository first: a local action is read from the checkout.
 
