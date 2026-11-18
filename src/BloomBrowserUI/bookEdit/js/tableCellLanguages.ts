@@ -151,25 +151,32 @@ export function rolesFromSetting(
 /** Whether every group shows a language, none does, or only some do. */
 export type RoleState = "all" | "none" | "some";
 
-// The language tag of `role`.
+// The language tag of a role a cell stores, or undefined when the collection gives that role no
+// language: a cell keeps its roles when its collection drops its third language, say.
+function tagOfStoredRole(
+    role: LanguageRole,
+    languages: ICellLanguage[],
+): string | undefined {
+    return languages.find((other) => other.role === role)?.tag;
+}
+
+// The language tag of a role the menu lists, which always has one.
 function tagOfRole(role: LanguageRole, languages: ICellLanguage[]): string {
-    const language = languages.find((other) => other.role === role);
-    if (!language) {
+    const tag = tagOfStoredRole(role, languages);
+    if (tag === undefined) {
         throw new Error(`The collection gives role ${role} no language`);
     }
-    return language.tag;
+    return tag;
 }
 
 // The languages a group shows, by tag, each once. Two roles can name one language: V, the
-// toolbar's first language, is often the collection's L2 as well.
+// toolbar's first language, is often the collection's L2 as well. A stored role with no language
+// shows nothing.
 function tagsOfGroup(group: HTMLElement, languages: ICellLanguage[]): string[] {
-    return [
-        ...new Set(
-            rolesOfGroup(group, languages).map((role) =>
-                tagOfRole(role, languages),
-            ),
-        ),
-    ];
+    const tags = rolesOfGroup(group, languages)
+        .map((role) => tagOfStoredRole(role, languages))
+        .filter((tag): tag is string => tag !== undefined);
+    return [...new Set(tags)];
 }
 
 /**
@@ -323,7 +330,9 @@ export function toggleRole(
         const before = rolesOfGroup(group, languages);
         const after = tick
             ? [...before, role]
-            : before.filter((other) => tagOfRole(other, languages) !== tag);
+            : before.filter(
+                  (other) => tagOfStoredRole(other, languages) !== tag,
+              );
         return {
             place: places[index],
             // Undo puts back the attribute exactly as it was, including no attribute at all.

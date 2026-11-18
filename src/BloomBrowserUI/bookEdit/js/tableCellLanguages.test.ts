@@ -343,3 +343,44 @@ describe("showSettingInGroup", () => {
         expect(visibleTagsOf(group)).toEqual(["tpi", "en"]);
     });
 });
+
+describe("a cell that stores a role the collection no longer gives a language", () => {
+    // The cell was set to L1 and L3; the collection has since dropped its third language.
+    const languages = cellLanguagesOfCollection(
+        {
+            language1Name: "Tok Pisin",
+            language1Tag: "tpi",
+            language2Name: "English",
+            language2Tag: "en",
+        },
+        ["tpi"],
+    );
+
+    it("draws the menu's boxes from the languages the cell still shows", () => {
+        expect(languages.map((language) => language.role)).toEqual(["V", "N1"]);
+        const group = makeGroup("V,N2", ["tpi"]);
+
+        expect(roleState([group], "V", languages)).toBe("all");
+        expect(roleState([group], "N1", languages)).toBe("none");
+        expect(someGroupHasOneLanguage([group], languages)).toBe(true);
+    });
+
+    it("lets the user tick a replacement language, keeping the stored role", () => {
+        const group = makeGroup("V,N2", ["tpi"]);
+
+        toggleRole([group], "N1", languages, noWiring);
+
+        expect(group.getAttribute("data-default-languages")).toBe("V,N1,N2");
+        expect(visibleTagsOf(group)).toEqual(["tpi", "en"]);
+    });
+
+    it("lets the user tick a language in a cell whose only role has none", () => {
+        const group = makeGroup("N2", []);
+        expect(roleState([group], "V", languages)).toBe("none");
+
+        toggleRole([group], "V", languages, noWiring);
+
+        expect(group.getAttribute("data-default-languages")).toBe("V,N2");
+        expect(visibleTagsOf(group)).toEqual(["tpi"]);
+    });
+});
