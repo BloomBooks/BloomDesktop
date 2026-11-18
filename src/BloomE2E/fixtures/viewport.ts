@@ -51,6 +51,7 @@ export async function applyRequestedViewport(page: Page): Promise<void> {
     const size = requestedViewport();
     if (!size) return;
     viewportSession = await page.context().newCDPSession(page);
+    viewportSessionPage = page;
     await setOverride(viewportSession, size);
 }
 
@@ -63,6 +64,36 @@ export async function restoreRequestedViewport(): Promise<void> {
     if (!size || !viewportSession) return;
     await setOverride(viewportSession, size);
 }
+
+/**
+ * Emulate a page area of this size on this page, as if the Bloom window had been made that size,
+ * until resetViewportSize() or until the connection closes (a restart). The page lays out, and
+ * ResizeObservers fire, as they would for a real resize of the window; the window itself does
+ * not change, so WinForms sees nothing.
+ */
+export async function setViewportSize(
+    page: Page,
+    size: { width: number; height: number },
+): Promise<void> {
+    if (!viewportSession || viewportSessionPage !== page) {
+        viewportSession = await page.context().newCDPSession(page);
+        viewportSessionPage = page;
+    }
+    await setOverride(viewportSession, size);
+}
+
+/**
+ * Undo setViewportSize(): go back to the size BLOOM_E2E_VIEWPORT asks for, or to the window's own
+ * size when it asks for none.
+ */
+export async function resetViewportSize(page: Page): Promise<void> {
+    if (!viewportSession || viewportSessionPage !== page) return;
+    if (requestedViewport()) await restoreRequestedViewport();
+    else await viewportSession.send("Emulation.clearDeviceMetricsOverride");
+}
+
+// The page viewportSession was opened on, when setViewportSize() opened it.
+let viewportSessionPage: Page | undefined;
 
 const setOverride = (
     session: CDPSession,
