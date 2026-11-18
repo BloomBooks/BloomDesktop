@@ -875,13 +875,45 @@ namespace Bloom.ImageProcessing
             return destPath;
         }
 
+        /// <summary>
+        /// Tell the user that Bloom could not read or write the metadata (copyright, license...)
+        /// of the image at filePath, and that the file may be corrupt.
+        /// </summary>
         public static void ReportImageMetadataProblem(string filePath, Exception ex)
         {
             var msgFmt = LocalizationManager.GetString(
                 "EditTab.ImageMetadata.Corrupt",
                 "Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer."
             );
-            var msg = string.Format(msgFmt, Path.GetFileName(filePath));
+            NotifyUserOfImageMetadataProblem(string.Format(msgFmt, Path.GetFileName(filePath)), ex);
+        }
+
+        /// <summary>
+        /// Tell the user that Bloom could not save the copyright and license they chose for the
+        /// image at filePath. A file that is merely in use is not corrupt, so that case gets a
+        /// message of its own. (BL-17093)
+        /// </summary>
+        public static void ReportImageMetadataSaveProblem(string filePath, Exception ex)
+        {
+            if (!RobustFileIO.IsFileInUseError(ex))
+            {
+                ReportImageMetadataProblem(filePath, ex);
+                return;
+            }
+            // We can't tell what has the file open (it could even be Bloom), hence "possibly".
+            var msgFmt = LocalizationManager.GetString(
+                "EditTab.ImageMetadata.FileInUse",
+                "Bloom could not save the copyright and license information in {0}, possibly because another program is using that file. It may help to wait a moment and try again, or you may need to restart your computer."
+            );
+            NotifyUserOfImageMetadataProblem(string.Format(msgFmt, Path.GetFileName(filePath)), ex);
+        }
+
+        /// <summary>
+        /// Show msg about a problem with an image's metadata, with a button that opens the docs
+        /// page about such problems.
+        /// </summary>
+        private static void NotifyUserOfImageMetadataProblem(string msg, Exception ex)
+        {
             var btnLabel = LocalizationManager.GetString(
                 "EditTab.ImageMetadata.MoreInfo",
                 "More Information"
@@ -1950,11 +1982,18 @@ namespace Bloom.ImageProcessing
                     if (makeTransparent)
                         ApplyBloomTransparencyToFile(path);
                     // Copy metadata from older file to the new one.  GraphicsMagick does a poor job on metadata.
-                    using (var newMeta = RobustFileIO.CreateTaglibFile(path))
-                    {
-                        CopyTags(oldMetaData, newMeta);
-                        RobustFileIO.SaveTaglibFile(newMeta);
-                    }
+                    // We just rewrote the file, so something may still have it open. (BL-17093)
+                    RobustFileIO.RetryOnceIfFileInUse(
+                        path,
+                        () =>
+                        {
+                            using (var newMeta = RobustFileIO.CreateTaglibFile(path))
+                            {
+                                CopyTags(oldMetaData, newMeta);
+                                RobustFileIO.SaveTaglibFile(newMeta);
+                            }
+                        }
+                    );
                     if (progress != null)
                         Application.DoEvents(); // allow progress report to work
                     return true;
@@ -3087,52 +3126,50 @@ namespace Bloom.ImageProcessing
             {
                 imageBeingModified.Metadata = metadata;
                 imageBeingModified.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
-                try
-                {
-                    imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
-                }
-                catch (Exception e)
-                {
-                    if (e.Source == "TagLibSharp")
+                RobustFileIO.RetryOnceIfFileInUse(
+                    Path.Combine(folderPath, filename),
+                    () =>
                     {
-                        // The metadata is corrupt in a way that prevents writing it back to the file.
-                        // Try to remove the old, corrupt metadata from the file and write the new metadata.
-                        ImageUtils.StripMetadataFromImageFile(imageBeingModified);
-                        imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
+                        try
+                        {
+                            imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
+                        }
+                        catch (Exception e) when (e.Source == "TagLibSharp")
+                        {
+                            // The metadata is corrupt in a way that prevents writing it back to the file.
+                            // Try to remove the old, corrupt metadata from the file and write the new metadata.
+                            ImageUtils.StripMetadataFromImageFile(imageBeingModified);
+                            imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
+                        }
                     }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                );
             }
         }
 
         public static void SaveImageMetadata(PalasoImage imageInfo, string imagePath)
         {
-            try
-            {
-                // It would seem more natural to use a metadata-saving method on imageInfo,
-                // but the imageInfo has the source file's path locked into it, and the API
-                // gives us no way to change it, so such a save would go to the wrong file.
-                imageInfo.Metadata.Write(imagePath);
-            }
-            catch (Exception ex)
-            {
-                // We must have bad metadata in the original file.
-                if (ex.Source == "TagLibSharp")
+            RobustFileIO.RetryOnceIfFileInUse(
+                imagePath,
+                () =>
                 {
-                    // The metadata is corrupt in a way that prevents writing it back to the file.
-                    // Try to remove the old, corrupt metadata from the file and write the new metadata.
-                    imageInfo.SetCurrentFilePath(imagePath);
-                    ImageUtils.StripMetadataFromImageFile(imageInfo);
-                    imageInfo.Metadata.Write(imagePath);
+                    try
+                    {
+                        // It would seem more natural to use a metadata-saving method on imageInfo,
+                        // but the imageInfo has the source file's path locked into it, and the API
+                        // gives us no way to change it, so such a save would go to the wrong file.
+                        imageInfo.Metadata.Write(imagePath);
+                    }
+                    catch (Exception ex) when (ex.Source == "TagLibSharp")
+                    {
+                        // We must have bad metadata in the original file.
+                        // The metadata is corrupt in a way that prevents writing it back to the file.
+                        // Try to remove the old, corrupt metadata from the file and write the new metadata.
+                        imageInfo.SetCurrentFilePath(imagePath);
+                        ImageUtils.StripMetadataFromImageFile(imageInfo);
+                        imageInfo.Metadata.Write(imagePath);
+                    }
                 }
-                else
-                {
-                    throw;
-                }
-            }
+            );
         }
 
         /// <summary>
@@ -3473,14 +3510,6 @@ namespace Bloom.ImageProcessing
                 {
                     try
                     {
-                        // Remove all metadata that came from the source file and then restore the
-                        // minimal metadata we care about.  The existing metadata can sometimes
-                        // cause problems in the the TagSharp library.  (BL-16058)
-                        using (var tagFile = RobustFileIO.CreateTaglibFile(destPath))
-                        {
-                            tagFile.RemoveTags(TagTypes.AllTags);
-                            RobustFileIO.SaveTaglibFile(tagFile);
-                        }
                         var newMeta = new Metadata
                         {
                             Creator = metadata.Creator,
@@ -3490,7 +3519,9 @@ namespace Bloom.ImageProcessing
                             CollectionName = metadata.CollectionName,
                             CollectionUri = metadata.CollectionUri,
                         };
-                        newMeta.WriteIntellectualPropertyOnly(destPath);
+                        // Remove all metadata that came from the source file and then restore the
+                        // minimal metadata we care about.
+                        RobustFileIO.ReplaceMetadataWithIntellectualPropertyOnly(newMeta, destPath);
                     }
                     catch (Exception e)
                     {
