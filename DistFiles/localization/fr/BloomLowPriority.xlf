@@ -807,15 +807,15 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari.Description" sil:dynamic="true">
         <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
 This version is specific to the Dari language.</source>
-        <target xml:lang="fr" state="needs-translation">Designed for the Afghanistan government, this provides various special pages for use in their project.
-This version is specific to the Dari language.</target>
+        <target xml:lang="fr" state="translated">Conçu pour le gouvernement afghan, on fournit diverses pages spéciales à utiliser dans leur projet.
+Cette version est spécifique à la langue Dari.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari Device.Description" sil:dynamic="true">
         <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
 This version is specific to the Dari language and used for digital publishing.</source>
-        <target xml:lang="fr" state="needs-translation">Designed for the Afghanistan government, this provides various special pages for use in their project.
-This version is specific to the Dari language and used for digital publishing.</target>
+        <target xml:lang="fr" state="translated">Conçu pour le gouvernement afghan, on fournit diverses pages spéciales à utiliser dans leur projet.
+Cette version est spécifique à la langue Dari et sert pour l'édition numérique.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari Device.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto.Description" sil:dynamic="true">
