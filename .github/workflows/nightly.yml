@@ -561,6 +561,7 @@ jobs:
     # build-and-test. See the top of this file for why. Each shard sets up and builds exactly as
     # build-and-test does, then runs its share of the spec files.
     e2e:
+        # The report job finds these jobs by this name's start (its E2E_JOB_PREFIX).
         name: BloomE2E shard ${{ matrix.shard }}
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e_tests }}
         runs-on: windows-latest
@@ -733,9 +734,19 @@ jobs:
             # For the nightly report's step timings, which come from the jobs API.
             actions: read
 
+        # For the jobs API, which both the stand-in step and the report read.
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            API_URL: ${{ github.api_url }}
+            REPO: ${{ github.repository }}
+            RUN_ID: ${{ github.run_id }}
+            RUN_ATTEMPT: ${{ github.run_attempt }}
+            # How the e2e job's `name:` begins; both steps find the shards' jobs by it.
+            E2E_JOB_PREFIX: "BloomE2E shard "
+
         steps:
             # The shards' junit files, one per shard, gathered into one folder. None at all when
-            # BloomE2E was not run, or every shard died before writing one.
+            # BloomE2E was not run; a shard that left none gets a stand-in below.
             - name: Download BloomE2E results
               continue-on-error: true
               uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -752,10 +763,43 @@ jobs:
                   name: nightly-test-results
                   path: output/Tests
 
+            # A shard that died before writing its junit file (in setup, say, or killed at its
+            # timeout, when none of its later steps run) would otherwise just be missing from the
+            # check, which would pass on the other shards' results with part of the suite unrun.
+            # So for each shard job that left no file, write one holding a single failing test that
+            # says so, and fail this step so the report counts BloomE2E as failed. The shards are
+            # found from the jobs API, so this needs no shard count of its own.
+            - name: Stand in for any shard that left no results
+              id: stand_in
+              if: ${{ !cancelled() && needs.e2e.result != 'skipped' }}
+              shell: pwsh
+              run: |
+                  $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = "application/vnd.github+json" }
+                  $uri = "$($env:API_URL)/repos/$($env:REPO)/actions/runs/$($env:RUN_ID)/attempts/$($env:RUN_ATTEMPT)/jobs?per_page=100"
+                  $shards = @((Invoke-RestMethod -Uri $uri -Headers $headers).jobs | Where-Object { $_.name.StartsWith($env:E2E_JOB_PREFIX) })
+                  # BloomE2E ran, so there are shards; finding none means E2E_JOB_PREFIX no longer
+                  # matches the e2e job's name, and this guard would silently do nothing.
+                  if ($shards.Count -eq 0) { throw "Found no jobs named '$($env:E2E_JOB_PREFIX)*'. Has the e2e job's name changed?" }
+                  New-Item -ItemType Directory -Force -Path output/Tests/e2e | Out-Null
+                  $missing = 0
+                  foreach ($shard in $shards) {
+                      $n = $shard.name.Substring($env:E2E_JOB_PREFIX.Length)
+                      $file = "output/Tests/e2e/e2e-junit-shard-$n.xml"
+                      if (Test-Path -LiteralPath $file) { continue }
+                      $missing++
+                      $message = "$($shard.name) ended ($($shard.conclusion)) without uploading its results, so its tests did not run or were not recorded. See that job's log."
+                      Write-Host $message
+                      $xml = "<?xml version=""1.0"" encoding=""UTF-8""?>`n" +
+                          "<testsuites><testsuite name=""$($shard.name)"" tests=""1"" failures=""1"" skipped=""0"" errors=""0"">" +
+                          "<testcase classname=""$($shard.name)"" name=""shard $n reported its results"">" +
+                          "<failure message=""$message"" /></testcase></testsuite></testsuites>`n"
+                      [System.IO.File]::WriteAllText((Join-Path (Get-Location) $file), $xml, [System.Text.UTF8Encoding]::new($false))
+                  }
+                  if ($missing -gt 0) { throw "$missing BloomE2E shard(s) left no results; a stand-in failure was written for each." }
             # As the publish steps at the end of build-and-test, which say what each setting is for.
             - name: Publish BloomE2E test results
               id: publish_e2e
-              if: ${{ needs.e2e.result != 'skipped' }}
+              if: ${{ !cancelled() && needs.e2e.result != 'skipped' }}
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
                   check_name: "Nightly run: BloomE2E tests"
@@ -780,8 +824,9 @@ jobs:
             #
             # The report waits for every other job, and so for the five publish-test-results
             # steps, which are what turn "a suite reported nothing at all" into a red run
-            # (action_fail_on_inconclusive). Report any earlier and that entire class of failure --
-            # the one the per-suite reports exist to catch -- would be reported as a good night.
+            # (action_fail_on_inconclusive; for a BloomE2E shard, the stand-in step above). Report
+            # any earlier and that entire class of failure -- the one the per-suite reports exist
+            # to catch -- would be reported as a good night.
             #
             # Scheduled runs always post. A manual run posts only if post_report is ticked, so
             # iterating on this workflow cannot fill the channel with noise.
@@ -791,19 +836,15 @@ jobs:
               if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.post_report) }}
               shell: pwsh
               env:
-                  # How the night went is how the other two jobs went, plus whether this job could
-                  # publish the BloomE2E results; see $headline below.
+                  # How the night went is how the other two jobs went, plus whether this job had to
+                  # stand in for a shard or could not publish the BloomE2E results; see $headline
+                  # below. The jobs API settings for the timings come from the job's env.
                   BUILD_AND_TEST_RESULT: ${{ needs.build-and-test.result }}
                   E2E_RESULT: ${{ needs.e2e.result }}
+                  STAND_IN: ${{ steps.stand_in.outcome }}
                   PUBLISH_E2E: ${{ steps.publish_e2e.outcome }}
                   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
                   BRANCH: ${{ github.ref_name }}
-                  # For the timings lookup below.
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  API_URL: ${{ github.api_url }}
-                  REPO: ${{ github.repository }}
-                  RUN_ID: ${{ github.run_id }}
-                  RUN_ATTEMPT: ${{ github.run_attempt }}
                   # Step outcomes, from build-and-test's outputs. The two builds earn a line only
                   # when they are the reason a suite has nothing to say; the five suites always get
                   # one. BloomE2E's is the result of its shards together.
@@ -860,7 +901,7 @@ jobs:
                       # The publish-test-results steps create their own check runs, which show up in
                       # this same list, so pick the jobs out by name rather than taking them all.
                       $job = $response.jobs | Where-Object { $_.name -eq "build-and-test" } | Select-Object -First 1
-                      $e2eJobs = @($response.jobs | Where-Object { $_.name -like "BloomE2E shard *" })
+                      $e2eJobs = @($response.jobs | Where-Object { $_.name.StartsWith($env:E2E_JOB_PREFIX) })
                       $thisJob = $response.jobs | Where-Object { $_.name -eq "report" } | Select-Object -First 1
 
                       # The night runs from the first of these jobs to start to the last step any of
@@ -1048,10 +1089,10 @@ jobs:
                   if ($env:FRONTEND_BUILD -ne "success") { $lines += Format-Outcome "Front-end build" $env:FRONTEND_BUILD }
                   if ($env:CSHARP_BUILD -ne "success") { $lines += Format-Outcome "C# build" $env:CSHARP_BUILD }
 
-                  # BloomE2E's shards all ran, but the results they wrote could not be published:
-                  # the night failed in this job rather than in theirs.
+                  # BloomE2E's shards all ran, but this job had to stand in for one's missing results,
+                  # or could not publish them: the night failed in this job rather than in theirs.
                   $e2eOutcome = $env:E2E_RESULT
-                  if ($e2eOutcome -eq "success" -and $env:PUBLISH_E2E -eq "failure") { $e2eOutcome = "failure" }
+                  if ($e2eOutcome -eq "success" -and ($env:STAND_IN -eq "failure" -or $env:PUBLISH_E2E -eq "failure")) { $e2eOutcome = "failure" }
 
                   # Suites in the order build-and-test runs them, with BloomE2E where it ran before
                   # it got runners of its own. Paths match the five publish-test-results steps, as
