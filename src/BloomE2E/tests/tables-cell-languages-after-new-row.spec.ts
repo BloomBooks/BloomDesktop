@@ -33,7 +33,7 @@ test("a language ticked for a cell after a row was added gives a box a person ca
     page,
     step,
 }) => {
-    // Known failure, BL-17105: the table's canvas element keeps its height, so the added row
+    // Known failure, BL-17141: the table's canvas element keeps its height, so the added row
     // leaves each row too short for a second language's box, and the French box runs past the
     // bottom of its cell. The middle of the box then lies within 5 px of the cell's bottom edge,
     // where a press starts a row resize (CanvasElementPointerInteractions.onMouseDown hands it to
