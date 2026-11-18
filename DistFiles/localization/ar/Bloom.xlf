@@ -2381,6 +2381,16 @@
         <target xml:lang="ar" state="final">يحتوي هذا المربع على نص أكبر من سعته</target>
         <note>ID: EditTab.Overflow</note>
       </trans-unit>
+      <trans-unit id="EditTab.Overflow.Overflowing" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Overflowing</source>
+        <target xml:lang="ar" state="needs-translation">Overflowing</target>
+        <note>ID: EditTab.Overflow.Overflowing</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Overflow.PageOverflowing" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Page overflowing</source>
+        <target xml:lang="ar" state="needs-translation">Page overflowing</target>
+        <note>ID: EditTab.Overflow.PageOverflowing</note>
+      </trans-unit>
       <trans-unit id="EditTab.OverflowContainer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A container on this page is overflowing</source>
         <target xml:lang="ar" state="final">هناك تدفق زائد في حاوية على هذه الصفحة</target>
