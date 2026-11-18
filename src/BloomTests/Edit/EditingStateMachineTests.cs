@@ -390,6 +390,46 @@ namespace BloomTests.Edit
         }
 
         [Test]
+        public void SaveThenNavigate_ActionNavigates_NavigationWaitsUntilTheBookIsWritten()
+        {
+            // Writing the book can rename its folder: the first full save after a new book gets a
+            // title. The page's URL is in that folder, so a page shown before the write is asked
+            // for under the old folder and is gone by the time the browser asks (BL-17055). Closing
+            // a picture's Copyright and License dialog does this: its action refreshes the page.
+            var events = new List<string>();
+            var stateMachine = new EditingStateMachine(
+                navigate: pageId => events.Add("navigate " + pageId),
+                updateBookWithPageContents: (_, data) => events.Add("merge"),
+                saveBook: () =>
+                {
+                    events.Add("write");
+                    return true;
+                },
+                hidePage: () => { }
+            );
+            stateMachine.ToNavigating("cover");
+            stateMachine.ToEditing("cover");
+            events.Clear();
+
+            var result = stateMachine.SaveThenNavigate(
+                "content",
+                () =>
+                {
+                    stateMachine.ToNavigating("cover"); // as RefreshDisplayOfCurrentPage does
+                    return "cover";
+                },
+                e => Assert.Fail("test setup: nothing should fail here: " + e)
+            );
+
+            Assert.That(result, Is.EqualTo(SaveOutcome.Saved));
+            Assert.That(
+                events,
+                Is.EqualTo(new[] { "merge", "write", "navigate cover" }),
+                "the page must be shown after the book is written, and only once"
+            );
+        }
+
+        [Test]
         public void SaveThenNavigate_ActionNavigatesElsewhere_OurTargetWins()
         {
             GoToEditing("page1");
@@ -407,8 +447,8 @@ namespace BloomTests.Edit
             Assert.That(result, Is.EqualTo(SaveOutcome.Saved));
             Assert.That(
                 _navigatedTo,
-                Is.EqualTo(new[] { "somewhereTheActionWanted", "whereWeSaidToGo" }),
-                "the page the action named is where we must end up"
+                Is.EqualTo(new[] { "whereWeSaidToGo" }),
+                "the page the action returned is where we must end up, and the navigation it asked for along the way is replaced by that one"
             );
         }
 

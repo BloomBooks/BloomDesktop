@@ -62,6 +62,15 @@ public class EditingStateMachine
     // navigate: relocating a page raises RelocatePageEvent, and EditingModel.OnRelocatePage
     // refreshes the display of the page whose HTML (side, page number) just changed.
     private bool _runningSaveThenNavigateAction;
+
+    // Set only while changeBookBeforeWriting itself runs (a narrower window than
+    // _runningSaveThenNavigateAction, which also covers the write). A navigation the action asks
+    // for is held back until after the write, because the write can rename the book's folder: the
+    // first full save after a new book gets a title does. The URL of a page shown before that is
+    // in the old folder, so the browser would ask for the page, its pictures and its scripts
+    // where they no longer are (BL-17055). The action always names the page to show afterwards,
+    // so the navigation it asked for is simply replaced by that one.
+    private bool _holdingBackNavigation;
     private Action _hidePage;
 
     /// <summary>
@@ -168,6 +177,13 @@ public class EditingStateMachine
     /// </summary>
     public bool ToNavigating(string pageId)
     {
+        if (_holdingBackNavigation)
+        {
+            Log(
+                $"Holding back navigate({pageId}) until the book is written; we will go to the page the save's action names"
+            );
+            return true;
+        }
         switch (_currentState)
         {
             case State.NoPage:
@@ -245,8 +261,9 @@ public class EditingStateMachine
     /// changeBookBeforeWriting runs after the browser's content has been merged into the book DOM
     /// and before the book is written (so a page it duplicates or deletes already reflects the
     /// user's latest edits). It returns the id of the page to show afterwards, or null to leave the
-    /// editor blank. It is allowed to navigate (see _runningSaveThenNavigateAction); if it does,
-    /// our navigation to its returned page supersedes it, or is ignored if it is the same page.
+    /// editor blank. It may ask to navigate (relocating a page refreshes it, and so does closing a
+    /// picture's Copyright and License dialog), but that waits until the book is written, and is
+    /// then replaced by our navigation to the page it returns (see _holdingBackNavigation).
     ///
     /// If something throws we report it and do NOT navigate: that would throw away the edits we
     /// failed to save, and the browser still has the page intact and editable.
@@ -331,7 +348,16 @@ public class EditingStateMachine
         _runningSaveThenNavigateAction = true;
         try
         {
-            var pageIdToGoTo = changeBookBeforeWriting();
+            string pageIdToGoTo;
+            _holdingBackNavigation = true;
+            try
+            {
+                pageIdToGoTo = changeBookBeforeWriting();
+            }
+            finally
+            {
+                _holdingBackNavigation = false;
+            }
             // If the write fails we still navigate, but return false. The action has already
             // changed the book in memory and the page list shows the result; the write reported
             // the failure, and EditingModel.SaveBookToDisk keeps the book marked as needing a full
@@ -343,8 +369,6 @@ public class EditingStateMachine
                 ToNoPage();
                 return written;
             }
-            // Via ToNavigating rather than StartNavigating so that an action which already
-            // navigated to this very page (as relocating one does) is not made to do it twice.
             ToNavigating(pageIdToGoTo);
             return written;
         }

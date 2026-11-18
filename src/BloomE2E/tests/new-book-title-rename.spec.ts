@@ -1,12 +1,15 @@
-// A new book is named "Book-xxxxxxxx" until it has a title. The first save after the person types
-// a title renames the book's folder and file to match it, and that save happens when they click
-// another page. Bloom serves the page being edited as a simulated file inside the book's folder
-// ("<folder>/page-memsim-<id>.htm"), so the page it goes to next must be asked for under the NEW
-// folder. Asked for under the old one, Bloom no longer has it and reports "Page expired" (BL-17055).
+// A new book is named "Book-xxxxxxxx" until it has a title. The first full save after the person
+// types a title renames the book's folder and file to match it. That save can come from clicking
+// another page, or from anything else that saves the book, such as closing a picture's Copyright
+// and License dialog. Bloom serves the page being edited as a simulated file inside the book's
+// folder ("<folder>/page-memsim-<id>.htm"), and the page's pictures and scripts are links relative
+// to it. So once the folder is renamed, anything still asked for under the old folder fails: the
+// next page itself ("Page expired"), a picture on the page (shown as missing), or a script the
+// book's template puts on its pages (BL-17055).
 //
-// Under --e2e Bloom does not show that report (NonFatalProblem writes it to stderr and returns), so
-// the problem dialog watcher never sees it. What the test can see is the request: Bloom answers a
-// simulated page it does not have with a 404, so this watches for any such answer.
+// Under --e2e Bloom does not show those reports (NonFatalProblem writes them to stderr and returns),
+// so the problem dialog watcher never sees them. What the test can see is the requests: this
+// watches for any that failed and named the old folder.
 
 import * as fs from "node:fs";
 import * as Path from "node:path";
@@ -27,12 +30,20 @@ test.use({
     collectionSpec: { name: "new-book-title-rename", languages: ["en"] },
 });
 
-/** Start recording every simulated page Bloom fails to serve. Returns the list it fills. */
-function recordFailedSimulatedPages(page: Page): string[] {
+/** The cover's picture, in the page being edited. */
+const COVER_PICTURE = ".bloom-canvas .bloom-backgroundImage img";
+
+/**
+ * Start recording every request that failed and named `folder` (the book's folder before the
+ * rename). Returns the list it fills.
+ */
+function recordFailedRequestsUnder(page: Page, folder: string): string[] {
+    const folderName = Path.basename(folder);
     const failed: string[] = [];
     page.on("response", (response) => {
-        if (response.status() >= 400 && response.url().includes("-memsim-"))
-            failed.push(`${response.status()} ${decodeURI(response.url())}`);
+        const url = decodeURI(response.url());
+        if (response.status() >= 400 && url.includes(folderName))
+            failed.push(`${response.status()} ${url}`);
     });
     return failed;
 }
@@ -57,12 +68,8 @@ async function makeUntitledBook(
     return { oldFolder, contentPageId: contentPages[0].id };
 }
 
-/** Check the book now lives in a folder named for its title, and Bloom served every page. */
-async function expectRenamedWithoutExpiredPages(
-    oldFolder: string,
-    title: string,
-    failedSimulatedPages: string[],
-) {
+/** Wait until the book lives in a folder named for its title, and the old folder is gone. */
+async function expectRenamed(oldFolder: string, title: string) {
     const newFolder = Path.join(Path.dirname(oldFolder), title);
     await expect
         .poll(() => fs.existsSync(newFolder), {
@@ -73,41 +80,66 @@ async function expectRenamedWithoutExpiredPages(
         fs.existsSync(oldFolder),
         "the folder the book was renamed from should be gone",
     ).toBe(false);
-    expect(
-        failedSimulatedPages,
-        "Bloom failed to serve a simulated page (the 'Page expired' problem)",
-    ).toEqual([]);
 }
 
-test("going to another page after typing a new book's title shows that page [BL-17055]", async ({
+/** Wait until the cover's picture is `fileName` and has loaded. */
+async function expectCoverPictureShowing(page: Page, fileName: string) {
+    await expect
+        .poll(
+            () =>
+                editablePageFrame(page)
+                    .locator(COVER_PICTURE)
+                    .first()
+                    .evaluate((img) => {
+                        const image = img as HTMLImageElement;
+                        return image.complete && image.naturalWidth > 0
+                            ? decodeURIComponent(
+                                  (image.getAttribute("src") ?? "")
+                                      .split("?")[0]
+                                      .split("/")
+                                      .pop() ?? "",
+                              )
+                            : "(not loaded)";
+                    })
+                    .catch(() => "(no cover picture)"),
+            {
+                timeout: 30000,
+                message: `The cover never showed ${fileName}.`,
+            },
+        )
+        .toBe(fileName);
+}
+
+const failureMessage =
+    "Bloom failed to serve something under the book's old folder: the next page ('Page expired'), " +
+    "a picture, or a script";
+
+test("going to another page after typing a new book's title asks for nothing under the old folder [BL-17055]", async ({
     page,
 }) => {
     test.setTimeout(300000);
     const title = "How Airplanes Fly";
     const { oldFolder, contentPageId } = await makeUntitledBook(page);
 
-    const failedSimulatedPages = recordFailedSimulatedPages(page);
+    const failed = recordFailedRequestsUnder(page, oldFolder);
     await typeInGroup(page, ".bookTitle", "en", title);
-    // Going to another page is what saves the title, and so what renames the folder.
+    // Going to another page is what saves the title here, and so what renames the folder.
     await selectPage(page, contentPageId);
 
-    await expectRenamedWithoutExpiredPages(
-        oldFolder,
-        title,
-        failedSimulatedPages,
-    );
+    await expectRenamed(oldFolder, title);
+    expect(failed, failureMessage).toEqual([]);
 });
 
-test("going to another page after typing a title and setting the cover picture's copyright shows that page [BL-17055]", async ({
+test("closing the cover picture's Copyright and License dialog after typing a title keeps the picture showing [BL-17055]", async ({
     page,
 }) => {
     // The reporter's steps: title, a picture on the cover, the picture's Copyright and License
-    // dialog, then another page.
+    // dialog, then another page. Closing the dialog saves the book, so the rename happens there,
+    // while the cover is still showing.
     test.setTimeout(300000);
     const title = "How Kites Fly";
     const { oldFolder, contentPageId } = await makeUntitledBook(page);
 
-    const failedSimulatedPages = recordFailedSimulatedPages(page);
     await typeInGroup(page, ".bookTitle", "en", title);
     await chooseImageFile(
         page,
@@ -119,13 +151,19 @@ test("going to another page after typing a title and setting the cover picture's
             "bird.png",
         ),
     );
-    // Open the picture's dialog the way its toolbar button does; the dialog is the setup here, not
-    // the thing under test.
+    await expectCoverPictureShowing(page, "bird.png");
+    expect(
+        fs.existsSync(oldFolder),
+        "test setup: choosing a picture does not rename the folder",
+    ).toBe(true);
+
+    const failed = recordFailedRequestsUnder(page, oldFolder);
+    // Open the picture's dialog the way its toolbar button does; opening it is setup, not the
+    // thing under test.
     const imageSrc = await editablePageFrame(page)
-        .locator(".bloom-canvas .bloom-backgroundImage img")
+        .locator(COVER_PICTURE)
         .first()
         .getAttribute("src");
-    expect(imageSrc, "test setup: the cover shows the bird").toContain("bird");
     await page.evaluate(
         (src) =>
             (
@@ -138,11 +176,11 @@ test("going to another page after typing a title and setting the cover picture's
         imageSrc!,
     );
     await setCopyrightHolder(page, "Kite Society");
-    await selectPage(page, contentPageId);
 
-    await expectRenamedWithoutExpiredPages(
-        oldFolder,
-        title,
-        failedSimulatedPages,
-    );
+    await expectRenamed(oldFolder, title);
+    await expectCoverPictureShowing(page, "bird.png");
+    expect(failed, failureMessage).toEqual([]);
+
+    await selectPage(page, contentPageId);
+    expect(failed, failureMessage).toEqual([]);
 });
