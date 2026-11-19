@@ -31,6 +31,11 @@ export const TopBarContextMenu: React.FunctionComponent<{
     const [isMeddlingWithNewFiles, setIsMeddlingWithNewFiles] =
         React.useState(false);
     const [runFreezeDoctor, setRunFreezeDoctor] = React.useState(false);
+    const [simulateSlowComputer, setSimulateSlowComputer] =
+        React.useState(false);
+    // The slowing down is done in C# (SlowComputerSimulation.cs), so that is where the setting lives.
+    const readSimulateSlowComputer = () =>
+        getBoolean("app/simulateSlowComputer", setSimulateSlowComputer);
     const [canChooseDevBloomLibrary, setCanChooseDevBloomLibrary] =
         React.useState(false);
     const [useDevBloomLibrary, setUseDevBloomLibrary] = React.useState(false);
@@ -61,6 +66,7 @@ export const TopBarContextMenu: React.FunctionComponent<{
         getBoolean("app/runFreezeDoctor", (value) => {
             setRunFreezeDoctor(value);
         });
+        readSimulateSlowComputer();
         // Only some builds offer the choice of web site, and only the back end knows
         // which web site this run of Bloom uses.
         getBoolean("app/canChooseDevBloomLibrary", (value) => {
@@ -188,6 +194,20 @@ export const TopBarContextMenu: React.FunctionComponent<{
                     setRunFreezeDoctor(newValue);
                 },
             },
+            {
+                // Makes Bloom run roughly as it would on a machine five times slower than this
+                // one, for this run of Bloom only. See SlowComputerSimulation.cs.
+                label: "Simulate a slow computer",
+                selected: simulateSlowComputer,
+                onClick: () => {
+                    // Show what Bloom reports afterwards: Windows may refuse to limit Bloom,
+                    // leaving the simulation off.
+                    void postJson(
+                        "app/simulateSlowComputer",
+                        !simulateSlowComputer,
+                    ).then(readSimulateSlowComputer);
+                },
+            },
         ];
         if (canRestartViaDevLauncher) {
             items.push({ label: "-" });
@@ -221,6 +241,7 @@ export const TopBarContextMenu: React.FunctionComponent<{
         currentlyMeasuring,
         isMeddlingWithNewFiles,
         runFreezeDoctor,
+        simulateSlowComputer,
         canChooseDevBloomLibrary,
         useDevBloomLibrary,
         canRestartViaDevLauncher,

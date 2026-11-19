@@ -713,7 +713,7 @@ namespace Bloom.Edit
                 // Show a friendly message in the TalkingBook toolbox.
                 Logger.WriteError("Could not begin recording", ex);
                 var msg = LocalizationManager.GetString(
-                    "EditTab.Toolbox.TalkingBook.MicrophoneProblem",
+                    "EditTab.Toolbox.TalkingBookTool.MicrophoneProblem",
                     "Bloom is having problems connecting to your microphone. Please restart your computer and try again."
                 );
                 _webSocketServer.SendString(kWebsocketContext, "recordingStartError", msg);

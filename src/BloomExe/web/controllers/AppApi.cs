@@ -7,6 +7,7 @@ using Bloom.Book;
 using Bloom.FreezeDoctor;
 using Bloom.Properties;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
@@ -29,7 +30,7 @@ namespace Bloom.Api
 
         // This is used by the app/closeDialog api call to keep track of which dialogs are open
         // and to implicitly notify other parts of program when the dialog has been closed.
-        static internal ConcurrentDictionary<string, int> OpenDialogs =
+        internal static ConcurrentDictionary<string, int> OpenDialogs =
             new ConcurrentDictionary<string, int>();
 
         public AppApi(
@@ -195,6 +196,15 @@ namespace Bloom.Api
                     // that has been gathered but not yet filed. It quits by itself when Bloom goes, and
                     // it will not start with the next Bloom.
                 },
+                true
+            );
+            // The "Simulate a slow computer" testing mode. Like the Freeze Doctor, it is about the
+            // whole process rather than any window, so it does not go through the Shell; and it is
+            // session-only, so it lives in SlowComputerSimulation rather than in Settings.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kAppUrlPrefix + "simulateSlowComputer",
+                request => SlowComputerSimulation.IsOn,
+                (request, value) => SlowComputerSimulation.SetOn(value),
                 true
             );
             // True only on the builds that offer the "Use dev.BloomLibrary.org" menu item.
