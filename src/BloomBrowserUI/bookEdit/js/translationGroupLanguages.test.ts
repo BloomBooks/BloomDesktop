@@ -218,26 +218,19 @@ describe("showLanguagesInTranslationGroup", () => {
         expect(langsOf(group)).toEqual(["tpi", "en"]);
     });
 
-    // Tagging a box measures it, so tagging inside this function would lay the page out once per
-    // group when a table menu changes every cell: about 3 s for 30 cells on a slow computer.
-    it("tags no box itself, and returns every box it shows again, for the caller to tag together", () => {
-        const groups = [0, 1, 2].map(() =>
-            makeGroup(
-                "<div class='bloom-editable bloom-visibility-code-on' lang='en'><p>a</p></div>" +
-                    "<div class='bloom-editable bloom-visibility-code-off' lang='fr'><p>b</p></div>",
-            ),
+    // Tagging a box measures it, so tagging here would lay the page out once per group when a
+    // table menu changes every cell: about 3 s for 30 cells on a slow computer.
+    it("tags no box itself", () => {
+        const group = makeGroup(
+            "<div class='bloom-editable bloom-visibility-code-on' lang='en'><p>a</p></div>" +
+                "<div class='bloom-editable bloom-visibility-code-off' lang='fr'><p>b</p></div>",
         );
         const tag = vi.mocked(addLanguageTagsToBoxes);
         tag.mockClear();
 
-        const shown = groups.flatMap(
-            (group) => showLanguagesInTranslationGroup(group, ["fr"]).shown,
-        );
+        showLanguagesInTranslationGroup(group, ["fr", "es"]);
 
         expect(tag).not.toHaveBeenCalled();
-        expect(shown).toEqual(
-            groups.map((group) => group.querySelector("[lang='fr']")),
-        );
     });
 });
 
@@ -271,5 +264,35 @@ describe("setUpBoxesBuiltAfterLoad", () => {
         expect(langsOf(group)).toEqual(["en", "fr"]);
         expect(picturesIn("fr")).toEqual([id]);
         expect(picturesIn("en")).toEqual([id]);
+    });
+
+    it("tags the boxes added and the boxes shown again, of every group, in one pass", () => {
+        const groups = [0, 1].map(() =>
+            makeGroup(
+                "<div class='bloom-editable bloom-visibility-code-on' lang='en'><p>a</p></div>" +
+                    "<div class='bloom-editable bloom-visibility-code-off' lang='fr'><p>b</p></div>",
+            ),
+        );
+        const results = groups.map((group) =>
+            showLanguagesInTranslationGroup(group, ["fr", "es"]),
+        );
+        const added = results.flatMap((result) => result.added);
+        const shown = results.flatMap((result) => result.shown);
+        // sanity check: each group gained an es box and showed its fr box again
+        expect(added.map((box) => box.getAttribute("lang"))).toEqual([
+            "es",
+            "es",
+        ]);
+        expect(shown.map((box) => box.getAttribute("lang"))).toEqual([
+            "fr",
+            "fr",
+        ]);
+        const tag = vi.mocked(addLanguageTagsToBoxes);
+        tag.mockClear();
+
+        setUpBoxesBuiltAfterLoad(added, shown);
+
+        expect(tag).toHaveBeenCalledTimes(1);
+        expect(tag.mock.calls[0][0].toArray()).toEqual([...added, ...shown]);
     });
 });

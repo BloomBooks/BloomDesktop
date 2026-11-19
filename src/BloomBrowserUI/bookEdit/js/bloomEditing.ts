@@ -519,18 +519,15 @@ export function makeReadOnlyWhenCursorIsNotAllowed(elements: JQuery) {
 // such as image descriptions. We don't seem to need the optimization, so let's just do
 // them all.)
 export function AddLanguageTags(container) {
-    addLanguageTagsToBoxes($(container).find(".bloom-editable").toArray());
+    addLanguageTagsToBoxes($(container).find(".bloom-editable"));
 }
 
 // The language tags of AddLanguageTags, for the editable ones among `boxes`. Every box's tag is
 // worked out before any box is changed, so the page is laid out once to measure the boxes rather
 // than once per box. (The tag is drawn by an absolutely positioned :after, so it does not change a
-// box's width.) Exported from the page bundle too, for the canvas Language submenu, which runs in
-// the toolbox frame; so it takes plain elements rather than a jQuery object of either frame.
-export function addLanguageTagsToBoxes(boxes: HTMLElement[]) {
-    const editableBoxes = boxes.filter(
-        (box) => box.getAttribute("contenteditable") === "true",
-    );
+// box's width.)
+export function addLanguageTagsToBoxes(boxes: JQuery) {
+    const editableBoxes = boxes.filter("[contentEditable=true]").toArray();
     const tags = editableBoxes.map((box) => languageTagFor(box));
     editableBoxes.forEach((box, index) => {
         // If this DIV already had a language tag, remove the content in case we decide the situation has changed.
@@ -551,8 +548,9 @@ function languageTagFor(box: HTMLElement): string | undefined {
     // with each other, leading to flashing back and forth
     // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
     // August 2024: for canvas elements, the language is now displayed in the context controls box, and isn't
-    // a problem for small text boxes.
-    if ($this.width()! < 100 && !box.closest(kCanvasElementSelector)) {
+    // a problem for small text boxes. (So a canvas element's box is not measured at all, which
+    // spares laying out the page to measure it.)
+    if (!box.closest(kCanvasElementSelector) && $this.width()! < 100) {
         return undefined;
     }
 

@@ -27,13 +27,13 @@ import { setupInlineImages } from "./inlineImages";
  * Make `group` show the boxes of the languages `tags` and hide its others, adding a box for any of
  * those languages it has none for. A box is added among the others in the order of `order` (tags
  * in the order the languages should read down the group); a language not in `order` goes last.
- * Returns the boxes added, which need setUpBoxesBuiltAfterLoad once they are where they belong,
- * and the boxes that were there but hidden and are now shown, which need addLanguageTagsToBoxes:
- * a hidden box got no language tag, since AddLanguageTags skips a box too narrow to hold one.
+ * Returns the boxes added and the boxes that were there but hidden and are now shown; both go to
+ * setUpBoxesBuiltAfterLoad once the boxes are where they belong.
  *
- * Neither is done here, so that a caller changing many groups (a table menu changes every cell)
- * can do each once for all of them: setting up or tagging a box measures it, and measuring after
- * every group's change would make the browser lay out the page once per group.
+ * Nothing is measured here, so that a caller changing many groups (a table menu changes every
+ * cell) can pass the boxes of all of them to setUpBoxesBuiltAfterLoad at once: setting up or
+ * tagging a box measures it, and measuring after every group's change would make the browser lay
+ * out the page once per group.
  */
 export function showLanguagesInTranslationGroup(
     group: HTMLElement,
@@ -78,8 +78,16 @@ export function showLanguagesInTranslationGroup(
  * Not done here: overflow checking. Page load gives a page's boxes overflow handlers only when the
  * page has at most 30 of them (OverflowChecker.AddOverflowHandlers), and a box added later cannot
  * join that without counting again.
+ *
+ * `boxesShownAgain` are boxes that were already set up but hidden and are now shown, which
+ * showLanguagesInTranslationGroup returns: they only need their language tags, which a hidden box
+ * does not get, since AddLanguageTags skips a box too narrow to hold one. They are tagged with the
+ * new boxes, so the page is laid out once to measure them all.
  */
-export function setUpBoxesBuiltAfterLoad(boxes: HTMLElement[]): void {
+export function setUpBoxesBuiltAfterLoad(
+    boxes: HTMLElement[],
+    boxesShownAgain: HTMLElement[] = [],
+): void {
     const groups = Array.from(
         new Set(
             boxes
@@ -119,7 +127,7 @@ export function setUpBoxesBuiltAfterLoad(boxes: HTMLElement[]): void {
     // read-only from the element's contenteditable state at the moment it attaches.
     boxes.forEach((box) => box.setAttribute("contenteditable", "true"));
     makeReadOnlyWhenCursorIsNotAllowed($boxes);
-    addLanguageTagsToBoxes(boxes);
+    addLanguageTagsToBoxes($([...boxes, ...boxesShownAgain]));
     boxes.forEach((box) => attachToCkEditor(box));
     // After CKEditor, which can replace the boxes' nodes, as at page load.
     activateLongPressFor($boxes);
