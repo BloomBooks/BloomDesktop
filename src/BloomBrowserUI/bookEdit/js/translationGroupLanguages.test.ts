@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+    addLanguageTagsToShownBoxes,
     setUpBoxesBuiltAfterLoad,
     showLanguagesInTranslationGroup,
 } from "./translationGroupLanguages";
 import { insertInlineImage } from "./inlineImages";
+import { addLanguageTagsToBoxes } from "./bloomEditing";
 
 // The steps of setUpBoxesBuiltAfterLoad that need the real editing page (CKEditor, the toolbox,
 // jQuery handlers on a live page). The inline picture step is left real.
@@ -69,9 +71,10 @@ describe("showLanguagesInTranslationGroup", () => {
                 "<div class='bloom-editable' lang='fr'><p>b</p></div>",
         );
 
-        const added = showLanguagesInTranslationGroup(group, ["fr"]);
+        const { added, shown } = showLanguagesInTranslationGroup(group, ["fr"]);
 
         expect(added).toEqual([]);
+        expect(shown).toEqual([group.querySelector("[lang='fr']")]);
         expect(shownLangsOf(group)).toEqual(["fr"]);
         expect(
             group
@@ -83,9 +86,15 @@ describe("showLanguagesInTranslationGroup", () => {
     it("adds a box for a missing language from an edited box, without that box's language or editing", () => {
         const group = makeGroup(kEditedEnglishBox);
 
-        const added = showLanguagesInTranslationGroup(group, ["en", "ar"]);
+        const { added, shown } = showLanguagesInTranslationGroup(group, [
+            "en",
+            "ar",
+        ]);
 
         expect(added.length).toBe(1);
+        // An added box is set up, tag included, by setUpBoxesBuiltAfterLoad, so it is not also
+        // among the boxes shown again.
+        expect(shown).toEqual([]);
         const box = added[0];
         expect(box.getAttribute("lang")).toBe("ar");
         expect(box.innerHTML).toBe("<p></p>");
@@ -127,7 +136,9 @@ describe("showLanguagesInTranslationGroup", () => {
         expect(source.getAttribute("data-audiorecordingmode")).toBe("TextBox");
         expect(source.classList.contains("audio-sentence")).toBe(true);
 
-        const [box] = showLanguagesInTranslationGroup(group, ["fr"]);
+        const {
+            added: [box],
+        } = showLanguagesInTranslationGroup(group, ["fr"]);
 
         for (const attribute of [
             "id",
@@ -156,7 +167,9 @@ describe("showLanguagesInTranslationGroup", () => {
                 "<div class='bloom-editable Bubble-style' lang='z'><p></p></div>",
         );
 
-        const [box] = showLanguagesInTranslationGroup(group, ["fr"]);
+        const {
+            added: [box],
+        } = showLanguagesInTranslationGroup(group, ["fr"]);
 
         expect(box.classList.contains("Bubble-style")).toBe(true);
         expect(box.hasAttribute("data-book")).toBe(false);
@@ -200,10 +213,35 @@ describe("showLanguagesInTranslationGroup", () => {
             "<div class='bloom-editable' lang='tpi'><p></p></div>",
         );
 
-        const added = showLanguagesInTranslationGroup(group, ["en", "en"]);
+        const { added } = showLanguagesInTranslationGroup(group, ["en", "en"]);
 
         expect(added.length).toBe(1);
         expect(langsOf(group)).toEqual(["tpi", "en"]);
+    });
+
+    // Tagging a box measures it, so tagging inside this function would lay the page out once per
+    // group when a table menu changes every cell: about 3 s for 30 cells on a slow computer.
+    it("tags no box itself; the boxes it shows again are tagged together afterwards", () => {
+        const groups = [0, 1, 2].map(() =>
+            makeGroup(
+                "<div class='bloom-editable bloom-visibility-code-on' lang='en'><p>a</p></div>" +
+                    "<div class='bloom-editable bloom-visibility-code-off' lang='fr'><p>b</p></div>",
+            ),
+        );
+        const tag = vi.mocked(addLanguageTagsToBoxes);
+        tag.mockClear();
+
+        const shown = groups.flatMap(
+            (group) => showLanguagesInTranslationGroup(group, ["fr"]).shown,
+        );
+
+        expect(tag).not.toHaveBeenCalled();
+        expect(shown.length).toBe(3);
+
+        addLanguageTagsToShownBoxes(shown);
+
+        expect(tag).toHaveBeenCalledTimes(1);
+        expect(tag.mock.calls[0][0].toArray()).toEqual(shown);
     });
 });
 
@@ -231,7 +269,7 @@ describe("setUpBoxesBuiltAfterLoad", () => {
         expect(picturesIn("en")).toEqual([id]);
         expect(langsOf(group)).toEqual(["en"]);
 
-        const added = showLanguagesInTranslationGroup(group, ["en", "fr"]);
+        const { added } = showLanguagesInTranslationGroup(group, ["en", "fr"]);
         setUpBoxesBuiltAfterLoad(added);
 
         expect(langsOf(group)).toEqual(["en", "fr"]);

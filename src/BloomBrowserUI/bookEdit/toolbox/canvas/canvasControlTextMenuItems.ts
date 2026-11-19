@@ -98,9 +98,10 @@ function updateTranslationGroupLanguage(
     }
     // This menu runs in the toolbox frame; the boxes are set up by the page's own code.
     const page = getEditablePageBundleExports()!;
-    const added = page.showLanguagesInTranslationGroup(translationGroup, [
-        langCode,
-    ]);
+    const { added, shown } = page.showLanguagesInTranslationGroup(
+        translationGroup,
+        [langCode],
+    );
     const editableInLang = translationGroup.querySelector<HTMLElement>(
         `:scope > .bloom-editable[lang="${langCode}"]`,
     )!;
@@ -117,6 +118,7 @@ function updateTranslationGroupLanguage(
         );
     }
     page.setUpBoxesBuiltAfterLoad(added);
+    page.addLanguageTagsToShownBoxes(shown);
 }
 
 function clearFieldTypeClasses(translationGroup: HTMLElement): void {

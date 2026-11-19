@@ -68,6 +68,7 @@ import {
     theOneCanvasElementManager,
 } from "./canvasElementManager/CanvasElementManager";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
+import type { ToolBox } from "../toolbox/toolbox";
 import {
     canUndoImageOperation,
     clearImageOperationUndoState,
@@ -394,40 +395,46 @@ function AddEditKeyHandlers(container) {
     // so that it can be caught even when the focus isn't on the browser
 }
 
-// Lets whichever toolbox tool is open (Talking Book, the readers and others) set up the text
-// boxes in `container`, or the boxes in a list. Boxes added later are passed as a list: passing
-// their groups would bind the tools' handlers a second time on the groups' other boxes.
-export function configureElementsForTools(
-    container: HTMLElement | HTMLElement[],
-) {
+// Runs `task` with the toolbox once the toolbox frame has loaded.
+function doWithToolbox(task: (toolbox: ToolBox) => void) {
     doWhenWorkspaceBundleLoaded((rootFrameExports) => {
         rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
             const toolbox = toolboxFrameExports.getTheOneToolbox();
             // toolbox might be undefined in unit testing?
-
             if (toolbox) {
-                if (Array.isArray(container)) {
-                    toolbox.configureElementsForTools(container);
-                    return;
-                }
-                toolbox.configureElementsForTools(
-                    $(container).find(".bloom-editable").toArray(),
-                );
-                const page = container.getElementsByClassName(
-                    "bloom-page",
-                )[0] as HTMLElement | undefined;
-                // When this is called initially on page load, container is the body,
-                // and we will find a bloom-page and adjust the tool list.
-                // If it is called later to adjust something like an image-container,
-                // the toolbox should already be set for this page.
-                // In that case we won't find a page inside it, which is fine since
-                // we don't need to adjust the tool list again.
-                if (page) {
-                    toolbox.adjustToolListForPage(page);
-                }
+                task(toolbox);
             }
         });
     });
+}
+
+// Lets whichever toolbox tool is open (Talking Book, the readers and others) set up the text
+// boxes in `container`, and adjusts the tool list when `container` holds the page.
+function configureContainerForTools(container: HTMLElement) {
+    doWithToolbox((toolbox) => {
+        toolbox.configureElementsForTools(
+            $(container).find(".bloom-editable").toArray(),
+        );
+        const page = container.getElementsByClassName("bloom-page")[0] as
+            | HTMLElement
+            | undefined;
+        // When this is called initially on page load, container is the body,
+        // and we will find a bloom-page and adjust the tool list.
+        // If it is called later to adjust something like an image-container,
+        // the toolbox should already be set for this page.
+        // In that case we won't find a page inside it, which is fine since
+        // we don't need to adjust the tool list again.
+        if (page) {
+            toolbox.adjustToolListForPage(page);
+        }
+    });
+}
+
+// Lets the toolbox tools set up `boxes`, text boxes added after page load. Only the new boxes
+// are passed: passing their groups would bind the tools' handlers a second time on the groups'
+// other boxes.
+export function configureElementsForTools(boxes: HTMLElement[]) {
+    doWithToolbox((toolbox) => toolbox.configureElementsForTools(boxes));
 }
 
 // Keeps a data-text attribute on each box equal to its text, for stylesheets that need to see the
@@ -881,7 +888,7 @@ export function SetupElements(
             this.innerHTML = this.value;
         });
 
-    configureElementsForTools(container);
+    configureContainerForTools(container);
 
     SetBookCopyrightAndLicenseButtonVisibility(container);
 

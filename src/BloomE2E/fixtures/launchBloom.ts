@@ -126,16 +126,12 @@ export interface ICollectionSpec {
      */
     bookshelf?: string;
     /**
-     * The tags, among `languages`, of the languages the collection writes right to left. Bloom
-     * does not work this out from the tag: it is a setting of its own in the collection, which a
-     * person ticks in the Settings dialog.
+     * The tags, among `languages`, of the languages the collection writes right to left (Arabic,
+     * Hebrew). Bloom does not work this out from the tag: it is a setting of its own in the
+     * collection, which a person ticks in the Settings dialog. When Language 1 is one of them,
+     * Bloom lays books out to be read from the other side.
      */
     rightToLeftLanguages?: string[];
-    /**
-     * True for a collection whose Language 1 is written right to left (Arabic, Hebrew), as ticked
-     * in the language's settings. Bloom then lays books out to be read from the other side.
-     */
-    rightToLeft?: boolean;
 }
 
 /** Options for launchBloom. Give exactly one of collectionName and collectionSpec. */
@@ -703,8 +699,6 @@ export interface ICollectionXmlExtras {
     bookshelf?: string;
     /** See ICollectionSpec.rightToLeftLanguages. */
     rightToLeftLanguages?: string[];
-    /** See ICollectionSpec.rightToLeft. */
-    rightToLeft?: boolean;
 }
 
 /**
@@ -748,9 +742,6 @@ export function makeCollectionXml(
         `<?xml version="1.0" encoding="utf-8"?>\n` +
         `<Collection version="0.2">\n` +
         languageElements +
-        (extras.rightToLeft
-            ? `\n  <IsLanguage1Rtl>true</IsLanguage1Rtl>`
-            : "") +
         `\n  <XMatterPack>${xmatterPack}</XMatterPack>\n` +
         `  <BrandingProjectName>Default</BrandingProjectName>\n` +
         (extras.subscriptionCode
