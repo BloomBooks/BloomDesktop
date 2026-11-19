@@ -1,5 +1,32 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { showLanguagesInTranslationGroup } from "./translationGroupLanguages";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+    setUpBoxesBuiltAfterLoad,
+    showLanguagesInTranslationGroup,
+} from "./translationGroupLanguages";
+import { insertInlineImage } from "./inlineImages";
+
+// The steps of setUpBoxesBuiltAfterLoad that need the real editing page (CKEditor, the toolbox,
+// jQuery handlers on a live page). The inline picture step is left real.
+vi.mock("./bloomEditing", () => ({
+    activateLongPressFor: vi.fn(),
+    addEditKeyHandlersToBoxes: vi.fn(),
+    addLanguageTagsToBoxes: vi.fn(),
+    addPlaceholdersFromLabels: vi.fn(),
+    addPlainTextPasteHandler: vi.fn(),
+    attachToCkEditor: vi.fn(),
+    configureElementsForTools: vi.fn(),
+    keepDataTextUpToDate: vi.fn(),
+    makeReadOnlyWhenCursorIsNotAllowed: vi.fn(),
+    matchGroupFontSizesToLanguage1: vi.fn(),
+}));
+vi.mock("../bloomField/BloomField", async (importOriginal) => {
+    const actual =
+        await importOriginal<typeof import("../bloomField/BloomField")>();
+    return {
+        ...actual,
+        default: { ...actual.default, ManageField: vi.fn() },
+    };
+});
 
 // A group as it is once the page has been set up for editing: its boxes are typable and carry
 // what CKEditor adds to a box it manages.
@@ -177,5 +204,38 @@ describe("showLanguagesInTranslationGroup", () => {
 
         expect(added.length).toBe(1);
         expect(langsOf(group)).toEqual(["tpi", "en"]);
+    });
+});
+
+describe("setUpBoxesBuiltAfterLoad", () => {
+    // Inline pictures, like a table cell's languages, can be in a cell of a table made through
+    // Change Layout, whose Languages menu adds boxes after the page has loaded.
+    it("gives a box added to a group with an inline picture its copy of the picture", () => {
+        const group = makeGroup(
+            "<div class='bloom-editable bloom-visibility-code-on' lang='en'><p>Hello</p></div>",
+        );
+        const wrapper = insertInlineImage(group);
+        const id = wrapper.getAttribute("data-bloom-inline-image-id");
+        const picturesIn = (lang: string) =>
+            Array.from(
+                group.querySelectorAll<HTMLElement>(
+                    `:scope > .bloom-editable[lang='${lang}'] [data-bloom-inline-image-id]`,
+                ),
+            ).map((picture) =>
+                picture.getAttribute("data-bloom-inline-image-id"),
+            );
+        expect(
+            id,
+            "insertInlineImage should give the picture an id",
+        ).toBeTruthy();
+        expect(picturesIn("en")).toEqual([id]);
+        expect(langsOf(group)).toEqual(["en"]);
+
+        const added = showLanguagesInTranslationGroup(group, ["en", "fr"]);
+        setUpBoxesBuiltAfterLoad(added);
+
+        expect(langsOf(group)).toEqual(["en", "fr"]);
+        expect(picturesIn("fr")).toEqual([id]);
+        expect(picturesIn("en")).toEqual([id]);
     });
 });
