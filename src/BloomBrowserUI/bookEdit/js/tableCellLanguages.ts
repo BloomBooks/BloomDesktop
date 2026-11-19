@@ -12,7 +12,10 @@
 import { ILanguageNameValues } from "../toolbox/canvas/canvasControlTypes";
 import { theOneUndoStack } from "../undo/UndoStack";
 import { isInChangeLayoutMode } from "../undo/redoKeyBinding";
-import { showLanguagesInTranslationGroup } from "./translationGroupLanguages";
+import {
+    setUpBoxesBuiltAfterLoad,
+    showLanguagesInTranslationGroup,
+} from "./translationGroupLanguages";
 
 export type LanguageRole = "V" | "N1" | "N2";
 
@@ -217,22 +220,10 @@ function settingOfRoles(roles: LanguageRole[]): string {
 }
 
 /**
- * Make `group` store and show exactly `roles`. Returns the editables added, as showSettingInGroup
- * does.
- */
-export function showRolesInGroup(
-    group: HTMLElement,
-    roles: LanguageRole[],
-    languages: ICellLanguage[],
-): HTMLElement[] {
-    return showSettingInGroup(group, settingOfRoles(roles), languages);
-}
-
-/**
  * Make `group` store `setting` exactly as given, including no setting at all, and show the
  * languages it stands for, in role order. Where the group has no bloom-editable in one of those
  * languages yet (a cell made since the page loaded has only its first one), one is added. Returns
- * the added ones, which need setUpBoxesBuiltAfterLoad.
+ * the added ones, which need setUpBoxesBuiltAfterLoad once they are in the page.
  */
 export function showSettingInGroup(
     group: HTMLElement,
@@ -264,7 +255,6 @@ export function toggleRole(
     groups: HTMLElement[],
     role: LanguageRole,
     languages: ICellLanguage[],
-    onNewEditables: (editables: HTMLElement[]) => void,
 ): void {
     const tick = roleState(groups, role, languages) !== "all";
     const tag = tagOfRole(role, languages);
@@ -317,13 +307,13 @@ export function toggleRole(
             }
             return group;
         });
-        onNewEditables(
+        setUpBoxesBuiltAfterLoad(
             groups.flatMap((group, index) =>
                 showSettingInGroup(group, changes[index][from], languages),
             ),
         );
     };
-    onNewEditables(
+    setUpBoxesBuiltAfterLoad(
         changing.flatMap((group, index) =>
             showSettingInGroup(group, changes[index].afterSetting, languages),
         ),
@@ -333,7 +323,7 @@ export function toggleRole(
         kind: "custom",
         // In Change Layout mode the table is faded and cannot be edited, as with table operations.
         isAvailable: () => !isInChangeLayoutMode(pageDocument),
-        // Hiding languages never adds an editable, so undo's call of onNewEditables does nothing.
+        // Hiding languages never adds an editable, so undo sets nothing up.
         undo: () => show("beforeSetting", "afterSetting"),
         redo: () => show("afterSetting", "beforeSetting"),
     });

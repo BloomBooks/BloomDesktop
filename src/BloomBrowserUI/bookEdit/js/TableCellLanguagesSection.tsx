@@ -7,6 +7,7 @@ import { useL10n } from "../../react_components/l10nHooks";
 import {
     ICellLanguage,
     menuLanguages,
+    RoleState,
     roleState,
     someGroupHasOneLanguage,
     toggleRole,
@@ -26,25 +27,22 @@ const kMenuGutterPx = 22;
 const kHoverBackground = "#eef6f8";
 
 const LanguageRow: React.FunctionComponent<{
-    groups: HTMLElement[];
     language: ICellLanguage;
-    languages: ICellLanguage[];
+    state: RoleState;
+    // Unticking would leave some cell with no language.
+    locked: boolean;
     onToggle: () => void;
 }> = (props) => {
     const tooltip = useL10n(
         props.language.tooltipEnglish,
         props.language.tooltipL10nId,
     );
-    const state = roleState(props.groups, props.language.role, props.languages);
-    const locked =
-        state === "all" &&
-        someGroupHasOneLanguage(props.groups, props.languages);
     const label = `${props.language.shortName} - ${props.language.name}`;
     return (
         <label
             title={tooltip}
             data-cell-language={props.language.role}
-            data-cell-language-state={state}
+            data-cell-language-state={props.state}
             // Keep the focus in the cell the user was typing in; the menu's own controls do
             // the same.
             onMouseDown={(event) => event.preventDefault()}
@@ -55,14 +53,14 @@ const LanguageRow: React.FunctionComponent<{
                 white-space: nowrap;
                 font-size: 13px;
                 color: #222;
-                cursor: ${locked ? "default" : "pointer"};
+                cursor: ${props.locked ? "default" : "pointer"};
             `}
         >
             <Checkbox
                 size="small"
-                checked={state === "all"}
-                indeterminate={state === "some"}
-                disabled={locked}
+                checked={props.state === "all"}
+                indeterminate={props.state === "some"}
+                disabled={props.locked}
                 inputProps={{ "aria-label": label }}
                 onChange={props.onToggle}
                 css={css`
@@ -81,7 +79,6 @@ const LanguageRow: React.FunctionComponent<{
 export const TableCellLanguagesSection: React.FunctionComponent<{
     groups: HTMLElement[];
     languages: ICellLanguage[];
-    onNewEditables: (editables: HTMLElement[]) => void;
 }> = (props) => {
     const label = useL10n("Languages", "Common.Languages");
     // The check boxes are read from the cells themselves, so after a change all that is needed
@@ -108,6 +105,11 @@ export const TableCellLanguagesSection: React.FunctionComponent<{
             top: itemRect.top - 4,
         });
     }, [open]);
+
+    const someCellHasOneLanguage = someGroupHasOneLanguage(
+        props.groups,
+        props.languages,
+    );
 
     return (
         <div
@@ -172,23 +174,31 @@ export const TableCellLanguagesSection: React.FunctionComponent<{
                         padding: 4px 0;
                     `}
                 >
-                    {menuLanguages(props.languages).map((language) => (
-                        <LanguageRow
-                            key={language.role}
-                            groups={props.groups}
-                            language={language}
-                            languages={props.languages}
-                            onToggle={() => {
-                                toggleRole(
-                                    props.groups,
-                                    language.role,
-                                    props.languages,
-                                    props.onNewEditables,
-                                );
-                                noteChange((count) => count + 1);
-                            }}
-                        />
-                    ))}
+                    {menuLanguages(props.languages).map((language) => {
+                        const state = roleState(
+                            props.groups,
+                            language.role,
+                            props.languages,
+                        );
+                        return (
+                            <LanguageRow
+                                key={language.role}
+                                language={language}
+                                state={state}
+                                locked={
+                                    state === "all" && someCellHasOneLanguage
+                                }
+                                onToggle={() => {
+                                    toggleRole(
+                                        props.groups,
+                                        language.role,
+                                        props.languages,
+                                    );
+                                    noteChange((count) => count + 1);
+                                }}
+                            />
+                        );
+                    })}
                 </div>
             )}
         </div>

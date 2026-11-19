@@ -96,3 +96,7 @@ let Bloom add what the library knows nothing about:
 - `src/BloomBrowserUI/bookEdit/js/TableCellLanguagesSection.tsx`: the menu item and its submenu.
 - `src/BloomBrowserUI/bookEdit/js/tableEditing.ts`: installs both hooks; new text cells start
   with `data-default-languages="V"`.
+- `src/BloomBrowserUI/bookEdit/js/translationGroupLanguages.ts` (from BL-17105-1of3-box-setup,
+  which the canvas text box's Language submenu also uses): shows the chosen languages in a cell's
+  translation group, adds a box for a language the cell has none for, and gives that box what page
+  load gives every box.

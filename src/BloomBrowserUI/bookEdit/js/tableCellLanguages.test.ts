@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
     cellLanguagesOfCollection,
     ICellLanguage,
@@ -6,12 +6,18 @@ import {
     roleState,
     rolesFromSetting,
     rolesOfGroup,
-    showRolesInGroup,
     showSettingInGroup,
     someGroupHasOneLanguage,
     toggleRole,
 } from "./tableCellLanguages";
 import { theOneUndoStack } from "../undo/UndoStack";
+
+// Setting up a box needs the whole editing page (CKEditor, the toolbox); these tests are about
+// which boxes are shown.
+vi.mock("./translationGroupLanguages", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("./translationGroupLanguages")>()),
+    setUpBoxesBuiltAfterLoad: vi.fn(),
+}));
 
 const kLanguages: ICellLanguage[] = cellLanguagesOfCollection(
     {
@@ -51,8 +57,6 @@ function visibleTagsOf(group: HTMLElement): string[] {
         ),
     ).map((editable) => editable.getAttribute("lang")!);
 }
-
-const noWiring = () => {};
 
 beforeEach(() => {
     document.body.innerHTML = "";
@@ -123,8 +127,8 @@ describe("cellLanguagesOfCollection", () => {
         );
         const group = makeGroup("N1", ["en"]);
 
-        toggleRole([group], "V", languages, noWiring);
-        toggleRole([group], "V", languages, noWiring);
+        toggleRole([group], "V", languages);
+        toggleRole([group], "V", languages);
 
         expect(group.getAttribute("data-default-languages")).toBe("N1");
         expect(visibleTagsOf(group)).toEqual(["en"]);
@@ -157,19 +161,19 @@ describe("rolesFromSetting", () => {
     });
 });
 
-describe("showRolesInGroup", () => {
-    it("stores the roles and shows exactly their languages", () => {
+describe("showSettingInGroup", () => {
+    it("stores the setting and shows exactly their languages", () => {
         const group = makeGroup("V", ["tpi"]);
         expect(visibleTagsOf(group)).toEqual(["tpi"]);
 
-        const added = showRolesInGroup(group, ["V", "N2"], kLanguages);
+        const added = showSettingInGroup(group, "V,N2", kLanguages);
 
         expect(added).toEqual([]);
         expect(group.getAttribute("data-default-languages")).toBe("V,N2");
         expect(visibleTagsOf(group)).toEqual(["tpi", "es"]);
     });
 
-    it("adds an editable for a language a new cell does not have yet, in role order, and returns it for wiring", () => {
+    it("adds an editable for a language a new cell does not have yet, in role order, and returns it to be set up", () => {
         // A cell made since the page loaded has only its first language's editable.
         const group = document.createElement("div");
         group.className = "bloom-translationGroup";
@@ -177,7 +181,7 @@ describe("showRolesInGroup", () => {
             "<div class='bloom-editable normal-style bloom-visibility-code-on' lang='tpi' contenteditable='true'><p>hi</p></div>";
         document.body.appendChild(group);
 
-        const wired = showRolesInGroup(group, ["V", "N2", "N1"], kLanguages);
+        const wired = showSettingInGroup(group, "V,N2,N1", kLanguages);
 
         const editables = Array.from(
             group.querySelectorAll<HTMLElement>(":scope > .bloom-editable"),
@@ -189,7 +193,7 @@ describe("showRolesInGroup", () => {
             "en",
             "es",
         ]);
-        // The new ones are not yet typable; the wiring does that.
+        // The new ones are not yet typable; setUpBoxesBuiltAfterLoad does that.
         expect(wired[0].hasAttribute("contenteditable")).toBe(false);
         expect(wired[0].classList.contains("normal-style")).toBe(true);
         expect(visibleTagsOf(group)).toEqual(["tpi", "en", "es"]);
@@ -204,7 +208,7 @@ describe("toggleRole", () => {
         ];
         expect(roleState(groups, "N1", kLanguages)).toBe("some");
 
-        toggleRole(groups, "N1", kLanguages, noWiring);
+        toggleRole(groups, "N1", kLanguages);
 
         expect(roleState(groups, "N1", kLanguages)).toBe("all");
         expect(groups.map(visibleTagsOf)).toEqual([
@@ -212,7 +216,7 @@ describe("toggleRole", () => {
             ["tpi", "en"],
         ]);
 
-        toggleRole(groups, "N1", kLanguages, noWiring);
+        toggleRole(groups, "N1", kLanguages);
 
         expect(roleState(groups, "N1", kLanguages)).toBe("none");
         expect(groups.map(visibleTagsOf)).toEqual([["tpi"], ["tpi"]]);
@@ -230,7 +234,7 @@ describe("toggleRole", () => {
         expect(roleState(groups, "V", kLanguages)).toBe("all");
         expect(someGroupHasOneLanguage(groups, kLanguages)).toBe(true);
 
-        toggleRole(groups, "V", kLanguages, noWiring);
+        toggleRole(groups, "V", kLanguages);
 
         // The second cell could lose L1, but the first could not; the box is locked, and a
         // toggle that gets through anyway leaves the first cell alone.
@@ -240,7 +244,7 @@ describe("toggleRole", () => {
     it("is one undo step, which puts back the setting exactly as it was, and can be redone", () => {
         const groups = [makeGroup(null, ["tpi"]), makeGroup("V", ["tpi"])];
 
-        toggleRole(groups, "N2", kLanguages, noWiring);
+        toggleRole(groups, "N2", kLanguages);
         expect(
             groups.map((group) => group.getAttribute("data-default-languages")),
         ).toEqual(["V,N2", "V,N2"]);
@@ -263,7 +267,7 @@ describe("toggleRole", () => {
 
     it("undoes and redoes after the cells were rebuilt, as a table Undo rebuilds them", () => {
         makeGroup(null, ["tpi"]);
-        toggleRole([makeGroup("V", ["tpi"])], "N1", kLanguages, noWiring);
+        toggleRole([makeGroup("V", ["tpi"])], "N1", kLanguages);
 
         // Rebuilding from the markup, as the table library does when it undoes an operation,
         // leaves equal groups that are new elements.
@@ -316,7 +320,7 @@ describe("when the toolbar's first language is the collection's L2", () => {
         const group = makeGroup("V,N1,N2", ["en", "es"]);
         expect(visibleTagsOf(group)).toEqual(["en", "es"]);
 
-        toggleRole([group], "V", languages, noWiring);
+        toggleRole([group], "V", languages);
 
         expect(group.getAttribute("data-default-languages")).toBe("N2");
         expect(visibleTagsOf(group)).toEqual(["es"]);
@@ -368,7 +372,7 @@ describe("a cell that stores a role the collection no longer gives a language", 
     it("lets the user tick a replacement language, keeping the stored role", () => {
         const group = makeGroup("V,N2", ["tpi"]);
 
-        toggleRole([group], "N1", languages, noWiring);
+        toggleRole([group], "N1", languages);
 
         expect(group.getAttribute("data-default-languages")).toBe("V,N1,N2");
         expect(visibleTagsOf(group)).toEqual(["tpi", "en"]);
@@ -378,7 +382,7 @@ describe("a cell that stores a role the collection no longer gives a language", 
         const group = makeGroup("N2", []);
         expect(roleState([group], "V", languages)).toBe("none");
 
-        toggleRole([group], "V", languages, noWiring);
+        toggleRole([group], "V", languages);
 
         expect(group.getAttribute("data-default-languages")).toBe("V,N2");
         expect(visibleTagsOf(group)).toEqual(["tpi"]);

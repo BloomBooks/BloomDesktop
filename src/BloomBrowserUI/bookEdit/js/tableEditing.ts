@@ -178,7 +178,6 @@ function installHostHooks(): void {
         return createElement(TableCellLanguagesSection, {
             groups,
             languages: cellLanguages,
-            onNewEditables: setUpBoxesBuiltAfterLoad,
         });
     });
     // A text cell's languages travel with the cell's other settings: into a new row or column
@@ -195,16 +194,21 @@ function installHostHooks(): void {
             const group = textGroupOfCell(cell);
             // undefined: the cell copied from is not a text cell, so it has no languages to give.
             if (!group || !cellLanguages || value === undefined) return;
-            const added = showSettingInGroup(
+            // Pasting over many cells mostly gives a cell the setting it already has.
+            if (
+                (group.getAttribute("data-default-languages") ?? kNoSetting) ===
+                value
+            )
+                return;
+            // Every operation that copies settings (a new row or column, Paste properties, Paint
+            // format) is followed by the wiring pass, which sets up the boxes this adds. That is
+            // also the only time they can be set up: a new row gets its settings before it is in
+            // the page, where a box's direction cannot be read.
+            showSettingInGroup(
                 group,
                 value === kNoSetting ? null : value,
                 cellLanguages,
             );
-            // A new row or column gets its settings before the library puts it in the page, where
-            // a box's direction cannot be read and CKEditor cannot attach. Its boxes are left
-            // without contenteditable, so the wiring pass that follows the operation sets them up
-            // once they are in the page.
-            if (cell.isConnected) setUpBoxesBuiltAfterLoad(added);
         },
     });
 }
@@ -268,8 +272,8 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
             ".bloom-editable:not([contenteditable])",
         ),
     );
-    // Typable, with CKEditor, its language tag, its group's inline pictures and its direction,
-    // as page load makes every other box.
+    // Each new box gets what page load gives every box: editing, CKEditor, its language tag, its
+    // group's inline pictures and its direction.
     setUpBoxesBuiltAfterLoad(newEditables);
     // `root` itself is one of these when a cell has just become a picture cell.
     const imageCellSelector = ".bloom-cell[data-content-type='image']";

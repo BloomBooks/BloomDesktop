@@ -1937,17 +1937,13 @@ export interface IMenuCellLanguage {
 // submenu that opens while the pointer is on the item. These attributes are the ones
 // TableCellLanguagesSection.tsx puts on them for this purpose.
 async function openLanguagesSubmenu(page: Page): Promise<Locator> {
-    const frame = editablePageFrame(page);
-    const item = frame
-        .locator(
-            "[data-btable-menu]:visible [data-table-cell-languages] [role='menuitem']",
-        )
+    const menu = openTableMenuPanel(page);
+    const item = menu
+        .locator("[data-table-cell-languages] [role='menuitem']")
         .first();
     await item.waitFor({ state: "visible", timeout: kTableWaitMs });
     await item.hover({ timeout: kTableWaitMs });
-    const submenu = frame
-        .locator("[data-table-cell-languages-submenu]")
-        .first();
+    const submenu = menu.locator("[data-table-cell-languages-submenu]").first();
     await submenu.waitFor({ state: "visible", timeout: kTableWaitMs });
     return submenu;
 }
