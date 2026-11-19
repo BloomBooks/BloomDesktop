@@ -166,7 +166,7 @@ describe("showSettingInGroup", () => {
         const group = makeGroup("V", ["tpi"]);
         expect(visibleTagsOf(group)).toEqual(["tpi"]);
 
-        const added = showSettingInGroup(group, "V,N2", kLanguages);
+        const { added } = showSettingInGroup(group, "V,N2", kLanguages);
 
         expect(added).toEqual([]);
         expect(group.getAttribute("data-default-languages")).toBe("V,N2");
@@ -181,7 +181,11 @@ describe("showSettingInGroup", () => {
             "<div class='bloom-editable normal-style bloom-visibility-code-on' lang='tpi' contenteditable='true'><p>hi</p></div>";
         document.body.appendChild(group);
 
-        const wired = showSettingInGroup(group, "V,N2,N1", kLanguages);
+        const { added: wired } = showSettingInGroup(
+            group,
+            "V,N2,N1",
+            kLanguages,
+        );
 
         const editables = Array.from(
             group.querySelectorAll<HTMLElement>(":scope > .bloom-editable"),

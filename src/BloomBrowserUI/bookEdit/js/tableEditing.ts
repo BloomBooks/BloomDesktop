@@ -26,7 +26,10 @@ import "bloom-table/bloom-table-edit.css";
 import "./tableEditing.less";
 import { SetupImagesInContainer } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
-import { setUpBoxesBuiltAfterLoad } from "./translationGroupLanguages";
+import {
+    addLanguageTagsToShownBoxes,
+    setUpBoxesBuiltAfterLoad,
+} from "./translationGroupLanguages";
 import { get, post } from "../../utils/bloomApi";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
 import {
@@ -203,15 +206,22 @@ function installHostHooks(): void {
             // Every operation that copies settings (a new row or column, Paste properties, Paint
             // format) is followed by the wiring pass, which sets up the boxes this adds. That is
             // also the only time they can be set up: a new row gets its settings before it is in
-            // the page, where a box's direction cannot be read.
-            showSettingInGroup(
-                group,
-                value === kNoSetting ? null : value,
-                cellLanguages,
+            // the page, where a box's direction cannot be read. The pass also tags the boxes this
+            // shows again, all at once rather than once per cell.
+            boxesShownByCopiedSettings.push(
+                ...showSettingInGroup(
+                    group,
+                    value === kNoSetting ? null : value,
+                    cellLanguages,
+                ).shown,
             );
         },
     });
 }
+
+// Boxes that copying a cell's settings showed again, waiting for the wiring pass that follows
+// every such copy (wireBloomContentOfNewCells) to give them their language tags.
+let boxesShownByCopiedSettings: HTMLElement[] = [];
 
 // What setHostCellSettings carries for a text cell with no data-default-languages. The library
 // uses undefined for a cell with nothing to copy, so "no setting" needs a value of its own.
@@ -261,6 +271,8 @@ function refreshCellLanguages(): void {
  * ones that still need the treatment.
  */
 function wireBloomContentOfNewCells(root: HTMLElement): void {
+    const shownBoxes = boxesShownByCopiedSettings;
+    boxesShownByCopiedSettings = [];
     // A table made in Change Layout mode is not editable there, like the
     // mode's text boxes, which origami makes not contenteditable. Leaving the
     // mode rebuilds the page, and the page-load pass wires these cells then.
@@ -275,6 +287,7 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
     // Each new box gets what page load gives every box: editing, CKEditor, its language tag, its
     // group's inline pictures and its direction.
     setUpBoxesBuiltAfterLoad(newEditables);
+    addLanguageTagsToShownBoxes(shownBoxes);
     // `root` itself is one of these when a cell has just become a picture cell.
     const imageCellSelector = ".bloom-cell[data-content-type='image']";
     const imageCells = Array.from(
