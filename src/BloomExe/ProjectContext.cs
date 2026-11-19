@@ -904,23 +904,18 @@ namespace Bloom
         }
 
         /// <summary>
-        /// Where installed collections live (SIL\Bloom\Collections in the user's local app data),
-        /// worked out without making any folder; GetInstalledCollectionsDirectory makes them.
+        /// Where installed collections live (Collections in AppDataPath), worked out without making
+        /// any folder; GetInstalledCollectionsDirectory makes them.
         /// </summary>
-        public static string InstalledCollectionsPath =>
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "SIL",
-                "Bloom",
-                "Collections"
-            );
+        public static string InstalledCollectionsPath => Path.Combine(AppDataPath, "Collections");
 
+        /// <summary>
+        /// InstalledCollectionsPath, made (with the folders above it) if it isn't there yet.
+        /// </summary>
         public static string GetInstalledCollectionsDirectory()
         {
             //we want this path of directories sitting there, waiting for the user
-            GetBloomAppDataFolder();
             var collections = InstalledCollectionsPath;
-
             if (!Directory.Exists(collections))
                 Directory.CreateDirectory(collections);
             return collections;
@@ -971,14 +966,23 @@ namespace Bloom
         public TeamCollectionManager TeamCollectionManager =>
             _scope.Resolve<TeamCollectionManager>();
 
+        /// <summary>
+        /// Where Bloom keeps its per-user data (SIL\Bloom in the user's local app data), worked out
+        /// without making any folder; GetBloomAppDataFolder makes it.
+        /// </summary>
+        public static string AppDataPath =>
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "SIL",
+                "Bloom"
+            );
+
+        /// <summary>
+        /// AppDataPath, made if it isn't there yet.
+        /// </summary>
         public static string GetBloomAppDataFolder()
         {
-            var d = Environment
-                .GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-                .CombineForPath("SIL");
-            if (!Directory.Exists(d))
-                Directory.CreateDirectory(d);
-            d = d.CombineForPath("Bloom");
+            var d = AppDataPath;
             if (!Directory.Exists(d))
                 Directory.CreateDirectory(d);
             return d;
