@@ -36,10 +36,15 @@ namespace Bloom.WebLibraryIntegration
             {
                 EnsureDownloadFolderExists();
             }
-            catch (CollectionFolderNotWritableException e)
+            // Working out the folder's path can be refused too, when it means making the
+            // Collections folder above it.
+            catch (Exception e)
+                when (e is CollectionFolderNotWritableException
+                    || FileAccessDiagnostics.IsRefusal(e)
+                )
             {
                 Logger.WriteEvent(
-                    $"Could not make the collection for downloaded books: {e.InnerException.GetType().Name}: {e.InnerException.Message}"
+                    $"Could not make the collection for downloaded books: {e.GetType().Name}: {e.Message}"
                 );
             }
         }
