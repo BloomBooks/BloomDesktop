@@ -27,17 +27,23 @@ import { setupInlineImages } from "./inlineImages";
  * Make `group` show the boxes of the languages `tags` and hide its others, adding a box for any of
  * those languages it has none for. A box is added among the others in the order of `order` (tags
  * in the order the languages should read down the group); a language not in `order` goes last.
- * Returns the boxes added, which need setUpBoxesBuiltAfterLoad once they are where they belong.
+ * Returns the boxes added, which need setUpBoxesBuiltAfterLoad once they are where they belong,
+ * and the boxes that were there but hidden and are now shown, which need
+ * addLanguageTagsToShownBoxes.
+ *
+ * Neither is done here, so that a caller changing many groups (a table menu changes every cell)
+ * can do each once for all of them: setting up or tagging a box measures it, and measuring after
+ * every group's change would make the browser lay out the page once per group.
  */
 export function showLanguagesInTranslationGroup(
     group: HTMLElement,
     tags: string[],
     order: string[] = [],
-): HTMLElement[] {
+): { added: HTMLElement[]; shown: HTMLElement[] } {
     const added = [...new Set(tags)]
         .filter((tag) => !boxInLanguage(group, tag))
         .map((tag) => addBox(group, tag, order));
-    const newlyShown: HTMLElement[] = [];
+    const shown: HTMLElement[] = [];
     boxesOf(group).forEach((box) => {
         const wanted = tags.includes(box.getAttribute("lang") ?? "")
             ? "bloom-visibility-code-on"
@@ -50,15 +56,22 @@ export function showLanguagesInTranslationGroup(
         if (visibilityClasses.length === 1 && visibilityClasses[0] === wanted)
             return;
         if (wanted === "bloom-visibility-code-on" && !added.includes(box))
-            newlyShown.push(box);
+            shown.push(box);
         visibilityClasses.forEach((name) => box.classList.remove(name));
         box.classList.add(wanted);
     });
-    // A box that was hidden got no language tag, since AddLanguageTags skips a box too narrow to
-    // hold one; now that it is shown, it gets one. (The boxes just added get theirs in
-    // setUpBoxesBuiltAfterLoad, once they are editable.)
-    addLanguageTagsToBoxes($(newlyShown));
-    return added;
+    return { added, shown };
+}
+
+/**
+ * Give boxes that showLanguagesInTranslationGroup has shown again their language tags, all in one
+ * pass. A box that was hidden got no tag, since AddLanguageTags skips a box too narrow to hold
+ * one. (The boxes it added get theirs in setUpBoxesBuiltAfterLoad, once they are editable.)
+ * Exported from the page bundle for the canvas submenu, which runs in the toolbox frame and so
+ * passes plain elements rather than a jQuery object of its own frame.
+ */
+export function addLanguageTagsToShownBoxes(boxes: HTMLElement[]): void {
+    addLanguageTagsToBoxes($(boxes));
 }
 
 /**
