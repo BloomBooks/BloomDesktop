@@ -148,7 +148,7 @@ export interface IPageFrameExports {
     attachToCkEditor(element: any): void;
     showLanguagesInTranslationGroup: typeof showLanguagesInTranslationGroup;
     setUpBoxesBuiltAfterLoad: typeof setUpBoxesBuiltAfterLoad;
-    addLanguageTagsToShownBoxes: typeof addLanguageTagsToShownBoxes;
+    addLanguageTagsToBoxes: typeof addLanguageTagsToBoxes;
 
     origamiCanUndo(): boolean;
     origamiUndo(): void;
@@ -218,6 +218,7 @@ import {
     makeElement,
     SetupElements,
     attachToCkEditor,
+    addLanguageTagsToBoxes,
     removeImageId,
     changeImage,
     changeImageByElement,
@@ -227,7 +228,6 @@ import {
 import {
     showLanguagesInTranslationGroup,
     setUpBoxesBuiltAfterLoad,
-    addLanguageTagsToShownBoxes,
 } from "./js/translationGroupLanguages";
 import {
     addRequestPageContentDelay,
@@ -260,7 +260,7 @@ export {
     attachToCkEditor,
     showLanguagesInTranslationGroup,
     setUpBoxesBuiltAfterLoad,
-    addLanguageTagsToShownBoxes,
+    addLanguageTagsToBoxes,
     removeImageId,
     changeImage,
     changeImageByElement,
@@ -581,7 +581,7 @@ interface EditablePageBundleApi {
     attachToCkEditor: typeof attachToCkEditor;
     showLanguagesInTranslationGroup: typeof showLanguagesInTranslationGroup;
     setUpBoxesBuiltAfterLoad: typeof setUpBoxesBuiltAfterLoad;
-    addLanguageTagsToShownBoxes: typeof addLanguageTagsToShownBoxes;
+    addLanguageTagsToBoxes: typeof addLanguageTagsToBoxes;
     removeImageId: typeof removeImageId;
     changeImage: typeof changeImage;
     changeImageByElement: typeof changeImageByElement;
@@ -673,7 +673,7 @@ window.editablePageBundle = {
     attachToCkEditor,
     showLanguagesInTranslationGroup,
     setUpBoxesBuiltAfterLoad,
-    addLanguageTagsToShownBoxes,
+    addLanguageTagsToBoxes,
     removeImageId,
     changeImage,
     changeImageByElement,

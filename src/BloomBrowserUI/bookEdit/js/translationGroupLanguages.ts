@@ -28,8 +28,8 @@ import { setupInlineImages } from "./inlineImages";
  * those languages it has none for. A box is added among the others in the order of `order` (tags
  * in the order the languages should read down the group); a language not in `order` goes last.
  * Returns the boxes added, which need setUpBoxesBuiltAfterLoad once they are where they belong,
- * and the boxes that were there but hidden and are now shown, which need
- * addLanguageTagsToShownBoxes.
+ * and the boxes that were there but hidden and are now shown, which need addLanguageTagsToBoxes:
+ * a hidden box got no language tag, since AddLanguageTags skips a box too narrow to hold one.
  *
  * Neither is done here, so that a caller changing many groups (a table menu changes every cell)
  * can do each once for all of them: setting up or tagging a box measures it, and measuring after
@@ -61,17 +61,6 @@ export function showLanguagesInTranslationGroup(
         box.classList.add(wanted);
     });
     return { added, shown };
-}
-
-/**
- * Give boxes that showLanguagesInTranslationGroup has shown again their language tags, all in one
- * pass. A box that was hidden got no tag, since AddLanguageTags skips a box too narrow to hold
- * one. (The boxes it added get theirs in setUpBoxesBuiltAfterLoad, once they are editable.)
- * Exported from the page bundle for the canvas submenu, which runs in the toolbox frame and so
- * passes plain elements rather than a jQuery object of its own frame.
- */
-export function addLanguageTagsToShownBoxes(boxes: HTMLElement[]): void {
-    addLanguageTagsToBoxes($(boxes));
 }
 
 /**
@@ -130,7 +119,7 @@ export function setUpBoxesBuiltAfterLoad(boxes: HTMLElement[]): void {
     // read-only from the element's contenteditable state at the moment it attaches.
     boxes.forEach((box) => box.setAttribute("contenteditable", "true"));
     makeReadOnlyWhenCursorIsNotAllowed($boxes);
-    addLanguageTagsToBoxes($boxes);
+    addLanguageTagsToBoxes(boxes);
     boxes.forEach((box) => attachToCkEditor(box));
     // After CKEditor, which can replace the boxes' nodes, as at page load.
     activateLongPressFor($boxes);

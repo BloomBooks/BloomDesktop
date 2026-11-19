@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-    addLanguageTagsToShownBoxes,
     setUpBoxesBuiltAfterLoad,
     showLanguagesInTranslationGroup,
 } from "./translationGroupLanguages";
@@ -221,7 +220,7 @@ describe("showLanguagesInTranslationGroup", () => {
 
     // Tagging a box measures it, so tagging inside this function would lay the page out once per
     // group when a table menu changes every cell: about 3 s for 30 cells on a slow computer.
-    it("tags no box itself; the boxes it shows again are tagged together afterwards", () => {
+    it("tags no box itself, and returns every box it shows again, for the caller to tag together", () => {
         const groups = [0, 1, 2].map(() =>
             makeGroup(
                 "<div class='bloom-editable bloom-visibility-code-on' lang='en'><p>a</p></div>" +
@@ -236,12 +235,9 @@ describe("showLanguagesInTranslationGroup", () => {
         );
 
         expect(tag).not.toHaveBeenCalled();
-        expect(shown.length).toBe(3);
-
-        addLanguageTagsToShownBoxes(shown);
-
-        expect(tag).toHaveBeenCalledTimes(1);
-        expect(tag.mock.calls[0][0].toArray()).toEqual(shown);
+        expect(shown).toEqual(
+            groups.map((group) => group.querySelector("[lang='fr']")),
+        );
     });
 });
 

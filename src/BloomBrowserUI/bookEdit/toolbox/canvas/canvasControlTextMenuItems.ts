@@ -118,7 +118,7 @@ function updateTranslationGroupLanguage(
         );
     }
     page.setUpBoxesBuiltAfterLoad(added);
-    page.addLanguageTagsToShownBoxes(shown);
+    page.addLanguageTagsToBoxes(shown);
 }
 
 function clearFieldTypeClasses(translationGroup: HTMLElement): void {
