@@ -2238,6 +2238,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="translated">Bloom ha tenido un problema con {0}. El archivo puede estar dañado. Por favor, prueba con otra imagen o prueba con Bloom 6.0 o posterior.</target>
         <note>ID: EditTab.ImageMetadata.Corrupt</note>
       </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.MoreInfo" sil:dynamic="true" translate="no">
+        <source xml:lang="en">More Information</source>
+        <target xml:lang="es-ES" state="needs-translation">More Information</target>
+        <note>ID: EditTab.ImageMetadata.MoreInfo</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <target xml:lang="es-ES" state="final">Editar créditos de la imagen, derechos de autor y licencia</target>
@@ -4680,6 +4685,16 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Aquí están los ajustes que necesita para imprimir este libro:</target>
         <note>ID: PublishTab.PDF.Booklet.HelpHeader</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Layout.Landscape" translate="no">
+        <source xml:lang="en">1. Layout: Landscape</source>
+        <target xml:lang="es-ES" state="needs-translation">1. Layout: Landscape</target>
+        <note>ID: PublishTab.PDF.Booklet.Layout.Landscape</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Layout.Portrait" translate="no">
+        <source xml:lang="en">1. Layout: Portrait</source>
+        <target xml:lang="es-ES" state="needs-translation">1. Layout: Portrait</target>
+        <note>ID: PublishTab.PDF.Booklet.Layout.Portrait</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge" approved="yes">
         <source xml:lang="en">2. Print on both sides: "Flip on short edge"</source>
         <target xml:lang="es-ES" state="final">2. Imprimir en ambos lados: "Voltear en el borde corto"</target>
@@ -4699,6 +4714,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">3. More settings &gt; Paper size: "Letter"</source>
         <target xml:lang="es-ES" state="final">3. Más ajustes &gt; Tamaño del papel: "Carta"</target>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.Letter</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize" translate="no">
+        <source xml:lang="en">4. More settings &gt; Scale: "Actual size"</source>
+        <target xml:lang="es-ES" state="needs-translation">4. More settings &gt; Scale: "Actual size"</target>
+        <note>ID: PublishTab.PDF.Booklet.Scale.ActualSize</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack" approved="yes">
         <source xml:lang="en">This will put two pages on each sheet of paper. Cut horizontally and stack to make one booklet.</source>
