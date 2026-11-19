@@ -233,6 +233,8 @@ jobs:
             #   -: output/browser/*.*        (i.e. drop files at the browser ROOT only,
             #                                 keeping all subdirectories)
             #   DistFiles => DistFiles
+            # plus one root file the TC rules predate: pageSizesLookup.json, which Bloom reads
+            # from the browser root (SizeAndOrientation.cs) to lay out ePUB pages (BH-7931).
             - name: Assemble dependency bundle
               shell: pwsh
               run: |
@@ -247,6 +249,7 @@ jobs:
                   Get-ChildItem 'output\browser' -Directory | ForEach-Object {
                     Copy-Tree $_.FullName (Join-Path $staging "output\browser\$($_.Name)")
                   }
+                  Copy-Item 'output\browser\pageSizesLookup.json' (Join-Path $staging 'output\browser') -ErrorAction Stop
                   Copy-Tree 'DistFiles' (Join-Path $staging 'DistFiles')
                   Push-Location $staging
                   7z a -tzip "$env:GITHUB_WORKSPACE\bloom-harvester-deps.zip" *
