@@ -35,6 +35,11 @@
         <target xml:lang="sw" state="needs-translation">Working…</target>
         <note>ID: Common.Working</note>
       </trans-unit>
+      <trans-unit id="Common.ClickHereForHelp" translate="no">
+        <source xml:lang="en">Please click [here] to get help from the Bloom support team.</source>
+        <target xml:lang="sw" state="needs-translation">Please click [here] to get help from the Bloom support team.</target>
+        <note>ID: Common.ClickHereForHelp</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder">
         <source xml:lang="en">App Builder</source>
         <target xml:lang="sw" state="needs-translation">App Builder</target>
@@ -124,6 +129,26 @@
         <source xml:lang="en">Edit Images with AI</source>
         <target xml:lang="sw" state="needs-translation">Edit Images with AI</target>
         <note>ID: Feature.AiImageEditing</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyrightThisDerivedVersion" translate="no">
+        <source xml:lang="en">Copyright and license this translated version</source>
+        <target xml:lang="sw" state="needs-translation">Copyright and license this translated version</target>
+        <note>ID: EditTab.CopyrightThisDerivedVersion</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.ImageFailed" translate="no">
+        <source xml:lang="en">Failed to load image</source>
+        <target xml:lang="sw" state="needs-translation">Failed to load image</target>
+        <note>ID: EditTab.Image.ImageFailed</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.CannotEditEmbeddedImage" translate="no">
+        <source xml:lang="en">Bloom can't edit image information for this image because it is embedded data, not a file image.</source>
+        <target xml:lang="sw" state="needs-translation">Bloom can't edit image information for this image because it is embedded data, not a file image.</target>
+        <note>ID: EditTab.ImageMetadata.CannotEditEmbeddedImage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.NoGifOnClipboard" translate="no">
+        <source xml:lang="en">To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element</source>
+        <target xml:lang="sw" state="needs-translation">To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element</target>
+        <note>ID: EditTab.NoGifOnClipboard</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.RotateRight" translate="no">
         <source xml:lang="en">Rotate right</source>
