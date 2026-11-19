@@ -69,6 +69,10 @@ export class CanvasElementPointerInteractions {
     private mouseDownContainer: HTMLElement;
     private gotAMoveWhileMouseDown = false;
 
+    // The element showTableResizeCursor last gave a resize cursor, so that it clears that
+    // cursor and no other: other elements under the mouse keep inline cursors of their own.
+    private tableResizeCursorElement: HTMLElement | undefined;
+
     private animationFrame: number;
 
     public constructor(
@@ -605,13 +609,19 @@ export class CanvasElementPointerInteractions {
             return;
         }
         // No resize cursor where the press would not start a resize; see onMouseDown.
-        const edge = tablesMayBeRestructured()
-            ? dragToResize.resizeEdgeAtPoint(event)
-            : undefined;
+        // That includes a control frame handle lying over a table's outer edge: a press
+        // there drags the handle, so the handle keeps its own cursor.
+        const edge =
+            tablesMayBeRestructured() && !this.isMouseEventAlreadyHandled(event)
+                ? dragToResize.resizeEdgeAtPoint(event)
+                : undefined;
+        if (this.tableResizeCursorElement) {
+            this.tableResizeCursorElement.style.cursor = "";
+            this.tableResizeCursorElement = undefined;
+        }
         if (edge) {
             target.style.cursor = edge === "row" ? "ns-resize" : "ew-resize";
-        } else if (target.style.cursor.endsWith("-resize")) {
-            target.style.cursor = "";
+            this.tableResizeCursorElement = target;
         }
     }
 

@@ -23,30 +23,32 @@
 // Where the side handles sit, for handles whose classes are @prefix-n, @prefix-e, @prefix-s and
 // @prefix-w. @edge is how far each handle's outer edge is inside its side of the picture; a
 // negative value puts the handle partly outside.
+// Each cursor is the upright one unless an ancestor sets --handle-cursor-<side>: the canvas
+// element control frame does, for the angle its element is rotated to (setHandleCursorsForRotation).
 .crop-side-handle-positions(@prefix; @edge) {
     .@{prefix}-n {
         top: @edge;
         left: calc(50% - @sideHandleRadius - @sideHandleCenter);
         width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
-        cursor: ns-resize;
+        cursor: var(--handle-cursor-n, ns-resize);
     }
     .@{prefix}-e {
         top: calc(50% - @sideHandleRadius - @sideHandleCenter);
         right: @edge;
         height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
-        cursor: ew-resize;
+        cursor: var(--handle-cursor-e, ew-resize);
     }
     .@{prefix}-s {
         bottom: @edge;
         left: calc(50% - @sideHandleRadius - @sideHandleCenter);
         width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
-        cursor: ns-resize;
+        cursor: var(--handle-cursor-s, ns-resize);
     }
     .@{prefix}-w {
         top: calc(50% - @sideHandleRadius - @sideHandleCenter);
         left: @edge;
         height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
-        cursor: ew-resize;
+        cursor: var(--handle-cursor-w, ew-resize);
     }
 }
 
