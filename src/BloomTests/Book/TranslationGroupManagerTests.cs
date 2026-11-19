@@ -398,6 +398,63 @@ namespace BloomTests.Book
         }
 
         /// <summary>
+        /// A table's text cell set to L3 alone, in a collection that has since dropped its third
+        /// language, shows the collection's first language, as the table's menu does; not the
+        /// toolbar's languages, and not nothing.
+        /// </summary>
+        [Test]
+        public void UpdateContentLanguageClasses_TableTextCellWhoseOnlyLanguageIsGone_ShowsL1()
+        {
+            var collectionWithTwoLanguages = new CollectionSettings
+            {
+                Language1Tag = "xyz",
+                Language2Tag = "fr",
+                XMatterPackName = "Factory",
+            };
+            var contents =
+                @"<html><body><div class='bloom-page'>
+						<div class='bloom-table'><div class='bloom-cell'>
+							<div class='bloom-translationGroup' id='cell' data-default-languages='N2'>
+								<div class='bloom-editable' lang='xyz'></div>
+								<div class='bloom-editable' lang='fr'></div>
+							</div>
+						</div></div>
+					</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, collectionWithTwoLanguages, null);
+            var pageDiv = (SafeXmlElement)
+                dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+            Assert.That(
+                collectionWithTwoLanguages.Language3Tag,
+                Is.Null.Or.Empty,
+                "The collection should have no third language for this test"
+            );
+
+            // A bilingual book: the toolbar shows xyz and fr.
+            TranslationGroupManager.UpdateContentLanguageClasses(
+                pageDiv,
+                bookData,
+                LegacyAppearanceSettings,
+                "xyz",
+                "fr",
+                null
+            );
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='cell']/div[contains(@class, 'bloom-visibility-code-on')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='cell']/div[@lang='xyz' and contains(@class, 'bloom-visibility-code-on')]",
+                    1
+                );
+        }
+
+        /// <summary>
         /// A table's text cell set to L1 and L3 shows both in a book that the toolbar makes
         /// monolingual.
         /// </summary>

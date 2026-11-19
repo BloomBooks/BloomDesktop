@@ -294,13 +294,14 @@ describe("a cell that stores a role the collection no longer gives a language", 
         expect(visibleTagsOf(group)).toEqual(["tpi", "en"]);
     });
 
-    it("lets the user tick a language in a cell whose only role has none", () => {
+    it("shows L1 in a cell whose only role has none, and keeps it when the user ticks another", () => {
         const group = makeGroup("N2", []);
-        expect(roleState([group], "V", languages)).toBe("none");
+        expect(roleState([group], "V", languages)).toBe("all");
+        expect(someGroupHasOneLanguage([group], languages)).toBe(true);
 
-        toggleRole([group], "V", languages);
+        toggleRole([group], "N1", languages);
 
-        expect(group.getAttribute("data-default-languages")).toBe("V,N2");
-        expect(visibleTagsOf(group)).toEqual(["tpi"]);
+        expect(group.getAttribute("data-default-languages")).toBe("V,N1,N2");
+        expect(visibleTagsOf(group)).toEqual(["tpi", "en"]);
     });
 });

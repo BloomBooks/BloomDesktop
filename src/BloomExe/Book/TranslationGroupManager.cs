@@ -279,11 +279,8 @@ namespace Bloom.Book
             }
 
             // A table's text cell does not follow the toolbar, so its languages take their order
-            // (bloom-content1, 2, 3) from the collection instead.
-            var tableCellContentLanguages = bookData
-                .CollectionSettings.GetAllLanguageTags()
-                .Select((tag, index) => (tag, index))
-                .ToDictionary(pair => pair.tag, pair => "bloom-content" + (pair.index + 1));
+            // (bloom-content1, 2, 3) from the collection instead. Made when a page has a table.
+            Dictionary<string, string> tableCellContentLanguages = null;
 
             //Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
             foreach (
@@ -309,6 +306,10 @@ namespace Bloom.Book
                 if (IsTableTextCell(group))
                 {
                     dataDefaultLanguages = LanguagesOfTableTextCell(defLangsAttr, bookData);
+                    tableCellContentLanguages ??= bookData
+                        .CollectionSettings.GetAllLanguageTags()
+                        .Select((tag, index) => (tag, index))
+                        .ToDictionary(pair => pair.tag, pair => "bloom-content" + (pair.index + 1));
                     orderClasses = tableCellContentLanguages;
                 }
                 else
@@ -409,32 +410,33 @@ namespace Bloom.Book
 
         /// <summary>
         /// The tags of the languages a table's text cell shows, which ShouldNormallyShowEditable
-        /// takes as literal tags. The cell stores roles in data-default-languages: V for the
-        /// collection's first language, N1 for its second and N2 for its third. A cell with no
-        /// setting, which is every cell of a table made before cells had one, shows the first
-        /// language only. V is read here as the collection's first language, because elsewhere V
-        /// means the first language checked in the toolbar, and a table cell must not follow the
-        /// toolbar.
+        /// takes as literal tags. The cell stores roles in data-default-languages: V (or L1) for
+        /// the collection's first language, N1 for its second and N2 for its third. V is read here
+        /// as the collection's first language, because elsewhere V means the first language checked
+        /// in the toolbar, and a table cell must not follow the toolbar. A cell shows the first
+        /// language only when it has no setting (every cell of a table made before cells had one),
+        /// and also when none of its roles has a language any more (it was set to L3, and the
+        /// collection has since dropped its third language). The front end reads the attribute the
+        /// same way: rolesFromSetting and tagsOfGroup in tableCellLanguages.ts.
         /// </summary>
         public static string[] LanguagesOfTableTextCell(string roles, BookData bookData)
         {
-            var collectionLanguage1Tag = bookData.CollectionSettings.Language1Tag;
-            var list = ProcessLanguageList(roles ?? "", bookData);
-            if (
-                list.Length == 0
-                || list[0].Equals("auto", StringComparison.InvariantCultureIgnoreCase)
-            )
-                return new[] { collectionLanguage1Tag };
-            return list.Select(role =>
+            var collection = bookData.CollectionSettings;
+            var tags = (roles ?? "")
+                .Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(role =>
                     role switch
                     {
-                        "V" or "L1" => collectionLanguage1Tag,
-                        "N1" => bookData.MetadataLanguage1Tag,
-                        "N2" => bookData.MetadataLanguage2Tag,
-                        _ => role,
+                        "V" or "L1" => collection.Language1Tag,
+                        "N1" => collection.Language2Tag,
+                        "N2" => collection.Language3Tag,
+                        _ => null,
                     }
                 )
+                .Where(tag => !string.IsNullOrEmpty(tag))
+                .Distinct()
                 .ToArray();
+            return tags.Length > 0 ? tags : new[] { collection.Language1Tag };
         }
 
         public static bool IsPageAffectedByLanguageMenu(SafeXmlElement page, bool legacy)

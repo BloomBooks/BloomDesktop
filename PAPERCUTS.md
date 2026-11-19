@@ -19,6 +19,12 @@ House rules:
 
 ---
 
+## 2026-11-18 — A worktree keeps an old ffmpeg after master needs a newer one
+
+- **Cut:** BL-17087 added the HEVC decoder to the ffmpeg that `build/getDependencies-windows.sh` downloads, and BL-17114's video tests need it. A worktree that last fetched dependencies before then still builds, and four `BookTests` video tests fail with messages about an unconverted `Test pattern hevc.mp4` and an empty TimeSpan, which say nothing about ffmpeg.
+- **Idea:** Have the build or the tests check that ffmpeg has the decoders Bloom needs (`ffmpeg -decoders`) and fail saying to re-run `./init.sh`.
+- **Context:** BL-17105, merging master into a stack. Claude Opus 5.5 from Hatton's machine during preflight.
+
 ## 2026-11-05 — No supported way to run a worktree's Bloom on the production bundle
 
 - **Cut:** `go.sh` (and so the run-bloom skill) always serves the front end from the Vite dev server, which loads about 600 separate modules for every page document. That makes page changes several times slower than a released Bloom's, so measuring or feeling performance needs the built bundle. The only way to get it was to run `output/Debug/AnyCPU/Bloom.exe` directly, which AGENTS.md forbids because it may be stale; the e2e fixture runs it that way, with a staleness check.

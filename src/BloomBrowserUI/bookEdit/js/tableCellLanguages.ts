@@ -122,13 +122,18 @@ function tagOfRole(role: LanguageRole, languages: ICellLanguage[]): string {
     return language.tag;
 }
 
-// The languages, among `languages`, that `roles` name. A role the collection gives no language
-// names none: a cell keeps its roles when its collection drops its third language, say.
+// The languages, among `languages`, that a cell with `roles` shows. A role the collection gives no
+// language names none: a cell keeps its roles when its collection drops its third language, say.
+// A cell none of whose roles has a language shows L1, as TranslationGroupManager.
+// LanguagesOfTableTextCell (C#) has it when the page loads.
 function languagesOfRoles(
     roles: LanguageRole[],
     languages: ICellLanguage[],
 ): ICellLanguage[] {
-    return languages.filter((language) => roles.includes(language.role));
+    const named = languages.filter((language) => roles.includes(language.role));
+    return named.length > 0
+        ? named
+        : languages.filter((language) => language.role === "V");
 }
 
 // The languages a group shows, by tag, each once. Two roles can name one language when the
@@ -213,7 +218,8 @@ export function toggleRole(
 ): void {
     const tick = roleState(groups, role, languages) !== "all";
     const tag = tagOfRole(role, languages);
-    // Every role that names this language: V and N1 often name the same one.
+    // Every role that names this language: V and N1 name the same one when the collection's L2 is
+    // its L1.
     const rolesNamingTag = languages
         .filter((language) => language.tag === tag)
         .map((language) => language.role);
@@ -231,7 +237,15 @@ export function toggleRole(
     const pageDocument = changing[0].ownerDocument;
     const places = placesOnPage(changing);
     const changes = changing.map((group, index) => {
-        const before = rolesOfGroup(group);
+        // The stored roles, and V when the cell shows L1 because none of them has a language.
+        const before = [
+            ...new Set([
+                ...rolesOfGroup(group),
+                ...languagesOfRoles(rolesOfGroup(group), languages).map(
+                    (language) => language.role,
+                ),
+            ]),
+        ];
         const after = tick
             ? [...before, role]
             : before.filter((other) => !rolesNamingTag.includes(other));

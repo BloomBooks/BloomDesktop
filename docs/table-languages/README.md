@@ -35,8 +35,6 @@ roles Bloom already uses: `V` for L1, `N1` for L2, `N2` for L3, or a list such a
 Storing roles rather than language tags means a cell keeps its role when the book is translated in
 another collection: a word-list column set to L1 shows the new collection's L1.
 
-Bloom's C# already reads a comma list in this attribute (`TranslationGroupManager.cs`).
-
 ## Defaults and the toolbar
 
 - A new text cell shows L1 only.

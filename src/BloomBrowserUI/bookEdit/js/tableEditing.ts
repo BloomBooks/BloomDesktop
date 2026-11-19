@@ -96,14 +96,13 @@ function ensureTableLibrarySetUp(): void {
     // language name either. This is what a text canvas element does too; see
     // makeTranslationGroup in CanvasElementFactories.ts.
     // The group shows the collection's first language only (data-default-languages V) until the
-    // user picks others in the table's menus; see tableCellLanguages.ts. That is the collection's
-    // first language even when the toolbar shows another one first, which languageForNewTextBoxes
-    // follows: a box in any other language would be hidden when the page next loads.
-    const languageForNewText = GetSettings().collectionLanguage1;
+    // user picks others in the table's menus; see tableCellLanguages.ts. A box in any other
+    // language would be hidden when the page next loads.
+    const collectionLanguage1 = GetSettings().collectionLanguage1;
     replaceCellContentType(
         "text",
         "<div class='bloom-translationGroup bloom-trailingElement normal-style' data-default-languages='V'>" +
-            `<div class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='${languageForNewText}'><p></p></div>` +
+            `<div class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='${collectionLanguage1}'><p></p></div>` +
             "</div>",
         /bloom-translationGroup/,
         true,
