@@ -45,14 +45,14 @@ namespace Bloom.WebLibraryIntegration
         }
 
         /// <summary>
-        /// Make the collection that downloaded books go into, if it isn't there. Throws
-        /// CollectionFolderNotWritableException if Windows won't let Bloom make it.
+        /// Make the collection that downloaded books go into, if it isn't there, and return its
+        /// folder. Throws CollectionFolderNotWritableException if Windows won't let Bloom make it.
         /// </summary>
-        public static void EnsureDownloadFolderExists()
+        public static string EnsureDownloadFolderExists()
         {
-            string downloadFolder = GetDownloadFolder();
+            string downloadFolder = BookDownload.DownloadFolder;
             if (Directory.Exists(downloadFolder))
-                return;
+                return downloadFolder;
             try
             {
                 var pathToSettingsFile = CollectionSettings.GetPathForNewSettings(
@@ -68,36 +68,13 @@ namespace Bloom.WebLibraryIntegration
                 settings.Language1.SetName("English", false);
                 CollectionSettings.CreateNewCollection(settings);
                 ProjectContext.ClearUserInstalledDirectoriesCache();
+                return downloadFolder;
             }
             catch (Exception e) when (FileAccessDiagnostics.IsRefusal(e))
             {
-                // Saving the new collection's settings, or making a folder above it, can be
-                // refused too; callers need only handle one kind of exception.
+                // Making the collection's folder (or one above it) or saving its settings can be
+                // refused; callers need only handle one kind of exception.
                 throw new CollectionFolderNotWritableException(downloadFolder, e);
-            }
-        }
-
-        /// <summary>
-        /// BookDownload.DownloadFolder, or, if Windows won't let Bloom make the folders above it
-        /// (getting DownloadFolder makes them), CollectionFolderNotWritableException naming where
-        /// the collection would be.
-        /// </summary>
-        public static string GetDownloadFolder()
-        {
-            try
-            {
-                return BookDownload.DownloadFolder;
-            }
-            catch (Exception e) when (FileAccessDiagnostics.IsRefusal(e))
-            {
-                var expected = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "SIL",
-                    "Bloom",
-                    "Collections",
-                    BookCollection.DownloadedBooksCollectionNameInEnglish
-                );
-                throw new CollectionFolderNotWritableException(expected, e);
             }
         }
 

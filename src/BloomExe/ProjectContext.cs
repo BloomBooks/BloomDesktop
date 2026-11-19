@@ -903,11 +903,23 @@ namespace Bloom
             }
         }
 
+        /// <summary>
+        /// Where installed collections live (SIL\Bloom\Collections in the user's local app data),
+        /// worked out without making any folder; GetInstalledCollectionsDirectory makes them.
+        /// </summary>
+        public static string InstalledCollectionsPath =>
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "SIL",
+                "Bloom",
+                "Collections"
+            );
+
         public static string GetInstalledCollectionsDirectory()
         {
             //we want this path of directories sitting there, waiting for the user
-            var d = GetBloomAppDataFolder();
-            var collections = d.CombineForPath("Collections");
+            GetBloomAppDataFolder();
+            var collections = InstalledCollectionsPath;
 
             if (!Directory.Exists(collections))
                 Directory.CreateDirectory(collections);
