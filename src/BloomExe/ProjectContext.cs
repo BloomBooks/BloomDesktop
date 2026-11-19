@@ -905,7 +905,7 @@ namespace Bloom
 
         /// <summary>
         /// Where installed collections live (Collections in AppDataPath), worked out without making
-        /// any folder; GetInstalledCollectionsDirectory makes them.
+        /// any folder; GetInstalledCollectionsDirectory makes it.
         /// </summary>
         public static string InstalledCollectionsPath => Path.Combine(AppDataPath, "Collections");
 
@@ -916,8 +916,7 @@ namespace Bloom
         {
             //we want this path of directories sitting there, waiting for the user
             var collections = InstalledCollectionsPath;
-            if (!Directory.Exists(collections))
-                Directory.CreateDirectory(collections);
+            Directory.CreateDirectory(collections);
             return collections;
         }
 
@@ -926,12 +925,8 @@ namespace Bloom
             get
             {
                 //we want this path of directories sitting there, waiting for the user
-                var d = GetBloomAppDataFolder();
-                if (!Directory.Exists(d))
-                    Directory.CreateDirectory(d);
-                d = d.CombineForPath("XMatter");
-                if (!Directory.Exists(d))
-                    Directory.CreateDirectory(d);
+                var d = Path.Combine(AppDataPath, "XMatter");
+                Directory.CreateDirectory(d);
                 return d;
             }
         }
@@ -978,13 +973,12 @@ namespace Bloom
             );
 
         /// <summary>
-        /// AppDataPath, made if it isn't there yet.
+        /// AppDataPath, made (with the folders above it) if it isn't there yet.
         /// </summary>
         public static string GetBloomAppDataFolder()
         {
             var d = AppDataPath;
-            if (!Directory.Exists(d))
-                Directory.CreateDirectory(d);
+            Directory.CreateDirectory(d);
             return d;
         }
 
