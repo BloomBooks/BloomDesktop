@@ -195,13 +195,16 @@ function installHostHooks(): void {
             const group = textGroupOfCell(cell);
             // undefined: the cell copied from is not a text cell, so it has no languages to give.
             if (!group || !cellLanguages || value === undefined) return;
-            setUpBoxesBuiltAfterLoad(
-                showSettingInGroup(
-                    group,
-                    value === kNoSetting ? null : value,
-                    cellLanguages,
-                ),
+            const added = showSettingInGroup(
+                group,
+                value === kNoSetting ? null : value,
+                cellLanguages,
             );
+            // A new row or column gets its settings before the library puts it in the page, where
+            // a box's direction cannot be read and CKEditor cannot attach. Its boxes are left
+            // without contenteditable, so the wiring pass that follows the operation sets them up
+            // once they are in the page.
+            if (cell.isConnected) setUpBoxesBuiltAfterLoad(added);
         },
     });
 }
