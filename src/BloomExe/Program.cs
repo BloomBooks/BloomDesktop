@@ -311,7 +311,7 @@ namespace Bloom
                     using (_applicationContainer = new ApplicationContainer())
                     {
                         var msg = LocalizationManager.GetString(
-                            "Errors.Pre10WindowsNotSupported",
+                            "ErrorReport.Pre10WindowsNotSupported",
                             "We are sorry, but your version of Windows is no longer supported by Microsoft. This version of Bloom requires Windows 10 or greater. As a result, you will need to install Bloom version 5.4. Bloom will now open a web page where you can download Bloom 5.4."
                         );
                         MessageBox.Show(msg, "Bloom");
