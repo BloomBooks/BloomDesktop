@@ -165,8 +165,8 @@ namespace Bloom.WebLibraryIntegration
         }
 
         /// <summary>
-        /// Make sure the collection that downloaded books go into exists (startup only tries).
-        /// If Windows won't let Bloom write there, explain why and return false, so we don't
+        /// Make sure the collection that downloaded books go into exists (startup only tries) and
+        /// Bloom can write in it. If not, explain why and return false, so we don't
         /// download a book only to fail at the last step with a vague message. (BL-16728)
         /// </summary>
         private static bool DownloadFolderIsReady()
@@ -174,6 +174,8 @@ namespace Bloom.WebLibraryIntegration
             try
             {
                 BookDownloadSupport.EnsureDownloadFolderExists();
+                // It may have been there already, yet not be writable.
+                DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(DownloadFolder);
                 return true;
             }
             catch (CollectionFolderNotWritableException notWritable)
