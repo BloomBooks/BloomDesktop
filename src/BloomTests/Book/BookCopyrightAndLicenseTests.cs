@@ -1383,6 +1383,31 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void GetOriginalCopyrightAndLicense_CustomOriginalLicense_OmitsLicensedUnderAndExtraPeriod()
+        {
+            var dom = new HtmlDom(
+                @" <div id='bloomDataDiv'>
+					<div data-book='originalTitle' lang='*'>How to manage titles</div>
+					<div data-book='copyright' lang='*'> Copyright © 2017, Foo-bar Publishing </div>
+					<div data-book='originalCopyright' lang='*'> Copyright © 2007, Foo Publishing </div>
+					<div data-book='originalLicenseNotes' lang='*'>For permission to re-use this text, contact the copyright holder.</div>
+				</div>"
+            );
+            // Sanity check: the test is only meaningful if the original really has a custom license.
+            Assert.That(
+                BookCopyrightAndLicense
+                    .GetOriginalMetadata(dom, new BookData(dom, _collectionSettings, null))
+                    .License,
+                Is.InstanceOf<CustomLicenseInfo>()
+            );
+
+            Assert.AreEqual(
+                "This book is an adaptation of the original, <cite data-book=\"originalTitle\">How to manage titles</cite>, Copyright © 2007, Foo Publishing. For permission to re-use this text, contact the copyright holder.",
+                GetEnglishOriginalCopyrightAndLicense(dom)
+            );
+        }
+
+        [Test]
         public void GetOriginalCopyrightAndLicense_HasAllParts_InFrench()
         {
             var dom = new HtmlDom(
