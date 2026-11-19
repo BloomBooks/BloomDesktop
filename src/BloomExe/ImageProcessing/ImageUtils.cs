@@ -900,16 +900,18 @@ namespace Bloom.ImageProcessing
                 ReportImageMetadataProblem(filePath, ex);
                 return;
             }
-            // The message leaves out the file name: names of pictures from Pixabay, Openverse and
-            // the like mean nothing to the user. The user has just clicked OK in the dialog, so
-            // "the information you just entered" says which picture. The log gets the path.
+            // The message must not depend on the user recognizing the file name: names of pictures
+            // from Pixabay, Openverse and the like mean nothing to most users. The user has just
+            // clicked OK in the dialog, so "the information you just entered" says which picture;
+            // the name comes last, for whoever is helping them.
             Logger.WriteEvent($"Could not save image metadata because {filePath} is in use");
-            // We can't tell what has the file open (it could even be Bloom), hence "possibly".
-            var msg = LocalizationManager.GetString(
+            // We can't tell what has the file open (antivirus, or briefly Bloom itself), so the
+            // message says only that it was busy.
+            var msgFmt = LocalizationManager.GetString(
                 "EditTab.ImageMetadata.CouldNotSaveBecauseFileInUse",
-                "Bloom could not save the copyright and license information you just entered, possibly because another program is using the picture's file. Please wait a moment, then open Copyright and License for this picture again and enter the information again. If this keeps happening, restarting your computer may help."
+                "Bloom could not save the copyright and license information you just entered, because the picture's file was busy. Please wait a moment, then open Copyright and License for this picture again and enter the information again. If this keeps happening, restarting your computer may help. (The picture's file is {0}.)"
             );
-            NotifyUserOfImageMetadataProblem(msg, ex);
+            NotifyUserOfImageMetadataProblem(string.Format(msgFmt, Path.GetFileName(filePath)), ex);
         }
 
         /// <summary>

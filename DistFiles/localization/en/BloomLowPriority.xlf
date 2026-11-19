@@ -32,9 +32,9 @@
         <note>On the "More" page of the first language in the Collection Settings dialog, shown under the alphabet and sentence punctuation (which cannot be edited) when the file the Decodable and Leveled Reader tools keep their settings in is damaged.</note>
       </trans-unit>
       <trans-unit id="EditTab.ImageMetadata.CouldNotSaveBecauseFileInUse" translate="no">
-        <source xml:lang="en">Bloom could not save the copyright and license information you just entered, possibly because another program is using the picture's file. Please wait a moment, then open Copyright and License for this picture again and enter the information again. If this keeps happening, restarting your computer may help.</source>
+        <source xml:lang="en">Bloom could not save the copyright and license information you just entered, because the picture's file was busy. Please wait a moment, then open Copyright and License for this picture again and enter the information again. If this keeps happening, restarting your computer may help. (The picture's file is {0}.)</source>
         <note>ID: EditTab.ImageMetadata.CouldNotSaveBecauseFileInUse</note>
-        <note>Shown right after the user clicks OK in the Copyright and License dialog for a picture, when something (often antivirus software) has the picture's file open so Bloom cannot write to it. "Copyright and License" is the name of that dialog.</note>
+        <note>Shown right after the user clicks OK in the Copyright and License dialog for a picture, when something (antivirus software, or Bloom itself) has the picture's file open so Bloom cannot write to it. "Copyright and License" is the name of that dialog. {0} is replaced with the picture's file name.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
