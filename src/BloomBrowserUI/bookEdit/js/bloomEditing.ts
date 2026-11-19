@@ -548,8 +548,9 @@ function languageTagFor(box: HTMLElement): string | undefined {
     // with each other, leading to flashing back and forth
     // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
     // August 2024: for canvas elements, the language is now displayed in the context controls box, and isn't
-    // a problem for small text boxes.
-    if ($this.width()! < 100 && !box.closest(kCanvasElementSelector)) {
+    // a problem for small text boxes. (So a canvas element's box is not measured at all, which
+    // spares laying out the page to measure it.)
+    if (!box.closest(kCanvasElementSelector) && $this.width()! < 100) {
         return undefined;
     }
 
