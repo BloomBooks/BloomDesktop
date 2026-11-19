@@ -155,13 +155,15 @@ export const DialogCancelButton: React.FunctionComponent<{
     // even if one is passed.
     onClick_DEPRECATED?: () => void;
     default?: boolean;
+    // Defaults to true. Set false when cancelling is no longer possible, e.g. while saving.
+    enabled?: boolean;
 }> = (props) => {
     const context = React.useContext(BloomDialogContext);
     return (
         <BloomButton
             l10nKey="Common.Cancel"
             hasText={true}
-            enabled={true}
+            enabled={props.enabled === undefined ? true : props.enabled}
             // by default, Cancel is NOT the default button
             variant={props.default === true ? "contained" : "outlined"}
             onClick={() => {

@@ -12,7 +12,13 @@
 @inactiveColor: @bloom-buff;
 
 .split-pane > .split-pane-component {
-    overflow: hidden !important; // override split-pane.css rules that call for overflow: auto
+    // Override split-pane.css rules that call for overflow: auto.
+    // Use clip, not hidden: a hidden pane can still be scrolled (the browser scrolls it to
+    // show a focused text box), so the Edit tab could show text that publishing cuts off.
+    // A clipped pane cannot scroll, so the Edit tab shows what publishing shows (BL-17119).
+    // The hidden line is for older readers (e.g. Android WebView before Chrome 90) that drop clip.
+    overflow: hidden !important;
+    overflow: clip !important;
 }
 
 .split-pane.vertical-percent > .split-pane-component.position-left {

@@ -5,6 +5,7 @@ using System.Linq;
 using Bloom.Book;
 using Bloom.Publish.BloomPub;
 using Bloom.SubscriptionAndFeatures;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -206,6 +207,97 @@ namespace BloomTests.Publish.BloomPub
             );
 
             Assert.That(BloomPubCache.IsCurrent(_bloomPubPath, _bookFolder, kSettingsKey), Is.True);
+        }
+
+        /// <summary>
+        /// Make the record of the BloomPUB at <paramref name="bloomPubPath"/> say it was made by
+        /// some other Bloom, as it will after an update.
+        /// </summary>
+        internal static void PretendMadeByAnotherBloom(string bloomPubPath)
+        {
+            var recordPath = BloomPubCache.GetRecordPath(bloomPubPath);
+            var record = JObject.Parse(RobustFile.ReadAllText(recordPath));
+            Assert.That(
+                (string)record["BloomVersion"],
+                Is.Not.Null.And.Not.EqualTo("1.0.0.0|0"),
+                "test setup: the record should hold a real Bloom version"
+            );
+            record["BloomVersion"] = "1.0.0.0|0";
+            RobustFile.WriteAllText(recordPath, record.ToString());
+        }
+
+        [Test]
+        public void GetMatch_JustRecorded_Current()
+        {
+            MakeRecordedBloomPub();
+            Assert.That(
+                BloomPubCache.GetMatch(_bloomPubPath, _bookFolder, kSettingsKey),
+                Is.EqualTo(BloomPubCache.Match.Current)
+            );
+        }
+
+        [Test]
+        public void MadeByAnotherBloom_BookUnchanged_MatchesButIsNotCurrent()
+        {
+            MakeRecordedBloomPub();
+            PretendMadeByAnotherBloom(_bloomPubPath);
+
+            Assert.That(
+                BloomPubCache.GetMatch(_bloomPubPath, _bookFolder, kSettingsKey),
+                Is.EqualTo(BloomPubCache.Match.MadeByAnotherBloom)
+            );
+            // Build must still make it again.
+            Assert.That(
+                BloomPubCache.IsCurrent(_bloomPubPath, _bookFolder, kSettingsKey),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void MadeByAnotherBloom_BookResavedWithoutChanges_StillMatches()
+        {
+            MakeRecordedBloomPub();
+            PretendMadeByAnotherBloom(_bloomPubPath);
+            File.SetLastWriteTimeUtc(_htmlPath, DateTime.UtcNow.AddMinutes(5));
+
+            Assert.That(
+                BloomPubCache.GetMatch(_bloomPubPath, _bookFolder, kSettingsKey),
+                Is.EqualTo(BloomPubCache.Match.MadeByAnotherBloom)
+            );
+        }
+
+        [Test]
+        public void MadeByAnotherBloom_BookTextChanged_OutOfDate()
+        {
+            MakeRecordedBloomPub();
+            PretendMadeByAnotherBloom(_bloomPubPath);
+            RobustFile.WriteAllText(_htmlPath, "<html><body><p>Goodbye</p></body></html>");
+
+            Assert.That(
+                BloomPubCache.GetMatch(_bloomPubPath, _bookFolder, kSettingsKey),
+                Is.EqualTo(BloomPubCache.Match.OutOfDate)
+            );
+        }
+
+        [Test]
+        public void GetMatch_BookChangedThenBloomPubMadeAgain_Current()
+        {
+            // An out-of-date verdict is remembered, so it must not outlive the BloomPUB it was
+            // about.
+            MakeRecordedBloomPub();
+            RobustFile.WriteAllText(_htmlPath, "<html><body><p>Goodbye</p></body></html>");
+            Assert.That(
+                BloomPubCache.GetMatch(_bloomPubPath, _bookFolder, kSettingsKey),
+                Is.EqualTo(BloomPubCache.Match.OutOfDate),
+                "test setup: the edit should make the BloomPUB out of date"
+            );
+
+            MakeRecordedBloomPub();
+
+            Assert.That(
+                BloomPubCache.GetMatch(_bloomPubPath, _bookFolder, kSettingsKey),
+                Is.EqualTo(BloomPubCache.Match.Current)
+            );
         }
 
         [Test]
