@@ -285,6 +285,25 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// How long to stay on a page after its narration ends, before turning to the next
+        /// page (milliseconds). Without this, narrated pages turn as soon as the last word is
+        /// read, which can feel rushed.
+        /// </summary>
+        [JsonProperty("pauseAfterNarration")]
+        public int PauseAfterNarration;
+
+        /// <summary>
+        /// PauseAfterNarration in seconds, which is what Javascript and BloomPlayer use
+        /// (see PageTurnDelayDouble).
+        /// </summary>
+        [JsonIgnore]
+        public double PauseAfterNarrationDouble
+        {
+            get { return PauseAfterNarration / 1000.0; }
+            set { PauseAfterNarration = (int)Math.Round(value * 1000); }
+        }
+
+        /// <summary>
         /// Which publishing mode to use. Currently one of facebook, feature, youtube, and mp3.
         /// </summary>
         [JsonProperty("format")]

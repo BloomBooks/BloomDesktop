@@ -1292,6 +1292,11 @@
         <note>ID: PublishTab.RecordVideo.ApologiesForNoLinux</note>
         <note>"Windows" and "Linux" are operating system names which may not translate.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.PauseAfterNarration" translate="no">
+        <source xml:lang="en">Pause after narration before turning the page:</source>
+        <note>ID: PublishTab.RecordVideo.PauseAfterNarration</note>
+        <note>Label above a slider in the Audio/Video publish screen's options. It sets how many seconds a recorded video or MP3 stays on a page after the page's narration has finished, before going to the next page. A line below it shows the number of seconds.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.WhyShareOnBlorg" sil:dynamic="true">
         <source xml:lang="en">Why you should publish on the Web</source>
         <note>ID: PublishTab.Upload.WhyShareOnBlorg</note>

@@ -101,6 +101,7 @@ namespace Bloom.Publish.Video
                             {
                                 format = settings.Format,
                                 pageTurnDelay = settings.PageTurnDelayDouble,
+                                pauseAfterNarration = settings.PauseAfterNarrationDouble,
                                 motion = settings.Motion,
                                 pageRange,
                             }
@@ -113,6 +114,7 @@ namespace Bloom.Publish.Video
                         var oldMotion = settings.Motion;
                         settings.Format = data.format;
                         settings.PageTurnDelayDouble = data.pageTurnDelay;
+                        settings.PauseAfterNarrationDouble = data.pauseAfterNarration;
                         settings.Motion = data.motion;
                         // pageRange also comes in as doubles. "as double[]" does not work, so have to do them individually.
                         settings.PageRange = new int[0];
@@ -129,6 +131,9 @@ namespace Bloom.Publish.Video
 
                         _recordVideoWindow?.SetPageReadTime(
                             settings.PageTurnDelayDouble.ToString()
+                        );
+                        _recordVideoWindow?.SetPauseAfterNarration(
+                            settings.PauseAfterNarrationDouble.ToString()
                         );
 
                         string format = request
@@ -571,6 +576,9 @@ namespace Bloom.Publish.Video
             );
             _recordVideoWindow.SetPageReadTime(
                 request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble.ToString()
+            );
+            _recordVideoWindow.SetPauseAfterNarration(
+                request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PauseAfterNarrationDouble.ToString()
             );
             _recordVideoWindow.SetVideoSettingsFromPreview(
                 request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings

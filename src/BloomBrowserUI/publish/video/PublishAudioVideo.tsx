@@ -124,6 +124,7 @@ interface IBookProps {
 interface IAudioVideoSettings {
     format: string;
     pageTurnDelay: number;
+    pauseAfterNarration: number;
     motion: boolean;
     pageRange: number[]; // two numbers! Or possibly zero, meaning the whole book
 }
@@ -156,6 +157,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         useApiStateWithStatus<IAudioVideoSettings>("publish/av/settings", {
             format: "facebook",
             pageTurnDelay: 3,
+            pauseAfterNarration: 0,
             motion: false,
             pageRange: [],
         });
@@ -170,6 +172,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
 
     const [debouncedPageTurnDelay] = useDebounce(
         avSettings.pageTurnDelay,
+        1000,
+    );
+    const [debouncedPauseAfterNarration] = useDebounce(
+        avSettings.pauseAfterNarration,
         1000,
     );
 
@@ -283,7 +289,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     // any variable element that contributes to the preview URL, we will re-run the query
     // any time it changes. (The actual content of the param is ignored in the backend.)
     const videoSettings = useApiString(
-        "publish/av/videoSettings?regen=" + avSettings.pageTurnDelay,
+        "publish/av/videoSettings?regen=" +
+            avSettings.pageTurnDelay +
+            "_" +
+            avSettings.pauseAfterNarration,
         "",
     );
     const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
@@ -367,6 +376,8 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                         havePreviewForOrientation
                                             ? "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
                                               debouncedPageTurnDelay +
+                                              "&pauseAfterNarration=" +
+                                              debouncedPauseAfterNarration +
                                               "&url=" +
                                               encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
                                               `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +
@@ -604,6 +615,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                 pageTurnDelay={avSettings.pageTurnDelay}
                 onSetPageTurnDelay={(n: number) =>
                     setAvSettings({ ...avSettings, pageTurnDelay: n })
+                }
+                pauseAfterNarration={avSettings.pauseAfterNarration}
+                onSetPauseAfterNarration={(n: number) =>
+                    setAvSettings({ ...avSettings, pauseAfterNarration: n })
                 }
                 format={avSettings.format}
                 onFormatChanged={(f: string) => {

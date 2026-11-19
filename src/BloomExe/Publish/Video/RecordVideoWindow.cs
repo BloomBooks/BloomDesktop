@@ -64,6 +64,7 @@ namespace Bloom.Publish.Video
         private int _videoWidth = 1280;
         private Codec _codec = Codec.H264;
         private string _pageReadTime = "3.0"; // default for pages without narration
+        private string _pauseAfterNarration = "0"; // seconds to stay on a page after its narration ends
         private string _videoSettingsFromPreview;
         private bool _shouldRotateBook = false;
         private bool _shouldUseOriginalPageSize = false;
@@ -211,7 +212,7 @@ namespace Bloom.Publish.Video
                 // encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
                 // See BL-11319.
                 + UrlPathString.CreateFromUnencodedString(bookUrl).UrlEncoded
-                + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&useOriginalPageSize={_shouldUseOriginalPageSize}&skipActivities=true{pageRangeParams}";
+                + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&pauseAfterNarration={_pauseAfterNarration}&useOriginalPageSize={_shouldUseOriginalPageSize}&skipActivities=true{pageRangeParams}";
             // The user can make choices in the preview instance of BloomPlayer...currently language and
             // whether to play image descriptions...that need to be communicated to the recording window.
             // If we received any, pass them on.
@@ -1889,6 +1890,16 @@ namespace Bloom.Publish.Video
         public void SetPageReadTime(string pageReadTime)
         {
             _pageReadTime = pageReadTime;
+        }
+
+        /// <summary>
+        /// Set how many seconds (as a string, to pass to BloomPlayer) to stay on a page after
+        /// its narration ends, before turning the page. Unlike the page read time, this applies
+        /// to MP3 recordings too.
+        /// </summary>
+        public void SetPauseAfterNarration(string pauseAfterNarration)
+        {
+            _pauseAfterNarration = pauseAfterNarration;
         }
 
         public void SetVideoSettingsFromPreview(string videoSettings)

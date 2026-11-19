@@ -34,6 +34,8 @@ interface IFormatItem {
 export const AudioVideoOptionsGroup: React.FunctionComponent<{
     pageTurnDelay: number;
     onSetPageTurnDelay: (arg: number) => void;
+    pauseAfterNarration: number;
+    onSetPauseAfterNarration: (arg: number) => void;
     format: string;
     onFormatChanged: (f: string) => void;
     pageRange: number[];
@@ -318,49 +320,22 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                          * For now, we're keeping it simple and immediately flipping those pages too.
                          */}
                         {props.format !== "mp3" && (
-                            <div
-                                css={css`
-                                    // The label can extend well beyond the end of the slider, so we need some extra space.
-                                    padding-right: 30px;
-                                `}
-                            >
-                                <Div
-                                    l10nKey="PublishTab.RecordVideo.TurnPageAfter"
-                                    css={css`
-                                        margin-bottom: 2px;
-                                        margin-top: 20px;
-                                        font-weight: bold;
-                                    `}
-                                >
-                                    Turn pages without narration after:
-                                </Div>
-                                <Div
-                                    css={css`
-                                        text-align: center;
-                                        margin-bottom: 2px;
-                                    `}
-                                    l10nKey="Common.Seconds"
-                                    l10nParam0={props.pageTurnDelay.toString()}
-                                    l10nComment="%0 is a number of seconds"
-                                >
-                                    %0 seconds
-                                </Div>
-                                <div className="bgSliderWrapper">
-                                    <Slider
-                                        max={10}
-                                        min={1}
-                                        value={props.pageTurnDelay}
-                                        step={0.5}
-                                        onChange={(event, value) =>
-                                            props.onSetPageTurnDelay(
-                                                value as number,
-                                            )
-                                        }
-                                        size="small"
-                                    />
-                                </div>
-                            </div>
+                            <SecondsSlider
+                                l10nKey="PublishTab.RecordVideo.TurnPageAfter"
+                                label="Turn pages without narration after:"
+                                min={1}
+                                value={props.pageTurnDelay}
+                                onChange={props.onSetPageTurnDelay}
+                            />
                         )}
+                        {/** Unlike the setting above, this one applies to mp3 too: a listener may also want time to take in a page. */}
+                        <SecondsSlider
+                            l10nKey="PublishTab.RecordVideo.PauseAfterNarration"
+                            label="Pause after narration before turning the page:"
+                            min={0}
+                            value={props.pauseAfterNarration}
+                            onChange={props.onSetPauseAfterNarration}
+                        />
                         {motionEnabled && (
                             <FormGroup
                                 css={css`
@@ -425,6 +400,56 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                 </FormControl>
             </FormGroup>
         </SettingsGroup>
+    );
+};
+
+// A bold label, the current value in seconds, and a slider (up to 10 seconds, in half seconds) to change it.
+const SecondsSlider: React.FunctionComponent<{
+    l10nKey: string;
+    label: string;
+    min: number;
+    value: number;
+    onChange: (seconds: number) => void;
+}> = (props) => {
+    return (
+        <div
+            css={css`
+                // The label can extend well beyond the end of the slider, so we need some extra space.
+                padding-right: 30px;
+            `}
+        >
+            <Div
+                l10nKey={props.l10nKey}
+                css={css`
+                    margin-bottom: 2px;
+                    margin-top: 20px;
+                    font-weight: bold;
+                `}
+            >
+                {props.label}
+            </Div>
+            <Div
+                css={css`
+                    text-align: center;
+                    margin-bottom: 2px;
+                `}
+                l10nKey="Common.Seconds"
+                l10nParam0={props.value.toString()}
+                l10nComment="%0 is a number of seconds"
+            >
+                %0 seconds
+            </Div>
+            <div className="bgSliderWrapper">
+                <Slider
+                    max={10}
+                    min={props.min}
+                    value={props.value}
+                    step={0.5}
+                    onChange={(event, value) => props.onChange(value as number)}
+                    size="small"
+                />
+            </div>
+        </div>
     );
 };
 
