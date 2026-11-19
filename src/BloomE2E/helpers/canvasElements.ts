@@ -1139,18 +1139,22 @@ export async function chooseCanvasElementLanguage(
         page,
         "EditTab.Toolbox.ComicTool.Options.Language",
     );
-    const offered = (
-        await submenu.locator('li[role="menuitem"]').allInnerTexts()
-    ).map((label) => label.trim());
-    const index = offered.indexOf(languageName);
-    if (index < 0)
+    const row = submenu.getByRole("menuitem", {
+        name: languageName,
+        exact: true,
+    });
+    if ((await row.count()) === 0) {
+        const offered = (
+            await submenu.getByRole("menuitem").allInnerTexts()
+        ).map((label) => label.trim());
         throw new Error(
             `The Language submenu has no "${languageName}". It offers: ` +
                 `${offered.join(", ") || "(nothing)"}.`,
         );
+    }
     await clickSubmenuRowAndWaitForMenusToClose(
         page,
-        submenu.locator('li[role="menuitem"]').nth(index),
+        row,
         `the language "${languageName}"`,
     );
     await expect(
