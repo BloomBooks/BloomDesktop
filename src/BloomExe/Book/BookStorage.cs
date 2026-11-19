@@ -2864,7 +2864,10 @@ namespace Bloom.Book
             return String.Join("<br />", unencodedStrings.Select(WebUtility.HtmlEncode));
         }
 
-        private static string GetEncodedSeeWebPageString(string webPageUrl)
+        /// <summary>
+        /// "See {0}." (localized) as HTML, with {0} a link to webPageUrl showing the URL itself.
+        /// </summary>
+        internal static string GetEncodedSeeWebPageString(string webPageUrl)
         {
             var seeAlsoFormatStr = LocalizationManager.GetString("Common.SeeWebPage", "See {0}.");
             // FYI: The braces in the format string are not encoded by HtmlEncode.

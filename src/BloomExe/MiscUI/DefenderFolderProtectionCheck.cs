@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Windows.Forms;
@@ -207,14 +206,12 @@ namespace Bloom.MiscUI
                 );
                 helpUrl = FileAccessDiagnostics.kTroubleshootingUrl;
             }
-            var seeWebPage = LocalizationManager.GetString("Common.SeeWebPage", "See {0}.");
-            var link = $"<a href='{helpUrl}'>{WebUtility.HtmlEncode(helpUrl)}</a>";
             var html = new StringBuilder();
             html.Append(Paragraph(string.Format(heading, folder)));
             if (extraParagraph != null)
                 html.Append(Paragraph(extraParagraph));
             html.Append(Paragraph(cause));
-            html.Append($"<p>{string.Format(WebUtility.HtmlEncode(seeWebPage), link)}</p>");
+            html.Append($"<p>{BookStorage.GetEncodedSeeWebPageString(helpUrl)}</p>");
             // The likely cause names a product, setting or sync program, which a person helping
             // the user needs, even though it is only in English.
             if (likelyCause != null)
@@ -242,15 +239,17 @@ namespace Bloom.MiscUI
                     Default = true,
                 };
                 // Room for the folder, two or three paragraphs and a link without scrolling.
+                // Owned by the Shell or by nothing: at startup the only other form may be the
+                // hidden splash screen, and a dialog it owned would have no taskbar button.
                 BloomMessageBox.Show(
-                    Application.OpenForms.OfType<Shell>().FirstOrDefault(),
+                    Shell.GetShellOrNull(),
                     messageHtml,
                     new[] { closeButton },
                     logicalWidth: 600,
                     logicalHeight: 380
                 );
             }
-            var uiForm = Application.OpenForms.Cast<Form>().FirstOrDefault();
+            var uiForm = Shell.GetShellOrOtherOpenForm();
             if (uiForm != null && uiForm.InvokeRequired)
                 uiForm.Invoke((Action)Show);
             else
