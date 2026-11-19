@@ -167,8 +167,8 @@ export interface IBox {
  * - "none": anywhere else. No inline image commands are offered there.
  *
  * A text block can take inline images if it is a bloom-editable that is a direct child of a
- * translation group and is not inside a canvas element. Canvas elements have their own context
- * menu, which already handles their images. getInlineImageActionTarget also leaves out a few
+ * translation group and is not inside a canvas element, unless it is in a table cell. Canvas
+ * elements have their own context menu, which already handles their images. getInlineImageActionTarget also leaves out a few
  * other kinds of field; see there. The commands for an existing image are offered when the
  * click is on that image.
  */
@@ -220,7 +220,14 @@ export function getInlineImageActionTarget(
     const translationGroup = editable.parentElement;
     if (!translationGroup?.classList.contains("bloom-translationGroup"))
         return { kind: "none" };
-    if (editable.closest(kCanvasElementSelector)) return { kind: "none" };
+    // A table cell holds an ordinary text box of fixed size, even when the table is on a Canvas
+    // page and so inside a canvas element; findParagraphForTextContextMenu lets it through the
+    // same way.
+    if (
+        !editable.closest(".bloom-cell") &&
+        editable.closest(kCanvasElementSelector)
+    )
+        return { kind: "none" };
     if (isFieldBloomWritesItself(editable)) return { kind: "none" };
     // An image description is a translation group of its own, inside the bloom-canvas but not
     // inside any canvas element, so none of the checks above exclude it. It is what a reader
