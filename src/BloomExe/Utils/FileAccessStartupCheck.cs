@@ -57,7 +57,7 @@ namespace Bloom.Utils
             var problem = ProbeFolder(collectionFolder, out var failedPath);
             if (problem != null)
             {
-                // Books that can't be saved, renamed or opened are serious enough for a dialog.
+                // A dialog, since books may fail to save, be renamed or open.
                 DefenderFolderProtectionCheck.ReportPartlyBlocked(
                     problem,
                     collectionFolder,

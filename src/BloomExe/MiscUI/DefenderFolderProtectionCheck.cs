@@ -161,7 +161,7 @@ namespace Bloom.MiscUI
                 out var antivirusSuspected
             );
             Logger.WriteEvent(
-                $"Cannot write to {folder} (at {diagnosticsPath}): {writeProblem.GetType().Name}: {writeProblem.Message}{Environment.NewLine}{details}"
+                $"Cannot write to {folder}: {writeProblem.GetType().Name}: {writeProblem.Message}{Environment.NewLine}{details}"
             );
             var messageHtml = MakeMessageHtml(
                 folder,

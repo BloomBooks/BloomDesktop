@@ -14,7 +14,8 @@ using SIL.Reporting;
 namespace Bloom.WebLibraryIntegration
 {
     /// <summary>
-    /// BookDownloadSupport is used by program.cs at startup to make sure we are ready for download requests from the web.
+    /// BookDownloadSupport makes sure we are ready for download requests from the web: at startup
+    /// (Program), and before each download (BookDownload).
     /// (It had a larger role at one point, but things have been simplified.)
     /// </summary>
     public class BookDownloadSupport
@@ -35,25 +36,24 @@ namespace Bloom.WebLibraryIntegration
             {
                 EnsureDownloadFolderExists();
             }
-            catch (Exception e)
-                when (e is CollectionFolderNotWritableException
-                    || FileAccessDiagnostics.IsRefusal(e)
-                )
+            catch (CollectionFolderNotWritableException e)
             {
                 Logger.WriteEvent(
-                    $"Could not make the collection for downloaded books: {e.GetType().Name}: {e.Message}"
+                    $"Could not make the collection for downloaded books: {e.InnerException.GetType().Name}: {e.InnerException.Message}"
                 );
             }
         }
 
         /// <summary>
         /// Make the collection that downloaded books go into, if it isn't there. Throws
-        /// CollectionFolderNotWritableException if Windows won't let Bloom write there.
+        /// CollectionFolderNotWritableException if Windows won't let Bloom make it.
         /// </summary>
         public static void EnsureDownloadFolderExists()
         {
             string downloadFolder = BookDownload.DownloadFolder;
-            if (!Directory.Exists(downloadFolder))
+            if (Directory.Exists(downloadFolder))
+                return;
+            try
             {
                 var pathToSettingsFile = CollectionSettings.GetPathForNewSettings(
                     Path.GetDirectoryName(downloadFolder),
@@ -68,6 +68,12 @@ namespace Bloom.WebLibraryIntegration
                 settings.Language1.SetName("English", false);
                 CollectionSettings.CreateNewCollection(settings);
                 ProjectContext.ClearUserInstalledDirectoriesCache();
+            }
+            catch (Exception e) when (FileAccessDiagnostics.IsRefusal(e))
+            {
+                // Saving the new collection's settings, or making a folder above it, can be
+                // refused too; callers need only handle one kind of exception.
+                throw new CollectionFolderNotWritableException(downloadFolder, e);
             }
         }
 
