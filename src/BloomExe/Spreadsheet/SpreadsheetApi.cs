@@ -85,14 +85,14 @@ namespace Bloom.Spreadsheet
             }
             catch (Exception ex)
             {
-                var msg = LocalizationManager.GetString(
-                    "Spreadsheet:ExportFailed",
-                    "Export failed: "
+                var msgFmt = LocalizationManager.GetString(
+                    "Spreadsheet.ExportFailed",
+                    "Export failed: {0}"
                 );
                 NonFatalProblem.Report(
                     ModalIf.All,
                     PassiveIf.None,
-                    msg + ex.Message,
+                    string.Format(msgFmt, ex.Message),
                     exception: ex
                 );
             }
@@ -149,14 +149,14 @@ namespace Bloom.Spreadsheet
             }
             catch (Exception ex)
             {
-                var msg = LocalizationManager.GetString(
-                    "Spreadsheet:ImportFailed",
-                    "Import failed: "
+                var msgFmt = LocalizationManager.GetString(
+                    "Spreadsheet.ImportFailed",
+                    "Import failed: {0}"
                 );
                 NonFatalProblem.Report(
                     ModalIf.All,
                     PassiveIf.None,
-                    msg + ex.Message,
+                    string.Format(msgFmt, ex.Message),
                     exception: ex,
                     showSendReport: false
                 );

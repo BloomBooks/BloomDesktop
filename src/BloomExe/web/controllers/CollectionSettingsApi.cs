@@ -697,16 +697,27 @@ namespace Bloom.web.controllers
         {
             var x = new ExpandoObject() as IDictionary<string, object>;
             // The values set here should correspond to the declaration of ILanguageNameValues
-            // in canvasControlTypes.ts.
-            var settings = _bookSelection.CurrentSelection.CollectionSettings;
-            x["language1Name"] = settings.Language1.Name;
-            x["language1Tag"] = settings.Language1.Tag;
-            x["language2Name"] = settings.Language2.Name;
-            x["language2Tag"] = settings.Language2.Tag;
-            if (!String.IsNullOrEmpty(settings.Language3?.Name))
+            // in BookSettingsDialog.tsx.
+            x["language1Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language1.Name;
+            x["language1Tag"] = _bookSelection.CurrentSelection.CollectionSettings.Language1.Tag;
+            x["language2Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language2.Name;
+            x["language2Tag"] = _bookSelection.CurrentSelection.CollectionSettings.Language2.Tag;
+            if (
+                !String.IsNullOrEmpty(
+                    _bookSelection.CurrentSelection.CollectionSettings.Language3?.Name
+                )
+            )
             {
-                x["language3Name"] = settings.Language3.Name;
-                x["language3Tag"] = settings.Language3.Tag;
+                x["language3Name"] = _bookSelection
+                    .CurrentSelection
+                    .CollectionSettings
+                    .Language3
+                    .Name;
+                x["language3Tag"] = _bookSelection
+                    .CurrentSelection
+                    .CollectionSettings
+                    .Language3
+                    .Tag;
             }
 
             request.ReplyWithJson(JsonConvert.SerializeObject(x));

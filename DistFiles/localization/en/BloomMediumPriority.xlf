@@ -34,6 +34,11 @@
         <note>ID: Common.Working</note>
         <note>Shown next to a spinner while an operation is in progress.</note>
       </trans-unit>
+      <trans-unit id="Common.ClickHereForHelp" translate="no">
+        <source xml:lang="en">Please click [here] to get help from the Bloom support team.</source>
+        <note>ID: Common.ClickHereForHelp</note>
+        <note>Added to the end of some error messages. [here] will become a link. Keep the brackets to mark the translated text that should form the link.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder">
         <source xml:lang="en">App Builder</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
@@ -125,6 +130,26 @@
         <note>ID: Feature.AiImageEditing</note>
         <note>Name of the AI image editing feature, used in subscription messages.</note>
       </trans-unit>
+      <trans-unit id="EditTab.CopyrightThisDerivedVersion" translate="no">
+        <source xml:lang="en">Copyright and license this translated version</source>
+        <note>ID: EditTab.CopyrightThisDerivedVersion</note>
+        <note>Checkbox at the top of the dialog for editing a book's copyright and license, when the book is a translation of a book someone else made. Checking it lets the user give the translation its own copyright and license.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.ImageFailed" translate="no">
+        <source xml:lang="en">Failed to load image</source>
+        <note>ID: EditTab.Image.ImageFailed</note>
+        <note>Short message in the problem report shown when Bloom cannot load a picture in the Edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.CannotEditEmbeddedImage" translate="no">
+        <source xml:lang="en">Bloom can't edit image information for this image because it is embedded data, not a file image.</source>
+        <note>ID: EditTab.ImageMetadata.CannotEditEmbeddedImage</note>
+        <note>Shown when the user tries to edit the credits, copyright and license of a picture that is stored inside the page itself rather than in its own file.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.NoGifOnClipboard" translate="no">
+        <source xml:lang="en">To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element</source>
+        <note>ID: EditTab.NoGifOnClipboard</note>
+        <note>Shown when the user pastes into an animated GIF picture on a page but the clipboard does not hold a GIF. "Gif" and "GIF" are the name of an image file format.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.RotateRight" translate="no">
         <source xml:lang="en">Rotate right</source>
         <note>ID: EditTab.Image.RotateRight</note>
@@ -170,6 +195,26 @@
         <source xml:lang="en">Do Not Indent This Paragraph</source>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
         <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. It is a checkable on/off command; when it is checked, this one paragraph loses the first-line indent that its style would otherwise give it. Typically used on a paragraph continued from the previous page.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.OnePage.Tooltip" translate="no">
+        <source xml:lang="en">Show one page at a time</source>
+        <note>ID: EditTab.PageView.OnePage.Tooltip</note>
+        <note>Tooltip on the left button of a two-button switch at the top right of the Edit tab. This button shows only the page being edited.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.AllPages.Tooltip" translate="no">
+        <source xml:lang="en">Show all pages</source>
+        <note>ID: EditTab.PageView.AllPages.Tooltip</note>
+        <note>Tooltip on the right button of a two-button switch at the top right of the Edit tab. This button shows all the pages of the book around the page being edited, as they would be laid out in the printed book.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.BlankPage" translate="no">
+        <source xml:lang="en">Blank page</source>
+        <note>ID: EditTab.PageView.BlankPage</note>
+        <note>Shown on an empty, uneditable page in the Edit tab's view of all the pages of the book. It stands for a page that is not one of the book's own pages but that the printed book has, so that the inside back cover and the back cover are printed on the two sides of one sheet.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.BlankPage.Note" translate="no">
+        <source xml:lang="en">The printed book has an empty page here, so that the inside back cover and the back cover are the two sides of one sheet.</source>
+        <note>ID: EditTab.PageView.BlankPage.Note</note>
+        <note>Shown below "Blank page" on that same empty page, to say why it is there.</note>
       </trans-unit>
       <trans-unit id="EditTab.InlineImage.InsertImage" translate="no">
         <source xml:lang="en">Insert Image</source>

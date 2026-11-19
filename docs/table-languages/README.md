@@ -17,8 +17,8 @@ Languages
 ```
 
 - One check box per role the book has: L1, then L2 and L3 when the collection has them. If L2 or
-  L3 is the same language as L1, only one entry is shown (the canvas element's Language submenu
-  already drops duplicates this way, in `canvasControlTextMenuItems.ts`).
+  L3 is the same language as L1, only one entry is shown (the canvas element's Language submenu already drops duplicates
+  this way, in `canvasControlTextMenuItems.ts`).
 - Each entry's tooltip is the Collection Settings label for that language.
 - At least one box stays ticked: a box is disabled when unticking it would leave some cell with
   no language.
@@ -88,6 +88,10 @@ let Bloom add what the library knows nothing about:
 - `src/BloomBrowserUI/bookEdit/js/TableCellLanguagesSection.tsx`: the menu item and its submenu.
 - `src/BloomBrowserUI/bookEdit/js/tableEditing.ts`: installs both hooks; new text cells start
   with `data-default-languages="V"`.
+- `src/BloomBrowserUI/bookEdit/js/translationGroupLanguages.ts` (from BL-17105-1of3-box-setup,
+  which the canvas text box's Language submenu also uses): shows the chosen languages in a cell's
+  translation group, adds a box for a language the cell has none for, and gives that box what page
+  load gives every box.
 - `src/BloomExe/Book/TranslationGroupManager.cs`: `LanguagesOfTableTextCell`, the same rule
   when a page loads. `V` there means the collection's first language, because elsewhere `V`
   means the first language ticked in the toolbar.

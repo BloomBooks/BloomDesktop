@@ -1,0 +1,61 @@
+# The C# build of Bloom for a Windows job: NuGet packages from the cache, the MSBuild build tasks,
+# then Bloom.proj's Build. Used by nightly.yml's BloomE2E shards, bot-verify.yml, culture-sweep.yml
+# and harvester-artifacts.yml, so a change to how Bloom is built is made once.
+#
+# nightly.yml's build-and-test job keeps its own copy of these steps. It runs its C# build even
+# after an earlier step has failed (the front-end tests, through !cancelled()), and the steps
+# inside a composite action may not run once the job has failed. When you change one, change the
+# other.
+#
+# The front-end build (`pnpm run build-prod` in src/BloomBrowserUI) is not in here: the C# build
+# needs its output, so the caller runs it first, and some callers run its tests in between.
+# BUILD_NUMBER comes from the caller's environment, as it does for a plain msbuild step.
+
+name: Build Bloom (C#)
+description: Restore NuGet packages from the cache, restore the MSBuild build tasks, and build Bloom.proj.
+
+inputs:
+    skip-bloom-tests:
+        description: >-
+            "true" to leave out the C# test assembly, for a job that only launches Bloom. Bloom
+            itself, BloomPdfMaker.exe included, is always built whole.
+        required: false
+        default: "false"
+
+runs:
+    using: composite
+    steps:
+        # Restore and save are separate steps because the combined actions/cache saves only when
+        # the whole job succeeds, and the runs that most need a warm cache are the ones whose tests
+        # are still failing. Every caller shares the one key, so any of them can warm it. The key's
+        # csproj pattern names src/*/ rather than **, which would walk every node_modules folder.
+        - name: Restore NuGet packages from cache
+          id: nuget_cache
+          uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+          with:
+              path: ~/.nuget/packages
+              key: nuget-${{ runner.os }}-${{ hashFiles('src/*/*.csproj', 'Directory.Build.props', '.nuget/NuGet.Config', 'build/Bloom.proj') }}
+              restore-keys: nuget-${{ runner.os }}-
+
+        # Restore SIL.BuildTasks in its own msbuild invocation: Bloom.proj's UsingTask declarations
+        # only load if those dlls already exist, so a combined build would not see them.
+        # RestartBuild=false stops RestoreBuildTasks from ALSO running BuildInternal (it does that
+        # when the dlls were missing), which would compile the whole app twice.
+        - name: Restore MSBuild build tasks
+          working-directory: build
+          shell: pwsh
+          run: msbuild Bloom.proj /t:RestoreBuildTasks /p:RestartBuild=false
+
+        - name: Build
+          working-directory: build
+          shell: pwsh
+          env:
+              SKIP_BLOOM_TESTS: ${{ inputs.skip-bloom-tests }}
+          run: msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER /p:SkipBloomTests=$env:SKIP_BLOOM_TESTS
+
+        - name: Save NuGet packages to cache
+          if: ${{ steps.nuget_cache.outputs.cache-hit != 'true' }}
+          uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+          with:
+              path: ~/.nuget/packages
+              key: ${{ steps.nuget_cache.outputs.cache-primary-key }}

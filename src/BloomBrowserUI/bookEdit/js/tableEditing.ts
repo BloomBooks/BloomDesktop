@@ -26,16 +26,9 @@ import "bloom-table/bloom-table-edit.css";
 import "./tableEditing.less";
 import { SetupImagesInContainer } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
-import { setupInlineImages } from "./inlineImages";
+import { setUpBoxesBuiltAfterLoad } from "./translationGroupLanguages";
 import { get, post } from "../../utils/bloomApi";
-import $ from "jquery";
-import BloomField from "../bloomField/BloomField";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
-import {
-    activateLongPressFor,
-    AddLanguageTags,
-    attachToCkEditor,
-} from "./bloomEditing";
 import {
     refreshTableFeatureStatus,
     tablesMayBeRestructured,
@@ -45,9 +38,7 @@ import { ILanguageNameValues } from "../toolbox/canvas/canvasControlTypes";
 import {
     cellLanguagesOfCollection,
     ICellLanguage,
-    rolesFromSetting,
-    rolesOfGroup,
-    showRolesInGroup,
+    showSettingInGroup,
     textGroupOfCell,
 } from "./tableCellLanguages";
 import { TableCellLanguagesSection } from "./TableCellLanguagesSection";
@@ -188,25 +179,44 @@ function installHostHooks(): void {
         return createElement(TableCellLanguagesSection, {
             groups,
             languages: cellLanguages,
-            onNewEditables: wireNewEditables,
         });
     });
     // A text cell's languages travel with the cell's other settings: into a new row or column
     // from the one it was inserted beside, and by Paint format and Copy / Paste properties.
     setHostCellSettings({
+        // The setting is copied as stored, so a cell with none gives the cell it is copied to
+        // none either.
         snapshot: (cell) => {
             const group = textGroupOfCell(cell);
-            return group ? rolesOfGroup(group).join(",") : undefined;
+            if (!group) return undefined;
+            return group.getAttribute("data-default-languages") ?? kNoSetting;
         },
         apply: (cell, value) => {
             const group = textGroupOfCell(cell);
-            if (!group || !cellLanguages) return;
-            wireNewEditables(
-                showRolesInGroup(group, rolesFromSetting(value), cellLanguages),
+            // undefined: the cell copied from is not a text cell, so it has no languages to give.
+            if (!group || !cellLanguages || value === undefined) return;
+            // Pasting over many cells mostly gives a cell the setting it already has.
+            if (
+                (group.getAttribute("data-default-languages") ?? kNoSetting) ===
+                value
+            )
+                return;
+            // Every operation that copies settings (a new row or column, Paste properties, Paint
+            // format) is followed by the wiring pass, which sets up the boxes this adds. That is
+            // also the only time they can be set up: a new row gets its settings before it is in
+            // the page, where a box's direction cannot be read.
+            showSettingInGroup(
+                group,
+                value === kNoSetting ? null : value,
+                cellLanguages,
             );
         },
     });
 }
+
+// What setHostCellSettings carries for a text cell with no data-default-languages. The library
+// uses undefined for a cell with nothing to copy, so "no setting" needs a value of its own.
+const kNoSetting = "";
 
 // The collection's languages as a table cell can show them. Asked for once per page load, like
 // the table feature's status; until it arrives, the menus have no Languages item.
@@ -223,17 +233,6 @@ function refreshCellLanguages(): void {
             result.data as ILanguageNameValues,
         );
     });
-}
-
-// An editable added to a cell for a newly chosen language gets the wiring that page load gives
-// the others. They are wired from their table, which is where the wiring looks.
-function wireNewEditables(editables: HTMLElement[]): void {
-    const tables = new Set<HTMLElement>();
-    editables.forEach((editable) => {
-        const table = editable.closest<HTMLElement>(".bloom-table");
-        if (table) tables.add(outermostTable(table));
-    });
-    tables.forEach((table) => wireBloomContentOfNewCells(table));
 }
 
 /**
@@ -259,33 +258,16 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
     // mode's text boxes, which origami makes not contenteditable. Leaving the
     // mode rebuilds the page, and the page-load pass wires these cells then.
     if (root.closest(".origami-layout-mode")) return;
-    // Every language of a group holds the same inline pictures, so an editable
-    // made since the page loaded (a language newly chosen for a cell, say) gets
-    // copies of them, as page load gives the others. Before CKEditor attaches,
-    // as at page load.
-    setupInlineImages(root);
     // `root` is a cell or a table, so everything below it that is a
     // bloom-editable belongs to some cell of some table.
-    root.querySelectorAll<HTMLElement>(
-        ".bloom-editable:not([contenteditable])",
-    ).forEach((editable) => {
-        // Page load marks a box in a right-to-left language dir="rtl", and the Format dialog's
-        // alignment and the paragraph marks of editMode.less go by that. The collection's
-        // stylesheet already gives the language its direction by [lang], so read it from there.
-        if (getComputedStyle(editable).direction === "rtl")
-            editable.setAttribute("dir", "rtl");
-        // Must come before attachToCkEditor: CKEditor's inline mode decides
-        // whether the editor is read-only from the element's contenteditable
-        // state at the moment it attaches.
-        editable.setAttribute("contenteditable", "true");
-        BloomField.ManageField(editable);
-        attachToCkEditor(editable);
-        activateLongPressFor($(editable));
-    });
-    // Gives each cell the little tag naming the language it is in. Run on the
-    // whole root because it only looks at editables that are contenteditable,
-    // which the ones above have only just become.
-    AddLanguageTags(root);
+    const newEditables = Array.from(
+        root.querySelectorAll<HTMLElement>(
+            ".bloom-editable:not([contenteditable])",
+        ),
+    );
+    // Each new box gets what page load gives every box: editing, CKEditor, its language tag, its
+    // group's inline pictures and its direction.
+    setUpBoxesBuiltAfterLoad(newEditables);
     // `root` itself is one of these when a cell has just become a picture cell.
     const imageCellSelector = ".bloom-cell[data-content-type='image']";
     const imageCells = Array.from(

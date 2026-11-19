@@ -163,6 +163,52 @@ namespace Bloom.web.controllers
                 HandleGetFrameSources,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "editView/pageViewSettings",
+                HandleSavePageViewSettings,
+                true
+            );
+            // On the UI thread and holding the API lock, like pageList/pageClicked: the handler
+            // saves the page being edited. The page layout update it may start loads pages
+            // off-screen that make API calls of their own, and those are never left waiting for
+            // this request: the handler only queues the update (EditingModel.RunOffTheApiLock), so
+            // the update starts after this request has returned and let go of both, and then runs
+            // on the progress dialog's background worker (BookProcessor.UpdatePageLayoutIfNeededThen).
+            apiHandler.RegisterEndpointHandler(
+                "editView/updatePageLayoutForAllPages",
+                HandleUpdatePageLayoutForAllPages,
+                true
+            );
+        }
+
+        /// <summary>
+        /// The All Pages view is showing the other pages of the book: if the book needs its page
+        /// layout update, run it now and come back to the page (EditingModel.UpdatePageLayoutForAllPagesIfNeeded).
+        /// </summary>
+        private void HandleUpdatePageLayoutForAllPages(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+                throw new ArgumentException(
+                    "editView/updatePageLayoutForAllPages only supports POST"
+                );
+            View.Model.UpdatePageLayoutForAllPagesIfNeeded();
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Keep, as a user setting, the front end's page view settings, so that they last across
+        /// Bloom sessions. The posted string is JSON that holds both which page view mode the user
+        /// chose (One Page or All Pages) and the zoom the user had in each mode when they last left
+        /// it (see IPageViewSettings in pageViewSettings.ts). The front end owns that format: this stores the
+        /// string as it came, and editView/frameSources hands it back.
+        /// </summary>
+        private void HandleSavePageViewSettings(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+                throw new ArgumentException("editView/pageViewSettings only supports POST");
+            Settings.Default.EditTabPageViewSettings = request.RequiredPostString();
+            Settings.Default.Save();
+            request.PostSucceeded();
         }
 
         private void HandleGetFrameSources(ApiRequest request)

@@ -8,10 +8,14 @@
 import { expect, test } from "../fixtures/bloomTest";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
+    cellTextBox,
+    clickCell,
+    clickTableMenuCommand,
     getCellLanguages,
-    getCellTextBoxDirAttribute,
+    getTableShape,
     getCellTextDirection,
     makeBookWithTableOnCanvasPage,
+    openTableMenu,
     toggleCellLanguageInCellMenu,
     typeInCell,
 } from "../helpers/tables";
@@ -53,10 +57,37 @@ test("a right-to-left language ticked for a cell runs right to left before the p
             "The English box beside it should still run left to right.",
         ).toBe("ltr");
         expect(
-            await getCellTextBoxDirAttribute(page, 0, 0, "ar"),
+            await (await cellTextBox(page, 0, 0, "ar")).getAttribute("dir"),
             "The new Arabic box should be marked dir=rtl, as page load marks the others.",
         ).toBe("rtl");
         // A box a person can type in, not only one that is drawn.
         await typeInCell(page, 0, 0, "ar", "تفاحة");
+    });
+
+    await step("Add a row below with the row's menu", async () => {
+        // A row added below copies the settings of the row it was added beside. bloom-table gives
+        // the new row's cells those settings before the row is in the page, where a box's
+        // direction cannot be read yet.
+        const rowsBefore = (await getTableShape(page)).rows;
+        await clickCell(page, 0, 0);
+        await openTableMenu(page, "row", 0);
+        await clickTableMenuCommand(page, "Add Row Below");
+        const newRow = 1;
+        await expect
+            .poll(async () => (await getTableShape(page)).rows, {
+                message: "Add Row Below should have added a row.",
+            })
+            .toBe(rowsBefore + 1);
+        expect(await getCellLanguages(page, newRow, 0)).toEqual(["en", "ar"]);
+        expect(
+            await (
+                await cellTextBox(page, newRow, 0, "ar")
+            ).getAttribute("dir"),
+            "The new row's Arabic box should be marked dir=rtl, as page load marks the others.",
+        ).toBe("rtl");
+        expect(await getCellTextDirection(page, newRow, 0, "ar")).toBe("rtl");
+        // Not typed in: the added row shares the table's fixed height, so its Arabic box runs past
+        // the bottom of its cell and a click on it lands on the English box (BL-17141;
+        // tables-cell-languages-after-new-row.spec.ts).
     });
 });

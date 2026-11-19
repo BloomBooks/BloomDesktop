@@ -86,7 +86,7 @@ import {
     measureTable,
     openTableMenu,
     rightClickCell,
-    toggleMenuCellLanguage,
+    toggleCellLanguageInCellMenu,
     setCellContentType,
     table,
     typeInCell,
@@ -1052,9 +1052,7 @@ test.describe("more ways to use a table", () => {
         await step("Tick L2 in the cell's menu", async () => {
             // A table cell does not follow the toolbar's language choice; its languages are
             // chosen in the table's own menus (tables-cell-languages.spec.ts).
-            await rightClickCell(page, 0, 0);
-            await toggleMenuCellLanguage(page, "L2");
-            await closeAnyMenu(page);
+            await toggleCellLanguageInCellMenu(page, 0, 0, "L2");
             expect(
                 await getCellLanguages(page, 0, 0),
                 "A text cell with L2 ticked should show a box for L1 and one for L2.",
@@ -1078,9 +1076,7 @@ test.describe("more ways to use a table", () => {
         });
 
         await step("Untick L2 again", async () => {
-            await rightClickCell(page, 0, 0);
-            await toggleMenuCellLanguage(page, "L2");
-            await closeAnyMenu(page);
+            await toggleCellLanguageInCellMenu(page, 0, 0, "L2");
             expect(await getCellLanguages(page, 0, 0)).toEqual(["en"]);
         });
     });

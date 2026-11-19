@@ -47,7 +47,7 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         return true;
     }
 
-    public configureElements(container: HTMLElement) {
+    public configureElements(_boxes: JQuery) {
         // one-time setup whether or not the tool is expanded.
     }
 

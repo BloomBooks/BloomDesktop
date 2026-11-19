@@ -11,6 +11,10 @@
 import { ILanguageNameValues } from "../toolbox/canvas/canvasControlTypes";
 import { theOneUndoStack } from "../undo/UndoStack";
 import { isInChangeLayoutMode } from "../undo/redoKeyBinding";
+import {
+    setUpBoxesBuiltAfterLoad,
+    showLanguagesInTranslationGroup,
+} from "./translationGroupLanguages";
 
 export type LanguageRole = "V" | "N1" | "N2";
 
@@ -23,7 +27,7 @@ export interface ICellLanguage {
     shortName: string;
     tag: string;
     name: string;
-    /** The Collection Settings label for the role, used as the entry's tooltip. */
+    /** The Collection Settings label for the language, used as the entry's tooltip. */
     tooltipEnglish: string;
     tooltipL10nId: string;
 }
@@ -106,16 +110,51 @@ export function rolesFromSetting(setting: string | null): LanguageRole[] {
     return kRoleOrder.filter((role) => tokens.includes(role));
 }
 
-/** Whether every group shows a role, none does, or only some do. */
+/** Whether every group shows a language, none does, or only some do. */
 export type RoleState = "all" | "none" | "some";
 
-/** How the role stands across `groups`, for drawing its check box. */
+// The language tag of a role the menu lists, which always has one.
+function tagOfRole(role: LanguageRole, languages: ICellLanguage[]): string {
+    const language = languages.find((other) => other.role === role);
+    if (!language) {
+        throw new Error(`The collection gives role ${role} no language`);
+    }
+    return language.tag;
+}
+
+// The languages, among `languages`, that `roles` name. A role the collection gives no language
+// names none: a cell keeps its roles when its collection drops its third language, say.
+function languagesOfRoles(
+    roles: LanguageRole[],
+    languages: ICellLanguage[],
+): ICellLanguage[] {
+    return languages.filter((language) => roles.includes(language.role));
+}
+
+// The languages a group shows, by tag, each once. Two roles can name one language when the
+// collection's L2 or L3 is the same as its L1.
+function tagsOfGroup(group: HTMLElement, languages: ICellLanguage[]): string[] {
+    return [
+        ...new Set(
+            languagesOfRoles(rolesOfGroup(group), languages).map(
+                (language) => language.tag,
+            ),
+        ),
+    ];
+}
+
+/**
+ * How the role's language stands across `groups`, for drawing its check box. A group shows the
+ * language when any of its roles names it.
+ */
 export function roleState(
     groups: HTMLElement[],
     role: LanguageRole,
+    languages: ICellLanguage[],
 ): RoleState {
+    const tag = tagOfRole(role, languages);
     const count = groups.filter((group) =>
-        rolesOfGroup(group).includes(role),
+        tagsOfGroup(group, languages).includes(tag),
     ).length;
     if (count === 0) return "none";
     if (count === groups.length) return "all";
@@ -123,106 +162,65 @@ export function roleState(
 }
 
 /**
- * True when the role's box may not be unticked: every group shows it, and in at least one it is
- * the only language, which unticking would leave with none.
+ * True when some group shows only one language. A box whose language every group shows may then
+ * not be unticked, since unticking would leave that group with none.
  */
-export function roleIsLastLanguageSomewhere(
+export function someGroupHasOneLanguage(
     groups: HTMLElement[],
-    role: LanguageRole,
+    languages: ICellLanguage[],
 ): boolean {
-    return (
-        roleState(groups, role) === "all" &&
-        groups.some((group) => rolesOfGroup(group).length === 1)
-    );
+    return groups.some((group) => tagsOfGroup(group, languages).length === 1);
+}
+
+// The value of data-default-languages that stores `roles`.
+function settingOfRoles(roles: LanguageRole[]): string {
+    return kRoleOrder.filter((role) => roles.includes(role)).join(",");
 }
 
 /**
- * Make `group` store and show exactly `roles`. Where the group has no bloom-editable in one of the
- * roles' languages yet (a cell made since the page loaded has only its first one), one is added.
- * Returns the added ones, which need the wiring that page load gives the rest.
+ * Make `group` store `setting` exactly as given, including no setting at all, and show the
+ * languages it stands for, in role order. Where the group has no bloom-editable in one of those
+ * languages yet (a cell made since the page loaded has only its first one), one is added. Returns
+ * the added ones, which need setUpBoxesBuiltAfterLoad once they are in the page.
  */
-export function showRolesInGroup(
+export function showSettingInGroup(
     group: HTMLElement,
-    roles: LanguageRole[],
+    setting: string | null,
     languages: ICellLanguage[],
 ): HTMLElement[] {
-    group.setAttribute(
-        "data-default-languages",
-        kRoleOrder.filter((role) => roles.includes(role)).join(","),
+    if (setting === null) {
+        group.removeAttribute("data-default-languages");
+    } else {
+        group.setAttribute("data-default-languages", setting);
+    }
+    const wanted = languagesOfRoles(rolesFromSetting(setting), languages);
+    return showLanguagesInTranslationGroup(
+        group,
+        wanted.map((language) => language.tag),
+        languages.map((language) => language.tag),
     );
-    const wanted = languages.filter((language) =>
-        roles.includes(language.role),
-    );
-    const added = wanted
-        .filter((language) => !editableInLanguage(group, language.tag))
-        .map((language) => addEditable(group, language, languages));
-    const wantedTags = wanted.map((language) => language.tag);
-    Array.from(
-        group.querySelectorAll<HTMLElement>(":scope > .bloom-editable"),
-    ).forEach((editable) => {
-        Array.from(editable.classList)
-            .filter((name) => name.startsWith("bloom-visibility-code-"))
-            .forEach((name) => editable.classList.remove(name));
-        if (wantedTags.includes(editable.getAttribute("lang") ?? "")) {
-            editable.classList.add("bloom-visibility-code-on");
-        }
-    });
-    return added;
-}
-
-function editableInLanguage(
-    group: HTMLElement,
-    tag: string,
-): HTMLElement | undefined {
-    return (
-        group.querySelector<HTMLElement>(
-            `:scope > .bloom-editable[lang="${tag}"]`,
-        ) ?? undefined
-    );
-}
-
-// A new, empty editable in `language`, with the paragraph style of the group's other editables,
-// placed among them in role order so the languages read L1, L2, L3 down the cell.
-function addEditable(
-    group: HTMLElement,
-    language: ICellLanguage,
-    languages: ICellLanguage[],
-): HTMLElement {
-    const sibling = group.querySelector<HTMLElement>(
-        ":scope > .bloom-editable",
-    );
-    const styleClasses = sibling
-        ? Array.from(sibling.classList).filter((name) =>
-              name.endsWith("-style"),
-          )
-        : ["normal-style"];
-    const editable = group.ownerDocument.createElement("div");
-    editable.classList.add("bloom-editable", ...styleClasses);
-    editable.setAttribute("lang", language.tag);
-    editable.innerHTML = "<p></p>";
-    const later = languages
-        .slice(languages.indexOf(language) + 1)
-        .map((other) => editableInLanguage(group, other.tag))
-        .find((other) => other !== undefined);
-    group.insertBefore(editable, later ?? null);
-    return editable;
 }
 
 /**
  * Tick or untick `role` across the text cells of `groups`, as one undoable step. Ticking adds it
- * to every group; unticking takes it out of every group where it is not the only language.
+ * to every group that does not show its language; unticking takes every role naming that language
+ * out of every group where it is not the only language.
  */
 export function toggleRole(
     groups: HTMLElement[],
     role: LanguageRole,
     languages: ICellLanguage[],
-    onNewEditables: (editables: HTMLElement[]) => void,
 ): void {
-    const tick = roleState(groups, role) !== "all";
+    const tick = roleState(groups, role, languages) !== "all";
+    const tag = tagOfRole(role, languages);
+    // Every role that names this language: V and N1 often name the same one.
+    const rolesNamingTag = languages
+        .filter((language) => language.tag === tag)
+        .map((language) => language.role);
     const changing = groups.filter((group) => {
-        const roles = rolesOfGroup(group);
-        if (tick) return !roles.includes(role);
-        return roles.includes(role) && roles.length > 1;
+        const tags = tagsOfGroup(group, languages);
+        if (tick) return !tags.includes(tag);
+        return tags.includes(tag) && tags.length > 1;
     });
     if (changing.length === 0) return;
 
@@ -231,41 +229,32 @@ export function toggleRole(
     // its Undo, the groups this change was made to are gone, and new ones stand in their places.
     // The stack's order means the page is back to how this change left it when its undo runs.
     const pageDocument = changing[0].ownerDocument;
-    const allGroups = () =>
-        Array.from(
-            pageDocument.querySelectorAll<HTMLElement>(
-                ".bloom-translationGroup",
-            ),
-        );
-    const pageGroups = allGroups();
-    const changes = changing.map((group) => {
+    const places = placesOnPage(changing);
+    const changes = changing.map((group, index) => {
         const before = rolesOfGroup(group);
+        const after = tick
+            ? [...before, role]
+            : before.filter((other) => !rolesNamingTag.includes(other));
         return {
-            place: pageGroups.indexOf(group),
+            place: places[index],
             // Undo puts back the attribute exactly as it was, including no attribute at all.
-            beforeAttribute: group.getAttribute("data-default-languages"),
-            after: tick
-                ? [...before, role]
-                : before.filter((other) => other !== role),
+            beforeSetting: group.getAttribute("data-default-languages"),
+            afterSetting: settingOfRoles(after),
         };
     });
-    const showAfter = (targets: HTMLElement[]) =>
-        onNewEditables(
-            targets.flatMap((group, index) =>
-                showRolesInGroup(group, changes[index].after, languages),
-            ),
-        );
-    showAfter(changing);
-    const afterAttributes = changing.map((group) =>
-        group.getAttribute("data-default-languages"),
-    );
-    const groupsNow = (expected: (string | null)[]): HTMLElement[] => {
-        const all = allGroups();
-        return changes.map((change, index) => {
+    // Make each changed group store its setting from `from` again; check first that every one
+    // stores its setting from the other side of the change.
+    const show = (
+        from: "beforeSetting" | "afterSetting",
+        expected: "beforeSetting" | "afterSetting",
+    ) => {
+        const all = translationGroupsOf(pageDocument);
+        const groups = changes.map((change) => {
             const group = all[change.place];
             if (
                 !group ||
-                group.getAttribute("data-default-languages") !== expected[index]
+                group.getAttribute("data-default-languages") !==
+                    change[expected]
             ) {
                 throw new Error(
                     "A table cell's languages changed after the change being undone or redone",
@@ -273,34 +262,37 @@ export function toggleRole(
             }
             return group;
         });
+        setUpBoxesBuiltAfterLoad(
+            groups.flatMap((group, index) =>
+                showSettingInGroup(group, changes[index][from], languages),
+            ),
+        );
     };
+    setUpBoxesBuiltAfterLoad(
+        changing.flatMap((group, index) =>
+            showSettingInGroup(group, changes[index].afterSetting, languages),
+        ),
+    );
     theOneUndoStack.push({
         label: "Change the languages of table cells",
         kind: "custom",
         // In Change Layout mode the table is faded and cannot be edited, as with table operations.
         isAvailable: () => !isInChangeLayoutMode(pageDocument),
-        undo: () => {
-            groupsNow(afterAttributes).forEach((group, index) => {
-                const beforeAttribute = changes[index].beforeAttribute;
-                // Hiding languages never adds an editable.
-                showRolesInGroup(
-                    group,
-                    rolesFromSetting(beforeAttribute),
-                    languages,
-                );
-                if (beforeAttribute === null) {
-                    group.removeAttribute("data-default-languages");
-                } else {
-                    group.setAttribute(
-                        "data-default-languages",
-                        beforeAttribute,
-                    );
-                }
-            });
-        },
-        redo: () =>
-            showAfter(
-                groupsNow(changes.map((change) => change.beforeAttribute)),
-            ),
+        // Hiding languages never adds an editable, so undo sets nothing up.
+        undo: () => show("beforeSetting", "afterSetting"),
+        redo: () => show("afterSetting", "beforeSetting"),
     });
+}
+
+function translationGroupsOf(pageDocument: Document): HTMLElement[] {
+    return Array.from(
+        pageDocument.querySelectorAll<HTMLElement>(".bloom-translationGroup"),
+    );
+}
+
+// The place of each group among the page's translation groups. A function of its own, so that
+// the list of every group on the page is not kept alive by the undo entry's closures.
+function placesOnPage(groups: HTMLElement[]): number[] {
+    const all = translationGroupsOf(groups[0].ownerDocument);
+    return groups.map((group) => all.indexOf(group));
 }
