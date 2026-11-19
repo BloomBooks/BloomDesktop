@@ -413,12 +413,9 @@ namespace Bloom.Api
             bool suppressBackgroundColors = false
         )
         {
-            var simulatedPageFileName = Path.ChangeExtension(
+            var simulatedPageFileName =
                 (isCurrentPageContent ? "currentPage" : Guid.NewGuid().ToString())
-                    + SimulatedFileUrlMarker
-                    + source,
-                ".html"
-            );
+                + InMemoryHtmlFileNameEnding(source);
             var pathToInMemoryHtmlFile = simulatedPageFileName; // a default, if there is no special folder
             if (dom.BaseForRelativePaths != null)
             {
@@ -572,6 +569,13 @@ namespace Bloom.Api
             bookFolderPath.Replace("\\", "/") + "/page" + SimulatedFileUrlMarker;
 
         /// <summary>
+        /// How the name of an in-memory file that MakeInMemoryHtmlFileInBookFolder makes for
+        /// <paramref name="source"/> ends, e.g. "-memsim-Pagelist.html".
+        /// </summary>
+        internal static string InMemoryHtmlFileNameEnding(InMemoryHtmlFileSource source) =>
+            SimulatedFileUrlMarker + source + ".html";
+
+        /// <summary>
         /// True when <paramref name="referer"/> is a page list document (the in-memory file
         /// MakeInMemoryHtmlFileInBookFolder makes for InMemoryHtmlFileSource.Pagelist) that was
         /// loaded from a folder other than <paramref name="bookFolderPath"/>. Its pictures are
@@ -579,6 +583,10 @@ namespace Bloom.Api
         /// only ask for them where they no longer are, until Bloom has replaced it with one from the
         /// new folder (BL-17055). Anything else, including a request whose document we cannot tell,
         /// is false.
+        ///
+        /// This only works for requests the document itself makes, such as the page list's
+        /// requests for page content. A picture or font that a stylesheet loads names the
+        /// stylesheet as its referer, not the document, so it cannot be judged this way.
         /// </summary>
         public static bool IsPageListDocumentOutsideFolder(string referer, string bookFolderPath)
         {
@@ -591,9 +599,12 @@ namespace Bloom.Api
             )
                 return false;
             var path = referer.Split('?', '#')[0].FromLocalhost();
-            var pageListFileEnding =
-                SimulatedFileUrlMarker + InMemoryHtmlFileSource.Pagelist + ".html";
-            if (!path.EndsWith(pageListFileEnding, StringComparison.Ordinal))
+            if (
+                !path.EndsWith(
+                    InMemoryHtmlFileNameEnding(InMemoryHtmlFileSource.Pagelist),
+                    StringComparison.Ordinal
+                )
+            )
                 return false;
             var documentFolder = path.Substring(0, Math.Max(0, path.LastIndexOf('/')));
             return !string.Equals(

@@ -17,16 +17,20 @@ namespace BloomTests.web
             @"C:\Users\someone\Documents\Bloom\Odia Books\ଉଡ଼ାଜାହାଜ କେମିତି ଉଡ଼େ";
 
         /// <summary>
-        /// The address of a page list document in <paramref name="folder"/>, the way Bloom makes
-        /// one (BloomServer.MakeInMemoryHtmlFileInBookFolder, then ToLocalhost).
+        /// The address of an in-memory document in <paramref name="folder"/> (a page list unless
+        /// <paramref name="source"/> says otherwise), named the way
+        /// BloomServer.MakeInMemoryHtmlFileInBookFolder names one, and made an address with
+        /// ToLocalhost.
         /// </summary>
         private static string PageListAddressIn(
             string folder,
-            string fileEnding = "-memsim-Pagelist.html"
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Pagelist
         )
         {
             var address = (
-                folder.Replace('\\', '/') + "/d8ed5a8e-df28-4bf0-990f-63a6651c3860" + fileEnding
+                folder.Replace('\\', '/')
+                + "/d8ed5a8e-df28-4bf0-990f-63a6651c3860"
+                + BloomServer.InMemoryHtmlFileNameEnding(source)
             ).ToLocalhost();
             Assert.That(
                 address,
@@ -92,7 +96,7 @@ namespace BloomTests.web
             // The page being edited, or any other document, is not what this is about.
             Assert.That(
                 BloomServer.IsPageListDocumentOutsideFolder(
-                    PageListAddressIn(kOldFolder, "-memsim-Normal.html"),
+                    PageListAddressIn(kOldFolder, InMemoryHtmlFileSource.Normal),
                     kNewFolder
                 ),
                 Is.False

@@ -25,7 +25,7 @@ import {
 import { apiPost } from "../helpers/api";
 import { setCopyrightHolder } from "../helpers/copyrightAndLicense";
 import { chooseImageFile, getImagePlacement } from "../helpers/images";
-import { selectPage } from "../helpers/pageThumbnails";
+import { pageListFrame, selectPage } from "../helpers/pageThumbnails";
 import type { Page, Response } from "@playwright/test";
 
 test.use({
@@ -239,6 +239,35 @@ test("a save that stays on the page after typing a title leaves the page working
             ).__bloomAiImageEditorCleanup(),
         );
         await waitForEditTabSettled(page);
+
+        // The page list from the new folder must still draw its thumbnails: it is told apart from
+        // one left over from the old folder only by its own address. The cover's thumbnail shows
+        // the book as saved, so the bird.
+        const coverId = await editablePageFrame(page)
+            .locator(".bloom-page")
+            .first()
+            .getAttribute("id");
+        const birdInCoverThumbnail = pageListFrame(page)
+            .locator(
+                `#pageGridWrapper .gridItem[id="${coverId}"] img[src*="bird.png"]`,
+            )
+            .first();
+        await expect
+            .poll(
+                () =>
+                    birdInCoverThumbnail
+                        .evaluate((img) => {
+                            const image = img as HTMLImageElement;
+                            return image.complete && image.naturalWidth > 0;
+                        })
+                        .catch(() => false),
+                {
+                    timeout: 30000,
+                    message:
+                        "The page list's cover thumbnail never showed the cover picture.",
+                },
+            )
+            .toBe(true);
 
         await chooseImageFile(page, fixtureImage("house-landscape.png"));
     });
