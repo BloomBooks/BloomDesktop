@@ -393,7 +393,7 @@ namespace BloomTests.Edit
             Assert.That(
                 _navigatedTo,
                 Is.EqualTo(new[] { "theMovedPage" }),
-                "the action's navigation and ours are to the same page, so it should happen once"
+                "the action's navigation is prevented while the book is written, and we then go to the page it returned, once"
             );
         }
 
