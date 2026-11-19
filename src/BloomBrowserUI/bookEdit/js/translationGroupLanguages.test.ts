@@ -148,6 +148,26 @@ describe("showLanguagesInTranslationGroup", () => {
         expect(langsOf(group)).toEqual(["tpi", "en", "es", "de"]);
     });
 
+    // A table menu calls this for every cell; a box already showing as asked must not be touched,
+    // since every class change makes the browser work out the page's styles again.
+    it("changes no box that already shows or hides as asked", () => {
+        const group = makeGroup(
+            "<div class='bloom-editable bloom-visibility-code-on' lang='en'><p>a</p></div>" +
+                "<div class='bloom-editable bloom-visibility-code-off' lang='fr'><p>b</p></div>",
+        );
+        const observer = new MutationObserver(() => {});
+        observer.observe(group, { attributes: true, subtree: true });
+
+        showLanguagesInTranslationGroup(group, ["en"]);
+
+        expect(observer.takeRecords()).toEqual([]);
+        // sanity check: the observer does see a change when one is needed
+        showLanguagesInTranslationGroup(group, ["fr"]);
+        expect(observer.takeRecords().length).toBeGreaterThan(0);
+        expect(shownLangsOf(group)).toEqual(["fr"]);
+        observer.disconnect();
+    });
+
     it("adds one box for a language asked for twice", () => {
         const group = makeGroup(
             "<div class='bloom-editable' lang='tpi'><p></p></div>",

@@ -1980,6 +1980,11 @@
         <note>ID: EditTab.ImageMetadata.Corrupt</note>
         <note>{0} is required, and will be replaced with a file path.</note>
       </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.MoreInfo" sil:dynamic="true" translate="no">
+        <source xml:lang="en">More Information</source>
+        <note>ID: EditTab.ImageMetadata.MoreInfo</note>
+        <note>Label of a button in the message Bloom shows when it has a problem with an image's information (credits, copyright and license). The button opens a web page that explains the problem.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <note>ID: EditTab.Image.EditMetadata</note>
@@ -4150,6 +4155,18 @@
         <note>ID: PublishTab.PDF.Booklet.HelpHeader</note>
         <note>heading for list of setting recommendations</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Layout.Landscape" translate="no">
+        <source xml:lang="en">1. Layout: Landscape</source>
+        <note>ID: PublishTab.PDF.Booklet.Layout.Landscape</note>
+        <note>first recommendation is the page layout (landscape)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Layout.Portrait" translate="no">
+        <source xml:lang="en">1. Layout: Portrait</source>
+        <note>ID: PublishTab.PDF.Booklet.Layout.Portrait</note>
+        <note>first recommendation is the page layout (portrait)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge">
         <source xml:lang="en">2. Print on both sides: "Flip on short edge"</source>
         <note>ID: PublishTab.PDF.Booklet.Flip.ShortEdge</note>
@@ -4172,6 +4189,12 @@
         <source xml:lang="en">3. More settings &gt; Paper size: "Letter"</source>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.Letter</note>
         <note>third recommendation is paper size (Letter, the standard paper size in the U.S.)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize" translate="no">
+        <source xml:lang="en">4. More settings &gt; Scale: "Actual size"</source>
+        <note>ID: PublishTab.PDF.Booklet.Scale.ActualSize</note>
+        <note>fourth recommendation is to print at the actual size, without scaling</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack">

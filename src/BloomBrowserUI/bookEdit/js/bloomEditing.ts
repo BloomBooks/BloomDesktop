@@ -394,21 +394,28 @@ function AddEditKeyHandlers(container) {
     // so that it can be caught even when the focus isn't on the browser
 }
 
-// Lets whichever toolbox tool is open (Talking Book, the readers and others) set up the elements
-// in `container`. The tools bind handlers
-// to every box in `container` and to `container` itself when it is a box, so a box added later
-// is passed alone: passing its group would bind them a second time on the group's other boxes.
-export function configureElementsForTools(container: HTMLElement) {
+// Lets whichever toolbox tool is open (Talking Book, the readers and others) set up the text
+// boxes in `container`, or the boxes in a list. Boxes added later are passed as a list: passing
+// their groups would bind the tools' handlers a second time on the groups' other boxes.
+export function configureElementsForTools(
+    container: HTMLElement | HTMLElement[],
+) {
     doWhenWorkspaceBundleLoaded((rootFrameExports) => {
         rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
             const toolbox = toolboxFrameExports.getTheOneToolbox();
             // toolbox might be undefined in unit testing?
 
             if (toolbox) {
-                toolbox.configureElementsForTools(container);
+                if (Array.isArray(container)) {
+                    toolbox.configureElementsForTools(container);
+                    return;
+                }
+                toolbox.configureElementsForTools(
+                    $(container).find(".bloom-editable").toArray(),
+                );
                 const page = container.getElementsByClassName(
                     "bloom-page",
-                )[0] as HTMLElement;
+                )[0] as HTMLElement | undefined;
                 // When this is called initially on page load, container is the body,
                 // and we will find a bloom-page and adjust the tool list.
                 // If it is called later to adjust something like an image-container,
@@ -505,55 +512,67 @@ export function makeReadOnlyWhenCursorIsNotAllowed(elements: JQuery) {
 // such as image descriptions. We don't seem to need the optimization, so let's just do
 // them all.)
 export function AddLanguageTags(container) {
-    $(container)
-        .find(".bloom-editable[contentEditable=true]")
-        .each(function () {
-            const $this = $(this);
+    addLanguageTagsToBoxes($(container).find(".bloom-editable"));
+}
 
-            // If this DIV already had a language tag, remove the content in case we decide the situation has changed.
-            if ($this.hasAttr("data-languageTipContent")) {
-                $this.removeAttr("data-languageTipContent");
-            }
-
-            // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
-            // with each other, leading to flashing back and forth
-            // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
-            // August 2024: for canvas elements, the language is now displayed in the context controls box, and isn't
-            // a problem for small text boxes.
-            if ($this.width() < 100 && !this.closest(kCanvasElementSelector)) {
-                return;
-            }
-
-            const key = $this.attr("lang");
-            if (key !== undefined && (key === "*" || key.length < 1)) {
-                return; //seeing a "*" was confusing even to me
-            }
-            // z is not a real language, it is used for prototype blocks, which are NEVER visible.
-            // Searching for it causes missing-localization toasts if attempted.
-            if (key === "z") {
-                return;
-            }
-
-            // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
-            // first usage (for instance) was turning off language tags for a whole page
-            if (
-                $this.hasClass("bloom-hideLanguageNameDisplay") ||
-                $this.parents(".bloom-hideLanguageNameDisplay").length !== 0
-            ) {
-                return;
-            }
-
-            let whatToSay = "";
-            if (key !== undefined) {
-                whatToSay = theOneLocalizationManager.getText(key);
-                if (!whatToSay) {
-                    whatToSay = key; //just show the code
-                }
-            }
-
+// The language tags of AddLanguageTags, for the editable ones among `boxes`. Every box's tag is
+// worked out before any box is changed, so the page is laid out once to measure the boxes rather
+// than once per box. (The tag is drawn by an absolutely positioned :after, so it does not change a
+// box's width.)
+export function addLanguageTagsToBoxes(boxes: JQuery) {
+    const editableBoxes = boxes.filter("[contentEditable=true]").toArray();
+    const tags = editableBoxes.map((box) => languageTagFor(box));
+    editableBoxes.forEach((box, index) => {
+        // If this DIV already had a language tag, remove the content in case we decide the situation has changed.
+        box.removeAttribute("data-languageTipContent");
+        const whatToSay = tags[index];
+        if (whatToSay !== undefined) {
             // Put whatToSay into data attribute for pickup by the css
-            $this.attr("data-languageTipContent", whatToSay);
-        });
+            box.setAttribute("data-languageTipContent", whatToSay);
+        }
+    });
+}
+
+// What the language tag of `box` should say, or undefined if it should have none.
+function languageTagFor(box: HTMLElement): string | undefined {
+    const $this = $(box);
+
+    // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
+    // with each other, leading to flashing back and forth
+    // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
+    // August 2024: for canvas elements, the language is now displayed in the context controls box, and isn't
+    // a problem for small text boxes.
+    if ($this.width()! < 100 && !box.closest(kCanvasElementSelector)) {
+        return undefined;
+    }
+
+    const key = $this.attr("lang");
+    if (key !== undefined && (key === "*" || key.length < 1)) {
+        return undefined; //seeing a "*" was confusing even to me
+    }
+    // z is not a real language, it is used for prototype blocks, which are NEVER visible.
+    // Searching for it causes missing-localization toasts if attempted.
+    if (key === "z") {
+        return undefined;
+    }
+
+    // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
+    // first usage (for instance) was turning off language tags for a whole page
+    if (
+        $this.hasClass("bloom-hideLanguageNameDisplay") ||
+        $this.parents(".bloom-hideLanguageNameDisplay").length !== 0
+    ) {
+        return undefined;
+    }
+
+    let whatToSay = "";
+    if (key !== undefined) {
+        whatToSay = theOneLocalizationManager.getText(key);
+        if (!whatToSay) {
+            whatToSay = key; //just show the code
+        }
+    }
+    return whatToSay;
 }
 
 function SetBookCopyrightAndLicenseButtonVisibility(container) {
@@ -573,20 +592,26 @@ function GetOverflowChecker() {
 
 // this is also called by the StyleEditor
 export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
-    $(container)
-        .find(".bloom-translationGroup")
-        .each(function () {
-            // set our font size so that we can use em units when setting padding of the translation group
-            // If visibility is under the control of the appearance system for this field the child we
-            // want has bloom-contentFirst, otherwise, bloom-content1.
-            // At the time of this writing (6.0) this is only used for cover page titles.
-            let mainChild = $(this).find(".bloom-contentFirst").first();
-            if (mainChild.length === 0) {
-                mainChild = $(this).find(".bloom-content1").first();
-            }
-            const fontSizeOfL1 = mainChild.css("font-size");
-            $(this).css("font-size", fontSizeOfL1);
-        });
+    matchGroupFontSizesToLanguage1(
+        $(container).find(".bloom-translationGroup").toArray(),
+    );
+}
+
+// Gives each group the font size of its main box, so that we can use em units when setting
+// padding of the translation group. Every size is read before any is written, so the page's
+// styles are worked out once however many groups there are.
+export function matchGroupFontSizesToLanguage1(groups: HTMLElement[]) {
+    const sizes = groups.map((group) => {
+        // If visibility is under the control of the appearance system for this field the child we
+        // want has bloom-contentFirst, otherwise, bloom-content1.
+        // At the time of this writing (6.0) this is only used for cover page titles.
+        let mainChild = $(group).find(".bloom-contentFirst").first();
+        if (mainChild.length === 0) {
+            mainChild = $(group).find(".bloom-content1").first();
+        }
+        return mainChild.css("font-size");
+    });
+    groups.forEach((group, index) => $(group).css("font-size", sizes[index]));
 }
 
 // called by C# to remove the id attribute from the image element

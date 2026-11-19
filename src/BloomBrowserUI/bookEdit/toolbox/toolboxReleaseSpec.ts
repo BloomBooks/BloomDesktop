@@ -28,6 +28,10 @@ const makePageBody = (): HTMLElement => {
     return pageDoc.body;
 };
 
+// The text boxes in 'container', as SetupElements passes them to the toolbox.
+const boxesIn = (container: HTMLElement): HTMLElement[] =>
+    Array.from(container.querySelectorAll<HTMLElement>(".bloom-editable"));
+
 describe("ToolBox.releaseElementsForTools (BL-16840)", () => {
     // Switching pages navigates only the page iframe; the toolbox frame lives on. Unless the
     // toolbox's jQuery is told to let go of the elements it bound handlers to, its cache keeps
@@ -41,7 +45,7 @@ describe("ToolBox.releaseElementsForTools (BL-16840)", () => {
         expect(pageBody.ownerDocument).not.toBe(document);
         expect(cacheEntriesInside(pageBody)).toBe(0);
 
-        getTheOneToolbox().configureElementsForTools(pageBody);
+        getTheOneToolbox().configureElementsForTools(boxesIn(pageBody));
         // sanity check: configuring really did put the page's editables in the cache, or the
         // assertion below would pass whether or not the release works
         expect(cacheEntriesInside(pageBody)).toBe(editables.length);
@@ -54,8 +58,8 @@ describe("ToolBox.releaseElementsForTools (BL-16840)", () => {
     it("does not touch elements outside the container it is given", () => {
         const leavingPage = makePageBody();
         const otherPage = makePageBody();
-        getTheOneToolbox().configureElementsForTools(leavingPage);
-        getTheOneToolbox().configureElementsForTools(otherPage);
+        getTheOneToolbox().configureElementsForTools(boxesIn(leavingPage));
+        getTheOneToolbox().configureElementsForTools(boxesIn(otherPage));
         expect(cacheEntriesInside(otherPage)).toBe(2);
 
         getTheOneToolbox().releaseElementsForTools(leavingPage);
@@ -89,9 +93,24 @@ describe("ToolBox.configureElementsForTools", () => {
         expect(keydownHandlers(oldBox)).toBe(0);
         expect(keydownHandlers(newBox)).toBe(0);
 
-        getTheOneToolbox().configureElementsForTools(newBox);
+        getTheOneToolbox().configureElementsForTools([newBox]);
 
         expect(keydownHandlers(newBox)).toBeGreaterThan(0);
+        expect(keydownHandlers(oldBox)).toBe(0);
+
+        // A list of boxes, as setUpBoxesBuiltAfterLoad passes them, is set up in one call, and
+        // still only those boxes.
+        const thirdBox = newBox.cloneNode(false) as HTMLElement;
+        newBox.parentElement!.appendChild(thirdBox);
+        const fourthBox = newBox.cloneNode(false) as HTMLElement;
+        newBox.parentElement!.appendChild(fourthBox);
+        // sanity check: the copies came without handlers
+        expect(keydownHandlers(thirdBox)).toBe(0);
+
+        getTheOneToolbox().configureElementsForTools([thirdBox, fourthBox]);
+
+        expect(keydownHandlers(thirdBox)).toBeGreaterThan(0);
+        expect(keydownHandlers(fourthBox)).toBe(keydownHandlers(thirdBox));
         expect(keydownHandlers(oldBox)).toBe(0);
         getTheOneToolbox().releaseElementsForTools(pageBody);
     });

@@ -237,13 +237,10 @@ export class ToolBox {
         };
         doAdjustment();
     }
-    // Has every tool set up the text boxes in `container`, and `container` itself when it is
-    // one: a box added after the page loaded is passed alone, so that the boxes already set up
-    // do not get every handler a second time.
-    public configureElementsForTools(container: HTMLElement) {
-        const boxes = $(container)
-            .find(".bloom-editable")
-            .addBack(".bloom-editable");
+    // Has every tool set up these text boxes (.bloom-editable elements).
+    public configureElementsForTools(textBoxes: HTMLElement[]) {
+        // This frame's jQuery, whose bookkeeping releaseElementsForTools undoes.
+        const boxes = $(textBoxes);
         for (let i = 0; i < masterToolList.length; i++) {
             masterToolList[i].configureElements(boxes);
         }

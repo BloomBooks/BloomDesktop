@@ -12,14 +12,14 @@ import BloomField from "../bloomField/BloomField";
 import {
     activateLongPressFor,
     addEditKeyHandlersToBoxes,
-    AddLanguageTags,
+    addLanguageTagsToBoxes,
     addPlaceholdersFromLabels,
     addPlainTextPasteHandler,
     attachToCkEditor,
     configureElementsForTools,
     keepDataTextUpToDate,
     makeReadOnlyWhenCursorIsNotAllowed,
-    SetupThingsSensitiveToStyleChanges,
+    matchGroupFontSizesToLanguage1,
 } from "./bloomEditing";
 import { setupInlineImages } from "./inlineImages";
 
@@ -37,20 +37,27 @@ export function showLanguagesInTranslationGroup(
     const added = [...new Set(tags)]
         .filter((tag) => !boxInLanguage(group, tag))
         .map((tag) => addBox(group, tag, order));
+    const newlyShown: HTMLElement[] = [];
     boxesOf(group).forEach((box) => {
-        Array.from(box.classList)
-            .filter((name) => name.startsWith("bloom-visibility-code-"))
-            .forEach((name) => box.classList.remove(name));
-        box.classList.add(
-            tags.includes(box.getAttribute("lang") ?? "")
-                ? "bloom-visibility-code-on"
-                : "bloom-visibility-code-off",
+        const wanted = tags.includes(box.getAttribute("lang") ?? "")
+            ? "bloom-visibility-code-on"
+            : "bloom-visibility-code-off";
+        const visibilityClasses = Array.from(box.classList).filter((name) =>
+            name.startsWith("bloom-visibility-code-"),
         );
+        // Classes are changed only when they are wrong: a table menu calls this for every cell,
+        // and each change makes the browser work out the page's styles again.
+        if (visibilityClasses.length === 1 && visibilityClasses[0] === wanted)
+            return;
+        if (wanted === "bloom-visibility-code-on" && !added.includes(box))
+            newlyShown.push(box);
+        visibilityClasses.forEach((name) => box.classList.remove(name));
+        box.classList.add(wanted);
     });
-    // A box that was hidden when the page loaded got no language tag, since AddLanguageTags skips a
-    // box too narrow to hold one; now that it may be shown, it gets one. (The boxes just added get
-    // theirs in setUpBoxesBuiltAfterLoad, once they are editable.)
-    AddLanguageTags(group);
+    // A box that was hidden got no language tag, since AddLanguageTags skips a box too narrow to
+    // hold one; now that it is shown, it gets one. (The boxes just added get theirs in
+    // setUpBoxesBuiltAfterLoad, once they are editable.)
+    addLanguageTagsToBoxes($(newlyShown));
     return added;
 }
 
@@ -93,16 +100,14 @@ export function setUpBoxesBuiltAfterLoad(boxes: HTMLElement[]): void {
         else box.removeAttribute("dir");
         BloomField.ManageField(box);
     });
-    // Each box alone, not its group, whose other boxes already have the tools' handlers.
-    boxes.forEach((box) => configureElementsForTools(box));
+    // The boxes, not their groups, whose other boxes already have the tools' handlers.
+    configureElementsForTools(boxes);
     keepDataTextUpToDate(
         $boxes.filter(
             ".bloom-translationGroup.bloom-text-for-css .bloom-editable",
         ),
     );
-    groups.forEach((group) =>
-        SetupThingsSensitiveToStyleChanges(group.parentElement!),
-    );
+    matchGroupFontSizesToLanguage1(groups);
     addPlainTextPasteHandler($boxes);
     addEditKeyHandlersToBoxes($boxes);
     groups.forEach((group) =>
@@ -112,7 +117,7 @@ export function setUpBoxesBuiltAfterLoad(boxes: HTMLElement[]): void {
     // read-only from the element's contenteditable state at the moment it attaches.
     boxes.forEach((box) => box.setAttribute("contenteditable", "true"));
     makeReadOnlyWhenCursorIsNotAllowed($boxes);
-    groups.forEach((group) => AddLanguageTags(group));
+    addLanguageTagsToBoxes($boxes);
     boxes.forEach((box) => attachToCkEditor(box));
     // After CKEditor, which can replace the boxes' nodes, as at page load.
     activateLongPressFor($boxes);

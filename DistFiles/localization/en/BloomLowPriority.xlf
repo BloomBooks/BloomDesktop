@@ -295,6 +295,21 @@
         <note>ID: Spreadsheet.ExportFailed</note>
         <note>{0} is a placeholder for an exception message</note>
       </trans-unit>
+      <trans-unit id="Spreadsheet.ImportFailed" translate="no">
+        <source xml:lang="en">Import failed: {0}</source>
+        <note>ID: Spreadsheet.ImportFailed</note>
+        <note>{0} is a placeholder for an exception message</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ImageSourceComment" translate="no">
+        <source xml:lang="en">A full path like (C:\foo) or a path relative to the location of this spreadsheet like images\foo.png</source>
+        <note>ID: Spreadsheet.ImageSourceComment</note>
+        <note>A comment on the heading of the image path column in a spreadsheet that Bloom exports. Do not translate the example paths.</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ImageThumbnailComment" translate="no">
+        <source xml:lang="en">This is usually just so you can see what the image is. Import is based on the path in a hidden column next to this one.</source>
+        <note>ID: Spreadsheet.ImageThumbnailComment</note>
+        <note>A comment on the heading of the image thumbnail column in a spreadsheet that Bloom exports.</note>
+      </trans-unit>
       <trans-unit id="Spreadsheet.SpreadsheetLocked">
         <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
         <note>ID: Spreadsheet.SpreadsheetLocked</note>
@@ -378,6 +393,87 @@
       <trans-unit id="TeamCollection.InvalidAdminEmails">
         <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
         <note>ID: TeamCollection.InvalidAdminEmails</note>
+      </trans-unit>
+      <trans-unit id="Common.TryAgainOrRestart" translate="no">
+        <source xml:lang="en">Please try again later. If the problem continues, restart your computer.</source>
+        <note>ID: Common.TryAgainOrRestart</note>
+        <note>Last part of a three-part message shown when Bloom cannot get exclusive access to a file, for example a book file in a Team Collection folder.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AgentSynchronizing" translate="no">
+        <source xml:lang="en">Some other program may be busy with it. This may just be {0} synchronizing the file.</source>
+        <note>ID: TeamCollection.AgentSynchronizing</note>
+        <note>Middle part of a three-part message shown when Bloom cannot get exclusive access to a book file in a Team Collection folder. The other parts are a sentence saying which file, and Common.TryAgainOrRestart.</note>
+        <note>{0} is the name of the program that is probably synchronizing the folder, such as "Dropbox".</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.SomethingSynchronizing" translate="no">
+        <source xml:lang="en">Some other program may be busy with it. This may just be something synchronizing the file.</source>
+        <note>ID: TeamCollection.SomethingSynchronizing</note>
+        <note>Middle part of a three-part message shown when Bloom cannot get exclusive access to a book file in a Team Collection folder. The other parts are a sentence saying which file, and Common.TryAgainOrRestart.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.BadZipFile" translate="no">
+        <source xml:lang="en">Bloom was not able to open the zip file, which may be corrupted.</source>
+        <note>ID: TeamCollection.BadZipFile</note>
+        <note>Each book in a Team Collection folder is stored as a zip file. This is shown when one of those files cannot be opened.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.BookFileDownloading" translate="no">
+        <source xml:lang="en">The book '{0}' in the Team Collection appears to be downloading. Please wait a few minutes and then click Reload Collection.</source>
+        <note>ID: TeamCollection.BookFileDownloading</note>
+        <note>{0} is the name of the book. "Reload Collection" is the label of a button in the Team Collection status dialog.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.BookFileDownloadingJoin" translate="no">
+        <source xml:lang="en">Cannot join the Team Collection: the book '{0}' appears to be downloading. Please wait for the download to complete and then double-click the Join file again.</source>
+        <note>ID: TeamCollection.BookFileDownloadingJoin</note>
+        <note>{0} is the name of the book. The Join file is the file a user double-clicks to join a Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckOutForDelete" translate="no">
+        <source xml:lang="en">Please check out the book before deleting it.</source>
+        <note>ID: TeamCollection.CheckOutForDelete</note>
+        <note>Shown when the user tries to delete a book in a Team Collection without first checking it out.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConnectForDelete" translate="no">
+        <source xml:lang="en">Please connect to the Team Collection before deleting books that are part of it.</source>
+        <note>ID: TeamCollection.ConnectForDelete</note>
+        <note>Shown when the user tries to delete a book while Bloom is disconnected from the Team Collection folder.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingEditOrCheckout" translate="no">
+        <source xml:lang="en">Someone else has edited the book {0} or checked it out even though it was being edited here! Local changes have been saved to Lost and Found</source>
+        <note>ID: TeamCollection.ConflictingEditOrCheckout</note>
+        <note>{0} is the name of the book. "Lost and Found" is a folder in the Team Collection where Bloom keeps copies of changes it could not save in the usual way.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConnectToJoin" translate="no">
+        <source xml:lang="en">Bloom cannot currently join this collection.</source>
+        <note>ID: TeamCollection.ConnectToJoin</note>
+        <note>Shown when the user double-clicks a Join file for a Team Collection that Bloom cannot connect to right now. A message saying what is wrong follows it.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.QuitOtherBloom" translate="no">
+        <source xml:lang="en">Please close Bloom before joining a Team Collection</source>
+        <note>ID: TeamCollection.QuitOtherBloom</note>
+        <note>Shown when the user double-clicks a Team Collection's Join file while Bloom is already running.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.DropboxSyncSettingsWarning" translate="no">
+        <source xml:lang="en">Important: synchronization problems can be caused when one or more members of your team have incorrect Dropbox settings. Please ensure all members of your team collection are using the correct settings. See [critical Dropbox settings](https://docs.bloomlibrary.org/critical-dropbox-settings/).</source>
+        <note>ID: TeamCollection.DropboxSyncSettingsWarning</note>
+        <note>Added to Team Collection error messages when the collection is shared through Dropbox. The part in square brackets becomes a link to the web address in parentheses; translate the text in the brackets but do not change the web address. "Dropbox" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MustBeAdmin" translate="no">
+        <source xml:lang="en">You must be an administrator to change collection settings</source>
+        <note>ID: TeamCollection.MustBeAdmin</note>
+        <note>Shown when someone who is not an administrator of a Team Collection tries to open the collection settings. A list of the administrators' email addresses follows it.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.NoWriteAccess" translate="no">
+        <source xml:lang="en">Bloom does not have permission to write to the selected folder. The system reported {0}</source>
+        <note>ID: TeamCollection.NoWriteAccess</note>
+        <note>Shown when the user chooses a folder for a new Team Collection that Bloom cannot write to. {0} is the error message from the system, which is usually in English.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ProblemLocation" translate="no">
+        <source xml:lang="en">There is a problem with this location</source>
+        <note>ID: TeamCollection.ProblemLocation</note>
+        <note>Shown when the user chooses a folder for a new Team Collection that cannot be used, for example because it is already part of another Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ProblemWithBook" translate="no">
+        <source xml:lang="en">There is a problem with the book "{0}" in the Team Collection system.</source>
+        <note>ID: TeamCollection.ProblemWithBook</note>
+        <note>{0} is the name of the book. Other sentences saying what the problem is may follow it.</note>
       </trans-unit>
       <trans-unit id="Common.Preparing">
         <source xml:lang="en">Preparing...</source>
