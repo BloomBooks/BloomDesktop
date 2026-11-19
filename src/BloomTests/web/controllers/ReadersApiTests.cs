@@ -251,6 +251,49 @@ namespace BloomTests.web
             );
         }
 
+        /// <summary>
+        /// A table's text cell numbers its boxes by the collection's languages, so when the toolbar
+        /// puts another language first, the cell's box in the reader's language is not
+        /// bloom-content1. The reader statistics still take that box, and not the cell's
+        /// bloom-content1 box, which is in another language.
+        /// </summary>
+        [Test]
+        public void GetTextOfContentPagesAsJson_TakesATableCellsTextInTheReadersLanguage()
+        {
+            var html =
+                $@"<html><head><meta charset='UTF-8'></meta></head>
+<body class='leveled-reader' data-l1='en' data-l2='fr'>
+    <div class='bloom-page numberedPage' id='table-page' data-page-number='1' lang=''>
+        <div class='marginBox'>
+            <div class='bloom-table'><div class='bloom-cell'>
+                <div class='bloom-translationGroup' data-default-languages='V,N1'>
+                    <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='fr'>
+                        <p>texte</p>
+                    </div>
+                    <div class='bloom-editable bloom-content2 bloom-visibility-code-on' lang='en'>
+                        <p>text</p>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+    </div>
+</body></html>
+";
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml(html);
+            Assert.That(
+                doc.SafeSelectNodes(
+                    "//div[contains(@class,'bloom-content1') and @lang='fr']"
+                ).Length,
+                Is.EqualTo(1),
+                "The cell's bloom-content1 box should be the French one for this test"
+            );
+
+            var result = ReadersApi.GetTextOfContentPagesAsJson(doc, () => "en");
+
+            Assert.That(result, Is.EqualTo("{\"table-page\":\"<p>text</p>\"}"));
+        }
+
         Mock<IBookStorage> CreateMockStorage(HtmlDom htmlDom, string subfolder)
         {
             var tempFolderPath = Path.Combine(Path.GetTempPath(), subfolder);
