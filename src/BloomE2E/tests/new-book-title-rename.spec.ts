@@ -20,7 +20,9 @@ import {
     getContentPages,
     makeBookFromTemplate,
     typeInGroup,
+    waitForEditTabSettled,
 } from "../helpers/bookMaking";
+import { apiPost } from "../helpers/api";
 import { setCopyrightHolder } from "../helpers/copyrightAndLicense";
 import { chooseImageFile, getImagePlacement } from "../helpers/images";
 import { selectPage } from "../helpers/pageThumbnails";
@@ -57,8 +59,13 @@ async function failedRequestsUnder(
     const failed: string[] = [];
     const listener = (response: Response) => {
         const url = decodeURI(response.url());
-        if (response.status() >= 400 && url.includes(folderName))
-            failed.push(`${response.status()} ${url}`);
+        if (response.status() >= 400 && url.includes(folderName)) {
+            // Which document asked says what was left on the old folder.
+            const frame = response.request().frame();
+            failed.push(
+                `${response.status()} ${url} (asked for by the '${frame.name()}' frame, ${decodeURI(frame.url())})`,
+            );
+        }
     };
     page.on("response", listener);
     try {
@@ -177,6 +184,63 @@ test("closing the cover picture's Copyright and License dialog after typing a ti
             .toBe("bird.png");
 
         await selectPage(page, contentPageId);
+    });
+
+    expect(failed, failureMessage).toEqual([]);
+});
+
+test("a save that stays on the page after typing a title leaves the page working from the new folder [BL-17055]", async ({
+    page,
+}) => {
+    // Opening the AI image editor saves the book without going to another page, so when that save
+    // renames the folder, the page on screen was loaded from the old one. Bloom must show it again
+    // from the new folder: otherwise a picture chosen on it afterwards is looked for in the old
+    // folder and shows as missing.
+    test.setTimeout(300000);
+    const title = "How Boats Float";
+    const { oldFolder } = await makeUntitledBook(page);
+    await chooseImageFile(page, fixtureImage("bird.png"));
+    await typeInGroup(page, ".bookTitle", "en", title);
+    expect(
+        fs.existsSync(oldFolder),
+        "test setup: typing a title does not rename the folder by itself",
+    ).toBe(true);
+
+    const failed = await failedRequestsUnder(page, oldFolder, async () => {
+        // The endpoint the picture's "AI Image Editor" command posts. Opening the editor is
+        // setup; the save it does first is what renames the folder.
+        await apiPost(
+            page,
+            "aiImageEditor/saveThenLaunch",
+            JSON.stringify({ slotIndex: 0 }),
+            "application/json",
+        );
+        await expectRenamed(oldFolder, title);
+        await expect
+            .poll(
+                () =>
+                    page.evaluate(
+                        () =>
+                            typeof (
+                                window as unknown as {
+                                    __bloomAiImageEditorCleanup?: () => void;
+                                }
+                            ).__bloomAiImageEditorCleanup === "function",
+                    ),
+                {
+                    timeout: 30000,
+                    message: "The AI image editor never opened.",
+                },
+            )
+            .toBe(true);
+        await page.evaluate(() =>
+            (
+                window as unknown as { __bloomAiImageEditorCleanup: () => void }
+            ).__bloomAiImageEditorCleanup(),
+        );
+        await waitForEditTabSettled(page);
+
+        await chooseImageFile(page, fixtureImage("house-landscape.png"));
     });
 
     expect(failed, failureMessage).toEqual([]);

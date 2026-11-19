@@ -1248,7 +1248,11 @@ namespace Bloom.Edit
 
                     CurrentBook.ConvertPreOrigamiPages(page.GetDivNodeForThisPage());
                     if (Visible)
+                    {
+                        // The page's URL is in this folder (GetUrlForCurrentPage).
+                        _folderOfShownPage = CurrentBook.FolderPath;
                         _view.StartNavigationToEditPage(page);
+                    }
 
                     CheckForBL8852();
 
@@ -1898,6 +1902,52 @@ namespace Bloom.Edit
         // HandlePageDomLoadedEvent.
         private string _announcedPageId;
         private int _pageLoadAnnouncements;
+
+        // The book folder the page being shown was loaded from: its URL, and so every picture,
+        // script and recording it fetches, is in that folder. Writing the book renames the folder
+        // when the title has changed (BookStorage.SetBookName), so this can stop being the book's
+        // folder while the page stays on screen; see ShowPageAgainIfFromAnotherFolderSoon.
+        private string _folderOfShownPage;
+
+        /// <summary>
+        /// Called when the current book's folder has been renamed. Once the save that renamed it
+        /// has finished, if the page on screen was loaded from the old folder, save it and show it
+        /// again from the new one. Otherwise it would go on asking for its pictures, scripts and
+        /// recordings in a folder that is gone ("Page expired", pictures shown as missing), and any
+        /// code that works out the book's folder from the page's address would get the old one
+        /// (BL-17055).
+        ///
+        /// A save that goes to a page afterwards (SaveThenNavigate) already shows that page from
+        /// the new folder, so for those this finds nothing to do. It matters for a save that stays
+        /// on the page, such as opening the AI image editor, and for any rename that does not come
+        /// from a save in this tab.
+        /// </summary>
+        public void ShowPageAgainIfFromAnotherFolderSoon()
+        {
+            // Not now: we are inside the save that did the rename, and may hold the API lock.
+            RunOffTheApiLock(ShowPageAgainIfFromAnotherFolder);
+        }
+
+        /// <summary>
+        /// See ShowPageAgainIfFromAnotherFolderSoon. Only a page being edited is shown again: one
+        /// still loading is checked when it finishes (HandlePageDomLoadedEvent), and with no page
+        /// there is nothing to show.
+        /// </summary>
+        private void ShowPageAgainIfFromAnotherFolder()
+        {
+            if (!Visible || CurrentBook == null || !_stateMachine.Editing)
+                return;
+            // Ordinal: a rename that only changes case still changes the URL the server accepts.
+            if (string.Equals(_folderOfShownPage, CurrentBook.FolderPath, StringComparison.Ordinal))
+                return;
+            Logger.WriteEvent(
+                $"The page being edited was loaded from '{_folderOfShownPage}', but the book is now in '{CurrentBook.FolderPath}'; showing it again from there."
+            );
+            var pageId = _pageSelection.CurrentSelection.Id;
+            // The same save-then-show a page click does, so anything typed since the last save is
+            // kept.
+            MergeCurrentPageThenSave(() => pageId, actionChangesTheBook: false);
+        }
 
         /// <summary>
         /// How many times the page now being shown has announced that its DOM had loaded. A page
@@ -2745,6 +2795,8 @@ namespace Bloom.Edit
                 var afterPageLoad = _doAfterNextPageLoad;
                 _doAfterNextPageLoad = null;
                 afterPageLoad?.Invoke(pageId);
+                // The book may have been renamed while this page was loading.
+                ShowPageAgainIfFromAnotherFolderSoon();
             }
         }
 

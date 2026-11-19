@@ -571,6 +571,38 @@ namespace Bloom.Api
         private static string UrlPrefixForCurrentBookPage(string bookFolderPath) =>
             bookFolderPath.Replace("\\", "/") + "/page" + SimulatedFileUrlMarker;
 
+        /// <summary>
+        /// True when <paramref name="referer"/> is a page list document (the in-memory file
+        /// MakeInMemoryHtmlFileInBookFolder makes for InMemoryHtmlFileSource.Pagelist) that was
+        /// loaded from a folder other than <paramref name="bookFolderPath"/>. Its pictures are
+        /// relative to its own address, so after the book's folder is renamed such a document can
+        /// only ask for them where they no longer are, until Bloom has replaced it with one from the
+        /// new folder (BL-17055). Anything else, including a request whose document we cannot tell,
+        /// is false.
+        /// </summary>
+        public static bool IsPageListDocumentOutsideFolder(string referer, string bookFolderPath)
+        {
+            if (
+                string.IsNullOrEmpty(referer)
+                || !referer.StartsWith(
+                    ServerUrlWithBloomPrefixEndingInSlash,
+                    StringComparison.Ordinal
+                )
+            )
+                return false;
+            var path = referer.Split('?', '#')[0].FromLocalhost();
+            var pageListFileEnding =
+                SimulatedFileUrlMarker + InMemoryHtmlFileSource.Pagelist + ".html";
+            if (!path.EndsWith(pageListFileEnding, StringComparison.Ordinal))
+                return false;
+            var documentFolder = path.Substring(0, Math.Max(0, path.LastIndexOf('/')));
+            return !string.Equals(
+                documentFolder,
+                bookFolderPath.Replace('\\', '/'),
+                StringComparison.Ordinal
+            );
+        }
+
         public static string UrlForCurrentBookPage(string bookFolderPath, string pageId)
         {
             return (UrlPrefixForCurrentBookPage(bookFolderPath) + pageId + ".htm").ToLocalhost();

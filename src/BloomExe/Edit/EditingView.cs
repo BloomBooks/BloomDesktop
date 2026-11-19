@@ -258,6 +258,7 @@ namespace Bloom.Edit
                 _mainBrowser.RunJavascriptFireAndForget(
                     $"workspaceBundle.switchThumbnailPage('{url}');"
                 );
+                _model.ShowPageAgainIfFromAnotherFolderSoon();
             }
         }
 
