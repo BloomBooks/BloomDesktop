@@ -1123,11 +1123,7 @@ namespace Bloom.Edit
             // is about that page -- the AI image editor opens on a slot in it -- so running it on
             // a fallback page would act on the wrong thing.
             if (page != null && afterPageReloaded != null)
-                RunAfterNextPageLoad(loadedPageId =>
-                {
-                    if (loadedPageId == pageId)
-                        afterPageReloaded();
-                });
+                RunAfterNextPageLoad(pageId, afterPageReloaded);
             _view.GoToPage(pageToShow);
             _view.UpdatePageList(true);
         }
@@ -1926,22 +1922,62 @@ namespace Bloom.Edit
             // Not now: we are inside the save that did the rename, and may hold the API lock.
             RunOffTheApiLock(() =>
             {
-                if (!Visible || CurrentBook == null || !_stateMachine.Editing)
-                    return;
-                // Ordinal: a rename that only changes case still changes the URL the server accepts.
-                if (
-                    string.Equals(
-                        _folderOfShownPage,
-                        CurrentBook.FolderPath,
-                        StringComparison.Ordinal
-                    )
-                )
-                    return;
-                Logger.WriteEvent(
-                    $"The page being edited was loaded from '{_folderOfShownPage}', but the book is now in '{CurrentBook.FolderPath}'; showing it again from there."
-                );
-                SavePageAndReloadIt();
+                if (PageBeingEditedIsFromAnotherFolder())
+                    ShowPageAgainFromBookFolder();
             });
+        }
+
+        /// <summary>
+        /// If the page being edited was loaded from a folder the book has since left (the save the
+        /// caller just did renamed it), show it again from the new folder and run
+        /// <paramref name="afterwards"/> once it has loaded; otherwise run it now. For a caller
+        /// that then opens something showing the page again would destroy (the AI image editor);
+        /// see RunAfterNextPageLoad.
+        /// </summary>
+        public void ShowPageAgainIfFromAnotherFolderThen(Action afterwards)
+        {
+            if (!PageBeingEditedIsFromAnotherFolder())
+            {
+                afterwards();
+                return;
+            }
+            var pageId = _pageSelection.CurrentSelection.Id;
+            ShowPageAgainFromBookFolder();
+            // Not navigating means the save was declined (see SavePageAndReloadIt), so no page
+            // load is coming. (The page cannot finish loading before this line: that is reported
+            // on this same UI thread.)
+            if (_stateMachine.Navigating)
+                RunAfterNextPageLoad(pageId, afterwards);
+            else
+                afterwards();
+        }
+
+        /// <summary>
+        /// True when a page is being edited in the Edit tab and was loaded from a folder that is no
+        /// longer the book's (see _folderOfShownPage).
+        /// </summary>
+        private bool PageBeingEditedIsFromAnotherFolder()
+        {
+            if (!Visible || CurrentBook == null || !_stateMachine.Editing)
+                return false;
+            // Ordinal: a rename that only changes case still changes the URL the server accepts.
+            return !string.Equals(
+                _folderOfShownPage,
+                CurrentBook.FolderPath,
+                StringComparison.Ordinal
+            );
+        }
+
+        /// <summary>
+        /// Save the page being edited and show it again, now from the book's current folder. See
+        /// ShowPageAgainIfFromAnotherFolderSoon.
+        /// </summary>
+        private void ShowPageAgainFromBookFolder()
+        {
+            Logger.WriteEvent(
+                $"The page being edited was loaded from '{_folderOfShownPage}', but the book is now in '{CurrentBook.FolderPath}'; showing it again from there."
+            );
+            SavePageAndReloadIt();
         }
 
         /// <summary>
@@ -2801,21 +2837,27 @@ namespace Bloom.Edit
         private Action<string> _doAfterNextPageLoad;
 
         /// <summary>
-        /// Arrange for <paramref name="action"/> to run the next time a page finishes loading in
-        /// the browser, passing it that page's id.
+        /// Arrange for <paramref name="action"/> to run when the next page to finish loading in the
+        /// browser has finished, if that page is <paramref name="pageId"/>. If another page loads
+        /// instead, the action is dropped: it is about that page.
         ///
         /// Used by the page layout update (RunPageLayoutUpdateThenReturnToPage), which empties the
-        /// editor, rewrites the book off-screen and navigates back. Its caller, the AI image
-        /// editor, must open only once that page is showing again, because
+        /// editor, rewrites the book off-screen and navigates back, and by
+        /// ShowPageAgainIfFromAnotherFolderThen. Both are used by the AI image editor, which
+        /// must open only once that page is showing again, because
         /// EditingView.StartNavigationToEditPage can reload the whole workspace root (when Bloom is
         /// short of memory), which would destroy anything opened sooner. Only one action is held;
         /// queueing a second replaces the first.
         /// Leaving the Edit tab drops it (see OnTabAboutToChange), since no page would load to run
         /// it and the caller's page is no longer on screen.
         /// </summary>
-        private void RunAfterNextPageLoad(Action<string> action)
+        private void RunAfterNextPageLoad(string pageId, Action action)
         {
-            _doAfterNextPageLoad = action;
+            _doAfterNextPageLoad = loadedPageId =>
+            {
+                if (loadedPageId == pageId)
+                    action();
+            };
         }
 
         // This speeds up developing brandings. It may speed up other things, but I haven't tested those.
