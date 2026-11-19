@@ -505,6 +505,59 @@ namespace BloomTests.Book
         /// show nothing; and the languages it shows are ordered by the collection, not by the
         /// toolbar.
         /// </summary>
+        /// <summary>
+        /// A table's text cell shows the collection's first language even when the toolbar has
+        /// not turned it on, so that language's box is marked right to left as it would be if the
+        /// toolbar showed it. The Format dialog's alignment buttons read that attribute.
+        /// </summary>
+        [Test]
+        public void UpdateContentLanguageClasses_TableTextCellInRightToLeftL1NotInToolbar_IsMarkedRtl()
+        {
+            var collection = new CollectionSettings
+            {
+                Language1Tag = "ar",
+                Language2Tag = "fr",
+                XMatterPackName = "Factory",
+            };
+            collection.Language1.IsRightToLeft = true;
+            var contents =
+                @"<html><body><div class='bloom-page'>
+						<div class='bloom-table'><div class='bloom-cell'>
+							<div class='bloom-translationGroup' id='cell' data-default-languages='V'>
+								<div class='bloom-editable' lang='ar'></div>
+							</div>
+						</div></div>
+					</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, collection, null);
+            var pageDiv = (SafeXmlElement)
+                dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+
+            // The toolbar shows French only.
+            bookData.SetMultilingualContentLanguages("fr");
+            Assert.That(
+                bookData.Language1Tag,
+                Is.EqualTo("fr"),
+                "The toolbar's first language should be French for this test"
+            );
+            TranslationGroupManager.PrepareElementsInPageOrDocument(pageDiv, bookData);
+            TranslationGroupManager.UpdateContentLanguageClasses(
+                pageDiv,
+                bookData,
+                LegacyAppearanceSettings,
+                "fr",
+                null,
+                null
+            );
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='cell']/div[@lang='ar' and @dir='rtl' and contains(@class, 'bloom-visibility-code-on')]",
+                    1
+                );
+        }
+
         [Test]
         public void UpdateContentLanguageClasses_TableTextCell_GetsItsLanguagesBoxesInCollectionOrder()
         {

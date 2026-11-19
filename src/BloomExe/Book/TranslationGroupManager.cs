@@ -802,6 +802,12 @@ namespace Bloom.Book
                     lang == bookData.MetadataLanguage1Tag
                     && bookData.MetadataLanguage1.IsRightToLeft
                 )
+                // A table's text cell can show the collection's first language when the toolbar
+                // has not turned it on (see LanguagesOfTableTextCell).
+                || (
+                    lang == bookData.CollectionSettings.Language1Tag
+                    && bookData.CollectionSettings.Language1.IsRightToLeft
+                )
             )
             {
                 HtmlDom.AddRtlDir(e);
