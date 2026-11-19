@@ -7,7 +7,9 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.MiscUI;
+using Bloom.Utils;
 using Microsoft.Win32;
+using SIL.Reporting;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -20,13 +22,36 @@ namespace Bloom.WebLibraryIntegration
         public delegate BookDownloadSupport Factory(); //autofac uses this
         public const string ArgsPipeName = @"SendBloomArgs";
 
+        /// <summary>
+        /// At startup, make the collection that downloaded books go into, if Windows lets us.
+        /// Having it early means the collections list shows it (with its link to Bloom Library)
+        /// and we don't have to create it in the UI when we add a downloaded book. Nothing else
+        /// needs it, and a download makes sure of it again, explaining if it can't (see
+        /// BookDownload.OnDoDownload), so a refusal here is only logged. (BL-16728)
+        /// </summary>
+        public static void TryEnsureDownloadFolderExists()
+        {
+            try
+            {
+                EnsureDownloadFolderExists();
+            }
+            catch (Exception e)
+                when (e is CollectionFolderNotWritableException
+                    || FileAccessDiagnostics.IsRefusal(e)
+                )
+            {
+                Logger.WriteEvent(
+                    $"Could not make the collection for downloaded books: {e.GetType().Name}: {e.Message}"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Make the collection that downloaded books go into, if it isn't there. Throws
+        /// CollectionFolderNotWritableException if Windows won't let Bloom write there.
+        /// </summary>
         public static void EnsureDownloadFolderExists()
         {
-            // We need the download folder to exist if we are asked to download a book.
-            // We also want it to exist, to show the (planned) link that offers to launch the web site.
-            // Another advantage of creating it early is that we don't have to create it in the UI when we want to add
-            // a downloaded book to the UI.
-            // So, we just make sure it exists here at startup.
             string downloadFolder = BookDownload.DownloadFolder;
             if (!Directory.Exists(downloadFolder))
             {
@@ -41,17 +66,7 @@ namespace Bloom.WebLibraryIntegration
                 };
                 settings.Language1.Tag = "en";
                 settings.Language1.SetName("English", false);
-                try
-                {
-                    CollectionSettings.CreateNewCollection(settings);
-                }
-                catch (CollectionFolderNotWritableException notWritable)
-                {
-                    // This runs at startup, before any collection opens. Explain, then exit as
-                    // Bloom always has when it couldn't make this folder. (BL-16728)
-                    DefenderFolderProtectionCheck.ReportProblem(notWritable);
-                    Environment.Exit(-1);
-                }
+                CollectionSettings.CreateNewCollection(settings);
                 ProjectContext.ClearUserInstalledDirectoriesCache();
             }
         }

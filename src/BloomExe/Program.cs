@@ -645,7 +645,7 @@ namespace Bloom
                     using (_applicationContainer = new ApplicationContainer())
                     {
                         InstallerSupport.MakeBloomRegistryEntries(args);
-                        BookDownloadSupport.EnsureDownloadFolderExists();
+                        BookDownloadSupport.TryEnsureDownloadFolderExists();
 
                         if (
                             args.Length == 1
@@ -1515,7 +1515,7 @@ namespace Bloom
             using (_applicationContainer = new ApplicationContainer())
             {
                 //JT please review: is this needed? InstallerSupport.MakeBloomRegistryEntries(args);
-                BookDownloadSupport.EnsureDownloadFolderExists();
+                BookDownloadSupport.TryEnsureDownloadFolderExists();
                 LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage);
                 var downloader = new BookDownload(ProjectContext.CreateBloomS3Client());
                 downloader.HandleBloomBookOrder(bookOrderUrl);
