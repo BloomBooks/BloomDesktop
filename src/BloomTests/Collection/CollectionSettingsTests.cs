@@ -7,6 +7,7 @@ using System.Threading;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.MiscUI;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -88,6 +89,84 @@ namespace BloomTests.Collection
                 "Sanity check: the pack should not be offered"
             );
             return settings;
+        }
+
+        /// <summary>
+        /// Checking a collection folder Bloom may not write in must throw, so the caller can
+        /// recover (it offers the collection chooser), and must not show anything itself. Reading
+        /// the collection's settings, which a command-line run may do on a read-only share, still
+        /// works, even when loading would like to save the one-time settings check. (BL-16728)
+        /// </summary>
+        [Test]
+        [Platform(Include = "Win")]
+        public void ThrowIfCollectionFolderNotWritable_CollectionFolderDenied_Throws()
+        {
+            var settingsPath = CreateCollectionSettings(
+                _folder.Path,
+                "NotWritable"
+            ).SettingsFilePath;
+            Assert.That(
+                RobustFile.Exists(settingsPath),
+                "Sanity check: the collection should exist"
+            );
+            Assert.That(
+                RobustFile.ReadAllText(settingsPath),
+                Does.Contain("<OneTimeCheckVersionNumber>0<"),
+                "Sanity check: loading should want to save the one-time settings check"
+            );
+            var folder = new DirectoryInfo(Path.GetDirectoryName(settingsPath));
+            using (FolderAccessForTests.DenyWrite(folder))
+            {
+                var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
+                    DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(
+                        folder.FullName
+                    )
+                );
+                Assert.That(thrown.FolderPath, Is.EqualTo(folder.FullName));
+                // What DefenderFolderProtectionCheck.IsPermissionProblem treats as a permission
+                // problem when nothing else is suspected; see DefenderFolderProtectionCheckTests.
+                Assert.That(
+                    thrown.InnerException,
+                    Is.InstanceOf<System.UnauthorizedAccessException>(),
+                    "Windows should refuse a denied folder with access denied"
+                );
+                Assert.DoesNotThrow(
+                    () => new CollectionSettings(settingsPath),
+                    "Reading an existing collection's settings should not need a writable folder"
+                );
+                Assert.That(
+                    RobustFile.ReadAllText(settingsPath),
+                    Does.Contain("<OneTimeCheckVersionNumber>0<"),
+                    "The settings file should be unchanged, since Windows refused the save"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Creating a collection where Bloom may not write must throw the same exception, which
+        /// the New Collection wizard reports, even though Windows refuses to make the collection's
+        /// folder before Bloom gets as far as checking it. (BL-16728)
+        /// </summary>
+        [Test]
+        [Platform(Include = "Win")]
+        public void Constructor_NewCollectionInDeniedFolder_Throws()
+        {
+            var parent = new DirectoryInfo(Path.Combine(_folder.Path, "DeniedParent"));
+            parent.Create();
+            var collectionFolder = Path.Combine(parent.FullName, "New");
+            var settingsPath = Path.Combine(collectionFolder, "New.bloomCollection");
+            using (FolderAccessForTests.DenyWrite(parent))
+            {
+                var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
+                    new CollectionSettings(settingsPath)
+                );
+                Assert.That(thrown.FolderPath, Is.EqualTo(collectionFolder));
+                Assert.That(
+                    Directory.Exists(collectionFolder),
+                    Is.False,
+                    "Windows should not have made the collection's folder"
+                );
+            }
         }
 
         /// <summary>
