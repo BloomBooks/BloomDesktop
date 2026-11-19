@@ -14,6 +14,7 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.FontProcessing;
 using Bloom.ImageProcessing;
+using Bloom.MiscUI;
 using Bloom.Publish;
 using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.BloomPub;
@@ -88,7 +89,17 @@ namespace Bloom
                 // file in ..." that GetCollectionSettings throws with a bare FileNotFoundException
                 // about the lock, sending the next developer to look in the wrong place. (BL-16678)
                 if (RobustFile.Exists(SettingsPath))
+                {
                     _collectionLock.Lock();
+                    // Editing needs a writable folder; a command-line run (the harvester, font
+                    // analytics, bulk upload) may only read. Check before the Team Collection
+                    // manager syncs the collection's files, so that an unwritable folder is
+                    // reported as such rather than as a Team Collection failure. (BL-16728)
+                    if (!Program.RunningInConsoleMode)
+                        DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(
+                            Path.GetDirectoryName(SettingsPath)
+                        );
+                }
 
                 // BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.
                 // While we are starting (or restarting, in the case of switching collections) BloomServer we need to use
@@ -479,7 +490,6 @@ namespace Bloom
                 .Resolve<BloomWebSocketServer>()
                 .Init(BloomServer.WebSocketPort.ToString(CultureInfo.InvariantCulture));
             HelpLauncher.RegisterWithApiHandler(server.ApiHandler);
-            ExternalLinkController.RegisterWithApiHandler(server.ApiHandler);
             ToolboxView.RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PageTemplatesApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<AddOrChangePageApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -893,14 +903,20 @@ namespace Bloom
             }
         }
 
+        /// <summary>
+        /// Where installed collections live (Collections in AppDataPath), worked out without making
+        /// any folder; GetInstalledCollectionsDirectory makes it.
+        /// </summary>
+        public static string InstalledCollectionsPath => Path.Combine(AppDataPath, "Collections");
+
+        /// <summary>
+        /// InstalledCollectionsPath, made (with the folders above it) if it isn't there yet.
+        /// </summary>
         public static string GetInstalledCollectionsDirectory()
         {
             //we want this path of directories sitting there, waiting for the user
-            var d = GetBloomAppDataFolder();
-            var collections = d.CombineForPath("Collections");
-
-            if (!Directory.Exists(collections))
-                Directory.CreateDirectory(collections);
+            var collections = InstalledCollectionsPath;
+            Directory.CreateDirectory(collections);
             return collections;
         }
 
@@ -909,12 +925,8 @@ namespace Bloom
             get
             {
                 //we want this path of directories sitting there, waiting for the user
-                var d = GetBloomAppDataFolder();
-                if (!Directory.Exists(d))
-                    Directory.CreateDirectory(d);
-                d = d.CombineForPath("XMatter");
-                if (!Directory.Exists(d))
-                    Directory.CreateDirectory(d);
+                var d = Path.Combine(AppDataPath, "XMatter");
+                Directory.CreateDirectory(d);
                 return d;
             }
         }
@@ -949,16 +961,24 @@ namespace Bloom
         public TeamCollectionManager TeamCollectionManager =>
             _scope.Resolve<TeamCollectionManager>();
 
+        /// <summary>
+        /// Where Bloom keeps its per-user data (SIL\Bloom in the user's local app data), worked out
+        /// without making any folder; GetBloomAppDataFolder makes it.
+        /// </summary>
+        public static string AppDataPath =>
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "SIL",
+                "Bloom"
+            );
+
+        /// <summary>
+        /// AppDataPath, made (with the folders above it) if it isn't there yet.
+        /// </summary>
         public static string GetBloomAppDataFolder()
         {
-            var d = Environment
-                .GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-                .CombineForPath("SIL");
-            if (!Directory.Exists(d))
-                Directory.CreateDirectory(d);
-            d = d.CombineForPath("Bloom");
-            if (!Directory.Exists(d))
-                Directory.CreateDirectory(d);
+            var d = AppDataPath;
+            Directory.CreateDirectory(d);
             return d;
         }
 
