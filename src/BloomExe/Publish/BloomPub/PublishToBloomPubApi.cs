@@ -11,6 +11,7 @@ using Bloom.Properties;
 using Bloom.Publish.BloomPub.file;
 using Bloom.Publish.BloomPub.wifi;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using Newtonsoft.Json;
@@ -245,7 +246,7 @@ namespace Bloom.Publish.BloomPub
                 kApiUrlPart + "textToClipboard",
                 request =>
                 {
-                    PortableClipboard.SetText(request.RequiredPostString());
+                    BloomClipboard.SetText(request.RequiredPostString());
                     request.PostSucceeded();
                 },
                 true

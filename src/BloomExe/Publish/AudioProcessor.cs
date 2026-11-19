@@ -213,7 +213,7 @@ namespace Bloom.Publish
                     var argsBuilder = new StringBuilder("-hide_banner -i \"concat:");
                     argsBuilder.Append(string.Join("|", monoFiles));
                     argsBuilder.Append($"\" -c copy \"{combinedAudioPath}\"");
-                    var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                    var result = CommandLineRunner.Run(
                         ffmpeg,
                         argsBuilder.ToString(),
                         "",
@@ -338,13 +338,7 @@ namespace Bloom.Publish
             foreach (var file in mergeFiles)
             {
                 var args = $"-hide_banner -i \"{file}\" -f null -";
-                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
-                    ffmpeg,
-                    args,
-                    "",
-                    60,
-                    new NullProgress()
-                );
+                var result = CommandLineRunner.Run(ffmpeg, args, "", 60, new NullProgress());
                 var output = result.StandardError;
                 var match = Regex.Match(
                     output,
@@ -364,13 +358,7 @@ namespace Bloom.Publish
                         args =
                             $"-i \"{file}\" -ac 1 -ar 44100 -b:a {bitRate}k \"{tempFile.Path}.mp3\"";
                         Debug.WriteLine($"DEBUG: ffmpeg {args}");
-                        result = CommandLineRunnerExtra.RunWithInvariantCulture(
-                            ffmpeg,
-                            args,
-                            "",
-                            120,
-                            new NullProgress()
-                        );
+                        result = CommandLineRunner.Run(ffmpeg, args, "", 120, new NullProgress());
                         if (result.ExitCode == 0)
                         {
                             monoFiles.Add(tempFile.Path + ".mp3");

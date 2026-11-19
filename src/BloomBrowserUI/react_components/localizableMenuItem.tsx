@@ -33,11 +33,12 @@ const NestedMenuItem = NestedMenuItemRaw as React.ComponentType<
 import CheckIcon from "@mui/icons-material/Check";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import { getBoolean, post, postBoolean } from "../utils/bloomApi";
+import { getBoolean, postBoolean } from "../utils/bloomApi";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
 import { kUiFontStack } from "../bloomMaterialUITheme";
 import { Variant } from "@mui/material/styles/createTypography";
 import {
+    openBloomSubscriptionSettings,
     useGetFeatureStatus,
     useGetFeatureAvailabilityMessage,
 } from "./featureStatus";
@@ -70,6 +71,10 @@ export interface INestedMenuItemProps extends IBaseLocalizableMenuItemProps {
     icon?: ReactNode;
     truncateMainLabel?: boolean;
     children?: ReactNode;
+    // Whether the menu this row is in is open. Defaults to true. A menu that stays mounted while
+    // shut (keepMounted) must pass its open state, or a submenu that was open when the menu shut
+    // stays drawn until the pointer moves.
+    parentMenuOpen?: boolean;
 }
 
 export interface ILocalizableMenuItemProps
@@ -226,10 +231,9 @@ export const LocalizableMenuItem: React.FunctionComponent<
     const localizedSubLabel = useL10n("", props.subLabelL10nId ?? null);
     const subLabel =
         props.subLabel ?? props.generatedSubLabel ?? localizedSubLabel;
-    const openSubscriptionSettings = () =>
-        post("common/showSettingsDialog?tab=subscription");
-
-    const menuClickHandler = enabled ? props.onClick : openSubscriptionSettings;
+    const menuClickHandler = enabled
+        ? props.onClick
+        : openBloomSubscriptionSettings;
 
     // The "div" wrapper is necessary to get the tooltip to work on a disabled MenuItem.
     return (
@@ -240,6 +244,19 @@ export const LocalizableMenuItem: React.FunctionComponent<
                 disabled={props.disabled}
                 className={props.className}
                 value={props.value}
+                // The localization id doubles as the item's test id. Without it, the only handle on
+                // a menu item is its localized label, so a test would be asserting on English.
+                data-testid={props.l10nId}
+                // A tier-gated item stays clickable (see menuClickHandler), so nothing else in the
+                // DOM tells a test that the command itself is not on offer.
+                data-subscription-gated={enabled ? undefined : "true"}
+                // Until the feature status arrives the item looks enabled. A test that reads the
+                // menu the moment it opens needs to know the answer is not in yet.
+                data-feature-status-pending={
+                    props.featureName && featureStatus === undefined
+                        ? "true"
+                        : undefined
+                }
             >
                 <React.Fragment>
                     {iconElement}
@@ -389,6 +406,20 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
         props.l10nParam0,
     );
     const subLabel = useL10n("", props.subLabelL10nId ?? null);
+    // NestedMenuItem remembers that its submenu is open until the pointer leaves the row. Choosing
+    // a submenu command shuts the menu with the pointer still inside the row (React counts the
+    // submenu as part of it), so in a keepMounted menu the submenu would open again, already
+    // highlighted, the next time the menu opens. Giving the row a fresh key whenever the menu shuts
+    // remounts it, so it forgets.
+    const parentMenuOpen = props.parentMenuOpen ?? true;
+    const [wasParentMenuOpen, setWasParentMenuOpen] = useState(parentMenuOpen);
+    const [timesParentMenuShut, setTimesParentMenuShut] = useState(0);
+    if (parentMenuOpen !== wasParentMenuOpen) {
+        setWasParentMenuOpen(parentMenuOpen);
+        if (!parentMenuOpen) {
+            setTimesParentMenuShut(timesParentMenuShut + 1);
+        }
+    }
     if (!props.children) {
         return <React.Fragment />;
     }
@@ -404,8 +435,9 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
         : css``;
     return (
         // Can't find any doc on parentMenuOpen. Examples set it to the same value
-        // as the open prop of the parent menu. But it seems to work fine just set
-        // to true. (If omitted, however, the child menu does not appear when the
+        // as the open prop of the parent menu. True works for a menu that unmounts
+        // when it shuts; a keepMounted menu passes its open state (see the prop).
+        // (If omitted, however, the child menu does not appear when the
         // parent is hovered over.)
         <Fragment>
             <NestedMenuItem
@@ -426,7 +458,11 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
                     //padding: 4px 6px 0 6px !important; // adjust for denser layout
                     justify-content: space-between !important; // move sub-menu arrow to right
                 `}
-                key={props.l10nId}
+                key={`${props.l10nId}-${timesParentMenuShut}`}
+                // As on LocalizableMenuItem, the localization id doubles as the test id, so a
+                // test can hover the row to open its submenu without matching on English.
+                data-testid={props.l10nId}
+                disabled={props.disabled}
                 label={
                     props.icon ? (
                         // This is a nuisance. We should just be able to pass on props.icon.
@@ -455,7 +491,7 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
                         </Fragment>
                     )
                 }
-                parentMenuOpen={true}
+                parentMenuOpen={parentMenuOpen}
                 //icon={props.icon}
             >
                 {props.children}

@@ -5,12 +5,25 @@ import { handlePlayClick } from "../bloomVideo";
 import {
     kBackgroundImageClass,
     kBloomCanvasSelector,
+    kCanvasElementClass,
     kCanvasElementSelector,
 } from "../../toolbox/canvas/canvasElementConstants";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
-import { convertPointFromViewportToElementFrame } from "./CanvasElementGeometry";
+import {
+    convertPointFromViewportToElementFrame,
+    getLeftAndTopBorderWidths,
+    getLeftAndTopPaddings,
+} from "./CanvasElementGeometry";
+import {
+    findEditableUnderPointerInRotatedElement,
+    getCanvasElementRotation,
+    isPointInsideRotatedCanvasElement,
+    kRotatedClass,
+} from "./canvasElementRotation";
 import { inPlayMode } from "./CanvasElementPositioning";
+import { dragToResize } from "bloom-table";
+import { tablesMayBeRestructured } from "../tableFeature";
 
 export interface ICanvasElementPointerInteractionsHost {
     getActiveElement: () => HTMLElement | undefined;
@@ -110,7 +123,128 @@ export class CanvasElementPointerInteractions {
         };
     }
 
-    private moveInsertionPointAndFocusTo = (x, y): Range | undefined => {
+    // Which canvas element the user clicked on, given a point in the coordinates of the
+    // bloom-canvas.
+    //
+    // comicaljs tests each element against its un-rotated offset box, so it reports a miss
+    // for a point that is really inside an element the user has rotated, and a hit for a point
+    // in the part of the box the element has rotated away from. We therefore test the rotated
+    // elements here and leave the rest to comicaljs, then take whichever hit is on top.
+    private getCanvasElementHit(
+        bloomCanvas: HTMLElement,
+        x: number,
+        y: number,
+    ): Bubble | undefined {
+        const unrotatedHit = Comical.getBubbleHit(
+            bloomCanvas,
+            x,
+            y,
+            true, // only consider canvas elements with pointer events allowed.
+            `.${kRotatedClass}`,
+        );
+        const rotatedHit = this.getRotatedCanvasElementHit(bloomCanvas, x, y);
+        if (!rotatedHit) {
+            return unrotatedHit;
+        }
+        if (!unrotatedHit) {
+            return rotatedHit;
+        }
+        // Level is comicaljs's stacking order; the higher one is in front.
+        const rotatedLevel =
+            Bubble.getBubbleSpec(rotatedHit.content).level ?? 0;
+        const unrotatedLevel =
+            Bubble.getBubbleSpec(unrotatedHit.content).level ?? 0;
+        return rotatedLevel >= unrotatedLevel ? rotatedHit : unrotatedHit;
+    }
+
+    private getRotatedCanvasElementHit(
+        bloomCanvas: HTMLElement,
+        x: number,
+        y: number,
+    ): Bubble | undefined {
+        let hit: HTMLElement | undefined;
+        let hitLevel = Number.NEGATIVE_INFINITY;
+        Array.from(bloomCanvas.getElementsByClassName(kRotatedClass)).forEach(
+            (element) => {
+                if (
+                    !(element instanceof HTMLElement) ||
+                    !element.classList.contains(kCanvasElementClass)
+                ) {
+                    return;
+                }
+                const styles = window.getComputedStyle(element);
+                // Match the two things comicaljs filters on: an invisible element is not there,
+                // and one that takes no pointer events cannot be clicked.
+                if (
+                    styles.display === "none" ||
+                    styles.pointerEvents === "none" ||
+                    !isPointInsideRotatedCanvasElement(element, x, y)
+                ) {
+                    return;
+                }
+                const level = Bubble.getBubbleSpec(element).level ?? 0;
+                if (level >= hitLevel) {
+                    hitLevel = level;
+                    hit = element;
+                }
+            },
+        );
+        return hit ? new Bubble(hit) : undefined;
+    }
+
+    // Where inside the canvas element the user took hold of it. The move code subtracts this
+    // from the pointer position to get the element's new position, so it must be measured
+    // against the element's own box.
+    //
+    // For an element the user has rotated, getBoundingClientRect reports the box around the
+    // rotated element instead, which would make the element jump as soon as the drag began. In
+    // that case we rebuild the same measurement from offsetLeft/offsetTop, which describe the
+    // element's own box whatever its angle. For an element that is not rotated the two agree,
+    // so nothing changes for the ordinary case.
+    private getGrabOffsetPoint(
+        pointRelativeToViewport: Point,
+        canvasElement: HTMLElement,
+    ): Point {
+        if (getCanvasElementRotation(canvasElement) === 0) {
+            return convertPointFromViewportToElementFrame(
+                pointRelativeToViewport,
+                canvasElement,
+            );
+        }
+        const bloomCanvas = canvasElement.parentElement?.closest(
+            kBloomCanvasSelector,
+        ) as HTMLElement;
+        const pointInCanvas = convertPointFromViewportToElementFrame(
+            pointRelativeToViewport,
+            bloomCanvas,
+        );
+        const borderAndPadding = getLeftAndTopBorderWidths(canvasElement).add(
+            getLeftAndTopPaddings(canvasElement),
+        );
+        return new Point(
+            pointInCanvas.getUnscaledX() -
+                canvasElement.offsetLeft -
+                borderAndPadding.getUnscaledX(),
+            pointInCanvas.getUnscaledY() -
+                canvasElement.offsetTop -
+                borderAndPadding.getUnscaledY(),
+            PointScaling.Unscaled,
+            "Grab offset within a rotated canvas element",
+        );
+    }
+
+    // Put the caret at the point (x, y) in viewport coordinates and focus the text there.
+    //
+    // Pass editableUnderCanvas when the text is inside a rotated canvas element, where the
+    // comicaljs canvas lies over it. The caret lookup is a hit test like any other, so while it
+    // runs the canvases of that bloom-canvas take no pointer events and the lookup reaches the
+    // text. If the lookup still lands outside that editable, the caret goes at the end of it,
+    // so that the click at least starts editing the text the user clicked on.
+    private moveInsertionPointAndFocusTo = (
+        x: number,
+        y: number,
+        editableUnderCanvas?: HTMLElement,
+    ): Range | undefined => {
         type DocumentWithCaret = Document & {
             caretPositionFromPoint?: (
                 x: number,
@@ -119,11 +253,48 @@ export class CanvasElementPointerInteractions {
             caretRangeFromPoint?: (x: number, y: number) => Range | null;
         };
         const doc = document as DocumentWithCaret;
-        const rangeOrCaret = doc.caretPositionFromPoint
-            ? doc.caretPositionFromPoint(x, y)
-            : doc.caretRangeFromPoint
-              ? doc.caretRangeFromPoint(x, y)
-              : null;
+        const coveringCanvases = editableUnderCanvas
+            ? (Array.from(
+                  editableUnderCanvas
+                      .closest(kBloomCanvasSelector)
+                      ?.getElementsByTagName("canvas") ?? [],
+              ) as HTMLElement[])
+            : [];
+        const oldPointerEvents = coveringCanvases.map(
+            (canvas) => canvas.style.pointerEvents,
+        );
+        coveringCanvases.forEach((canvas) => {
+            canvas.style.pointerEvents = "none";
+        });
+        let rangeOrCaret: Range | CaretPosition | null;
+        try {
+            rangeOrCaret = doc.caretPositionFromPoint
+                ? doc.caretPositionFromPoint(x, y)
+                : doc.caretRangeFromPoint
+                  ? doc.caretRangeFromPoint(x, y)
+                  : null;
+        } finally {
+            coveringCanvases.forEach((canvas, index) => {
+                canvas.style.pointerEvents = oldPointerEvents[index];
+            });
+        }
+
+        if (
+            editableUnderCanvas &&
+            !(
+                rangeOrCaret &&
+                editableUnderCanvas.contains(
+                    "endContainer" in rangeOrCaret
+                        ? rangeOrCaret.endContainer
+                        : rangeOrCaret.offsetNode,
+                )
+            )
+        ) {
+            const endOfText = document.createRange();
+            endOfText.selectNodeContents(editableUnderCanvas);
+            endOfText.collapse(false);
+            rangeOrCaret = endOfText;
+        }
 
         if (!rangeOrCaret) {
             return undefined;
@@ -149,7 +320,7 @@ export class CanvasElementPointerInteractions {
 
         if (range && range.collapse && range?.endContainer?.parentElement) {
             range.collapse(false); // probably not needed?
-            range.endContainer.parentElement.focus();
+            (editableUnderCanvas ?? range.endContainer.parentElement).focus();
             const setSelection = () => {
                 const selection = window.getSelection();
                 selection?.removeAllRanges();
@@ -163,6 +334,31 @@ export class CanvasElementPointerInteractions {
         return range as Range;
     };
 
+    /**
+     * Whether a press landed in a table whose own right-click menu owns it.
+     *
+     * event.target cannot answer this: the Comical canvas covers the table, so a
+     * press on a cell reports the canvas as its target. Two ways to be in a table:
+     * this bloom-canvas is the picture inside a cell, or the canvas element under
+     * the pointer is the one a table sits in.
+     */
+    private isPressInsideTable(
+        bloomCanvas: HTMLElement,
+        bubble: Bubble | undefined,
+    ): boolean {
+        // A press on the picture of a picture cell. The table's Cell menu owns that press,
+        // except in a book whose tables are frozen: there the library opens no Cell menu (see
+        // installHostHooks in tableEditing.ts), so the press should reach the ordinary canvas
+        // element handling below and open the picture's own menu, which is what the same
+        // picture outside a table gets.
+        if (bloomCanvas.closest(".bloom-cell"))
+            return tablesMayBeRestructured();
+        return (
+            !!bubble &&
+            bubble.content.getElementsByClassName("bloom-table").length > 0
+        );
+    }
+
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
     public onMouseDown = (event: MouseEvent) => {
@@ -172,6 +368,44 @@ export class CanvasElementPointerInteractions {
         if (this.isMouseEventAlreadyHandled(event)) {
             return;
         }
+        // A press on a row or column boundary of a table resizes that row or column,
+        // which has to win over dragging the canvas element the table sits in. The
+        // table cannot claim the press for itself: we listen in the capture phase, and
+        // the Comical canvas covers the table anyway, so the press never reaches it.
+        // So we hand it over, and the table's own document-level handlers take the drag
+        // from here.
+        // Resizing a row or column is restructuring the table, so it is one of the
+        // things withheld from a book whose tables are frozen (see installHostHooks
+        // in tableEditing.ts). Not handing the press over leaves it to the ordinary
+        // canvas element handling below, which is what a press anywhere else in a
+        // frozen table does.
+        // Only the main button starts a resize: a right-click near a boundary is
+        // asking for a menu, and taking the press away from it would show none.
+        if (
+            event.button === 0 &&
+            tablesMayBeRestructured() &&
+            dragToResize.beginResizeAtPoint(event)
+        ) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
+        // A press on the picture in a picture cell belongs to the bloom-canvas that picture is
+        // in, which has this same handler: it makes the picture the active canvas element, so
+        // the toolbar below the cell offers Choose image and the rest. Both listen in the
+        // capture phase and the outer one runs first; left to itself it would start dragging
+        // the canvas element the table sits in, and stop the press before the inner one sees it.
+        const pressedCanvas = (event.target as HTMLElement).closest?.(
+            kBloomCanvasSelector,
+        );
+        if (
+            pressedCanvas &&
+            pressedCanvas !== bloomCanvas &&
+            bloomCanvas.contains(pressedCanvas)
+        )
+            return;
+
         this.gotAMoveWhileMouseDown = false;
 
         const coordinates = this.getPointRelativeToCanvas(event, bloomCanvas);
@@ -179,12 +413,21 @@ export class CanvasElementPointerInteractions {
             return;
         }
 
-        const bubble = Comical.getBubbleHit(
+        const bubble = this.getCanvasElementHit(
             bloomCanvas,
             coordinates.getUnscaledX(),
             coordinates.getUnscaledY(),
-            true, // only consider canvas elements with pointer events allowed.
         );
+        if (
+            event.button === 2 &&
+            this.isPressInsideTable(bloomCanvas, bubble)
+        ) {
+            // The table puts up its own Cell menu, from the contextmenu event that
+            // follows this press, so leave the press alone: claiming it here would
+            // show this canvas element's menu (Duplicate, Delete) over a cell.
+            return;
+        }
+
         if (bubble && event.button === 2) {
             // Right mouse button
             if (bubble.content !== this.host.getActiveElement()) {
@@ -244,7 +487,7 @@ export class CanvasElementPointerInteractions {
                 PointScaling.Scaled,
                 "MouseEvent Client (Relative to viewport)",
             );
-            const relativePoint = convertPointFromViewportToElementFrame(
+            const relativePoint = this.getGrabOffsetPoint(
                 pointRelativeToViewport,
                 bubbleToStart.content,
             );
@@ -274,6 +517,28 @@ export class CanvasElementPointerInteractions {
                     startDraggingBubble(new Bubble(newCanvasElement));
                     return;
                 }
+            }
+
+            // A plain press on the text of a table cell is a click into that text. For other text
+            // canvas elements the first press selects the element and may start dragging it, and
+            // only a second press edits; a table is moved by its own chrome, and a cell whose first
+            // click is swallowed reads as a cell that cannot be typed in. So select the table,
+            // count it as being text-edited, and leave the press to the browser, which puts the
+            // caret where it landed.
+            const pressedText = (event.target as HTMLElement).closest?.(
+                ".bloom-cell .bloom-editable",
+            );
+            if (
+                event.button === 0 &&
+                !event.ctrlKey &&
+                pressedText &&
+                bubble.content.contains(pressedText)
+            ) {
+                if (bubble.content !== this.host.getActiveElement())
+                    this.host.setActiveElement(bubble.content);
+                this.host.setCanvasElementWeAreTextEditing(bubble.content);
+                bubble.content.classList.add("bloom-focusedCanvasElement");
+                return;
             }
 
             const canvasElementWeAreEditing =
@@ -310,6 +575,7 @@ export class CanvasElementPointerInteractions {
             return;
         }
         if (!this.bubbleToDrag) {
+            this.showTableResizeCursor(event);
             return;
         }
         const deltaX = event.clientX - this.clientXAtMouseDown;
@@ -329,6 +595,25 @@ export class CanvasElementPointerInteractions {
         const container = event.currentTarget as HTMLElement;
         this.handleMouseMoveDragCanvasElement(event, container);
     };
+
+    // Show the row or column resize cursor over a table's boundaries. The table
+    // does this for itself when it gets the mouse moves, but the Comical canvas is
+    // painted over it, so here the moves arrive with the canvas as their target.
+    private showTableResizeCursor(event: MouseEvent) {
+        const target = event.target as HTMLElement;
+        if (!target?.style) {
+            return;
+        }
+        // No resize cursor where the press would not start a resize; see onMouseDown.
+        const edge = tablesMayBeRestructured()
+            ? dragToResize.resizeEdgeAtPoint(event)
+            : undefined;
+        if (edge) {
+            target.style.cursor = edge === "row" ? "ns-resize" : "ew-resize";
+        } else if (target.style.cursor.endsWith("-resize")) {
+            target.style.cursor = "";
+        }
+    }
 
     private handleMouseMoveDragCanvasElement(
         event: MouseEvent,
@@ -433,22 +718,44 @@ export class CanvasElementPointerInteractions {
             handlePlayClick(event, true);
             return;
         }
-
         if (this.bubbleToDrag) {
             event.preventDefault();
             event.stopPropagation();
         }
 
+        const pressedElement = this.bubbleToDrag?.content;
         this.bubbleToDrag = undefined;
         this.mouseDownContainer?.classList.remove("grabbing");
-        const editable = (event.target as HTMLElement)?.closest(
+        let editable = (event.target as HTMLElement)?.closest(
             ".bloom-editable",
-        );
+        ) as HTMLElement | null | undefined;
+        // Inside a rotated element the comicaljs canvas is the target, not the text; see
+        // findEditableUnderPointerInRotatedElement. The browser has not placed the caret
+        // either, because onMouseDown prevented the default of a press it did not see
+        // landing on the text, so we place it ourselves.
+        let editableIsUnderCanvas = false;
+        if (!editable && pressedElement && !this.gotAMoveWhileMouseDown) {
+            editable = findEditableUnderPointerInRotatedElement(
+                pressedElement.ownerDocument.elementsFromPoint(
+                    event.clientX,
+                    event.clientY,
+                ),
+                pressedElement,
+            );
+            editableIsUnderCanvas = !!editable;
+        }
         if (
             editable &&
             editable.closest(kCanvasElementSelector) ===
                 this.host.getCanvasElementWeAreTextEditing()
         ) {
+            if (editableIsUnderCanvas) {
+                this.moveInsertionPointAndFocusTo(
+                    event.clientX,
+                    event.clientY,
+                    editable,
+                );
+            }
             return;
         }
         if (
@@ -456,12 +763,16 @@ export class CanvasElementPointerInteractions {
             editable &&
             this.activeElementAtMouseDown === this.host.getActiveElement()
         ) {
-            const canvasElement = (event.target as HTMLElement)?.closest(
+            const canvasElement = editable.closest(
                 kCanvasElementSelector,
             ) as HTMLElement;
             this.host.setCanvasElementWeAreTextEditing(canvasElement);
             canvasElement?.classList.add("bloom-focusedCanvasElement");
-            this.moveInsertionPointAndFocusTo(event.clientX, event.clientY);
+            this.moveInsertionPointAndFocusTo(
+                event.clientX,
+                event.clientY,
+                editableIsUnderCanvas ? editable : undefined,
+            );
         } else {
             event.preventDefault();
             event.stopPropagation();

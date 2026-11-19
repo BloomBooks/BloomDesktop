@@ -79,6 +79,41 @@ namespace Bloom
         }
 
         /// <summary>
+        /// Create a new file and open it for writing, with no sharing, as long as it does not
+        /// already exist. Returns null if the file already exists, so callers can use this as an
+        /// exclusive claim on a name (another process that tries the same name gets null). Any
+        /// other failure, such as a file briefly locked by anti-virus software, is retried, and
+        /// if it persists the exception is thrown.
+        /// </summary>
+        public static FileStream TryCreateNewExclusive(string path)
+        {
+            return RetryUtility.Retry(
+                () =>
+                {
+                    try
+                    {
+                        // robustfile-hook: allow FileStream
+                        // FileMode.CreateNew is what makes this an exclusive claim, and
+                        // FileShare.None keeps every other process out while the caller holds it;
+                        // RobustFile has no equivalent.
+                        return new FileStream(
+                            path,
+                            FileMode.CreateNew,
+                            FileAccess.Write,
+                            FileShare.None
+                        );
+                    }
+                    catch (IOException) when (RobustFile.Exists(path))
+                    {
+                        // Someone else created it first. Trying again would never succeed.
+                        return null;
+                    }
+                },
+                memo: "Create " + path
+            );
+        }
+
+        /// <summary>
         /// Attempts to delete a directory once. Returns false if an exception prevents deletion,
         /// rather than retrying or throwing — suitable for best-effort cleanup during shutdown.
         /// </summary>

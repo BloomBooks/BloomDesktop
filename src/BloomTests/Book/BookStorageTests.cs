@@ -83,6 +83,68 @@ namespace BloomTests.Book
             Assert.That(captionDiv.InnerXml, Is.EqualTo("More books in <b>Foobar</b> language:"));
         }
 
+        private static SafeXmlElement MakeBadgePreview(bool showQrCode)
+        {
+            var html = BookStorage.MakeBadgePreviewHtml(
+                showQrCode,
+                "xkal",
+                "Books in {0}, free:",
+                "Kalaba",
+                "/pictures/",
+                "/qr.png"
+            );
+            return new HtmlDom("<html><body>" + html + "</body></html>").SelectSingleNode(
+                "//body/div"
+            );
+        }
+
+        /// <summary>
+        /// The Collection Settings dialog shows this as its preview, so it must be the badge books
+        /// get, but with its pictures from where it is told and no link to take the dialog away.
+        /// </summary>
+        [Test]
+        public void MakeBadgePreviewHtml_QrCodeOn_IsTheBadgeBooksGet()
+        {
+            var badge = MakeBadgePreview(true);
+
+            Assert.That(badge.GetAttribute("class"), Is.EqualTo("bloom-branding-wrapper"));
+            Assert.That(badge.SelectSingleNode("a").HasAttribute("href"), Is.False);
+            Assert.That(
+                badge.SelectSingleNode("a/img[@class='branding']")?.GetAttribute("src"),
+                Is.EqualTo("/pictures/made-with-bloom-badge-text.svg")
+            );
+            Assert.That(
+                badge.SelectSingleNode("a/img[@class='bloom-qrcode']")?.GetAttribute("src"),
+                Is.EqualTo("/qr.png")
+            );
+            var label = badge.SelectSingleNode("a/div[@class='bloom-lang-on-blorg']");
+            Assert.That(
+                label.SelectSingleNode("div[@class='bloom-blorg-caption']").InnerText,
+                Is.EqualTo("Books in Kalaba, free:")
+            );
+            Assert.That(
+                label.SelectSingleNode("div[@class='bloom-blorg-caption']/b").InnerText,
+                Is.EqualTo("Kalaba")
+            );
+            Assert.That(
+                label.SelectSingleNode("div[@class='bloom-blorg-url']").InnerText,
+                Is.EqualTo("BloomLibrary.org/language:xkal")
+            );
+        }
+
+        [Test]
+        public void MakeBadgePreviewHtml_QrCodeOff_IsThePlainBadge()
+        {
+            var badge = MakeBadgePreview(false);
+
+            Assert.That(
+                badge.SelectSingleNode("a/img[@class='branding']")?.GetAttribute("src"),
+                Is.EqualTo("/pictures/made-with-bloom-badge.svg")
+            );
+            Assert.That(badge.SelectSingleNode("a/img[@class='bloom-qrcode']"), Is.Null);
+            Assert.That(badge.SelectSingleNode("a/div[@class='bloom-lang-on-blorg']"), Is.Null);
+        }
+
         [Test]
         public void AppendCaptionWithBoldLanguage_NoPlaceholder_UsesPatternVerbatim()
         {
@@ -418,6 +480,67 @@ namespace BloomTests.Book
             Assert.IsFalse(File.Exists(unusedVidMp4Path.Path));
             Assert.IsFalse(File.Exists(uncreatedVidOrigPath));
             Assert.IsFalse(File.Exists(unusedVidOrigPath));
+        }
+
+        // BL-17056: Windows refusing to delete an unused video (there, antivirus folder protection)
+        // made selecting the book fail every time. Deleting a read-only file fails the same way,
+        // with UnauthorizedAccessException.
+        [Test]
+        public void CleanupUnusedVideoFiles_UnusedVideoCannotBeDeleted_DoesNotThrow()
+        {
+            var videoPath = Path.Combine(_folder.Path, "video");
+            Directory.CreateDirectory(videoPath);
+            var storage = GetInitialStorageWithCustomHtml(
+                XmlHtmlConverter.CreateHtmlString(
+                    "<div class='bloom-page numberedPage' id='566c4a7a-0789-43f5-abcb-e4a16532dedd'></div>"
+                )
+            );
+            var unusedVideo = MakeSampleMp4Video(
+                Path.Combine(videoPath, "5e545cb1-795a-4d50-9d49-a83bc0a2b5fc.mp4.tmp.mp4"),
+                false
+            );
+            File.SetAttributes(unusedVideo.Path, FileAttributes.ReadOnly);
+            try
+            {
+                Assert.That(
+                    () => File.Delete(unusedVideo.Path),
+                    Throws.TypeOf<UnauthorizedAccessException>(),
+                    "Test setup: a read-only file should refuse deletion the way the user's file did"
+                );
+
+                Assert.DoesNotThrow(() => storage.CleanupUnusedVideoFiles());
+
+                Assert.That(File.Exists(unusedVideo.Path), Is.True);
+            }
+            finally
+            {
+                File.SetAttributes(unusedVideo.Path, FileAttributes.Normal);
+            }
+        }
+
+        [Test]
+        public void CleanupUnusedAudioFiles_UnusedAudioCannotBeDeleted_DoesNotThrow()
+        {
+            var audioPath = Path.Combine(_folder.Path, "audio");
+            Directory.CreateDirectory(audioPath);
+            var storage = GetInitialStorageWithCustomHtml(
+                XmlHtmlConverter.CreateHtmlString(
+                    "<div class='bloom-page numberedPage' id='566c4a7a-0789-43f5-abcb-e4a16532dedd'></div>"
+                )
+            );
+            var unusedAudio = Path.Combine(audioPath, "i746b30ce-2fc7-4c84-9ef0-1036d6883cba.mp3");
+            File.WriteAllText(unusedAudio, "not really audio");
+            File.SetAttributes(unusedAudio, FileAttributes.ReadOnly);
+            try
+            {
+                Assert.DoesNotThrow(() => storage.CleanupUnusedAudioFiles(isForPublish: false));
+
+                Assert.That(File.Exists(unusedAudio), Is.True);
+            }
+            finally
+            {
+                File.SetAttributes(unusedAudio, FileAttributes.Normal);
+            }
         }
 
         [TestCase(true)]
@@ -761,6 +884,59 @@ namespace BloomTests.Book
                 "unused index file should've been removed"
             );
             Assert.IsFalse(File.Exists(unused.cssPath), "unused CSS file  should've been removed");
+        }
+
+        // BL-17056: an antivirus that refuses to let Bloom delete an unused activity must not stop
+        // the book from being selected. Denying delete permission refuses it the same way, with
+        // UnauthorizedAccessException.
+        [Test]
+        public void CleanupUnusedActivities_UnusedActivityCannotBeDeleted_DoesNotThrow()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                XmlHtmlConverter.CreateHtmlString("<div class='bloom-page'></div>")
+            );
+            var activityPath = BookStorage.GetActivityFolderPath(_folder.Path);
+            Directory.CreateDirectory(activityPath);
+            var unused = makeDummyActivity(activityPath, "unused");
+            var unusedFolder = Path.GetDirectoryName(unused.indexPath);
+            var me = System.Security.Principal.WindowsIdentity.GetCurrent().User;
+            var denyDeleteFile = new System.Security.AccessControl.FileSystemAccessRule(
+                me,
+                System.Security.AccessControl.FileSystemRights.Delete,
+                System.Security.AccessControl.AccessControlType.Deny
+            );
+            var denyDeleteChildren = new System.Security.AccessControl.FileSystemAccessRule(
+                me,
+                System.Security.AccessControl.FileSystemRights.DeleteSubdirectoriesAndFiles,
+                System.Security.AccessControl.AccessControlType.Deny
+            );
+            var file = new FileInfo(unused.indexPath);
+            var fileSecurity = file.GetAccessControl();
+            fileSecurity.AddAccessRule(denyDeleteFile);
+            file.SetAccessControl(fileSecurity);
+            var folder = new DirectoryInfo(unusedFolder);
+            var folderSecurity = folder.GetAccessControl();
+            folderSecurity.AddAccessRule(denyDeleteChildren);
+            folder.SetAccessControl(folderSecurity);
+            try
+            {
+                Assert.That(
+                    () => File.Delete(unused.indexPath),
+                    Throws.TypeOf<UnauthorizedAccessException>(),
+                    "Test setup: the file should refuse deletion"
+                );
+
+                Assert.DoesNotThrow(() => storage.CleanupUnusedActivities());
+
+                Assert.That(File.Exists(unused.indexPath), Is.True);
+            }
+            finally
+            {
+                folderSecurity.RemoveAccessRule(denyDeleteChildren);
+                folder.SetAccessControl(folderSecurity);
+                fileSecurity.RemoveAccessRule(denyDeleteFile);
+                file.SetAccessControl(fileSecurity);
+            }
         }
 
         [Test]
@@ -2223,6 +2399,80 @@ These are similar but already have game-theme classes
                 .Dom(storage.Dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@class='bloom-page']/div[@class='bloom-canvas']/div[@class='bloom-canvas-element']/div[@class='bloom-imageContainer']/img[@src='rubbish']",
+                    1
+                );
+        }
+
+        /// <summary>
+        /// The inline image wrapper has its own class, bloom-inlineImage, so that the level-7
+        /// migration that renames bloom-imageContainer to bloom-canvas leaves it alone. This test
+        /// checks that a bloom-imageContainer on the same page is renamed, which shows the
+        /// migration ran, and that the wrapper and its img are unchanged.
+        /// </summary>
+        [Test]
+        public void MigrateToLevel7BloomCanvas_LeavesInlineImageAlone()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='6'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-imageContainer' id='shouldBeRenamed'>
+			<img src='rubbish' />
+		</div>
+		<div class='bloom-translationGroup'>
+			<div class='bloom-editable normal-style' lang='en' contenteditable='true'>
+				<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval'
+					 id='inlineWrapper' contenteditable='false' style='--inline-image-width: 40%; --inline-image-offset: 120px'>
+					<img src='flower.jpg' />
+				</div>
+				<p>Text that wraps around the image.</p>
+			</div>
+		</div>
+	</div>
+</body></html>"
+            );
+
+            // Sanity check the starting state: one imageContainer, one inline image wrapper, no bloom-canvas.
+            Assert.That(
+                storage.Dom.SelectSingleNode("//*[@id='shouldBeRenamed']").GetAttribute("class"),
+                Is.EqualTo("bloom-imageContainer")
+            );
+            AssertThatXmlIn
+                .Dom(storage.Dom.RawDom)
+                .HasNoMatchForXpath("//div[contains(@class,'bloom-canvas')]");
+
+            //SUT
+            storage.MigrateToLevel7BloomCanvas();
+
+            //Verification
+            Assert.That(storage.Dom.GetMetaValue("maintenanceLevel", "0"), Is.EqualTo("7"));
+            // The migration ran, so the bloom-imageContainer is now a bloom-canvas.
+            var migrated = storage.Dom.SelectSingleNode("//*[@id='shouldBeRenamed']");
+            Assert.That(migrated.GetAttribute("class"), Does.Contain("bloom-canvas"));
+            Assert.That(migrated.GetAttribute("class"), Does.Not.Contain("bloom-imageContainer"));
+
+            // The inline image wrapper is exactly as it was.
+            var wrapper = storage.Dom.SelectSingleNode("//*[@id='inlineWrapper']");
+            var classes = wrapper.GetAttribute("class");
+            Assert.That(classes, Does.Contain("bloom-inlineImage"));
+            Assert.That(classes, Does.Contain("bloom-inlineImageRight"));
+            Assert.That(classes, Does.Contain("bloom-keepFirstInField"));
+            Assert.That(classes, Does.Contain("bloom-preventRemoval"));
+            Assert.That(
+                classes,
+                Does.Not.Contain("bloom-canvas"),
+                "the migration must not turn the inline image wrapper into a bloom-canvas"
+            );
+            Assert.That(wrapper.GetAttribute("contenteditable"), Is.EqualTo("false"));
+            Assert.That(wrapper.GetAttribute("style"), Does.Contain("--inline-image-width: 40%"));
+            AssertThatXmlIn
+                .Dom(storage.Dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='inlineWrapper']/img[@src='flower.jpg']",
                     1
                 );
         }

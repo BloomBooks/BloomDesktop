@@ -179,6 +179,8 @@ namespace Bloom.Workspace
                 _workspaceReactControl.BrowserCreated += (unused, args) =>
                 {
                     _mainBrowser = _workspaceReactControl.Browser;
+                    if (Program.RunningE2eTests)
+                        MainBrowserForE2eTests = _mainBrowser;
                     _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
                     _editingView.InitializeMainBrowserForEditMode();
                     MaybeOpenMainBrowserDevTools();
@@ -235,6 +237,7 @@ namespace Bloom.Workspace
             StartupScreenManager.ClearStartupMilestone("collectionButtonsDrawn");
             StartupScreenManager.ClearStartupMilestone("teamSyncCompleted");
             StartupScreenManager.ClearStartupMilestone("startupBookSelectionReady");
+            StartupScreenManager.ClearStartupMilestone("startupBookSelected");
             if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
             {
                 StartupScreenManager.StartupMilestoneReached("teamSyncCompleted");
@@ -280,6 +283,14 @@ namespace Bloom.Workspace
                 shouldHideSplashScreen: true
             ); // possibility of error message boxes (BL-12155)
         }
+
+        /// <summary>
+        /// The browser holding the workspace root document that Bloom drives: the one whose page
+        /// iframe the Edit tab navigates. Set only under --e2e, for the e2e/shellUrl endpoint.
+        /// More than one document in a run carries the workspace root's markup, and a test that
+        /// attaches to the wrong one sees its own clicks work while nothing Bloom does arrives.
+        /// </summary>
+        internal static Browser MainBrowserForE2eTests { get; private set; }
 
         internal void ReloadWorkspaceRootDocument()
         {
@@ -661,6 +672,12 @@ window.showWorkspaceInitializationFailure = function(message) {
 
                 MiscUtils.SuppressUnusedExceptionVarWarning(e);
             }
+            finally
+            {
+                // Until now this has been clearing and restoring the selection, so anything that
+                // selects a book of its own (an e2e test) must wait for this (see isCollectionReady).
+                StartupScreenManager.StartupMilestoneReached("startupBookSelected");
+            }
         }
 
         private void HandleBookSelectionChanged(object sender, BookSelectionChangedEventArgs e)
@@ -914,6 +931,8 @@ window.showWorkspaceInitializationFailure = function(message) {
             {
                 foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
                 {
+                    if (lang == LocalizationManager.PseudoLocalizationLanguageId)
+                        continue; // handled below, so that it sorts to the end rather than by name
                     var approved = FractionApproved(lang);
                     if (Settings.Default.ShowUnapprovedLocalizations)
                         approved = FractionTranslated(lang);
@@ -925,6 +944,22 @@ window.showWorkspaceInitializationFailure = function(message) {
             }
 
             items.Sort(compareLangItems);
+
+            // The pseudo-locale is not a translation, so it does not belong in the alphabetical
+            // list of real languages; put it last. (It is only in
+            // GetAvailableLocalizedLanguages() at all when LocalizationManager.
+            // OfferPseudoLocalization is on, which Program.SetUpLocalization limits to the
+            // developer, alpha and internal channels. See BL-16748.)
+            if (
+                !onlyActiveItem
+                && LocalizationManager.OfferPseudoLocalization
+                && LocalizationManager
+                    .GetAvailableLocalizedLanguages()
+                    .Contains(LocalizationManager.PseudoLocalizationLanguageId)
+            )
+            {
+                items.Add(CreateLanguageItem(LocalizationManager.PseudoLocalizationLanguageId));
+            }
             return items;
         }
 
@@ -1125,7 +1160,12 @@ window.showWorkspaceInitializationFailure = function(message) {
             // until L10nSharp changes to allow dynamic response to setting change
             // Skip the restart at startup (no project loaded); CollectionChooserApi
             // handles that case by reopening the dialog to refresh the language list.
-            if (Current != null)
+            // Skip it in e2e test mode too: a self-restart keeps the launch options
+            // (Program.StartupArgumentsToForward) but not the collection argument, and starts a
+            // new process the test is not following. The e2e fixture provides the restart
+            // instead (bloomApp.restart in src/BloomE2E), and the setting is already saved
+            // above, so the relaunched Bloom picks it up at startup.
+            if (Current != null && !Program.RunningE2eTests)
                 Program.RestartBloom(false);
         }
 
@@ -1246,6 +1286,14 @@ window.showWorkspaceInitializationFailure = function(message) {
             // In the single-browser architecture, many UI surfaces don't fully refresh their
             // localized strings without a full workspace reload. Reopening the current project
             // gives us behavior similar to collection switching and guarantees consistency.
+            //
+            // Note that this reopens the project in the SAME process. Language names are one
+            // thing that does not come back fresh: LibPalaso caches them in a static dictionary
+            // keyed by language and metadata language but not by the UI culture, and the name it
+            // computes depends on the UI culture (CultureInfo.DisplayName is rendered in it). So
+            // a language name already looked up keeps the wording it had under the previous UI
+            // language. Anyone making the UI language change without reopening at all should
+            // expect more of this, not less.
             Application.Idle -= ReopenProjectAfterUiLanguageChange;
             Application.Idle += ReopenProjectAfterUiLanguageChange;
         }
@@ -1269,14 +1317,38 @@ window.showWorkspaceInitializationFailure = function(message) {
             );
         }
 
+        /// <summary>
+        /// What we call the pseudo-locale in the UI language menu. Deliberately not localizable:
+        /// it is an internationalization-testing tool for developers and testers, and it must
+        /// stay recognizable in whatever (possibly pseudolocalized) UI language is current, so
+        /// that whoever turned it on can find their way back out. See BL-16748.
+        /// </summary>
+        internal const string kPseudoLocalizationMenuText = "Pseudo-English (i18n test)";
+
         public static LanguageItem CreateLanguageItem(string code)
         {
+            // The pseudo-locale is not a real language, so Palaso's language-name lookup has
+            // nothing useful to say about it; name it ourselves.
+            if (code == LocalizationManager.PseudoLocalizationLanguageId)
+            {
+                return new LanguageItem
+                {
+                    EnglishName = kPseudoLocalizationMenuText,
+                    LangTag = code,
+                    MenuText = kPseudoLocalizationMenuText,
+                    // It is derived from the English at lookup time, so it is by definition
+                    // exactly as complete as English is.
+                    FractionApproved = 1.0F,
+                    FractionTranslated = 1.0F,
+                };
+            }
+
             // Get the language name in its own language if at all possible.
             // Add an English name suffix if it's not in a Latin script.
-            var menuText = IetfLanguageTagExtra.GetNativeLanguageNameWithEnglishSubtitle(code);
+            var menuText = IetfLanguageTag.GetNativeLanguageNameWithEnglishSubtitle(code);
             var englishName = IetfLanguageTag.GetManuallyOverriddenEnglishNameIfNeeded(
                 code,
-                () => IetfLanguageTagExtra.GetLocalizedLanguageName(code, "en")
+                () => IetfLanguageTag.GetLocalizedLanguageName(code, "en")
             );
             return new LanguageItem
             {
@@ -1480,6 +1552,27 @@ window.showWorkspaceInitializationFailure = function(message) {
             }
         }
 
+        /// <summary>
+        /// Opens the React Collection Settings dialog (rendered by the workspace's App), on the
+        /// page with the given key if there is one.
+        /// </summary>
+        public void OpenSettingsDialog(string pageKey = null)
+        {
+            dynamic dialogParameters = new DynamicJson();
+            if (pageKey != null)
+                dialogParameters.initialPageKey = pageKey;
+            _webSocketServer.LaunchDialog("CollectionSettingsDialog", dialogParameters);
+        }
+
+        /// <summary>
+        /// Closes the collection and opens it again, as the Settings dialog does when a change
+        /// needs a restart.
+        /// </summary>
+        public void ReopenCollection()
+        {
+            Invoke(ReopenCurrentProject);
+        }
+
         public void CheckForInvalidBranding()
         {
             if (_collectionSettings.InvalidBranding == null || _collectionSettings.IgnoreExpiration)
@@ -1490,7 +1583,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             StartupScreenManager.AddStartupAction(
                 () =>
                 {
-                    OpenLegacySettingsDialog("subscription", forFixingEnterpriseSubscription: true);
+                    OpenSettingsDialog("subscription");
                 },
                 shouldHideSplashScreen: true,
                 lowPriority: true
@@ -1580,10 +1673,6 @@ window.showWorkspaceInitializationFailure = function(message) {
                         }
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
                     },
-                    // Starting over means re-running this whole method, so the "already on the
-                    // desired tab" check at the top makes it a no-op if some other path has
-                    // meanwhile switched to the tab we wanted. See BL-16766.
-                    StartTheChangeOver = () => ChangeTab(view),
                 }
             );
         }
@@ -1656,6 +1745,13 @@ window.showWorkspaceInitializationFailure = function(message) {
             // Check whether the last Velopack update attempt actually succeeded. Shows a toast if not.
             StartupScreenManager.AddStartupAction(
                 () => ApplicationUpdateSupport.CheckForFailedUpdate(),
+                shouldHideSplashScreen: false,
+                lowPriority: true
+            );
+            // Check in the background that Windows lets Bloom change files in this collection.
+            // Shows a toast if not, so it waits, like the check above, until startup is done.
+            StartupScreenManager.AddStartupAction(
+                () => FileAccessStartupCheck.StartInBackground(_collectionSettings.FolderPath),
                 shouldHideSplashScreen: false,
                 lowPriority: true
             );
@@ -1844,19 +1940,10 @@ window.showWorkspaceInitializationFailure = function(message) {
             {
                 if (InEditMode)
                 {
-                    _editingView.Model.SaveThen(
-                        () => _editingView.Model.CurrentPage.Id,
-                        ReportAndLogProblem, // wrong state: show dialog without saving
-                        doAfterSaveToDisk: () =>
-                        {
-                            ReportAndLogProblem();
-                        }
-                    );
+                    // Get the latest edits into the report.
+                    _editingView.Model.SaveCurrentPageAndBook();
                 }
-                else
-                {
-                    ReportAndLogProblem();
-                }
+                ReportAndLogProblem();
             }
             catch
             {

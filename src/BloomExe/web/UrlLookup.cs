@@ -70,11 +70,11 @@ namespace Bloom.web
             bool forceUseProductionData = false
         )
         {
-            // Yep, this is ugly. We need to send "%3a" (an encoded colon) to the site because that's what it expects to make the search work.
-            // But when we process this url in ExternalLinkController.HandleLink(), it will decode the url.
-            // So we have to double encode it here.
-            var doubleEncodedColon = "%253A";
-            return $"{GetBloomLibraryUrlPrefix(forceUseProductionData)}/:search:bookInstanceId{doubleEncodedColon}{bookInstanceId}";
+            // We need to send "%3A" (an encoded colon) to the site because that's what it expects to make the search work.
+            // This url is opened directly in the browser (CollectionApi.OpenBookOnBloomLibrary), so it must not be
+            // double encoded the way a url passed through ExternalLinkController.HandleLink() would need to be.
+            var encodedColon = "%3A";
+            return $"{GetBloomLibraryUrlPrefix(forceUseProductionData)}/:search:bookInstanceId{encodedColon}{bookInstanceId}";
         }
     }
 

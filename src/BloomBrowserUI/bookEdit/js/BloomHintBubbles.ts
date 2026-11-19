@@ -458,7 +458,10 @@ export default class BloomHintBubbles {
                 shouldShowAlways = true;
                 whatToSay = `<a href='${functionCall}'>${whatToSay}</a>`;
             }
-            whatToSay = whatToSay + this.getPossibleHyperlink(source, target);
+            const icon = this.getPossibleLinkIcon(source, target);
+            const hyperlink = this.getPossibleHyperlink(source, target);
+            // The icon floats, so it has to come before the text it floats beside.
+            whatToSay = icon + whatToSay + hyperlink;
             if (onFocusOnly) {
                 shouldShowAlways = false;
             }
@@ -467,8 +470,32 @@ export default class BloomHintBubbles {
                 whatToSay,
                 shouldShowAlways,
                 additionalQtipClasses,
+                !!functionCall || (icon + hyperlink).includes("<a "),
             );
         }, bloomQtipUtils.horizontalOverlappingBubblesDelay);
+    }
+
+    // An icon in the top right corner of the bubble: data-link-icon names a file in
+    // bookEdit/img, data-link-target says what clicking it does, and data-link-icon-tooltip
+    // says what it is for. Without a target it is just an indicator, with nothing to click.
+    private static getPossibleLinkIcon(
+        bubbleSource: JQuery,
+        target: JQuery,
+    ): string {
+        const linkIcon = bubbleSource.attr("data-link-icon");
+        if (!linkIcon) return "";
+        let linkTarget = bubbleSource.attr("data-link-target");
+        const img = `<img src='/bloom/bookEdit/img/${linkIcon}.svg'>`;
+        if (!linkTarget) return `<span class='hintBubbleIcon'>${img}</span>`;
+        if (linkTarget.indexOf("(") > 0)
+            linkTarget = "javascript:" + linkTarget + ";";
+        const tooltip = bubbleSource.attr("data-link-icon-tooltip");
+        const title = tooltip
+            ? ` title='${theOneLocalizationManager
+                  .getLocalizedHint(tooltip, target.get(0))
+                  .replace(/'/g, "&#39;")}'`
+            : "";
+        return `<a class='hintBubbleIcon' href='${linkTarget}'${title}>${img}</a>`;
     }
 
     // Handle a second line in the bubble which links to something like a javascript function
@@ -479,12 +506,12 @@ export default class BloomHintBubbles {
         let linkText = bubbleSource.attr("data-link-text");
         let linkTarget = bubbleSource.attr("data-link-target");
         if (linkText && linkTarget) {
+            if (linkTarget.indexOf("(") > 0)
+                linkTarget = "javascript:" + linkTarget + ";";
             linkText = theOneLocalizationManager.getLocalizedHint(
                 linkText,
                 target.get(0),
             );
-            if (linkTarget.indexOf("(") > 0)
-                linkTarget = "javascript:" + linkTarget + ";";
             return "<br><a href='" + linkTarget + "'>" + linkText + "</a>";
         }
         return "";
@@ -495,6 +522,10 @@ export default class BloomHintBubbles {
         whatToSay: string,
         shouldShowAlways: boolean,
         additionalClasses?: string,
+        // True when the bubble contains something to click. A bubble sits to the right of its
+        // target, so with the default hide rules the pointer leaving the target to reach the
+        // link closes the bubble before the click lands.
+        bubbleContainsALink?: boolean,
     ) {
         const pos = {
             at: "right center",
@@ -516,6 +547,10 @@ export default class BloomHintBubbles {
             },
             hide: {
                 event: hideEvents,
+                // fixed keeps the bubble open while the pointer is over the bubble itself; the
+                // delay covers the gap the pointer crosses to get there.
+                fixed: bubbleContainsALink,
+                delay: bubbleContainsALink ? 300 : 0,
             },
             style: {
                 classes: theClasses,

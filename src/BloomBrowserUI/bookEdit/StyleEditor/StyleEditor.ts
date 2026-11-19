@@ -44,6 +44,8 @@ import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { getPageIFrame } from "../../utils/shared";
+import { getEditablePageBundleExports } from "../js/workspaceFrames";
+import { updateOtherPagesUserModifiedStyles } from "../js/bookGridView";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -587,6 +589,15 @@ export default class StyleEditor {
         if (styleSheet == null) {
             return null;
         }
+        if (create) {
+            // A caller asking us to create the rule is about to change it through the CSSOM, which
+            // the page watcher cannot see (see notePageContentMayHaveChanged). Every such change
+            // passes through here. Saying so before the change is fine: the watcher reads the page
+            // after a delay, and the caller's edits are synchronous.
+            // Through the page frame's exports rather than a direct import, because this class is
+            // also used from the toolbox frame, and it is the PAGE frame that watches.
+            getEditablePageBundleExports()?.notePageContentMayHaveChanged();
+        }
 
         let ruleList: CSSRuleList = styleSheet.cssRules;
         if (ruleList == null) {
@@ -1102,8 +1113,14 @@ export default class StyleEditor {
             fmtButton.style.top = bottom / scale - this.fmtButtonHeight + "px";
             fmtButton.style.left = "unset";
             fmtButton.style.right = "0";
-        } else if (element.closest(kCanvasElementSelector)) {
-            // This element is inside a text-over-picture element.
+        } else if (
+            element.closest(kCanvasElementSelector) &&
+            !element.closest(".bloom-cell")
+        ) {
+            // This element is inside a text-over-picture element. (A table cell is
+            // excluded: a canvas element holding a table has a box per cell, so the
+            // button belongs inside the cell, where the code below puts it, and not
+            // out to the left of the whole table.)
             fmtButton.style.top = bottom / scale + "px";
             fmtButton.style.left = -5 - this.fmtButtonWidth + "px";
         } else {
@@ -1621,11 +1638,25 @@ export default class StyleEditor {
     // Make a new style. Initialize to all current values. Caller should ensure it is a valid new style.
     public createStyle() {
         const typedStyle = $("#style-select-input").val();
-        StyleEditor.SetStyleNameForElement(
-            this.boxBeingEdited,
-            typedStyle + "-style",
-        );
+        // A box's font normally comes from the collection's language settings, not from its style,
+        // so the new style says nothing about the font unless the old style did: only a font the
+        // user set explicitly carries over, per language, for every language in the group (the
+        // whole group moves to the new style). Read them before the style changes.
+        const explicitFonts = this.getExplicitFontsForGroup();
+        const newStyleName = typedStyle + "-style";
+        StyleEditor.SetStyleNameForElement(this.boxBeingEdited, newStyleName);
         this.updateStyle();
+        if (explicitFonts.size > 0) {
+            explicitFonts.forEach((font, languageSelector) => {
+                const rule = this.GetRuleForStyle(
+                    newStyleName,
+                    languageSelector,
+                    true,
+                );
+                rule?.style.setProperty("font-family", font, "important");
+            });
+            this.cleanupAfterStyleChange();
+        }
 
         // Recommended way to insert an item into a select2 control and select it (one of the trues makes it selected)
         // See http://codepen.io/alexweissman/pen/zremOV
@@ -1640,6 +1671,47 @@ export default class StyleEditor {
         $("#style-select-input").val("");
     }
 
+    /**
+     * The fonts the box's style sets explicitly (the rules changeFont writes), for the box being
+     * edited and every other language's box in its translation group: a map from the language
+     * part of the selector ('[lang="fr"]', or "" for a box that uses language-independent rules)
+     * to the font. A language whose font comes from the collection's settings is not in the map.
+     * Reads only; never creates a rule.
+     */
+    private getExplicitFontsForGroup(): Map<string, string> {
+        const fonts = new Map<string, string>();
+        const target = this.boxBeingEdited;
+        const styleName = StyleEditor.GetStyleNameForElement(target);
+        if (!styleName) {
+            return fonts;
+        }
+        const group = target.closest(".bloom-translationGroup");
+        const boxes = group
+            ? Array.from(group.getElementsByClassName("bloom-editable"))
+            : [target];
+        for (const box of boxes) {
+            let languageSelector = "";
+            if (!this.targetUsesLanguageIndependentRules(box as HTMLElement)) {
+                const lang = StyleEditor.GetLangValueOrNull(box as HTMLElement);
+                languageSelector = lang
+                    ? '[lang="' + lang + '"]'
+                    : ":not([lang])";
+            }
+            const rule = this.GetRuleForStyle(
+                styleName,
+                languageSelector,
+                false,
+            );
+            const font = rule?.style.getPropertyValue("font-family");
+            if (font) {
+                fonts.set(languageSelector, font);
+            }
+        }
+        return fonts;
+    }
+
+    // Copy every control's current value into the box's (new) style. The font is deliberately
+    // not among them: see createStyle.
     public updateStyle() {
         this.changeSize();
         this.changeLineheight();
@@ -1874,11 +1946,22 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        const rule = this.getStyleRule(false);
+        // Like the other Characters-tab controls (bold, size, spacing...): the color always goes
+        // into the language-specific rule, and when the box being edited is in the collection's
+        // first language it goes into the language-independent rule as well, so that the other
+        // languages of the style pick it up too (BL-16803). Font family is the one deliberate
+        // exception to that pattern, because a font suits a script, not a style.
+        let rule = this.getStyleRule(false);
         if (rule != null) {
             rule.style.setProperty("color", color);
-            this.cleanupAfterStyleChange();
         }
+        if (this.shouldSetDefaultRule()) {
+            rule = this.getStyleRule(true);
+            if (rule != null) {
+                rule.style.setProperty("color", color);
+            }
+        }
+        this.cleanupAfterStyleChange();
         this.setColorButtonColor("colorSelectButton", color);
     }
 
@@ -2290,6 +2373,7 @@ export default class StyleEditor {
     }
 
     public cleanupAfterStyleChange(doNotShrink?: boolean) {
+        updateOtherPagesUserModifiedStyles();
         const editable = this.boxBeingEdited;
         const styleName = StyleEditor.GetStyleNameForElement(editable);
         if (!styleName) {

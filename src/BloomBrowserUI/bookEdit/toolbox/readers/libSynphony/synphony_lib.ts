@@ -29,6 +29,29 @@ import $ from "jquery";
 export function ResetLanguageDataInstance() {
     theOneLanguageDataInstance = new LanguageData();
 }
+
+/**
+ * Clears just the grapheme side of the one LanguageData, leaving the loaded vocabulary alone.
+ * Callers that may have changed the alphabet need this: addGrapheme only ever *adds*, so
+ * nothing otherwise removes a letter combination the user deleted, and stale entries here go
+ * on being counted as single letters by ReaderToolsModel.getWordLength. Clears exactly the
+ * fields ReadersSynphonyWrapper.loadSettings repopulates, so call it immediately before that.
+ *
+ * Known limitations of keeping the vocabulary, reviewed and accepted 2026-08 (BL-16607). Both
+ * come from the words outliving the reset, and both correct themselves on the next full refresh:
+ *   - The words were each split into graphemes when they were added and hold on to that split, so
+ *     after the alphabet changes they still carry the *old* segmentation. Narrower than the bug
+ *     this fixes -- word lengths are right again either way -- and re-splitting the whole
+ *     vocabulary here was judged not worth the cost.
+ *   - Because loadSettings re-adds the typed sample words afterwards, and addWord counts a repeat
+ *     as extra frequency, saving repeatedly in allowed-words mode inflates those counts. That
+ *     only affects frequency ordering, and allowed-words mode does not define stages from sample
+ *     words at all.
+ */
+export function ResetLanguageDataGraphemes() {
+    theOneLanguageDataInstance.GPCS = [];
+    theOneLanguageDataInstance.LanguageSortOrder = [];
+}
 var alwaysMatch: any[] = [];
 
 /**
@@ -1059,8 +1082,8 @@ export class LibSynphony {
         // \\u202F: narrow non-breaking space that our long-press inserts for non-breaking space.
         // \\u00A0: a real NO-BREAK SPACE. nbspReplacement above only stands in for the "&nbsp;"
         // *entity*, which is what we see when the input is HTML. Callers that pass us plain text
-        // (the reader tools' mapVisibleText, and removeAllHtmlMarkupFromString, which decodes
-        // entities) have the actual character instead, and without it here a French-style
+        // (the reader tools' mapVisibleText, and visibleTextOfHtmlString, which goes through it
+        // and so decodes entities) have the actual character instead, and without it here a French-style
         // "Bonjour ! " would break the sentence before its closing guillemet.
         // Using a non-capturing group here, because it's only to allow the space+trailing
         // sequence to repeat; we don't want to use it separately in the result.

@@ -28,8 +28,6 @@ namespace BloomTests.Publish.Rab
 
         private BloomTemp.TemporaryFolder _licenseCacheFolder;
 
-        protected override string GetTestFolderName() => "RabLicenseCheckTests";
-
         [SetUp]
         public override void Setup()
         {

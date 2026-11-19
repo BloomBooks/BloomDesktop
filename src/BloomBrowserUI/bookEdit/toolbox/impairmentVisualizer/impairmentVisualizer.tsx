@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
+import { getPageIframeBody } from "../../../utils/shared";
 import { Div, Span } from "../../../react_components/l10nComponents";
 import { get, postDataWithConfig } from "../../../utils/bloomApi";
 import "./impairmentVisualizer.less";
@@ -10,9 +11,7 @@ import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import { kImageContainerClass, isPlaceHolderImage } from "../../js/bloomImages";
 import { pxToNumber } from "../canvas/canvasElementCssUtils";
-import { ThemeProvider } from "@mui/material";
 import { ApiCheckbox } from "../../../react_components/ApiCheckbox";
-import { toolboxTheme } from "../../../bloomMaterialUITheme";
 
 interface IState {
     kindOfColorBlindness: string;
@@ -46,62 +45,55 @@ export class ImpairmentVisualizerControls extends React.Component<
 
     public render() {
         return (
-            <ThemeProvider theme={toolboxTheme}>
-                <div className="impairmentVisualizerBody">
-                    <div className="impairmentVisualizerInnerWrapper">
-                        <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
-                            You can use these check boxes to have Bloom simulate
-                            how your images would look with various visual
-                            impairments.
-                        </Div>
-                        <ApiCheckbox
-                            label="Cataracts"
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
-                            apiEndpoint="accessibilityCheck/cataracts"
-                            onChange={(simulate) =>
-                                this.updateCataracts(simulate)
-                            }
-                            size="small"
-                        />
-                        <ApiCheckbox
-                            label="Color Blindness"
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
-                            apiEndpoint="accessibilityCheck/colorBlindness"
-                            onChange={(simulate) =>
-                                this.updateColorBlindnessCheck(simulate)
-                            }
-                            size="small"
-                        />
-                        <RadioGroup
-                            onChange={(val) =>
-                                this.updateColorBlindnessRadio(val)
-                            }
-                            value={this.state.kindOfColorBlindness}
-                            choices={{
-                                RedGreen: this.radioLabelElement(
-                                    "Red-Green",
-                                    "EditTab.Toolbox.ImpairmentVisualizer.RedGreen",
-                                ),
-                                BlueYellow: this.radioLabelElement(
-                                    "Blue-Yellow",
-                                    "EditTab.Toolbox.ImpairmentVisualizer.BlueYellow",
-                                ),
-                                Complete: this.radioLabelElement(
-                                    "Complete",
-                                    "EditTab.Toolbox.ImpairmentVisualizer.Complete",
-                                ),
-                            }}
-                            radioSize="small"
-                            css={css`
-                                margin-left: 25px;
-                                padding-top: 8px;
-                            `}
-                        ></RadioGroup>
-                    </div>
-
-                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
+            <div className="impairmentVisualizerBody">
+                <div className="impairmentVisualizerInnerWrapper">
+                    <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
+                        You can use these check boxes to have Bloom simulate how
+                        your images would look with various visual impairments.
+                    </Div>
+                    <ApiCheckbox
+                        label="Cataracts"
+                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
+                        apiEndpoint="accessibilityCheck/cataracts"
+                        onChange={(simulate) => this.updateCataracts(simulate)}
+                        size="small"
+                    />
+                    <ApiCheckbox
+                        label="Color Blindness"
+                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
+                        apiEndpoint="accessibilityCheck/colorBlindness"
+                        onChange={(simulate) =>
+                            this.updateColorBlindnessCheck(simulate)
+                        }
+                        size="small"
+                    />
+                    <RadioGroup
+                        onChange={(val) => this.updateColorBlindnessRadio(val)}
+                        value={this.state.kindOfColorBlindness}
+                        choices={{
+                            RedGreen: this.radioLabelElement(
+                                "Red-Green",
+                                "EditTab.Toolbox.ImpairmentVisualizer.RedGreen",
+                            ),
+                            BlueYellow: this.radioLabelElement(
+                                "Blue-Yellow",
+                                "EditTab.Toolbox.ImpairmentVisualizer.BlueYellow",
+                            ),
+                            Complete: this.radioLabelElement(
+                                "Complete",
+                                "EditTab.Toolbox.ImpairmentVisualizer.Complete",
+                            ),
+                        }}
+                        radioSize="small"
+                        css={css`
+                            margin-left: 25px;
+                            padding-top: 8px;
+                        `}
+                    ></RadioGroup>
                 </div>
-            </ThemeProvider>
+
+                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
+            </div>
         );
     }
 
@@ -142,7 +134,7 @@ export class ImpairmentVisualizerControls extends React.Component<
     // ones, which are done a pixel at a time, so if they are being updated  frequently (like
     // during a drag), this optimization really helps make things less jerky.
     public updateSimulations(img: HTMLImageElement | undefined) {
-        const page = ToolboxToolReactAdaptor.getPage();
+        const page = getPageIframeBody();
         if (!page || !page.ownerDocument) return;
         const body = page.ownerDocument.body;
         if (this.simulatingCataracts) {
@@ -189,17 +181,19 @@ export class ImpairmentVisualizerControls extends React.Component<
         }
     }
 
-    public static removeImpairmentVisualizerMarkup() {
-        const page = ToolboxToolReactAdaptor.getPage();
-        if (!page || !page.ownerDocument) return;
-        ImpairmentVisualizerControls.removeColorBlindnessMarkup(page);
-        const body = page.ownerDocument.body;
+    // These classes are on the page iframe's body, which is never saved, so removing them is
+    // live-only work for detachFromPage, not part of removeToolMarkup.
+    public static removeSimulationClassesFromBody() {
+        const body = getPageIframeBody();
+        if (!body) return;
         body.classList.remove("simulateColorBlindness");
         body.classList.remove("simulateCataracts");
     }
 
-    // Caller is responsible for guarding against a null page parameter.
-    private static removeColorBlindnessMarkup(page: HTMLElement) {
+    // Removes the colour-blindness overlays from 'page'. Public because the tool's adapter
+    // (ImpairmentVisualizerAdapter.removeToolMarkup) calls it too, with the live page or the copy of
+    // it about to be saved. The caller is responsible for guarding against a null page.
+    public static removeColorBlindnessMarkup(page: HTMLElement) {
         [].slice
             .call(page.getElementsByClassName("ui-cbOverlay"))
             .map((x) => x.parentElement.removeChild(x));
@@ -238,7 +232,7 @@ export class ImpairmentVisualizerControls extends React.Component<
             // updates to correctly handle when it shows and hides.
             return;
         }
-        const page = ToolboxToolReactAdaptor.getPage();
+        const page = getPageIframeBody();
         if (!page || !page.ownerDocument) return;
         const canvas = page.ownerDocument.createElement("canvas");
         const imageContainer = img.parentElement;
@@ -330,13 +324,15 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
     // which has "| null".
     private controlsElement: ImpairmentVisualizerControls | null;
 
-    public makeRootElement(): HTMLDivElement {
-        return super.adaptReactElement(
-            <ImpairmentVisualizerControls
-                ref={(renderedElement) =>
-                    (this.controlsElement = renderedElement)
-                }
-            />,
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <ImpairmentVisualizerControls
+                    ref={(renderedElement) =>
+                        (this.controlsElement = renderedElement)
+                    }
+                />
+            </div>
         );
     }
     public imageUpdated(img: HTMLImageElement | undefined): void {
@@ -349,6 +345,11 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
         return "impairmentVisualizer";
     }
 
+    /** The icon for this tool's header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/bookEdit/toolbox/impairmentVisualizer/blind-eye-white.svg";
+    }
+
     public showTool() {
         if (!this.controlsElement) return;
         this.controlsElement.updateSimulations(undefined);
@@ -359,15 +360,13 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
         this.controlsElement.updateSimulations(undefined);
     }
 
+    // The colour-blindness overlays are the only markup this tool puts inside the page div.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        ImpairmentVisualizerControls.removeColorBlindnessMarkup(pageOrClone);
+    }
+
     public detachFromPage() {
-        ImpairmentVisualizerControls.removeImpairmentVisualizerMarkup();
-    }
-
-    public isExperimental(): boolean {
-        return false;
-    }
-
-    public toolRequiresEnterprise(): boolean {
-        return false;
+        super.detachFromPage(); // removeToolMarkup: the overlays
+        ImpairmentVisualizerControls.removeSimulationClassesFromBody();
     }
 }

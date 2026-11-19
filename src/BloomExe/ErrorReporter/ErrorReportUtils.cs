@@ -2,7 +2,6 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using L10NSharp;
 using SIL.Reporting;
 #if !debug
 using Bloom.WebLibraryIntegration;
@@ -107,10 +106,8 @@ namespace Bloom.ErrorReporter
             else if (title == "Error NotifyUser Report Retry")
             {
                 // Exercises a path where you need to go through BloomErrorReport
-                var secondaryButtonLabel = LocalizationManager.GetString(
-                    "ErrorReportDialog.Retry",
-                    "Retry"
-                );
+                // Not localized: this fake error report is only for developers testing the dialog.
+                var secondaryButtonLabel = "Retry";
                 var fakeException = GenerateFakeException();
                 BloomErrorReport.NotifyUserOfProblem(
                     fakeProblemMessage,

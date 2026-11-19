@@ -1,9 +1,6 @@
 import { css, ThemeProvider } from "@emotion/react";
 import { FunctionComponent, useEffect, useRef, useState } from "react";
-import {
-    toolboxMenuPopupTheme,
-    toolboxTheme,
-} from "../../../bloomMaterialUITheme";
+import { toolboxMenuPopupTheme } from "../../../bloomMaterialUITheme";
 import { Span } from "../../../react_components/l10nComponents";
 import BloomButton from "../../../react_components/bloomButton";
 import { Link } from "../../../react_components/link";
@@ -279,7 +276,7 @@ export const TalkingBookToolControls: FunctionComponent<{
     }, [props.audioRecorder]);
 
     return (
-        <ThemeProvider theme={toolboxTheme}>
+        <>
             {/* Dims and blocks clicks on the toolbox while in Show Playback Order mode.
                 Anything that must stay usable gives itself a z-index above this one: the
                 tool headers (see toolboxZIndexes.ts), the Help link below, and the Show
@@ -472,6 +469,6 @@ export const TalkingBookToolControls: FunctionComponent<{
                     </Link>
                 </div>
             </div>
-        </ThemeProvider>
+        </>
     );
 };

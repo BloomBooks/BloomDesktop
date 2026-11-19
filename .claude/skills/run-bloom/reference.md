@@ -47,7 +47,19 @@ node .claude/skills/run-bloom/launcherControl.mjs --shutdown --json             
 - **The human closing Bloom tears the whole stack down**: launcher, dotnet watch and Vite exit so
   an idle stack stops holding memory. The launcher tells that apart from a dotnet-watch rebuild
   by the watcher's file-changed output, so C# edits do not kill the stack. Only `--quit-bloom`
-  leaves the launcher parked in `awaiting-restart`.
+  leaves the launcher parked in `awaiting-restart`. Bloom relaunching itself counts as closing:
+  renaming a collection in Settings starts a new `Bloom.exe --rename ...` and exits (`Program.cs`),
+  so the rename completes but the stack goes down; `--ensure-running` again afterwards.
+- **Which collection opens.** The launcher cannot name a collection; Bloom opens the first entry
+  of the `MruProjects` list in `%LOCALAPPDATA%\SIL\Bloom\<version>\user.config` (`6.6.0.0` on
+  master), which every dev build on the machine shares. Before a test that saves settings,
+  restarts or renames, copy a small collection to your scratchpad, back that `user.config` up,
+  put the copy's `.bloomCollection` path first in the list, and restore the backup after the
+  stack is down (Bloom rewrites the list when it exits). Editing that shared file needs the
+  developer's say-so.
+- **The workspace page's URL changes.** Each launch and each collection reopen serves the shell
+  from a new `Temp/bloomXXXX.htm`, so find the page by its title, `ReactControl (Vite
+  appBundle)`, not by a remembered URL.
 - `/status` reports `sourceChangedSinceReady`: whether dotnet watch has seen C# changes since the
   current Bloom became ready, so whether `--restart` would incorporate anything. Bloom polls the
   same field (when launched via `--launcher-port`, see `DevLauncher.cs`) for its dev-only restart
@@ -56,7 +68,23 @@ node .claude/skills/run-bloom/launcherControl.mjs --shutdown --json             
   and prints the fresh ports.
 - `--ensure-running` starts the stack decoupled from your session: in an Orca terminal tab titled
   "go.sh" when Orca is reachable, else detached with `output/bloom-launcher.log` (reported as
-  `logPath`). `output/bloom-launcher.starting.lock` stops two agents double-launching.
+  `logPath`). `output/bloom-launcher.starting.lock` stops two agents double-launching. It always
+  passes `--dont-disturb` to go.mjs, which passes it on to Bloom: under it no Bloom window
+  activates itself or comes to the front (Shell, splash, Choose Collection, every `ReactDialog`,
+  Collection Settings and Bloom's other WinForms dialogs), so an agent's Bloom never takes the
+  developer's keyboard. Native Windows dialogs (a file picker, a raw `MessageBox`) are the
+  exception: Windows activates them regardless, so avoid opening them while someone is working.
+  `--automation`, which go.mjs passes to every Bloom, does not imply any of this; a developer's
+  own `./go.sh` Bloom behaves normally.
+- `--ensure-running --nowatch` passes `--nowatch` through to go.mjs, so Bloom runs under a plain
+  `dotnet run` instead of `dotnet watch`: much faster to a running Bloom, but a C# edit then needs
+  an explicit `--restart`. The front end is unaffected (Vite serves it either way). It is rejected
+  on the other actions, which do not start go.mjs; an existing launcher keeps the mode it started
+  in.
+- `--ensure-running --vite-port 5173` starts the dev server on 5173. Use it when a check needs the
+  Edit tab's page list or toolbox: they import from `localhost:5173`, so on any other port they
+  load nothing (an empty page list, not an error). Like `--nowatch`, it only applies when this call
+  starts the stack.
 - Every action prints a `[control] ... requested` line in the launcher's terminal so the human
   can see why Bloom moved.
 
@@ -123,6 +151,105 @@ node .claude/skills/run-bloom/screenshotBloom.mjs --http-port <httpPort> --out o
   supported path: whether Bloom was already running and from which repo root, what you stopped
   or started, the ports and PIDs, and what browser-native evidence you collected.
 
+## Driving WinForms and OS dialogs (UI Automation, no pointer)
+
+CDP reaches only the web content inside Bloom's WebView2s. Everything around it — the
+collection Settings dialog's tabs and OK/Cancel/Help buttons, any other WinForms `Form`, and
+the **native OS dialogs** Bloom opens (the file picker, a raw `MessageBox`) — is driven over
+Windows UI Automation instead, with `.claude/skills/run-bloom/winformsUia.ps1` (stock
+PowerShell 5.1, nothing to install). It uses `InvokePattern`, `SelectionItemPattern`,
+`ValuePattern` and `WindowPattern`, so it never moves the pointer, sends a keystroke or takes
+focus; it works on an off-screen (`headless`) window and while the developer is typing in
+another app. Never fall back to synthesizing mouse or keyboard input for these.
+
+```bash
+P=.claude/skills/run-bloom/winformsUia.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File $P windows  -ProcessId <bloomPid>
+powershell -NoProfile -ExecutionPolicy Bypass -File $P tree     -ProcessId <bloomPid> -Window CollectionSettingsDialog -Depth 2
+powershell -NoProfile -ExecutionPolicy Bypass -File $P select   -ProcessId <bloomPid> -Window CollectionSettingsDialog -Control "Book Making"
+powershell -NoProfile -ExecutionPolicy Bypass -File $P invoke   -ProcessId <bloomPid> -Window CollectionSettingsDialog -Control _cancelButton
+powershell -NoProfile -ExecutionPolicy Bypass -File $P setvalue -ProcessId <bloomPid> -Window Open -Control "File name:" -Value "C:\full\path\image.png"
+powershell -NoProfile -ExecutionPolicy Bypass -File $P invoke   -ProcessId <bloomPid> -Window Open -Control Open
+```
+
+Each of these works against a real `./go.sh` Bloom:
+
+- **A WinForms dialog.** Settings opened from the top bar (a CDP click on the web "Settings"
+  button); `select` switched to the Book Making tab; `invoke` on `_cancelButton` closed it.
+- **Bloom's own OS file picker.** The image gallery's picker (`ImageGalleryApi`, a
+  `BloomOpenFileDialog`) came up as `[Window] name='Open'`; `setvalue` on "File name:" plus
+  `invoke` on "Open" closed it, and Bloom's API returned the chosen path.
+- **A message box inside a real process.** Given a relative path, that picker raised its own
+  "file not found" box, owned by the picker; `tree` read its text and `invoke ... -Control OK`
+  dismissed it.
+
+What to know:
+
+- **Addressing.** A WinForms control's UIA `AutomationId` is its designer `Name`, so the
+  dialog is `CollectionSettingsDialog`, its buttons `_okButton`/`_cancelButton`/`_helpButton`,
+  its tab strip `_tab` with tab items whose `Name` is the visible caption ("Languages", "Book
+  Making", ...). OS dialogs have no useful ids; use the visible names ("Open", "File name:",
+  "Cancel", "OK"). `-Window` and `-Control` accept either. `tree` shows both, so dump first
+  when unsure. When several controls share a name (the picker's "File name:" is a label, a
+  ComboBox and an Edit), the script takes the outermost one that supports the command.
+- **A modal dialog is not a top-level window in UIA.** A WinForms dialog sits under its owner
+  (the `Shell` window) as a descendant, and a message box raised by a dialog sits under that
+  dialog; an OS file picker is top-level. `list` shows only top-level windows, `windows` shows
+  all of them, and every command searches both places.
+- **Win32 controls need the client-side proxies, and PowerShell does not load them.** Without
+  them every control in a file picker or message box is an inert `[Pane]` with no patterns.
+  The script registers them itself, through a compiled C# shim, because doing it from
+  PowerShell throws. If a `tree` of an OS dialog shows only panes, that registration failed
+  (the script says so on stderr). The proxies can also attach a beat late: the first dump
+  right after a dialog appears once showed its "Open" button as a pane, and the next query
+  showed it as a `[Button]`; re-query before concluding a control is not drivable.
+- **Give the file picker an absolute path.** A relative one makes the dialog raise a
+  "file not found" box and stay open; dismiss that with `invoke -Window <dialog> -Control OK`
+  and set the value again.
+- **In an e2e test, still prefer arming the answer.** `e2e/nextFileToChoose` makes
+  `BloomOpenFileDialog`/`BloomFolderChooser` answer without showing anything, which is
+  faster and cannot be upset by whatever else is on the screen. UIA is for the cases that
+  hook does not cover and for interactive/diagnostic driving.
+- **Not reachable this way:** WinForms `LinkLabel`s (the "Change..." language links on the
+  Languages tab) expose no pattern at all, and the web content on the other tabs is a WebView2
+  — drive that over CDP. `tree` prunes WebView2 subtrees on purpose.
+- **Reading a raw `MessageBox`.** It appears as a `[Window]` named by its caption (`Error` for
+  the one `WebView2Browser` shows when a WebView2 fails to initialize), class `#32770`, owned
+  by the Shell; `tree -Window Error -Depth 3` prints its `[Text]` children, which is the whole
+  message, and `invoke -Window Error -Control OK` dismisses it. Read before dismissing: that
+  particular one exits Bloom on close. A raw `MessageBox` ignores `BLOOM_AUTOMATION_MONITOR`,
+  so it lands on the developer's screen even in a headless run.
+- **`close` really closes.** `close -Window Shell` shuts Bloom down exactly like the title-bar
+  X (and with the launcher, takes the whole stack with it). Use it only on the window you mean.
+- **The dialog's own WebView2 and CDP.** Outside `--e2e`, every ReactControl gets its own
+  WebView2 environment and browser process, and each is given the same
+  `--remote-debugging-port`. It can happen that while the Book Making tab is showing,
+  the CDP endpoint listed *only* the dialog's page, and the shell page came back when the dialog
+  closed. So the endpoint can flip between browser processes; re-list targets after a WinForms
+  dialog opens or closes rather than holding on to a page handle. Equally, the dialog's page
+  may never show up: with the Settings dialog on its Bloom Subscription tab, repeated listings
+  showed only the shell page. When that happens, drive the dialog's page with the mouse (next
+  bullet); its Paste button next to the code field takes a value from the clipboard without any
+  keyboard input (save and restore the developer's clipboard around it).
+- **When `select` lands on the wrong tab, click instead, DPI-aware.** On a machine with display
+  scaling, `select -Control "Project Information"` in the Settings dialog reported success
+  while the dialog showed the Bloom Subscription page, so the Project Information text boxes
+  were not in the tree; a real mouse click on the same tab item worked every time. Windows
+  PowerShell 5.1 is DPI-unaware, so the `BoundingRectangle` it gets from UIA and the
+  coordinates `SetCursorPos`/`CopyFromScreen` take are scaled differently (a window capture
+  comes out shifted and cropped). Call `SetProcessDpiAwarenessContext(-4)` (per-monitor v2,
+  from `user32.dll` via `Add-Type`) before touching UIA; after that the rectangle, the cursor
+  and screen capture all agree in physical pixels, a click at the rectangle's center hits, and
+  capturing the rectangle gives a true picture of the dialog. Only click with the pointer when
+  the developer has allowed it, and put the cursor back where it was afterwards.
+- **A tab strip lists only the tabs scrolled into view.** When the Settings dialog's tab strip
+  is scrolled (its `Spin` control is present), UIA shows only the visible `TabItem`s, and
+  `select` on an off-screen one says "No control". Reopen the dialog, or scroll with
+  `invoke -Control Forward`/`Backward`.
+- **Under `--e2e`, opening the Settings dialog currently kills Bloom.** See "WinForms surfaces
+  are invisible to CDP" in `src/BloomE2E/AUTOMATION-DEBT.md` for the cause (a WebView2 DPI
+  awareness mismatch against the shared e2e environment) before writing a test that opens it.
+
 ## Driving Bloom HTTP APIs over CDP (host-header and IPv6 gotchas)
 
 Sometimes you need the HTTP API (`editView/topBar/layoutChoiceChange`, `editView/jumpToPage`)
@@ -183,6 +310,98 @@ From `src/BloomBrowserUI/react_components/component-tester`:
 switching plus console and network observation. The `playwright` Node library over
 `http://127.0.0.1:<cdpPort>` is the confirmed attach path; MCP browser wrappers that own their own
 browser cannot attach to an existing CDP endpoint.
+
+## Driving the editable page over CDP (DOM interaction)
+
+Verified driving the real Bloom.exe WebView2 with Playwright's `chromium.connectOverCDP`.
+
+- **The page frame reloads.** After a tab switch or page change, re-find the `page` frame and poll
+  until your target selector exists (e.g. `.bloom-page`) before acting.
+- **Click editables with `{force:true}`.** Bloom overlays a format gear (`#formatButton`,
+  `.bloom-ui`) on a focused editable, and it intercepts normal clicks ("subtree intercepts pointer
+  events"). Re-query the editables between cells; the DOM can re-render.
+- **Saving a page.** There is no save button; navigating away persists the page. Switching
+  workspace tabs (Collections → Edit) forces a save+reload, which suits a round-trip test. The
+  saved book HTML is the book folder's main `<BookName>.htm`; ignore the `*-memsim-*` and
+  `*Pagelist*` temp files. Find the book folder from a page-frame iframe `src` (e.g.
+  `…/Bloom/<collection>/Book-xxxx/`).
+- **Undo is a C# accelerator; synthetic Ctrl+Z over CDP does NOT reach it.** Call the entry points
+  C# uses, from the *top* frame: `window.workspaceBundle.handleUndo()` and
+  `window.workspaceBundle.canUndo()` (returns `"yes"`/`"fail"`). Page-frame functions are likewise
+  on `window.editablePageBundle.*` inside the page frame, handy for asserting state without
+  scraping the DOM.
+- **Toolbox tools.** Optional/experimental tools must first be enabled via the "More…" settings
+  checkbox (e.g. `#<toolname>Check`, which calls `toolboxBundle.showOrHideTool_click(this)`) before
+  their accordion section appears. Tool buttons expose `title`/`aria-label` (e.g.
+  `button[title="Insert Row Below"]`), not `alt`.
+- **Capture console errors** while exercising React UI:
+  `page.on('console', m => { if (m.type()==='error') errors.push(m.text()); })`, the cheapest
+  check for "multiple React"/hook/MUI problems.
+- **After changing a front-end dependency** (relinking it, or bumping a GitHub dependency's hash),
+  restart the whole stack rather than relying on hot reload; otherwise the page runs the stale
+  copy. `launcherControl.mjs --restart` is *not* enough: it restarts Bloom.exe, but the Vite dev
+  server keeps serving the module it transformed at startup
+  (`curl http://localhost:<vitePort>/@id/<dep>` and grep for your change to confirm). Do not kill
+  the Vite process on its own either, because that takes the launcher down with it. Use `--shutdown` then
+  `--ensure-running`; the new stack picks new Vite and control ports, so re-read the status.
+
+## Change Layout (adding a section to a custom page)
+
+The Change Layout toggle turns on origami layout mode, which is the only place the
+section chooser ("Image, Video, Table, or Text") appears. So to give yourself a
+table, an image or a video to work with: turn the toggle on, click the section you
+want, then turn the toggle off.
+
+The toggle is **inside the page iframe**, not the shell: `AbovePageControls.tsx`
+renders a visually hidden checkbox `#changeLayoutToggle` with a visible
+`<label class="onoffswitch-label" for="changeLayoutToggle">`. Click the label; the
+checkbox itself is not clickable.
+
+```js
+const f = appPage.frames().find((fr) => fr.name() === "page");
+const state = () =>
+    f.evaluate(() => ({
+        checked: document.getElementById("changeLayoutToggle")?.checked,
+        marginBox: document.querySelector(".marginBox")?.className,
+    }));
+await f.locator('label.onoffswitch-label[for="changeLayoutToggle"]').click();
+// Layout mode adds a class, so the marginBox reads
+// "marginBox origami-layout-mode" while the toggle is on.
+```
+
+Two gotchas:
+
+- Allow about two seconds after the click. The page rebuilds its controls, and
+  `state()` right after the click still reports the old value.
+- **The chooser links exist twice.** A hidden `.origami-template-container` holds a
+  prototype copy of every link, and a plain locator matches that one first. Ask for
+  the visible one:
+  `f.locator('a[data-i18n="EditTab.CustomPage.Table"]:visible').first().click()`.
+
+The link's `data-i18n` values are `EditTab.CustomPage.Image`, `.Video`, `.Table`
+and `.Text`. A link only appears when its feature is on, so a missing Table link
+usually means the feature is not visible (see its entry in FeatureRegistry.cs), not that the
+click failed.
+
+## Building an app (Publish > Apps)
+
+The Apps screen drives Reading App Builder (RAB). Select a book first, because the Publish tab
+only appears once one is selected; then click `Apps` in the Publish sidebar. The RAB project lives
+in `<collection>/Bloom App Data`, so build test apps in a scratch collection, not one of the
+developer's own.
+
+1. **Prepare** installs RAB if needed, creates the signing key and the project, and turns the
+   other buttons on.
+2. **Build stays disabled while the screen shows "Required or invalid settings: …"** under
+   Customize. A new project has no Copyright, so Build is off until you open **Customize...**,
+   fill it in, and click OK. Also give a test app its own **Package Name** (e.g.
+   `org.sil.en.bl17007test`): the default `org.sil.<lang>.stories` is shared by every test app
+   in that language, so installing one replaces another on the phone. The dialog's fields are
+   inputs inside the row whose label text is the setting name.
+3. **Build** runs RAB. Watch progress with `GET /bloom/api/publish/rab/status` (`ProjectExists`,
+   `ActiveAction`, `ApkExists`, `ApkPath`) instead of sleeping; the APK is done when `ApkExists`
+   is true and `ActiveAction` is empty.
+4. **Try on phone** installs the APK on the developer's connected phone; leave that step to them.
 
 ## Field-verified gotchas (all hit in real agent runs)
 

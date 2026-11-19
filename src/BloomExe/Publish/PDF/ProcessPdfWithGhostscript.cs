@@ -85,7 +85,7 @@ namespace Bloom.Publish.PDF
                     var arguments = GetArguments(tempPdfFile.Path, null);
                     var fromDirectory = String.Empty;
                     var progress = new NullProgress(); // I can't figure out how to use any IProgress based code, but we show progress okay as is.
-                    var res = _runner.StartWithInvariantCulture(
+                    var res = _runner.Start(
                         exePath,
                         arguments,
                         Encoding.UTF8,
@@ -104,7 +104,7 @@ namespace Bloom.Publish.PDF
                             RobustFile.Delete(tempInputFile.Path); // Move won't replace even empty files.
                             RobustFile.Move(_inputPdfPath, tempInputFile.Path);
                             arguments = GetArguments(tempPdfFile.Path, tempInputFile.Path);
-                            res = _runner.StartWithInvariantCulture(
+                            res = _runner.Start(
                                 exePath,
                                 arguments,
                                 Encoding.UTF8,

@@ -59,11 +59,14 @@ static class ServerHandlerForBloomPlayer
                     // If we're returning to the current book, we need to redirect to the staging folder,
                     // not the original folder, so that users don't get confused by a change in the
                     // xmatter.  See comments in BL-13881.
-                    if (bookPath == currentBookFolderPath)
+                    // (CurrentPublicationFolder is null until the first preview is made.)
+                    if (
+                        bookPath == currentBookFolderPath
+                        && PublishApi.CurrentPublicationFolder != null
+                    )
                     {
                         var bloomPubPath = Path.Combine(
-                            Path.GetTempPath(),
-                            PublishApi.kStagingFolder,
+                            PublishApi.CurrentPublicationFolder,
                             Path.GetFileName(bookPath)
                         );
                         if (Directory.Exists(bloomPubPath))

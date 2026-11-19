@@ -29,10 +29,9 @@ vi.mock("../../../utils/bloomApi", () => ({
     },
 }));
 
-vi.mock("../toolbox", () => ({
-    ToolBox: {
-        getPage: () => mocks.currentPage,
-    },
+vi.mock("../../../utils/shared", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../../utils/shared")>()),
+    getPageIframeBody: () => mocks.currentPage,
 }));
 
 vi.mock("../canvas/canvasElementPageBridge", () => ({

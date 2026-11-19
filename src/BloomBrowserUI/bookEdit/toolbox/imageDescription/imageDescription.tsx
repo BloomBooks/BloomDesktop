@@ -4,7 +4,7 @@ import $ from "jquery";
 import * as React from "react";
 import { renderForInstance } from "../../../utils/reactRender";
 import { post } from "../../../utils/bloomApi";
-import { ToolBox } from "../toolbox";
+import { getPageIframeBody, isXmatterPage } from "../../../utils/shared";
 import { getEditablePageBundleExports } from "../../js/workspaceFrames";
 import "./imageDescription.less";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
@@ -15,6 +15,7 @@ import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import {
     hideImageDescriptions,
     showImageDescriptions,
+    unwrapDescribedImages,
 } from "./imageDescriptionUtils";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
@@ -185,12 +186,12 @@ export class ImageDescriptionToolControls extends React.Component<
         this.setState({
             enabled: true,
             descriptionNotNeeded: noDescriptionNeeded === "true",
-            isXmatterPage: ToolBox.isXmatterPage(),
+            isXmatterPage: isXmatterPage(),
         });
     }
 
     public setStateForNewPage(): void {
-        const page = ToolboxToolReactAdaptor.getPage();
+        const page = getPageIframeBody();
         if (!page) {
             this.setDisabledState();
             return;
@@ -256,7 +257,8 @@ export function setupImageDescriptions(
                 // holds that page, which may not have its script yet, and it gets its own
                 // newPageReady() once it loads. The container belongs to a page that is going away.
                 if (
-                    container.ownerDocument !== ToolBox.getPage()?.ownerDocument
+                    container.ownerDocument !==
+                    getPageIframeBody()?.ownerDocument
                 ) {
                     return;
                 }
@@ -355,33 +357,39 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     private reactControls: ImageDescriptionToolControls | null;
     public static kToolID = "imageDescription";
 
-    public makeRootElement(): HTMLDivElement {
-        return super.adaptReactElement(
-            <ImageDescriptionToolControls
-                ref={(renderedElement) =>
-                    (this.reactControls = renderedElement)
-                }
-            />,
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <ImageDescriptionToolControls
+                    ref={(renderedElement) =>
+                        (this.reactControls = renderedElement)
+                    }
+                />
+            </div>
         );
     }
 
+    // The only thing this tool adds inside the page div is the bloom-describedImage wrapper. The
+    // bloom-showImageDescriptions class is on the body, so detachFromPage removes it.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        unwrapDescribedImages(pageOrClone);
+    }
+
     public detachFromPage() {
-        const page = ToolBox.getPage();
-        if (page) {
-            hideImageDescriptions(page);
-        }
-    }
-
-    public isExperimental(): boolean {
-        return false;
-    }
-
-    public toolRequiresEnterprise(): boolean {
-        return false;
+        const bodyOfPageIframe = getPageIframeBody();
+        if (bodyOfPageIframe) hideImageDescriptions(bodyOfPageIframe);
+        // hideImageDescriptions has already unwrapped the images, so removeToolMarkup finds nothing
+        // more; calling super is still how the toolbox knows the markup came off.
+        super.detachFromPage();
     }
 
     public id(): string {
         return ImageDescriptionAdapter.kToolID;
+    }
+
+    /** The icon for this tool's header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/bookEdit/toolbox/imageDescription/ImageDescriptionToolIcon.svg";
     }
 
     // If we declare the function in this normal way and pass it to addEventListener,
@@ -405,7 +413,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         const imageDescControls = this.reactControls;
         if (imageDescControls) {
             imageDescControls.setStateForNewPage();
-            const page = ToolBox.getPage();
+            const page = getPageIframeBody();
             if (!page) {
                 return;
             }

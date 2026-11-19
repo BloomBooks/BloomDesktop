@@ -81,8 +81,9 @@ export const ColorBar: React.FunctionComponent<IColorBarProps> = (
                 display: flex;
                 flex-direction: row;
                 gap: 6px;
-                margin: auto 0 auto 6px;
-                height: 17px;
+                margin: auto 6px;
+                padding: 4px 0;
+                min-height: 17px;
                 align-items: center;
             `}
         >
@@ -103,6 +104,7 @@ export const ColorBar: React.FunctionComponent<IColorBarProps> = (
                     );
                     width: 14px;
                     height: 14px;
+                    flex-shrink: 0;
                 `}
             >
                 {/* <ColorSwatch
@@ -116,6 +118,7 @@ export const ColorBar: React.FunctionComponent<IColorBarProps> = (
                 css={css`
                     color: ${bloomToolboxWhite};
                     font-size: 0.9rem !important;
+                    line-height: 1.2;
                 `}
             >
                 {defaultStyleLabel}

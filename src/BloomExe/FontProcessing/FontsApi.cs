@@ -160,9 +160,7 @@ namespace Bloom.FontProcessing
             lock (_fontNameToMetadata)
             {
                 var list = new List<FontMetadata>(_fontNameToMetadata.Values);
-                list.Sort(
-                    (a, b) => string.Compare(a.name, b.name, StringComparison.CurrentCulture)
-                );
+                list.Sort((a, b) => UserCulture.Current.CompareInfo.Compare(a.name, b.name));
                 return list;
             }
         }

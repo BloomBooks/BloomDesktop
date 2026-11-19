@@ -96,8 +96,14 @@ export interface TextOffsetMap {
 // fed raw HTML (where <br> became a paragraph-ending placeholder) to the splitter.
 const kBreakSeparator = "\n";
 
-// Tags whose boundaries separate words even though they contribute no characters. Compare
-// removeAllHtmlMarkupFromString(), which substitutes a space for these in the HTML-string world.
+// The soft return the user gets from Shift+Enter (see BloomField.InsertLineBreak). It is an
+// empty inline element whose line break comes entirely from CSS (span.bloom-linebreak
+// { display: block }), so it contributes no characters and its tag name says nothing about it:
+// without this, nothing here would separate the words on either side of it and they would be
+// analyzed as one word. See BL-16625.
+const kLineBreakSpanClass = "bloom-linebreak";
+
+// Tags whose boundaries separate words even though they contribute no characters.
 const kSeparatingTags = new Set([
     "P",
     "DIV",
@@ -155,8 +161,15 @@ export function mapVisibleText(
             if (shouldSkipElement?.(element)) {
                 continue;
             }
-            if (element.tagName === "BR") {
+            if (
+                element.tagName === "BR" ||
+                element.classList.contains(kLineBreakSpanClass)
+            ) {
                 addSeparator();
+                // A bloom-linebreak span is normally empty, but if some older book has content
+                // in one (Book.NormalizeBloomLinebreakSpansInBookDom moves it out when the book
+                // is opened), we still want to see that content.
+                visitChildren(element);
                 continue;
             }
             const isSeparating = kSeparatingTags.has(element.tagName);

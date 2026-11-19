@@ -33,6 +33,24 @@ The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 - Fail Fast. Don't write code that silently works around failed dependencies. If a dependency is missing we should fail. Javascript itself will fail if we try to use a missing dependency, and that's fine. E.g. if you expect a foo to be defined, don't write "if(foo){}". Just use foo and if it's null, fine, we'll get an error, which is good.
 - Try to make it so that test failures indicate what went wrong. For example, `fail("An error occurred in setup; we should not have gotten here")` would be better than `expect(false).toBeTruthy();` and `expect(foo).toBe(3);` would be better than `expect(foo === 3).toBe(true);`.
 - Add sanity checks to guard against falsely passing tests. For example, when unit testing a method, sanity check that the test data values are as expected before you call the method, and then after you call the method you can verify that those values have changed as expected.
+- **No fixed delays in tests**, wherever they run: unit tests, the component tests under `react_components`, and the e2e tests in `src/BloomE2E`. A delay (`page.waitForTimeout`, a sleep) makes every run wait whether or not it needs to, and fails when the machine is slower than the delay assumed. Wait for the condition itself instead. A deadline on such a wait, after which the test gives up and fails, is fine. If a delay is justified, get the developer's approval and add a comment that says why.
+- **Never accept a flaky test.** A test that fails without a code change to explain it is flaky from its first failure; it is reporting a real race, in Bloom or in the test: find out which and fix the cause. Waiting to see whether it fails again is accepting it. Any way of working around the flakiness instead (retries, re-running until it passes, waiting to see if it recurs, a longer timeout, a fixed delay, looser assertions, skipping the test, a test hook added to Bloom) needs the developer's permission first.
+- **Nightly CI failures:** each one has a YouTrack card tagged "Nightly Failure", which records what is already known about it. To look at recent nightlies, follow `.claude/skills/nightly-triage/SKILL.md`, which keeps those cards up to date.
+
+## Don't assume the machine is running in English
+
+Many users' machines use a comma decimal separator, Turkish casing (where `"IMG".ToLower()` is
+`"ımg"`) or Thai collation (where `"en-US".IndexOf("-")` is 0). So **Bloom runs in the invariant
+culture**: `Program.Main` calls `UserCulture.UseInvariantCulture()` first, and machine data — CSS
+measurements, version numbers, tool arguments and output, anything going into a file or a log — is
+parsed and formatted the same everywhere without naming a culture. (Being explicit with
+`CultureInfo.InvariantCulture` or `ToUpperInvariant` is still fine.) **For numbers and dates shown
+to or read from the user, and for sorting lists the user reads, use `UserCulture.Current`**, the
+user's regional format. Reading or setting `CultureInfo.CurrentCulture`, or using
+`StringComparison.CurrentCulture`, is a build error in BloomExe (`src/BloomExe/BannedSymbols.txt`).
+`CurrentUICulture`, which picks translations, is not affected. String searches still need
+`StringComparison.Ordinal` (CA1310): even the invariant culture ignores characters such as the soft
+hyphen and zero-width space. Tests must not assume English either; see `src/BloomTests/AGENTS.md`.
 
 ## Building and testing while a Bloom is running
 
@@ -46,12 +64,25 @@ The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
   Details, including what to do if the vitest suite seems to hang, are in
   `src/BloomBrowserUI/AGENTS.md`.
 
+# Preflight checks
+
+Checks the `preflight` skill runs on this repo, in addition to its own.
+
+- **E2E specs at the nightly's window size.**
+  - **Applies when** the diff against the base adds or changes any `src/BloomE2E/tests/*.spec.ts`.
+  - **Run** each of those spec files once, headless, at the nightly CI runner's window size:
+    `BLOOM_E2E_VIEWPORT=nightly BLOOM_AUTOMATION_MONITOR=headless pnpm exec playwright test <spec files>`
+    from `src/BloomE2E`. The run needs a current build (see "Testing a front-end change" in
+    `src/BloomE2E/README.md`).
+  - **Passes when** every test in those files passes. A failure here that does not show at your
+    own window size is still a failure: the nightly will hit it.
+
 # Terminal
 The vscode terminal often loses the first character sent from copilot agents. So if you send "cd" it might just say "bash: d: command not found". Try prefixing commands with a space.
 
 # Running Bloom
 - Do not run an already-built `Bloom.exe` directly, because it may be stale and miss local code changes.
-- Use a source-aware launcher that picks up the current repo state. Right now the default launcher is `./go.sh` at the repo root. If a build fails with errors like missing `PodcastUtilities`, `IDevice`, or other types/namespaces
+- Use a source-aware launcher that picks up the current repo state. Right now the default launcher is `./go.sh` at the repo root. An agent starts it through the `run-bloom` skill (`launcherControl.mjs --ensure-running`), which passes `--dont-disturb` so Bloom never takes the developer's foreground or keyboard; an agent that runs `./go.sh` itself passes `--dont-disturb` too. A plain `./go.sh` is for a person testing by hand, and that Bloom behaves normally. If a build fails with errors like missing `PodcastUtilities`, `IDevice`, or other types/namespaces
   that "could not be found" (CS0246) in files such as `src/BloomExe/Publish/BloomPub/usb/AndroidDeviceUsbConnection.cs`, the problem is probably that this worktree has not got its dependencies yet. Fix that with `./init.sh`.
 
 - Do not launch Bloom with `dotnet run` or `node scripts/watchBloomExe.mjs` unless you are specifically working on the launcher scripts themselves or a better repo-supported source-aware launcher has been documented.
@@ -87,6 +118,10 @@ with something like `[6.4]` or `[6.5]`, the fix belongs on that `VersionX.Y` bra
 starting, check the branch you are about to branch from and the PR base you plan to use; if
 they don't match the prefix, stop and confirm the target with the user rather than guessing.
 A card with no prefix has no branch requirement from this rule.
+
+# Plans for multi-step or future work
+In-progress plans, refactoring proposals, and other short-lived repo-level guidance live under
+`docs/<slug>/`, one folder per effort.
 
 # Nested AGENTS.md files
 Guidance that only matters in one part of the tree lives in an `AGENTS.md` in that folder

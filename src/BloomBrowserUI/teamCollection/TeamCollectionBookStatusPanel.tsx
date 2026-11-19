@@ -318,6 +318,28 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
         true,
     );
 
+    // When we are disconnected because an administrator has stopped all changes to the shared
+    // folder, reconnecting is not something the user can do, so we say why instead. BL-16928.
+    const subTitleSharedFolderChangesPaused = useL10n(
+        "The administrator of this collection has paused changes to it. For now, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.",
+        "TeamCollection.SharedFolderChangesPaused",
+    );
+    const subTitleMovedToCloud = useL10n(
+        "This collection has moved to Bloom's cloud sharing. To keep working with your team, close and reopen the collection, and Bloom will switch it over. Until then, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.",
+        "TeamCollection.MovedToCloud",
+    );
+    let subTitlePaused: string | undefined;
+    if (props.movedToCloud) {
+        subTitlePaused = subTitleMovedToCloud;
+    } else if (props.disconnectedBecausePaused) {
+        subTitlePaused = subTitleSharedFolderChangesPaused;
+    }
+
+    const checkoutsPausedMessage = useL10n(
+        "The administrator of this collection has paused checkouts.",
+        "TeamCollection.CheckoutsPaused",
+    );
+
     const menuItems: (SimpleMenuItem | "-")[] = [
         {
             text: "About my Avatar...",
@@ -474,14 +496,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         )}
                         belowButton={
                             props.checkoutsArePaused ? (
-                                // Deliberately not localized yet: this is an
-                                // unreleased admin-only setting with no UI, so
-                                // per AGENTS.md we ship the English and add an
-                                // XLF entry once the feature stabilizes.
-                                <NoteBox>
-                                    The administrator of this collection has
-                                    paused checkouts.
-                                </NoteBox>
+                                <NoteBox>{checkoutsPausedMessage}</NoteBox>
                             ) : undefined
                         }
                         menu={menu}
@@ -666,7 +681,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                 return (
                     <StatusPanelCommon
                         title={mainTitleDisconnected}
-                        subTitle={subTitleDisconnected}
+                        subTitle={subTitlePaused ?? subTitleDisconnected}
                         icon={
                             <img
                                 src={"/bloom/images/Disconnected.svg"}
@@ -679,7 +694,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                 return (
                     <StatusPanelCommon
                         title={mainTitleLockedByMe}
-                        subTitle={subTitleDisconnectedCheckedOut}
+                        subTitle={
+                            subTitlePaused ?? subTitleDisconnectedCheckedOut
+                        }
                         icon={avatar}
                         menu={menu}
                     />

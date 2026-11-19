@@ -213,14 +213,27 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
     );
 
     return (
-        <BloomDialog {...propsForBloomDialog}>
-            <DialogTitle
-                title={dialogTitle}
-                css={css`
-                    padding-bottom: 0;
-                    margin-bottom: 0;
-                `}
-            />
+        <BloomDialog
+            {...propsForBloomDialog}
+            css={css`
+                // Airier overall padding than the 24px default. (Doubled selector so this
+                // wins over BloomDialog's own padding rule on the same element.) BloomDialog
+                // also passes this className to the full-screen MUI Dialog root, which must
+                // not get the padding.
+                &&:not(.MuiDialog-root) {
+                    padding-left: 28px;
+                    padding-right: 28px;
+                }
+                // DialogTitle hard-codes 16px/bold via its own "* {…}" rule and does not
+                // forward a className, so a css prop set on it is ignored. Size the title
+                // from here instead, where an id+element selector outweighs that rule.
+                #draggable-dialog-title h1 {
+                    font-size: 20px;
+                    font-weight: 500;
+                }
+            `}
+        >
+            <DialogTitle title={dialogTitle} />
             {
                 // This absolutely positioned div will appear to the right of the title text
                 licenseInfo && (
@@ -268,7 +281,11 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                     css={css`
                         .react-tabs__tab-panel--selected > div {
                             padding: 0; // This cancels a rule in BloomUI.less which is too global
-                            padding-top: 20px;
+                            padding-top: 18px; // gap between the tab bar and the content
+                        }
+                        .react-tabs__tab {
+                            font-size: 14px;
+                            letter-spacing: 0.05em;
                         }
                     `}
                 >

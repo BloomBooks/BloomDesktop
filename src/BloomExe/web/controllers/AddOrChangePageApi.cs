@@ -84,29 +84,46 @@ namespace Bloom.web.controllers
             if (templatePage == null)
                 return;
             var pageId = _pageSelection.CurrentSelection.Id;
-            _editingModel.SaveThen(
-                () =>
-                {
-                    CopyVideoPlaceHolderIfNeeded(templatePage);
-                    var pageToChange = _pageSelection.CurrentSelection;
-                    if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
-                        HtmlDom.AddStylesheetFromAnotherBook(
-                            templatePage.Book.OurHtmlDom,
-                            pageToChange.Book.OurHtmlDom
-                        );
-                    if (changeWholeBook)
-                        ChangeSimilarPagesInEntireBook(pageToChange, templatePage, allowDataLoss);
-                    else
-                        pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(
-                            pageToChange,
-                            templatePage
-                        );
+            // Opened from the page list, the chooser says which page it was opened for. If the
+            // current page has changed since (a page click still on its way when it opened),
+            // changing the current page's layout would change the wrong one; do nothing.
+            var requestData = DynamicJson.Parse(request.RequiredPostJson());
+            if (
+                requestData.IsDefined("pageToChangeId")
+                && requestData.pageToChangeId != null
+                && (string)requestData.pageToChangeId != pageId
+            )
+            {
+                request.ReplyWithBoolean(false);
+                return;
+            }
+            // Tells the chooser whether to set up the template's tool. Set only once the change has
+            // been applied: the save can decline without running it (the editor is mid-navigation),
+            // or the change can throw, and either way the page keeps its old layout. A failed disk
+            // write after the change ran still leaves the page showing the new layout, so that
+            // counts.
+            var layoutChanged = false;
+            _editingModel.MergeCurrentPageThenSave(() =>
+            {
+                CopyVideoPlaceHolderIfNeeded(templatePage);
+                var pageToChange = _pageSelection.CurrentSelection;
+                if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
+                    HtmlDom.AddStylesheetFromAnotherBook(
+                        templatePage.Book.OurHtmlDom,
+                        pageToChange.Book.OurHtmlDom
+                    );
+                if (changeWholeBook)
+                    ChangeSimilarPagesInEntireBook(pageToChange, templatePage, allowDataLoss);
+                else
+                    pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(
+                        pageToChange,
+                        templatePage
+                    );
 
-                    return pageId;
-                },
-                () => { } // wrong state, do nothing
-            );
-            request.PostSucceeded();
+                layoutChanged = true;
+                return pageId;
+            });
+            request.ReplyWithBoolean(layoutChanged);
         }
 
         private static void ChangeSimilarPagesInEntireBook(

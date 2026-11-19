@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -31,7 +31,6 @@ namespace Bloom.Publish.BloomPub
     {
         public const string BloomPubExtensionWithDot = ".bloompub";
         public const string kQuestionFileName = "questions.json";
-        public const string BRExportFolder = "BloomReaderExport";
         internal const string kDistributionFileName = ".distribution";
         internal const string kDistributionBloomDirect = "bloom-direct";
         internal const string kDistributionBloomWeb = "bloom-web";
@@ -126,7 +125,7 @@ namespace Bloom.Publish.BloomPub
             return false;
         }
 
-        // Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
+        // Create a BloomReader book while also creating a staging folder of its own for it and disposing of it
         public static void CreateBloomPub(
             BloomPubPublishSettings settings,
             string outputPath,
@@ -134,11 +133,10 @@ namespace Bloom.Publish.BloomPub
             BookServer bookServer,
             IWebSocketProgress progress,
             bool isTemplateBook,
-            string tempFolderName = BRExportFolder,
             string creator = kCreatorBloom
         )
         {
-            using (var temp = new TemporaryFolder(tempFolderName))
+            using (var temp = PublishStaging.CreateFolder())
             {
                 CreateBloomPub(
                     settings,
@@ -298,7 +296,7 @@ namespace Bloom.Publish.BloomPub
             // style/src still points to it.
             var claimedFilenames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            using (var tempDir = new TemporaryFolder("BloomPubImageAdjust"))
+            using (var tempDir = PublishStaging.CreateFolder())
             {
                 foreach (
                     SafeXmlElement pageDiv in dom.SafeSelectNodes(

@@ -145,10 +145,10 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void ToCss_ZeroMarginTheme_LeavesPageNumberOutlineDefaultOnPageNotPseudo()
+        public void ToCss_EdgeToEdgeTheme_LeavesPageNumberOutlineDefaultOnPageNotPseudo()
         {
             var appearance = new AppearanceSettings();
-            appearance.CssThemeName = "zero-margin-ebook";
+            appearance.CssThemeName = AppearanceSettings.kEdgeToEdgeThemeName;
 
             var css = appearance.ToCss();
 
@@ -402,14 +402,14 @@ namespace BloomTests.Book
         [TestCase(@"""pageNumber-position"": ""automatic""", "unset", "unset")]
         [TestCase(
             @"""pageNumber-position"": ""left""",
-            "calc(var(--page-margin-left) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))",
+            "calc(var(--pageNumber-side-left-inset, var(--page-margin-left)) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))",
             "deliberately-invalid"
         )]
         [TestCase(@"""pageNumber-position"": ""center""", "50%", "50%")]
         [TestCase(
             @"""pageNumber-position"": ""right""",
             "deliberately-invalid",
-            "calc(var(--page-margin-right) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))"
+            "calc(var(--pageNumber-side-right-inset, var(--page-margin-right)) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))"
         )]
         [TestCase(@"""pageNumber-position"": ""hidden""", "unset", "unset")]
         // [TestCase(null, null, null)]
@@ -523,7 +523,7 @@ namespace BloomTests.Book
         AppearanceSettings _resultingAppearance;
         private string _generatedAppearanceCss;
         private string _cssOfDefaultTheme;
-        private string _cssOfEbookZeroMarginTheme;
+        private string _cssOfEbookEdgeToEdgeTheme;
         private string _cssOfSettingsObject;
 
         [OneTimeSetUp]
@@ -537,11 +537,11 @@ namespace BloomTests.Book
             {
                 Tuple.Create(
                     "customBookStyles.css",
-                    AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme
+                    AppearanceMigratorTests.cssThatTriggersEbookEdgeToEdgeTheme
                 ),
                 Tuple.Create(
                     "customCollectionStyles.css",
-                    AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme
+                    AppearanceMigratorTests.cssThatTriggersEbookEdgeToEdgeTheme
                 ),
             };
             _pathToCustomCss = _settings.GetThemeAndSubstituteCss(
@@ -570,13 +570,13 @@ namespace BloomTests.Book
             var splits = _generatedAppearanceCss.Split(
                 new[]
                 {
-                    "from the current appearance theme, 'zero-margin-ebook'",
+                    "from the current appearance theme, 'edge-to-edge'",
                     "/* From this book's appearance settings */",
                 },
                 StringSplitOptions.None
             );
             _cssOfDefaultTheme = splits[0];
-            _cssOfEbookZeroMarginTheme = splits[1];
+            _cssOfEbookEdgeToEdgeTheme = splits[1];
             _cssOfSettingsObject = splits[2];
         }
 
@@ -604,7 +604,7 @@ namespace BloomTests.Book
         [Test]
         public void GetsRightTheme()
         {
-            Assert.That(_resultingAppearance.CssThemeName, Is.EqualTo("zero-margin-ebook"));
+            Assert.That(_resultingAppearance.CssThemeName, Is.EqualTo("edge-to-edge"));
         }
 
         [Test]
@@ -635,7 +635,7 @@ namespace BloomTests.Book
         [Test]
         public void AppearanceCss_HasDefaultSettings()
         {
-            // One that is not overridden in zero-margin-ebook
+            // One that is not overridden in edge-to-edge
             AssertContainsButIgnoreWhitespace(
                 _generatedAppearanceCss,
                 "--cover-margin-top: var(--page-margin);"
@@ -651,11 +651,11 @@ namespace BloomTests.Book
         [Test]
         public void AppearanceCss_HasThemeSettings()
         {
-            // from efl-zero-margin-ebook
+            // from edge-to-edge
             Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin: 3mm;"));
             Assert.That(
                 _generatedAppearanceCss,
-                Does.Contain(":not(.bloom-interactive-page).numberedPage.Device16x9Landscape")
+                Does.Contain(".numberedPage:not(.bloom-interactive-page)")
             );
             Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin: 0mm;"));
         }
@@ -663,7 +663,7 @@ namespace BloomTests.Book
         [Test]
         public void AppearanceCss_HasMigrationSettings()
         {
-            // from efl-zero-margin-ebook
+            // from edge-to-edge
             Assert.That(_generatedAppearanceCss, Does.Contain("--pageNumber-show: none;"));
         }
 
@@ -674,7 +674,7 @@ namespace BloomTests.Book
         [Test]
         public void AppearanceCss_HasNoRootRules()
         {
-            // from efl-zero-margin-ebook
+            // from edge-to-edge
             Assert.That(_generatedAppearanceCss, Does.Not.Contain(":root"));
         }
 
@@ -686,7 +686,11 @@ namespace BloomTests.Book
         public void CssOfDefaultTheme_HasExpectedMargins()
         {
             // we expect the default settings before the theme ones
-            AssertContainsButIgnoreWhitespace(_cssOfDefaultTheme, "--page-margin: 12mm;");
+            AssertContainsButIgnoreWhitespace(_cssOfDefaultTheme, "--standard-page-margin: 12mm;");
+            AssertContainsButIgnoreWhitespace(
+                _cssOfDefaultTheme,
+                "--page-margin: var(--standard-page-margin);"
+            );
             AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
                 "--cover-margin-top: var(--page-margin);"
@@ -694,22 +698,22 @@ namespace BloomTests.Book
             AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
                 @".LegalLandscape {
-    --page-margin: 15mm;"
+    --standard-page-margin: 15mm;"
             );
             AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
                 @".A6Landscape {
-    --page-margin: 10mm;"
+    --standard-page-margin: 10mm;"
             );
             AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
                 @".bloom-page[class*=""Device""] {
-    --page-margin: 10px;"
+    --standard-page-margin: 10px;"
             );
             AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
                 @".Cm13Landscape {
-    --page-margin: 5mm;"
+    --standard-page-margin: 5mm;"
             );
         }
 
@@ -725,12 +729,37 @@ namespace BloomTests.Book
         [Test]
         public void CssOfChosenTheme_OverridesMargin()
         {
-            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin: 12mm;"));
+            Assert.That(_generatedAppearanceCss, Does.Contain("--standard-page-margin: 12mm;"));
             Assert.That(
                 _generatedAppearanceCss,
-                Does.Contain(":not(.bloom-interactive-page).numberedPage.Device16x9Landscape")
+                Does.Contain(".numberedPage:not(.bloom-interactive-page)")
             );
-            Assert.That(_cssOfEbookZeroMarginTheme, Does.Contain("--page-margin: 0mm;"));
+            Assert.That(_cssOfEbookEdgeToEdgeTheme, Does.Contain("--page-margin: 0mm;"));
+        }
+
+        /// <summary>
+        /// Custom CSS such as the Little Zebra customBookStyles2.css sets the per-side margins
+        /// directly, so Edge to Edge must set them too, or its zero margins never apply (BL-17050).
+        /// They must be in the two-class numbered-page rule: that is what makes them beat the
+        /// custom CSS's single-class page-size rules (e.g. .A5Portrait), which load later.
+        /// </summary>
+        [Test]
+        public void CssOfEdgeToEdgeTheme_OverridesPerSideMargins()
+        {
+            const string selector = ".numberedPage:not(.bloom-interactive-page) {";
+            var start = _cssOfEbookEdgeToEdgeTheme.IndexOf(selector, StringComparison.Ordinal);
+            Assert.That(
+                start,
+                Is.GreaterThanOrEqualTo(0),
+                "Edge to Edge has no numbered-page rule"
+            );
+            var end = _cssOfEbookEdgeToEdgeTheme.IndexOf('}', start);
+            var rule = _cssOfEbookEdgeToEdgeTheme.Substring(start, end - start);
+            Assert.That(rule, Does.Contain("--page-margin: 0mm;"), "found the wrong rule");
+            foreach (var side in new[] { "top", "bottom", "left", "right" })
+            {
+                Assert.That(rule, Does.Contain($"--page-margin-{side}: var(--page-margin);"));
+            }
         }
 
         [Test]

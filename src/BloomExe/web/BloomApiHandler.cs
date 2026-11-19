@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bloom.Book;
 using Bloom.Collection;
-using L10NSharp;
 
 namespace Bloom.Api
 {
@@ -297,6 +296,7 @@ namespace Bloom.Api
         // NOTE: this method gets called on different threads!
         public async Task<bool> ProcessRequestAsync(IRequestInfo info, string localPath)
         {
+            UserCulture.CheckProcessCultureIsInvariant();
             var localPathLc = localPath.ToLowerInvariant();
             if (localPathLc.StartsWith(ApiPrefix, StringComparison.InvariantCulture))
             {
@@ -362,10 +362,9 @@ namespace Bloom.Api
 
         private static void ReportMissingApiEndpoint(IRequestInfo info, string localPath)
         {
-            var userMsg = LocalizationManager.GetString(
-                "WebServer.Warning.NoApiEndpoint",
-                "Cannot Find API Endpoint"
-            );
+            // Not localized: a missing endpoint is a bug in Bloom, so this message is for the
+            // developers who receive the problem report.
+            var userMsg = "Cannot Find API Endpoint";
             var detailMsg = String.Format(
                 "Server could not find an API endpoint for {0}. LocalPath was {1}. Method was {2}.{3}",
                 info.RawUrl,

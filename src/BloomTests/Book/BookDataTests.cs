@@ -65,7 +65,7 @@ namespace BloomTests.Book
                 "Bloom",
                 "1.0.0",
                 localizationDirectory,
-                "SIL/Bloom",
+                TestTempDirectory.LocalizationSettingPath,
                 null,
                 new string[] { }
             );
@@ -75,7 +75,7 @@ namespace BloomTests.Book
                 "Palaso",
                 "1.0.0",
                 localizationDirectory,
-                "SIL/Palaso",
+                TestTempDirectory.LocalizationSettingPath,
                 null,
                 new string[] { }
             );
@@ -1637,6 +1637,73 @@ namespace BloomTests.Book
                 );
         }
 
+        [Test]
+        public void UpdateVariablesAndDataDivThroughDOM_LeveledTurnedOff_ClearsTheNumberOnThePage()
+        {
+            // The user has clicked "book is not leveled", which leaves the Leveled Reader tool
+            // with its level. The pages still show the number the book had. Both the data div and
+            // the pages must lose it, or the ABC branding goes on showing that grade (BL-16775).
+            // Note also that the class is "leveled-reader-off", which contains the string
+            // "leveled-reader"; a substring test says such a book is leveled.
+            var dom = new HtmlDom(
+                @"<html ><head></head><body class='leveled-reader-off decodable-reader-off'>
+				<div id='bloomDataDiv'>
+					<div data-book='levelOrStageNumber' lang='*'>3</div>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover'>
+					<div data-book='levelOrStageNumber' lang='*'>3</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            var info = GetLeveledDecodableInfo();
+            // Sanity check: the tool really does still hold a level, so a fix that simply found
+            // no level would prove nothing.
+            Assert.That(
+                info.Tools.Single(t => t.ToolId == "leveledReader").State,
+                Is.EqualTo("3"),
+                "test setup failed to give the book a leveled reader level"
+            );
+
+            data.UpdateVariablesAndDataDivThroughDOM(info);
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='levelOrStageNumber']"
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[contains(@class,'bloom-page')]//div[@data-book='levelOrStageNumber' and normalize-space(text())!='']"
+                );
+        }
+
+        [Test]
+        public void UpdateVariablesAndDataDivThroughDOM_LeveledOffButDecodableOn_UsesTheStage()
+        {
+            // A book can be decodable and not leveled. It then takes its number from the stage.
+            var dom = new HtmlDom(
+                @"<html ><head></head><body class='decodable-reader leveled-reader-off'>
+				<div id='bloomDataDiv'>
+					<div data-book='levelOrStageNumber' lang='*'>3</div>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover'>
+					<div data-book='levelOrStageNumber' lang='*'>3</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            data.UpdateVariablesAndDataDivThroughDOM(GetLeveledDecodableInfo());
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='levelOrStageNumber' and @lang='*' and text()='4']",
+                    1
+                );
+        }
+
         private BookInfo GetLeveledDecodableInfo()
         {
             // an arbitrary temp folder where we won't find any metadata, to create an empty default BookInfo.
@@ -2502,21 +2569,15 @@ namespace BloomTests.Book
             );
             var data = new BookData(htmlDom, settings, null);
             Assert.That(data.GetDisplayNameForLanguage("de"), Is.EqualTo("Deutsch"));
-            // Which of these we find seems to depend on whether some ICU directory is found in the path.
-            // Not being too picky about it because we're getting pretty good about using the user-supplied language
-            // name, so I can't find anywhere this actually shows up.
-            Assert.That(
-                data.GetDisplayNameForLanguage("fr"),
-                Is.EqualTo("français").Or.EqualTo("Französisch")
-            );
-            Assert.That(
-                data.GetDisplayNameForLanguage("en"),
-                Is.EqualTo("English").Or.EqualTo("Englisch")
-            );
-            Assert.That(
-                data.GetDisplayNameForLanguage("es"),
-                Is.EqualTo("español").Or.EqualTo("Spanisch")
-            );
+            // These used to have to accept either answer, because which one came back depended on
+            // whether a native ICU library happened to be findable on the machine. Bloom now turns
+            // ICU off for language names (see WritingSystem's static constructor), so for a given
+            // UI language there is one answer, whatever the machine (BL-16806). These expectations
+            // are the answers under an English UI. Note that TestCulture deliberately leaves
+            // CurrentUICulture alone, so that is the machine's UI language, not one the run pins.
+            Assert.That(data.GetDisplayNameForLanguage("fr"), Is.EqualTo("français"));
+            Assert.That(data.GetDisplayNameForLanguage("en"), Is.EqualTo("English"));
+            Assert.That(data.GetDisplayNameForLanguage("es"), Is.EqualTo("español"));
         }
 
         [Test]
@@ -3768,6 +3829,40 @@ namespace BloomTests.Book
             Assert.That(classes, Does.Contain("bloom-postAudioSplit"));
             // a class that is potentially deletable, present in source but not destination, is added
             Assert.That(classes2, Does.Contain("bloom-postAudioSplit"));
+        }
+
+        // An empty class attribute on either side must not become an empty class name, which
+        // would leave a stray space in the class that the browser then drops: the page would look
+        // edited on every visit.
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_EmptyClassOnEitherSide_AddsNoStraySpace()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					 <div data-book='outside-back-cover-branding-bottom-html' lang='*' class=''><img src='badge.svg' alt=''/></div>
+					 <div data-book='credits-page-branding-bottom-html' lang='*' class='branding-block'><img src='logo.svg' alt=''/></div>
+				</div>
+				<div class='bloom-page'>
+					 <div findMe='pageHasClass' data-book='outside-back-cover-branding-bottom-html' lang='*' class='bloom-force-publish'></div>
+					 <div findMe='pageHasNone' data-book='credits-page-branding-bottom-html' lang='*' class=''></div>
+				</div>
+				</body></html>"
+            );
+            var pageHasClass = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='pageHasClass']");
+            var pageHasNone = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='pageHasNone']");
+            Assert.That(pageHasClass.GetAttribute("class"), Is.EqualTo("bloom-force-publish"));
+            Assert.That(pageHasNone.GetAttribute("class"), Is.EqualTo(""));
+
+            var data = new BookData(dom, _collectionSettings, null);
+            data.SynchronizeDataItemsThroughoutDOM();
+
+            Assert.That(pageHasClass.GetAttribute("class"), Is.EqualTo("bloom-force-publish"));
+            Assert.That(pageHasNone.GetAttribute("class"), Is.EqualTo("branding-block"));
+            // sanity check that the data was copied at all
+            Assert.That(pageHasClass.InnerXml, Does.Contain("badge.svg"));
         }
 
         [Test]

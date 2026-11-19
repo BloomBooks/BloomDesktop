@@ -31,8 +31,6 @@ namespace Bloom.web.controllers
         private readonly Book.Book.Factory _bookFactory;
         private readonly BookStorage.Factory _storageFactory;
 
-        public static bool ForPageLayout = false; // set when most recent relevant command is ShowChangeLayoutDialog
-
         public PageTemplatesApi(
             SourceCollectionsList sourceCollectionsList,
             BookSelection bookSelection,
@@ -102,21 +100,28 @@ namespace Bloom.web.controllers
                 : sizeAndOrientation.IsLandScape ? "landscape"
                 : "portrait";
 
-            addPageSettings.templateBooks = GetBookTemplatePaths(
-                    GetPathToCurrentTemplateHtml(),
-                    GetCurrentAndSourceBookPaths()
-                )
+            addPageSettings.templateBooks = GetTemplateBookPathsForAddPage()
                 .Select(bookTemplatePath => GetPageGroup(bookTemplatePath));
             // Never used on the javascript side.
             // addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor
 
-            // This works because this is only used for the add/change page dialog and we never show them
-            // both at once. Pushing this information into the settings that the dialog loads removes the
-            // need for cross-domain communication between the dialog and the page that launches it.
-            addPageSettings.forChooseLayout = ForPageLayout;
-
             var json = JsonConvert.SerializeObject(addPageSettings);
             request.ReplyWithJson(json);
+        }
+
+        /// <summary>
+        /// The html files of the template books the Add Page dialog offers for the selected book,
+        /// in the order the dialog receives them: the book's own template first (or a placeholder
+        /// path under "missingPageTemplate/" when that template is not on this machine), then
+        /// every source book that has a "template" folder. E2eTestingApi reads this list so a test
+        /// can add a page from any of these books the way the dialog would.
+        /// </summary>
+        public List<string> GetTemplateBookPathsForAddPage()
+        {
+            return GetBookTemplatePaths(
+                GetPathToCurrentTemplateHtml(),
+                GetCurrentAndSourceBookPaths()
+            );
         }
 
         /// <summary>

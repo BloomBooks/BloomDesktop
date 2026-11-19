@@ -71,12 +71,11 @@ export const openCanvasToolTab = async (toolboxFrame: Frame): Promise<void> => {
         return;
     }
 
-    // The React toolbox renders each tool's header as a MUI accordion summary
-    // carrying a data-toolid span (section.id, "canvas" here). The h3 forms are
-    // the pre-React markup, kept so this still works against an older toolbox.
+    // The toolbox is a MUI accordion (see ToolboxRoot.tsx): each section's clickable header
+    // is an AccordionSummary, and the icon inside it carries the tool's canonical id.
     const canvasToolHeader = toolboxFrame
         .locator(
-            '.MuiAccordionSummary-root:has([data-toolid="canvas"]), h3[data-toolid="canvasTool"], h3[data-toolid="canvas"], h3[data-toolid*="canvas"], h3:has-text("Canvas")',
+            '.MuiAccordionSummary-root:has([data-toolid="canvas"]), .MuiAccordionSummary-root:has-text("Canvas Tool")',
         )
         .first();
 

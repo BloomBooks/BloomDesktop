@@ -1,0 +1,72 @@
+// The crop handles of a picture: a bar in the middle of each side, which cuts that side away, and
+// a circle in the middle, which moves the picture about inside its crop. A picture on a canvas
+// (editMode.less) and an inline image (inlineImageEditing.less) use these same handles.
+@sideHandleRadius: 4px;
+@sideHandleCenter: 6px;
+@moveCropHandleRadius: 8px;
+
+// A side handle. @color is its outline, and its fill while its side is cropped.
+.crop-side-handle(@color) {
+    position: absolute;
+    width: @sideHandleRadius * 2;
+    height: @sideHandleRadius * 2;
+    border-radius: @sideHandleRadius;
+    background-color: white;
+    border: 1px solid @color;
+    box-sizing: border-box;
+    pointer-events: all;
+    &.bloom-currently-cropped {
+        background-color: @color;
+    }
+}
+
+// Where the side handles sit, for handles whose classes are @prefix-n, @prefix-e, @prefix-s and
+// @prefix-w. @edge is how far each handle's outer edge is inside its side of the picture; a
+// negative value puts the handle partly outside.
+.crop-side-handle-positions(@prefix; @edge) {
+    .@{prefix}-n {
+        top: @edge;
+        left: calc(50% - @sideHandleRadius - @sideHandleCenter);
+        width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
+        cursor: ns-resize;
+    }
+    .@{prefix}-e {
+        top: calc(50% - @sideHandleRadius - @sideHandleCenter);
+        right: @edge;
+        height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
+        cursor: ew-resize;
+    }
+    .@{prefix}-s {
+        bottom: @edge;
+        left: calc(50% - @sideHandleRadius - @sideHandleCenter);
+        width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
+        cursor: ns-resize;
+    }
+    .@{prefix}-w {
+        top: calc(50% - @sideHandleRadius - @sideHandleCenter);
+        left: @edge;
+        height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
+        cursor: ew-resize;
+    }
+}
+
+// The circle in the middle of the picture. Only a cropped picture has anywhere to move to, so it
+// is hidden here, and the caller shows it while the picture is cropped.
+.move-crop-handle(@color) {
+    position: absolute;
+    top: calc(50% - @moveCropHandleRadius);
+    left: calc(50% - @moveCropHandleRadius);
+    width: @moveCropHandleRadius * 2;
+    height: @moveCropHandleRadius * 2;
+    border-radius: 50%;
+    background-color: white;
+    border: 1px solid @color;
+    box-sizing: border-box;
+    pointer-events: all;
+    display: none;
+    cursor: move;
+    &.active-control,
+    &:hover {
+        background-color: @color;
+    }
+}

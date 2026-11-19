@@ -1816,3 +1816,9 @@ body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
     height: 100%;
     width: 100%;
 }
+
+// Inline (Word-style) images arrived in 6.5, long after this legacy copy of basePage.css
+// was frozen, but a book using the legacy theme can still contain them, so it needs the
+// same rules. We import the file instead of copying its rules so that the two themes
+// stay the same.
+@import "inlineImages.less";

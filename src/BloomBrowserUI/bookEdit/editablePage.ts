@@ -16,7 +16,38 @@ import {
     CanvasElementManager,
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
-import { renderDragActivityTabControl } from "./js/AbovePageControls";
+import {
+    isLiveEditTabPage,
+    renderDragActivityTabControl,
+    updateAbovePageControls,
+} from "./js/AbovePageControls";
+import {
+    isShowingOtherPagesHere,
+    replayTheClickThatOpenedThisPage,
+    setupBookGridView,
+    setShowingOtherPages,
+    showPageBeingOpened,
+    updatePageLayoutForAllPages,
+} from "./js/bookGridView";
+import { markPageForRemoval } from "./js/pageRemovalMark";
+import {
+    kPageLoadNumberAttribute,
+    tryGetWorkspaceBundleExports,
+} from "./js/workspaceFrames";
+import {
+    getPageLoadId,
+    isSnapshotStreamIdle,
+    notePageContentMayHaveChanged,
+    startWatchingPageForSnapshots,
+} from "./js/pageSnapshot";
+import {
+    canRedo,
+    canUndo,
+    handleRedo,
+    handleUndo,
+    setUpPageUndo,
+} from "./undo/pageUndo";
+import { tableCanUndo } from "./undo/tableUndo";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -33,9 +64,51 @@ function getPageId(): string {
 // This notification lets the C# know that this partciular page is ready to edit.
 // It is important that this does not get pulled into any other compiled bundle,
 // since it will generate errors when loaded into any page that does not have a .bloom-page.
+//
+// The load id goes with it: once C# answers, it accepts snapshots only from this load (see
+// getPageLoadId()), so the page snapshot waits for that answer before it starts.
+let pageDomLoadedAnswered: Promise<unknown> | undefined;
+function tellCSharpPageDomLoaded(): Promise<unknown> {
+    if (!pageDomLoadedAnswered)
+        pageDomLoadedAnswered = postJson("editView/pageDomLoaded", {
+            pageId: getPageId(),
+            loadId: getPageLoadId(),
+        });
+    return pageDomLoadedAnswered;
+}
 document.addEventListener("DOMContentLoaded", () => {
-    postString("editView/pageDomLoaded", getPageId());
+    void tellCSharpPageDomLoaded();
 });
+
+// Which load of the page frame this page is, as the workspace numbered it (see numberPageLoad in
+// pageFrame.ts). The page passes it back when it says it is ready to show, because the workspace
+// cannot tell from the window: in One Page the frame is reused, and its window is the same object for
+// the page being left and the page replacing it.
+const kPageLoadNumber = Number(
+    window.frameElement?.getAttribute(kPageLoadNumberAttribute),
+);
+
+// Resolves once the page looks the way it will: its pictures and the fonts it uses are in, and a
+// frame has been drawn with them. Call it after the page has been set up for editing.
+//
+// It deliberately does not wait for the window's load event. That waits for every script, and once
+// the page is set up CKEditor loads its configuration, language and plugin files one after another,
+// which takes hundreds of milliseconds and changes nothing on screen. Nothing done when the page is
+// shown needs CKEditor: replaying the click that opened the page waits for it separately.
+function whenPageIsDrawn(): Promise<void> {
+    const pictures = Array.from(
+        document.querySelectorAll<HTMLImageElement>(".bloom-page img"),
+    ).map((img) =>
+        // A picture that cannot be shown is drawn as missing; that is how the page looks.
+        img.decode().catch(() => undefined),
+    );
+    return Promise.all([...pictures, document.fonts.ready]).then(
+        () =>
+            new Promise<void>((resolve) =>
+                requestAnimationFrame(() => resolve()),
+            ),
+    );
+}
 
 // This allows strong typing to be done for exported functions.
 // Note: although these function are exported, which I think is necessary to make this cross-iframe
@@ -48,8 +121,20 @@ document.addEventListener("DOMContentLoaded", () => {
 // but I think it is unwise. It is so easy for an extra file to get imported into another bundle,
 // and then it will bring this along, with disastrous results.
 export interface IPageFrameExports {
-    requestPageContent(): void;
+    // The combined "page <SPLIT-DATA> userCss" string that a save needs, gathered without
+    // disturbing the live page.
+    getPageContentForSaveWhenReady(): Promise<string>;
     pageUnloading(): void;
+    // Show or hide the other pages of the book around the page being edited.
+    setShowingOtherPages(show: boolean): void;
+    showPageBeingOpened(pageId: string): void;
+    // Bring the page being edited into view and draw a red X across it, while the user confirms
+    // removing it. Returns a function that takes the X away.
+    markPageForRemoval(): () => void;
+    // See pageSnapshot.ts.
+    notePageContentMayHaveChanged(): void;
+    // See pageSnapshot.ts. For the e2e suite.
+    isSnapshotStreamIdle(): boolean;
     copySelection(): void;
     cutSelection(): void;
     pasteClipboard(): void;
@@ -68,9 +153,16 @@ export interface IPageFrameExports {
     getTheOneCanvasElementManager(): CanvasElementManager;
 
     ckeditorCanUndo(): boolean;
-    ckeditorUndo(): void;
+    ckeditorUndo(): boolean;
     imageOperationCanUndo(): boolean;
     imageOperationUndo(): boolean;
+
+    // The one undo stack, which lives in this frame (undo/pageUndo.ts).
+    handleUndo(): void;
+    canUndo(): boolean;
+    handleRedo(): void;
+    canRedo(): boolean;
+    tableCanUndo(): boolean;
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
@@ -111,12 +203,10 @@ export interface IPageFrameExports {
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
-// For example, workspaceBundle.getEditablePageBundleExports().requestPageContent() can be called.
+// For example, workspaceBundle.getEditablePageBundleExports().pageUnloading() can be called.
 import {
-    getBodyContentForSavePage,
-    requestPageContent,
+    getPageContentForSaveWhenReady,
     captureContentForExternalProcessing,
-    userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
     copySelection,
@@ -130,9 +220,11 @@ import {
     changeImageByElement,
     imageOperationCanUndo,
     imageOperationUndo,
+} from "./js/bloomEditing";
+import {
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
-} from "./js/bloomEditing";
+} from "./js/pageContentDelays";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 // Called from the AI Image Editor overlay in the top window, which owns the session but
 // cannot touch this page itself; see aiImageEditorPageCommands.ts and aiImageEditorOverlay.ts.
@@ -146,11 +238,11 @@ import type {
 } from "./aiImageEditor/aiImageEditorShared";
 import type { IPageMetrics } from "./js/imageTargetResolution";
 export {
-    getBodyContentForSavePage,
-    requestPageContent,
+    getPageContentForSaveWhenReady,
     captureContentForExternalProcessing,
-    userStylesheetContent,
     pageUnloading,
+    notePageContentMayHaveChanged,
+    isSnapshotStreamIdle,
     topBarButtonClick,
     copySelection,
     cutSelection,
@@ -172,7 +264,7 @@ export {
     getAiImageEditorPageMetrics,
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
-import { postString } from "../utils/bloomApi";
+import { postJson } from "../utils/bloomApi";
 export { origamiCanUndo, origamiUndo };
 
 const styleSheets = [
@@ -333,17 +425,36 @@ export function ckeditorCanUndo(): boolean {
         CKEDITOR &&
         CKEDITOR.currentInstance &&
         (<any>CKEDITOR.currentInstance).undoManager &&
-        (<any>CKEDITOR.currentInstance).undoManager.undoable()
+        (<any>CKEDITOR.currentInstance).undoManager.undoable() &&
+        // Not an editor whose box has gone from the page (a table undo rebuilds its cells, for
+        // instance): undoing there would change nothing anyone can see, and would stop the Undo
+        // button reaching whatever comes next.
+        (<any>CKEDITOR.currentInstance).element.$.isConnected
     ) {
         return true;
     }
     return false;
 }
 
-export function ckeditorUndo() {
+/**
+ * Undo the most recent change ckeditor knows about, and say whether it undid anything.
+ *
+ * undo() answers false when it finds nothing to restore, which happens even after
+ * ckeditorCanUndo() said yes: ckeditor sets its hasUndo flag on the first keystroke of a
+ * group and clears it only when it next refreshes its state, so a manager whose snapshots
+ * have already been restored keeps claiming an undo it cannot perform. The caller needs to
+ * know, so that an Undo the person pressed is not swallowed here. (See the CKEditor provider in
+ * undo/legacyUndoProviders.ts.)
+ */
+export function ckeditorUndo(): boolean {
     // review: do we need to examine all instances?
-    (<any>CKEDITOR.currentInstance).undoManager.undo();
+    return (<any>CKEDITOR.currentInstance).undoManager.undo();
 }
+
+// The bloom-table library's undo is an entry on the one undo stack (undo/tableUndo.ts). This is
+// exported on the bundle only for the e2e tests, which check that a table's history stays out of
+// Undo in Change Layout mode.
+export { tableCanUndo };
 
 for (let j = 0; j < styleSheets.length; j++) {
     // This doesn't work any more because we are now loading this code as a module,
@@ -376,9 +487,36 @@ window["PasteImageCredits"] = () => {
     EditableDivUtils.pasteImageCredits();
 };
 
+//UnlockOriginalCredits() is called from the hint bubble on the credits page's
+//generated original-copyright sentence. See BookCopyrightAndLicense.SetOriginalCopyrightNoticeHint().
+window["UnlockOriginalCredits"] = () => {
+    void EditableDivUtils.unlockOriginalCredits();
+};
+
+window["RelockOriginalCredits"] = () => {
+    void EditableDivUtils.relockOriginalCredits();
+};
+
 $(document).ready(() => {
     $("body").find("*[data-i18n]").localize();
     bootstrap();
+    // Only the live Edit tab has the bar of controls above the page (see AbovePageControls.tsx) and
+    // the book's other pages; the same code also loads pages off-screen to process them.
+    if (isLiveEditTabPage()) {
+        updateAbovePageControls({});
+        // The page being left stays on screen until this one looks the way it will (see
+        // switchContentPage), so the Edit tab holds steady while it changes pages.
+        void Promise.all([whenPageIsDrawn(), setupBookGridView()]).then(() => {
+            tryGetWorkspaceBundleExports()?.pageFrameIsReadyToShow(
+                kPageLoadNumber,
+            );
+            void replayTheClickThatOpenedThisPage();
+            if (isShowingOtherPagesHere()) {
+                tryGetWorkspaceBundleExports()?.noteAllPagesShown();
+                updatePageLayoutForAllPages();
+            }
+        });
+    }
     // Step 1 of the off-screen page-capture handshake (see __bloomEditablePageReady in the
     // `declare global` block below): bootstrap()/SetupElements() has now run. That applies the
     // load-time DOM fix-ups (canvas-element layout, image sizing, etc.) — but note that some of them,
@@ -388,6 +526,16 @@ $(document).ready(() => {
     // just signals that bootstrap itself has run and it is safe to ask for the content. Harmless no-op
     // in the live editor, which never reads this flag.
     window.__bloomEditablePageReady = true;
+
+    // The one undo stack lives in this frame and starts empty with each page load (see
+    // undo/pageUndo.ts). This registers the pre-existing undo mechanisms with it and binds Ctrl+Y.
+    setUpPageUndo();
+    // Start sending the page's content to C# (see pageSnapshot.ts), but not until C# has accepted
+    // this load, or it would refuse what we send. (The notice normally went at DOMContentLoaded;
+    // asking again just returns that post.)
+    void tellCSharpPageDomLoaded().then(() =>
+        startWatchingPageForSnapshots(getPageContentForSaveWhenReady),
+    );
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
@@ -406,11 +554,13 @@ export function SayHello() {
 // Legacy global exposure: mimic old webpack window["editablePageBundle"] contract used by other iframes / C#
 // NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
 interface EditablePageBundleApi {
-    requestPageContent: typeof requestPageContent;
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
-    getBodyContentForSavePage: typeof getBodyContentForSavePage;
-    userStylesheetContent: typeof userStylesheetContent;
+    getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
+    setShowingOtherPages: typeof setShowingOtherPages;
+    showPageBeingOpened: typeof showPageBeingOpened;
+    markPageForRemoval: typeof markPageForRemoval;
+    notePageContentMayHaveChanged: typeof notePageContentMayHaveChanged;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
     pasteClipboard: typeof pasteClipboard;
@@ -428,6 +578,11 @@ interface EditablePageBundleApi {
     getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
     ckeditorCanUndo: typeof ckeditorCanUndo;
     ckeditorUndo: typeof ckeditorUndo;
+    handleUndo: typeof handleUndo;
+    canUndo: typeof canUndo;
+    handleRedo: typeof handleRedo;
+    canRedo: typeof canRedo;
+    tableCanUndo: typeof tableCanUndo;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
     removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
     e2eSetActiveCanvasElementByIndex: typeof e2eSetActiveCanvasElementByIndex;
@@ -442,6 +597,7 @@ interface EditablePageBundleApi {
     e2eCanExpandActiveCanvasElementToFillSpace: typeof e2eCanExpandActiveCanvasElementToFillSpace;
     e2eOverrideCanExpandToFillSpace: typeof e2eOverrideCanExpandToFillSpace;
     e2eClearCanExpandToFillSpaceOverride: typeof e2eClearCanExpandToFillSpaceOverride;
+    isSnapshotStreamIdle: typeof isSnapshotStreamIdle;
     SayHello: typeof SayHello;
     renderDragActivityTabControl: typeof renderDragActivityTabControl;
     showGamePromptDialog: typeof showGamePromptDialog;
@@ -467,8 +623,8 @@ declare global {
         //      the finished page onto window.__bloomExternalPageContent.
         //   3. C# polls window.__bloomExternalPageContent until it is non-empty and reads it back.
         //
-        // Why globals + polling, rather than posting to the editView/pageContent API the way the live
-        // editor's requestPageContent() does:
+        // Why globals + polling, rather than posting to the editView/pageSnapshot API the way the
+        // live editor does:
         //   - That API feeds the live EditingModel; reusing it off-screen would corrupt the real
         //     editor's state. We want the same page-cleanup output, delivered out-of-band.
         //   - C#'s JS runner on this path (RunJavascriptWithStringResult_Sync_Dangerous) is
@@ -481,17 +637,19 @@ declare global {
         //
         // Step 1's flag: set in $(document).ready below; read in BookProcessor.ProcessOnePage.
         __bloomEditablePageReady?: boolean;
-        // Step 2/3's mailbox: the combined "body<SPLIT-DATA>userCss" string, or "ERROR: <message>".
+        // Step 2/3's mailbox: the combined "page<SPLIT-DATA>userCss" string, or "ERROR: <message>".
         __bloomExternalPageContent?: string;
     }
 }
 
 window.editablePageBundle = {
-    requestPageContent,
     captureContentForExternalProcessing,
-    getBodyContentForSavePage,
-    userStylesheetContent,
+    getPageContentForSaveWhenReady,
     pageUnloading,
+    setShowingOtherPages,
+    showPageBeingOpened,
+    markPageForRemoval,
+    notePageContentMayHaveChanged,
     copySelection,
     cutSelection,
     pasteClipboard,
@@ -509,6 +667,11 @@ window.editablePageBundle = {
     getTheOneCanvasElementManager,
     ckeditorCanUndo,
     ckeditorUndo,
+    handleUndo,
+    canUndo,
+    handleRedo,
+    canRedo,
+    tableCanUndo,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
     e2eSetActiveCanvasElementByIndex,
@@ -523,6 +686,7 @@ window.editablePageBundle = {
     e2eCanExpandActiveCanvasElementToFillSpace,
     e2eOverrideCanExpandToFillSpace,
     e2eClearCanExpandToFillSpaceOverride,
+    isSnapshotStreamIdle,
     SayHello,
     renderDragActivityTabControl,
     showGamePromptDialog,

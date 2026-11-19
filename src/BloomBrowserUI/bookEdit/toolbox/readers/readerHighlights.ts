@@ -69,8 +69,8 @@ const allReaderHighlightNames = readerHighlightLayers.map(
 
 // True for elements inside a bloom-editable whose text the reader tools must not analyze:
 // transient Bloom UI, CKEditor's hidden selection bookmarks, and the Talking Book tool's
-// zero-width phrase markers. This replaces what removeAllHtmlMarkupFromString() used to strip
-// out of the HTML string.
+// zero-width phrase markers. This replaces what the reader tools' old regex-based HTML
+// stripper used to remove from the markup.
 function shouldSkipElementForReaderText(element: Element): boolean {
     // Covers Bloom's transient in-page UI generally, including the format cog (StyleEditor
     // creates it as <div id="formatButton" class="bloom-ui">).

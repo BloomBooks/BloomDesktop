@@ -7,6 +7,7 @@ using Bloom.Book;
 using Bloom.FreezeDoctor;
 using Bloom.Properties;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
@@ -29,7 +30,7 @@ namespace Bloom.Api
 
         // This is used by the app/closeDialog api call to keep track of which dialogs are open
         // and to implicitly notify other parts of program when the dialog has been closed.
-        static internal ConcurrentDictionary<string, int> OpenDialogs =
+        internal static ConcurrentDictionary<string, int> OpenDialogs =
             new ConcurrentDictionary<string, int>();
 
         public AppApi(
@@ -61,6 +62,14 @@ namespace Bloom.Api
                         request.PostSucceeded();
                     }
                 },
+                false
+            );
+            // Whether this Bloom was launched with --e2e, and so has the e2e/ endpoints. Registered in
+            // every run, so an automation script can ask before calling one: in a run without them,
+            // each call to a missing endpoint puts up a "Bloom had a problem" dialog.
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "runningE2eTests",
+                request => request.ReplyWithText(Program.RunningE2eTests ? "true" : "false"),
                 false
             );
             apiHandler.RegisterEndpointHandler(
@@ -146,7 +155,10 @@ namespace Bloom.Api
                     var assembly = Assembly.GetEntryAssembly();
                     var file = PathHelper.StripFilePrefix(assembly.Location);
                     var fi = new FileInfo(file);
-                    request.ReplyWithText(fi.LastWriteTimeUtc.ToString("dd-MMM-yyyy"));
+                    // Shown in the About dialog, so the month name follows the user's format.
+                    request.ReplyWithText(
+                        fi.LastWriteTimeUtc.ToString("dd-MMM-yyyy", UserCulture.Current)
+                    );
                 },
                 false
             );
@@ -184,6 +196,15 @@ namespace Bloom.Api
                     // that has been gathered but not yet filed. It quits by itself when Bloom goes, and
                     // it will not start with the next Bloom.
                 },
+                true
+            );
+            // The "Simulate a slow computer" testing mode. Like the Freeze Doctor, it is about the
+            // whole process rather than any window, so it does not go through the Shell; and it is
+            // session-only, so it lives in SlowComputerSimulation rather than in Settings.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kAppUrlPrefix + "simulateSlowComputer",
+                request => SlowComputerSimulation.IsOn,
+                (request, value) => SlowComputerSimulation.SetOn(value),
                 true
             );
             // True only on the builds that offer the "Use dev.BloomLibrary.org" menu item.

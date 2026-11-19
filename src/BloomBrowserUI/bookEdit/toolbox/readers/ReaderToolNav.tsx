@@ -34,6 +34,10 @@ export const ReaderToolNav: FunctionComponent<{
         return props.isForLeveled ? model.levelNumber : model.stageNumber;
     }
 
+    // While the tool is restoring the book's stage or level, the arrows are disabled, so that
+    // a choice made with them cannot be undone by the restore; see whileRestoringPhase().
+    const restoring = model.isRestoringPhase();
+
     // Boxed square buttons at the right. The button at an end is shown but
     // disabled (greyed) rather than hidden, so the pair of boxes is always
     // present. Kept fairly small so the whole "Level N of M" line fits on a
@@ -59,8 +63,20 @@ export const ReaderToolNav: FunctionComponent<{
         }
     `;
 
+    // The e2e suite reads which stage/level is showing from these attributes: the visible
+    // "Stage {0}" text is localized, and both reader tools render this same component, so the
+    // id says which tool's stepper it is. data-restoring says whether the tool is still
+    // restoring the book's stage or level.
+    const testIdPrefix = props.isForLeveled
+        ? "leveled-reader-level"
+        : "decodable-reader-stage";
+
     return (
         <div
+            data-testid={testIdPrefix}
+            data-phase-number={curPhaseNum()}
+            data-phase-count={numberOfPhases()}
+            data-restoring={restoring}
             css={css`
                 display: flex;
                 align-items: center;
@@ -120,7 +136,8 @@ export const ReaderToolNav: FunctionComponent<{
                         />
                     }
                     variant="text"
-                    disabled={curPhaseNum() <= 1}
+                    disabled={restoring || curPhaseNum() <= 1}
+                    data-testid={`${testIdPrefix}-previous`}
                     l10nKey=""
                     hasText={false}
                     enabled={true}
@@ -136,7 +153,8 @@ export const ReaderToolNav: FunctionComponent<{
                         />
                     }
                     variant="text"
-                    disabled={curPhaseNum() === numberOfPhases()}
+                    disabled={restoring || curPhaseNum() === numberOfPhases()}
+                    data-testid={`${testIdPrefix}-next`}
                     l10nKey=""
                     hasText={false}
                     enabled={true}

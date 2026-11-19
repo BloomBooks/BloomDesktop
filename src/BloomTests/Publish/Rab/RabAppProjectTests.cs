@@ -1985,22 +1985,59 @@ namespace BloomTests.Publish.Rab
 
             Assert.That(service.Commands, Has.Count.EqualTo(5));
             Assert.That(service.Commands[0], Does.StartWith("-install-sdks-if-needed "));
-            Assert.That(service.Commands[0], Does.Contain("-jdk-install-folder "));
-            Assert.That(service.Commands[0], Does.Contain(service.RabJdkInstallFolder));
-            Assert.That(service.Commands[0], Does.Contain("-android-sdk-install-folder "));
-            Assert.That(service.Commands[0], Does.Contain(service.RabAndroidSdkInstallFolder));
+            Assert.That(
+                service.Commands[0],
+                Contains.Substring("-jdk-install-folder ").Using(StringComparison.Ordinal)
+            );
+            Assert.That(
+                service.Commands[0],
+                Contains.Substring(service.RabJdkInstallFolder).Using(StringComparison.Ordinal)
+            );
+            Assert.That(
+                service.Commands[0],
+                Contains.Substring("-android-sdk-install-folder ").Using(StringComparison.Ordinal)
+            );
+            Assert.That(
+                service.Commands[0],
+                Contains
+                    .Substring(service.RabAndroidSdkInstallFolder)
+                    .Using(StringComparison.Ordinal)
+            );
             Assert.That(service.Commands[1], Does.StartWith("-new "));
-            Assert.That(service.Commands[1], Does.Contain("-b "));
+            Assert.That(
+                service.Commands[1],
+                Contains.Substring("-b ").Using(StringComparison.Ordinal)
+            );
             Assert.That(service.Commands[2], Does.StartWith("-install-sdks-if-needed "));
-            Assert.That(service.Commands[2], Does.Contain("-jdk-install-folder "));
-            Assert.That(service.Commands[2], Does.Contain(service.RabJdkInstallFolder));
-            Assert.That(service.Commands[2], Does.Contain("-android-sdk-install-folder "));
-            Assert.That(service.Commands[2], Does.Contain(service.RabAndroidSdkInstallFolder));
+            Assert.That(
+                service.Commands[2],
+                Contains.Substring("-jdk-install-folder ").Using(StringComparison.Ordinal)
+            );
+            Assert.That(
+                service.Commands[2],
+                Contains.Substring(service.RabJdkInstallFolder).Using(StringComparison.Ordinal)
+            );
+            Assert.That(
+                service.Commands[2],
+                Contains.Substring("-android-sdk-install-folder ").Using(StringComparison.Ordinal)
+            );
+            Assert.That(
+                service.Commands[2],
+                Contains
+                    .Substring(service.RabAndroidSdkInstallFolder)
+                    .Using(StringComparison.Ordinal)
+            );
             Assert.That(service.Commands[3], Does.StartWith("-load "));
-            Assert.That(service.Commands[3], Does.Contain("-b "));
+            Assert.That(
+                service.Commands[3],
+                Contains.Substring("-b ").Using(StringComparison.Ordinal)
+            );
             Assert.That(Regex.IsMatch(service.Commands[3], @"(^|\s)-build(\s|$)"), Is.False);
             Assert.That(service.Commands[4], Does.StartWith("-load "));
-            Assert.That(service.Commands[4], Does.Not.Contain("-b "));
+            Assert.That(
+                service.Commands[4],
+                Is.Not.Matches(Contains.Substring("-b ").Using(StringComparison.Ordinal))
+            );
             Assert.That(Regex.IsMatch(service.Commands[4], @"(^|\s)-build(\s|$)"), Is.True);
             Assert.That(service.Progress.Stages, Does.Contain("preparing-workspace"));
             Assert.That(service.Progress.Stages, Does.Contain("installing-build-tools"));
@@ -3056,6 +3093,50 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void GetSizeEstimates_BookFileLocked_ReportsLastEstimateOrZero()
+        {
+            // A book file that can't be read part way through (here the HTML, as while Bloom
+            // saves it) must not fail the whole size request (BL-17097).
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var bookFolder = Path.Combine(tempFolder.Path, "book-1");
+            Directory.CreateDirectory(bookFolder);
+            var htmlPath = Path.Combine(bookFolder, "book-1.htm");
+            RobustFile.WriteAllText(htmlPath, "<html><head></head><body></body></html>");
+            var htmlBytes = new FileInfo(htmlPath).Length;
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = bookFolder,
+                    Title = "Book One",
+                },
+            };
+            long SizeWhileHtmlLocked(RabProjectService service)
+            {
+                using (new FileStream(htmlPath, FileMode.Open, FileAccess.Read, FileShare.None))
+                    return service.GetSizeEstimates().Books.Single().SizeBytes;
+            }
+
+            var freshService = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            Assert.That(SizeWhileHtmlLocked(freshService), Is.EqualTo(0), "no estimate yet");
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            var first = service.GetSizeEstimates().Books.Single();
+            Assert.That(first.SizeBytes, Is.EqualTo(htmlBytes), "test setup: the first estimate");
+            // A changed file, so the earlier estimate is no longer simply reused.
+            RobustFile.WriteAllBytes(Path.Combine(bookFolder, "a.css"), new byte[1000]);
+
+            Assert.That(SizeWhileHtmlLocked(service), Is.EqualTo(htmlBytes));
+            Assert.That(
+                service.GetSizeEstimates().Books.Single().SizeBytes,
+                Is.EqualTo(htmlBytes + 1000),
+                "once the file can be read again, the estimate is worked out properly"
+            );
+        }
+
+        [Test]
         public void GetSizeEstimates_UsesBloomPubSizeWhenAvailable()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -3112,6 +3193,36 @@ namespace BloomTests.Publish.Rab
                 Is.EqualTo(2500)
             );
             Assert.That(estimates.Books.Single(book => book.BookId == "book-2").IsActual, Is.False);
+        }
+
+        [Test]
+        public void GetKeptBloomPubSize_CacheFolderGone_ReturnsNoSize()
+        {
+            // The whole cache folder lives in temp, which Windows and users clear; that must not
+            // fail the size request (BL-17097). A test can't make it vanish at the exact moment
+            // between the currency check and reading the size, so this only checks the result
+            // before and after.
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var bookFolder = Path.Combine(tempFolder.Path, "book-1");
+            Directory.CreateDirectory(bookFolder);
+            RobustFile.WriteAllText(Path.Combine(bookFolder, "book-1.htm"), "<html></html>");
+            var cacheFolder = Path.Combine(tempFolder.Path, "cache");
+            Directory.CreateDirectory(cacheFolder);
+            var bloomPubPath = Path.Combine(cacheFolder, "book-1.bloompub");
+            WriteCurrentBloomPub(bloomPubPath, bookFolder, 1234);
+            var book = new RabTrackedBookInfo() { FolderPath = bookFolder };
+            Assert.That(
+                RabProjectService.GetKeptBloomPubSize(bloomPubPath, book),
+                Is.EqualTo(((long?)1234, true)),
+                "test setup: a current BloomPUB reports its size"
+            );
+
+            Directory.Delete(cacheFolder, true);
+
+            Assert.That(
+                RabProjectService.GetKeptBloomPubSize(bloomPubPath, book),
+                Is.EqualTo(((long?)null, false))
+            );
         }
 
         [Test]

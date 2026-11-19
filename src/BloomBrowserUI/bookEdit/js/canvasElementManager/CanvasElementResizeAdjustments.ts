@@ -2,7 +2,11 @@
 // underlying bloom-canvas changes size.
 
 import { Bubble, Comical, TailSpec } from "comicaljs";
-import { getImageFromCanvasElement, isPlaceHolderImage } from "../bloomImages";
+import {
+    getBackgroundCanvasElementFromBloomCanvas,
+    getImageFromCanvasElement,
+    isPlaceHolderImage,
+} from "../bloomImages";
 import {
     kBackgroundImageClass,
     kCanvasElementClass,
@@ -91,10 +95,19 @@ export function adjustCanvasElementChildrenIfSizeChanged(
             right = Math.min(childLeft + child.clientWidth, oldWidth);
 
         if (child.classList.contains(kBackgroundImageClass)) {
+            // Bloom centres the background picture in the bloom-canvas it was fitted to, and may
+            // make it overhang the edges a little (see kBackgroundImageBleedPx), so that
+            // bloom-canvas's size is the picture's size plus twice its offset.
+            const fittedToWidth =
+                pxToNumber(child.style.width, child.clientWidth) +
+                2 * pxToNumber(child.style.left, childLeft);
+            const fittedToHeight =
+                pxToNumber(child.style.height, child.clientHeight) +
+                2 * pxToNumber(child.style.top, childTop);
             if (
                 (child.clientLeft !== 0 && child.clientTop !== 0) ||
-                (Math.abs(child.clientWidth - oldWidth) > 1 &&
-                    Math.abs(child.clientHeight - oldHeight) > 1)
+                (Math.abs(fittedToWidth - oldWidth) > 1 &&
+                    Math.abs(fittedToHeight - oldHeight) > 1)
             ) {
                 const deltaX = child.clientLeft;
                 const deltaY = child.clientTop;
@@ -103,8 +116,8 @@ export function adjustCanvasElementChildrenIfSizeChanged(
                     c.style.left = pxToNumber(c.style.left) - deltaX + "px";
                     c.style.top = pxToNumber(c.style.top) - deltaY + "px";
                 }
-                oldWidth = child.clientWidth;
-                oldHeight = child.clientHeight;
+                oldWidth = fittedToWidth;
+                oldHeight = fittedToHeight;
             }
             break;
         }
@@ -155,10 +168,9 @@ export function adjustCanvasElementChildrenIfSizeChanged(
         let newChildHeight = child.clientHeight;
         let reposition = true;
         const bubbleSpec = Bubble.getBubbleSpec(child);
+        // Comical has something to redraw unless it draws nothing at all for this element.
         needComicalUpdate =
-            needComicalUpdate ||
-            (!!bubbleSpec.tails && bubbleSpec.tails.length > 0) ||
-            bubbleSpec.spec !== "none";
+            needComicalUpdate || !new Bubble(child).isTransparent();
         if (
             Array.from(child.children).some(
                 (c: HTMLElement) =>
@@ -228,9 +240,8 @@ export function adjustCanvasElementChildrenIfSizeChanged(
     // The above algorithm works for the background image most of the time,
     // but we've found cases where we still need a final readjustment.
     // So we readjust here to be sure.
-    const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
-        kBackgroundImageClass,
-    )[0] as HTMLElement;
+    const backgroundCanvasElement =
+        getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
     if (backgroundCanvasElement) {
         adjustBackgroundImageSize(bloomCanvas, backgroundCanvasElement, false);
     }

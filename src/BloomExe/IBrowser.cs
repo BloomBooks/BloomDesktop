@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using SIL.IO;
 using SIL.Windows.Forms.Miscellaneous;
 
@@ -321,7 +322,7 @@ namespace Bloom
             );
             // After the await we're back on the UI thread, so it's safe to use the clipboard.
             if (!string.IsNullOrEmpty(html))
-                PortableClipboard.SetText(html);
+                BloomClipboard.SetText(html);
         }
 
         public abstract Task<string> GetStringFromJavascriptAsync(string script);

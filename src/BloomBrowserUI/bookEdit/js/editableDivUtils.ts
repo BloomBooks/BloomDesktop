@@ -1,6 +1,11 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import { get, postString } from "../../utils/bloomApi";
 import $ from "jquery";
+import { getPageIFrame, getPageIframeBody } from "../../utils/shared";
+import {
+    postAfterSendingSnapshot,
+    saveChangesAndRethinkPage,
+} from "./pageSnapshot";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -28,9 +33,7 @@ export class EditableDivUtils {
     }
 
     public static getElementSelectionIndex(editableDiv: HTMLElement): number {
-        const page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
-            parent.window.document.getElementById("page")
-        );
+        const page = getPageIFrame();
         if (!page || !page.contentWindow) return -1; // unit testing? Anyway there is no selection, so not in editableDiv.
 
         const selection = page.contentWindow.getSelection();
@@ -46,9 +49,7 @@ export class EditableDivUtils {
     }
 
     public static selectAtOffset(node: Node, offset: number): void {
-        const page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
-            parent.window.document.getElementById("page")
-        );
+        const page = getPageIFrame();
         if (!page || !page.contentWindow) return;
         const iframeWindow: Window = page.contentWindow;
         const selection1 = iframeWindow.getSelection();
@@ -198,22 +199,17 @@ export class EditableDivUtils {
               );
     }
 
-    public static getPageFrame(): HTMLIFrameElement | null {
-        const doc = window.top?.document;
-        return doc ? <HTMLIFrameElement>doc.getElementById("page") : null;
-    }
-
-    // The body of the editable page, a root for searching for document content.
-    public static getPage(): JQuery {
-        const page = this.getPageFrame();
-        if (!page || !page.contentWindow) return $();
-        return $(page.contentWindow.document.body);
-    }
-
     // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
     // If target is supplied, we only want a scale based on the page scaler if the target is inside it.
     public static getPageScale(target?: HTMLElement): number {
-        const page = this.getPage();
+        // A target is measured against its own document. While the Edit tab changes pages, the page
+        // being left is still on screen, and still places its bubbles, but the frame named "page"
+        // is already the new one, so looking the page up by that name would get the wrong scale.
+        // See getPageIFrame() in shared.ts for why we otherwise reach the page through parent.
+        const pageBody = target
+            ? target.ownerDocument.body
+            : getPageIframeBody();
+        const page = pageBody ? $(pageBody) : $();
         let scaler: HTMLElement | undefined = undefined;
         const getScaler = () => page.find("div#page-scaling-container").get(0);
         if (target) {
@@ -274,6 +270,24 @@ export class EditableDivUtils {
                     scale;
             },
         });
+    }
+
+    // Bloom generates the sentence about the original book's copyright and license into a
+    // data-derived div on the credits page, where the user cannot touch it. This asks the server
+    // to hand the text over: it stores the current wording in the data div, stops generating the
+    // sentence, and rebuilds the credits page with that spot as an ordinary editable field.
+    // The server saves the page and reloads it, so we have nothing to change here ourselves.
+    public static unlockOriginalCredits(): Promise<void> {
+        return postAfterSendingSnapshot(
+            "copyrightAndLicense/unlockOriginalCopyrightNotice",
+        );
+    }
+
+    // Close the sentence about the original book again. The wording the user has just typed is
+    // theirs from now on; saving the page stores it in the data div, and the page comes back
+    // with that spot read-only, as it is on every other visit.
+    public static relockOriginalCredits(): Promise<void> {
+        return saveChangesAndRethinkPage();
     }
 
     public static pasteImageCredits() {
@@ -383,6 +397,43 @@ export class EditableDivUtils {
         // EditableDivUtils.logElementsInnerHtml(editableDivs);
 
         return bookmarksForEachEditable;
+    }
+
+    // The non-destructive counterpart of doCkEditorCleanup(): reads CKEditor's data from the live
+    // editors and writes it into the corresponding divs of a detached CLONE, because writing it
+    // back into the live divs disturbs the running editors.
+    // liveRoot and cloneRoot must be a live element and a deep clone of it, so that the Nth
+    // div.bloom-editable in each corresponds; we throw if they have drifted apart.
+    // See doCkEditorCleanup for why we want getData() rather than the raw innerHTML (BL-12391),
+    // and why it is used exactly as it comes (BL-16843).
+    public static copyCkEditorDataToClone(
+        liveRoot: HTMLElement,
+        cloneRoot: HTMLElement,
+    ): void {
+        const liveDivs = Array.from(
+            liveRoot.querySelectorAll<HTMLDivElement>("div.bloom-editable"),
+        );
+        const cloneDivs = Array.from(
+            cloneRoot.querySelectorAll<HTMLDivElement>("div.bloom-editable"),
+        );
+        if (liveDivs.length !== cloneDivs.length) {
+            throw new Error(
+                `copyCkEditorDataToClone(): the clone has ${cloneDivs.length} bloom-editables but the live page has ${liveDivs.length}. The clone must be an untouched copy of the live page.`,
+            );
+        }
+        liveDivs.forEach((liveDiv, index) => {
+            const ckeditorOfThisBox = (<any>liveDiv).bloomCkEditor;
+            if (!ckeditorOfThisBox) {
+                return; // no editor attached (e.g. an invisible language), so nothing to clean.
+            }
+            const ckEditorData = ckeditorOfThisBox.getData();
+            if (ckEditorData !== liveDiv.innerHTML) {
+                this.safelyReplaceContentWithCkEditorData(
+                    cloneDivs[index],
+                    ckEditorData,
+                );
+            }
+        });
     }
 
     // public for unit testing

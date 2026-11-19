@@ -10,6 +10,7 @@ import {
     LocalizableElement,
 } from "./l10nComponents";
 import { kBloomDisabledText } from "../utils/colorUtils";
+import { splitAtLinkText } from "../utils/textUtils";
 
 interface ILinkProps extends ILocalizationProps {
     id?: string;
@@ -78,17 +79,16 @@ export class TextWithEmbeddedLink extends LocalizableElement<
     public render() {
         // Text within [] is for the link.
         const parts = this.getLocalizedContentAndClass();
-        const idxOpen = parts.text.indexOf("[");
-        const idxClose = parts.text.indexOf("]", idxOpen + 1);
-        if (idxOpen >= 0 && idxClose > idxOpen) {
+        const split = splitAtLinkText(parts.text);
+        if (split.found) {
             // We found the link text, piece together the desired output
             return (
                 <span className={parts.l10nClass}>
-                    {parts.text.substring(0, idxOpen)}
+                    {split.beforeLink}
                     <MuiLink underline="hover" {...this.props}>
-                        {parts.text.substring(idxOpen + 1, idxClose)}
+                        {split.linkText}
                     </MuiLink>
-                    {parts.text.substring(idxClose + 1)}
+                    {split.afterLink}
                 </span>
             );
         }

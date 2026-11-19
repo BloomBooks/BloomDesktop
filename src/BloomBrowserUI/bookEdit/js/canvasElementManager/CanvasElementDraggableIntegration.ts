@@ -1,4 +1,3 @@
-import { Bubble, Comical } from "comicaljs";
 import { kCanvasElementClass } from "../../toolbox/canvas/canvasElementConstants";
 import {
     getAllDraggables,
@@ -6,6 +5,7 @@ import {
     kDraggableIdAttribute,
 } from "../../toolbox/canvas/canvasElementDraggables";
 import { adjustTarget } from "../../toolbox/games/GameTool";
+import { syncBubbleLevelsToDomOrder } from "./CanvasElementZOrder";
 
 // Adjust the ordering of canvas elements so that draggables are at the end.
 export function adjustCanvasElementOrdering(
@@ -14,11 +14,6 @@ export function adjustCanvasElementOrdering(
     bloomCanvases.forEach((bloomCanvas) => {
         const canvasElements = Array.from(
             bloomCanvas.getElementsByClassName(kCanvasElementClass),
-        );
-        let maxLevel = Math.max(
-            ...canvasElements.map(
-                (b) => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0,
-            ),
         );
         const draggables = canvasElements.filter((b) => isDraggable(b));
         if (
@@ -30,12 +25,9 @@ export function adjustCanvasElementOrdering(
         }
         draggables.forEach((draggable) => {
             draggable.parentElement?.appendChild(draggable);
-            const bubble = new Bubble(draggable as HTMLElement);
-            bubble.getBubbleSpec().level = maxLevel + 1;
-            bubble.persistBubbleSpec();
-            maxLevel++;
         });
-        Comical.update(bloomCanvas);
+        // The draggables are now on top in the DOM; give them the bubble levels to match.
+        syncBubbleLevelsToDomOrder(bloomCanvas);
     });
 }
 

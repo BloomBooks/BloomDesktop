@@ -2,32 +2,35 @@ import ToolboxToolReactAdaptor from "../../toolboxToolReactAdaptor";
 import { DecodableReaderToolControls } from "./DecodableReaderToolControls";
 import { beginInitializeDecodableReaderTool } from "../readerTools";
 import { getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
+import { removeReaderMarkup } from "../removeReaderMarkup";
 import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
-import { renderRoot } from "../../../../utils/reactRender";
-import {
-    isLongPressEvaluating,
-    updateMarkupAfterUndoOrRedo,
-} from "../../toolbox";
+import { isLongPressEvaluating, IToolboxSettings } from "../../toolbox";
+import { updateMarkupAfterUndoOrRedo } from "../../pageEditingMarkup";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
 import $ from "jquery";
 
 // This class renders the DecodableReaderToolControls React component
 // in the toolbox, and implements all the functionality/logic needed
 // for detaching the tool, reattaching the tool, updating the markup,
-// restoring the current tool state (which includes the saved stage
+// restoring the tool's state (which includes the saved stage
 // number, sorting type, and current graphemes and words for that stage),
 // and handling certain events such as focsuing in an element (such as
 // a textbox), focusing out of an element, and undo/redo.
 export class DecodableReaderTool extends ToolboxToolReactAdaptor {
-    public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-
-        renderRoot(<DecodableReaderToolControls />, root);
-        return root as HTMLDivElement;
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <DecodableReaderToolControls />
+            </div>
+        );
     }
     public id(): string {
         return "decodableReader";
+    }
+    /** The icon for this tool's header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/images/keys-white.png";
     }
     public newPageReady(): void {
         const model = getTheOneReaderToolsModel();
@@ -36,7 +39,14 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
         // usually updateMarkup will do this, unless we are coming from showTool
         model.doMarkup();
     }
+    // See removeReaderMarkup.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        removeReaderMarkup(pageOrClone);
+    }
+
     public detachFromPage(): void {
+        super.detachFromPage();
+        // Stop further typing from being marked up again.
         getTheOneReaderToolsModel().setMarkupType(0);
     }
     public updateMarkup() {
@@ -50,72 +60,79 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
         getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
         // Toggle render is handled in newPageReady(), where page reader classes are settled.
     }
-    public beginRestoreSettings(settings: string): JQueryPromise<void> {
-        return beginInitializeDecodableReaderTool().then(() => {
-            const restoreDone = $.Deferred<void>();
-            const model = getTheOneReaderToolsModel();
-            const decodableReaderState = (
-                settings as unknown as Record<string, string>
-            )["decodableReaderState"];
-            // This wrapper function ensures that the promise gets resolved,
-            // even in the very unlikely case that setStageNumber fails.
-            const runStageRestore = (
-                work: () => void | Promise<unknown>,
-            ): void => {
-                try {
-                    Promise.resolve(work()).then(
-                        () => restoreDone.resolve(),
-                        () => restoreDone.resolve(),
-                    );
-                } catch {
-                    restoreDone.resolve();
-                }
-            };
+    /** Restores the stage (and sort order) this book was last using; see ITool. */
+    public beginRestoreSettings(settings: IToolboxSettings): Promise<void> {
+        return getTheOneReaderToolsModel().whileRestoringPhase(() =>
+            this.restoreSettings(settings),
+        );
+    }
 
-            if (decodableReaderState) {
-                const decState = decodableReaderState;
-                if (decState.startsWith("stage:")) {
-                    const parts = decState.split(";");
-                    const stage = parseInt(parts[0].substring("stage:".length));
-                    const sort = parts[1].substring("sort:".length);
-                    // The true's passed here prevent re-saving the state we just read.
-                    // One non-obvious implication is that simply opening a stage-4 book
-                    // will not switch the default stage for new books to 4. That only
-                    // happens when you CHANGE the stage in the toolbox.
-                    if (model.sort !== sort) {
-                        model.setSort(sort, true);
-                    }
-                    if (model.stageNumber === stage) {
-                        restoreDone.resolve();
-                        return restoreDone.promise();
-                    }
-                    runStageRestore(() => model.setStageNumber(stage, true));
-                } else {
-                    // old state
-                    const stage = parseInt(decState, 10);
-                    if (model.stageNumber === stage) {
-                        restoreDone.resolve();
-                        return restoreDone.promise();
-                    }
-                    runStageRestore(() => model.setStageNumber(stage, true));
-                }
-            } else {
-                get(
-                    "readers/io/defaultStage",
-                    (result) => {
-                        // Presumably a brand new book. We'd better save the settings we come up with in it.
-                        const stage = parseInt(result.data, 10);
-                        if (model.stageNumber === stage) {
-                            restoreDone.resolve();
-                            return;
-                        }
-                        runStageRestore(() => model.setStageNumber(stage));
-                    },
-                    () => restoreDone.resolve(),
-                );
+    private async restoreSettings(settings: IToolboxSettings): Promise<void> {
+        // This restore supersedes any stage still waiting for the settings; see
+        // forgetStageAwaitingSynphony().
+        getTheOneReaderToolsModel().forgetStageAwaitingSynphony();
+        await beginInitializeDecodableReaderTool();
+        const model = getTheOneReaderToolsModel();
+        // settings can be undefined/null at runtime for a book with no saved toolbox
+        // settings; guard before indexing so we fall through to the default-stage path
+        // instead of throwing an unhandled rejection that aborts tool activation (the
+        // leveled reader hit exactly this: Sentry BLOOM-DESKTOP-FFH).
+        const decodableReaderState = settings?.["decodableReaderState"];
+        // This wrapper function ensures that we still finish restoring,
+        // even in the very unlikely case that setStageNumber fails.
+        const runStageRestore = async (
+            work: () => void | Promise<unknown>,
+        ): Promise<void> => {
+            try {
+                await work();
+            } catch {
+                // Nothing useful we can do about it; don't hold up showing the tool.
             }
+        };
 
-            return restoreDone.promise();
+        if (decodableReaderState) {
+            if (decodableReaderState.startsWith("stage:")) {
+                const parts = decodableReaderState.split(";");
+                const stage = parseInt(parts[0].substring("stage:".length));
+                const sort = parts[1].substring("sort:".length);
+                // The true's passed here prevent re-saving the state we just read.
+                // One non-obvious implication is that simply opening a stage-4 book
+                // will not switch the default stage for new books to 4. That only
+                // happens when you CHANGE the stage in the toolbox.
+                if (model.sort !== sort) {
+                    model.setSort(sort, true);
+                }
+                if (model.stageNumber === stage) {
+                    return;
+                }
+                await runStageRestore(() => model.setStageNumber(stage, true));
+            } else {
+                // old state
+                const stage = parseInt(decodableReaderState, 10);
+                if (model.stageNumber === stage) {
+                    return;
+                }
+                await runStageRestore(() => model.setStageNumber(stage, true));
+            }
+            return;
+        }
+
+        await new Promise<void>((resolve) => {
+            get(
+                "readers/io/defaultStage",
+                (result) => {
+                    // Presumably a brand new book. We'd better save the settings we come up with in it.
+                    const stage = parseInt(result.data, 10);
+                    if (model.stageNumber === stage) {
+                        resolve();
+                        return;
+                    }
+                    runStageRestore(() => model.setStageNumber(stage)).then(
+                        () => resolve(),
+                    );
+                },
+                () => resolve(),
+            );
         });
     }
     public setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
@@ -124,15 +141,23 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
             .find(".bloom-editable")
             .focusout((event) => {
                 let createCkEditorBookMarks = true;
-                // We don't want to create bookmarks if we are switching from one text box on the page to another.
-                // Otherwise, we prevent switching text boxes altogether because the restoration of the bookmark
-                // will put focus back into the text box we are trying to leave.
-                // relatedTarget is what we are switching to, if anything.
-                if (
-                    event.relatedTarget &&
-                    event.relatedTarget !== event.target &&
-                    event.relatedTarget.matches(".bloom-editable")
-                )
+                // We don't want to create bookmarks if the focus is staying in this page: going to
+                // another text box, or to nothing at all, as when the user clicks the dark area
+                // around the page. Restoring the bookmark puts the focus back into the text box
+                // we are leaving, so switching text boxes would be impossible. And when it pulls
+                // the focus back from nowhere, ckeditor (whose own focus-out handler runs after
+                // this one and locks its selection) is left focused with that locked selection,
+                // and since the box never loses the focus again, nothing unlocks it. Every later
+                // markup pass then records the caret where the lock says it is, and so puts the
+                // caret back where it was before the click away, wherever the user has clicked
+                // or typed since (BL-16916).
+                // Bookmarks are only worth having when the focus leaves Bloom's window (for
+                // another program), from where it can come back to this box without a click
+                // that puts the caret somewhere. A click anywhere in the window, the toolbox
+                // included, counts as staying: while this event runs, the page's document
+                // still has the focus, since the browser hands it to the toolbox's frame only
+                // afterwards.
+                if (event.target.ownerDocument.hasFocus())
                     createCkEditorBookMarks = false;
                 // If the Format (Styles) dialog is showing, then we don't want to create
                 // bookmarks.  The div#format-toolbar is instantiated only when the dialog

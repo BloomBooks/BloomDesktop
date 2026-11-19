@@ -62,6 +62,30 @@ namespace Bloom.Book
         // See NeedsPageLayoutUpdate.
         internal const string kPageLayoutUpdateLevelMeta = "pageLayoutUpdateLevel";
 
+        // How many times, in this Bloom session, anything has recorded that a book's page layout
+        // changed (RecordPageLayoutChanged). See PageLayoutChangeCount.
+        private static int s_pageLayoutChangeCount;
+
+        /// <summary>
+        /// How many times, in this Bloom session, anything has recorded that a book's page layout
+        /// changed. A caller that remembers this when it runs the page layout update can tell, later,
+        /// whether a book still needing the update has changed since (and is worth another try) or
+        /// is one whose update failed (see EditingModel.UpdatePageLayoutForAllPagesIfNeeded).
+        /// </summary>
+        public static int PageLayoutChangeCount => Volatile.Read(ref s_pageLayoutChangeCount);
+
+        /// <summary>
+        /// True while an automatic page layout update (UpdatePageLayoutIfNeededThen) is rewriting
+        /// <paramref name="book"/> on another thread. Nothing else may read or change the book then.
+        /// </summary>
+        public static bool IsPageLayoutUpdateUnderway(Book book)
+        {
+            if (book == null)
+                return false;
+            lock (s_automaticPageLayoutUpdateLock)
+                return s_automaticPageLayoutUpdateUnderway.Contains(book.ID);
+        }
+
         // Books whose automatic page layout update has been started and has not yet finished. While a
         // book is here, its pass owns it: the pass rebuilds the book on a background thread, and
         // anything else that brought the book up to date meanwhile would do so at the same time.
@@ -272,12 +296,18 @@ namespace Bloom.Book
             if (!string.IsNullOrEmpty(book.CheckForErrors()))
                 return false;
 
-            if (
-                !int.TryParse(
-                    book.OurHtmlDom.GetMetaValue(kPageLayoutUpdateLevelMeta, "0"),
-                    out var level
-                )
-            )
+            return RecordsPageLayoutUpdateLevelBelowOurs(book.OurHtmlDom);
+        }
+
+        /// <summary>
+        /// True if the page layout update level that <paramref name="dom"/> records is missing,
+        /// unreadable, or below BookStorage.kPageLayoutUpdateLevel. This reads one meta element, so
+        /// a caller that runs often can ask it before the more expensive checks in
+        /// NeedsPageLayoutUpdate; when it is false, NeedsPageLayoutUpdate is false too.
+        /// </summary>
+        internal static bool RecordsPageLayoutUpdateLevelBelowOurs(HtmlDom dom)
+        {
+            if (!int.TryParse(dom.GetMetaValue(kPageLayoutUpdateLevelMeta, "0"), out var level))
                 level = 0; // missing or unreadable: treat as never done
             return level < BookStorage.kPageLayoutUpdateLevel;
         }
@@ -290,6 +320,7 @@ namespace Bloom.Book
         internal static void RecordPageLayoutChanged(HtmlDom dom)
         {
             dom.UpdateMetaElement(kPageLayoutUpdateLevelMeta, "0");
+            Interlocked.Increment(ref s_pageLayoutChangeCount);
         }
 
         /// <summary>
@@ -634,7 +665,12 @@ namespace Bloom.Book
             // Force a full update so shared/derived data (titles, metadata) is sucked in, matching
             // what the live editor does when leaving a page that changed such data. We delay the
             // actual write to disk until a single Book.Save() after all pages are processed.
-            book.UpdateDomFromEditedPage(editedDom, out _, needToDoFullSave: true);
+            book.UpdateDomFromEditedPage(
+                editedDom,
+                out _,
+                needToDoFullSave: true,
+                anythingChanged: out _
+            );
         }
 
         /// <summary>
@@ -642,9 +678,9 @@ namespace Bloom.Book
         /// given off-screen browser until it is non-empty or we time out, returning the result.
         ///
         /// We deliberately keep this "poll a window global" approach for the off-screen processor rather than
-        /// the async editView/pageContent API callback the live editor uses: that callback pattern needs the
-        /// live EditingModel and edit WebSocket channel, which a throwaway off-screen browser doesn't have,
-        /// and the per-page loop here wants a deterministic in-line result. Each poll blocks the calling
+        /// the editView/pageSnapshot API the live editor posts to: that feeds the live EditingModel, which a
+        /// throwaway off-screen browser has no business touching, and the per-page loop here wants a
+        /// deterministic in-line result. Each poll blocks the calling
         /// thread while the browser's OWN thread runs the script, so we never pump the main UI message loop
         /// between polls (just sleep briefly) — this is what replaced the old
         /// RunJavascriptWithStringResult_Sync_Dangerous, which pumped the main loop and risked the reentrancy

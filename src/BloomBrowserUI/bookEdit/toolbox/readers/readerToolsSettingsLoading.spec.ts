@@ -96,4 +96,23 @@ describe("beginLoadSynphonySettings", () => {
         expect(getTheOneReaderToolsModel().synphony).toBeDefined();
         expect(getTheOneReaderToolsModel().getNumberOfLevels()).toBe(2);
     });
+
+    // A replaced model has no Sample Texts watcher either, and the reload path used to set only
+    // synphony -- so anything that then asked to hear about sample-file changes, as the setup
+    // dialog's Sample Words tab does on mount, dereferenced undefined and threw. (BL-16607)
+    it("gives the replacement model a Sample Texts watcher, not just the settings", async () => {
+        await beginLoadSynphonySettings();
+
+        // sanity check: the first load is the one that has always set the watcher up
+        expect(getTheOneReaderToolsModel().directoryWatcher).toBeDefined();
+
+        // Stand in for the model having been thrown away and remade: a fresh one has neither
+        // the settings nor the watcher, while this module still thinks it loaded them.
+        getTheOneReaderToolsModel().synphony = undefined;
+        getTheOneReaderToolsModel().directoryWatcher = undefined;
+
+        await beginLoadSynphonySettings();
+
+        expect(getTheOneReaderToolsModel().directoryWatcher).toBeDefined();
+    });
 });

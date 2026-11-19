@@ -7,7 +7,13 @@
  *
  */
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from "vitest";
-import { theOneLibSynphony, LanguageData } from "./synphony_lib.js";
+import {
+    theOneLibSynphony,
+    LanguageData,
+    ResetLanguageDataGraphemes,
+    ResetLanguageDataInstance,
+    theOneLanguageDataInstance,
+} from "./synphony_lib.js";
 import "./bloomSynphonyExtensions"; //add several functions to LanguageData
 
 describe("LanguageData", function () {
@@ -215,5 +221,49 @@ describe("LanguageData", function () {
         expect(langData.group1.length).toEqual(10);
         expect(langData.group1[4].Name).toEqual("bilong");
         expect(langData.group1[4].Count).toEqual(14383);
+    });
+});
+
+// Reader settings are re-applied by adding graphemes onto the one LanguageData, and addGrapheme
+// only ever adds. So when the alphabet may have changed, the grapheme side has to be cleared
+// first or a letter combination the user deleted lingers and keeps being counted as a single
+// letter (see ReaderToolsModel.getWordLength). In allowed-words mode we must do that *without*
+// discarding the loaded vocabulary, which the setup dialog's matching-words preview still needs.
+describe("ResetLanguageDataGraphemes", function () {
+    beforeEach(function () {
+        ResetLanguageDataInstance();
+        theOneLanguageDataInstance.addGrapheme(["a", "c", "ch", "t"]);
+        theOneLanguageDataInstance.LanguageSortOrder = ["a", "c", "ch", "t"];
+        theOneLanguageDataInstance.addWord(["cat", "chat"]);
+    });
+
+    it("clears the graphemes so a deleted letter combination cannot linger", function () {
+        // Sanity check the starting state, so a pass here cannot be a false positive.
+        expect(theOneLanguageDataInstance.GPCS.length).toEqual(4);
+
+        ResetLanguageDataGraphemes();
+
+        expect(theOneLanguageDataInstance.GPCS).toEqual([]);
+        expect(theOneLanguageDataInstance.LanguageSortOrder).toEqual([]);
+    });
+
+    it("keeps the loaded words, which the setup dialog's preview still needs", function () {
+        expect(theOneLanguageDataInstance.group1.length).toEqual(2);
+
+        ResetLanguageDataGraphemes();
+
+        expect(theOneLanguageDataInstance.group1.length).toEqual(2);
+        expect(theOneLanguageDataInstance.findWord("chat")).toBeTruthy();
+    });
+
+    it("leaves the instance usable, so re-adding the alphabet works", function () {
+        ResetLanguageDataGraphemes();
+        theOneLanguageDataInstance.addGrapheme(["a", "c", "t"]);
+
+        expect(
+            theOneLanguageDataInstance.GPCS.map(function (gpc) {
+                return gpc.Grapheme;
+            }),
+        ).toEqual(["a", "c", "t"]);
     });
 });

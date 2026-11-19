@@ -199,7 +199,7 @@ namespace Bloom.Publish.BloomPub.usb
                 var info = new FileInfo(pathToBloomPubFile);
                 size = info.Length / 1048576m; // file length is in bytes and 1Mb = 1024 * 1024 bytes
             }
-            return size.ToString("F1");
+            return size.ToString("F1", UserCulture.Current);
         }
 
         protected virtual void SendBookDoWork(

@@ -48,6 +48,16 @@ namespace Bloom.Spreadsheet
         public const string PageContentRowLabel = "[page content]";
         public const string ImageDescriptionRowLabel = "[image description]";
 
+        /// <summary>
+        /// Turns a spreadsheet row label such as "[cover image]" into the data-book label
+        /// "coverImage", by removing the brackets and camel-casing at each space.
+        /// </summary>
+        /// <remarks>
+        /// ToUpperInvariant, not ToUpper: these are ASCII identifiers that must come out the same on
+        /// every machine, and Turkish maps 'i' to the DOTTED capital 'İ' (U+0130). With the
+        /// culture-sensitive version, a Turkish user got "coverİmage", which matches no data-book
+        /// label, so the cover image was silently dropped from the spreadsheet. See BL-16754.
+        /// </remarks>
         internal static string MapRowLabelToDataBookLabel(string rowTypeLabel)
         {
             var label = rowTypeLabel.Substring(1, rowTypeLabel.Length - 2); // remove brackets
@@ -55,7 +65,7 @@ namespace Bloom.Spreadsheet
             {
                 var match = Regex.Match(label, @"( )([a-z0-9])");
                 if (match.Success)
-                    label = label.Replace(match.Value, match.Groups[2].Value.ToUpper());
+                    label = label.Replace(match.Value, match.Groups[2].Value.ToUpperInvariant());
                 else
                     break;
             }
@@ -64,6 +74,15 @@ namespace Bloom.Spreadsheet
             return label;
         }
 
+        /// <summary>
+        /// The inverse of <see cref="MapRowLabelToDataBookLabel"/>: turns a data-book label such as
+        /// "coverImage" into the spreadsheet row label "[cover image]".
+        /// </summary>
+        /// <remarks>
+        /// ToLowerInvariant for the same reason its inverse uses ToUpperInvariant: Turkish maps 'I'
+        /// to the DOTLESS 'ı' (U+0131), which would produce "[cover ımage]" — a label that then
+        /// round-trips back to something else again. See BL-16754.
+        /// </remarks>
         internal static string MapDataBookLabelToRowLabel(string dataBookLabel)
         {
             var trimmedLabel = dataBookLabel.Trim();
@@ -73,7 +92,7 @@ namespace Bloom.Spreadsheet
                 if (match.Success)
                     trimmedLabel = trimmedLabel.Replace(
                         match.Groups[1].Value,
-                        " " + match.Groups[1].Value.ToLower()
+                        " " + match.Groups[1].Value.ToLowerInvariant()
                     );
                 else
                     break;

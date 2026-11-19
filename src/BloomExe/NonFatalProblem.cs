@@ -392,6 +392,7 @@ namespace Bloom
                 action = new ToastAction
                 {
                     Label = "Report",
+                    L10nId = "ErrorReport.Report",
                     Callback = () =>
                     {
                         var formForSynchronizing = Shell.GetShellOrOtherOpenForm();
@@ -410,6 +411,7 @@ namespace Bloom
                 action = new ToastAction
                 {
                     Label = "Details",
+                    L10nId = "ErrorReport.Details",
                     Callback = () =>
                     {
                         ErrorReport.NotifyUserOfProblem(

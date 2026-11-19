@@ -150,6 +150,7 @@ export const SubscriptionBadgeWithTooltipAndDialog: React.FunctionComponent<{
     return (
         <BloomTooltip tip={featureMessage} placement="bottom-end">
             <img
+                data-testid="subscription-badge"
                 css={css`
                     height: 1.5em;
                     margin-left: 1em;
@@ -513,7 +514,10 @@ export const RequiresSubscriptionDialog: React.FunctionComponent<{
 
     return (
         <BloomDialog {...propsForBloomDialog}>
-            <div>
+            {/* The test id is how an automated test can tell that this dialog, rather than some
+                other one, is showing: its title is localized, and MUI unmounts the children of a
+                closed dialog, so the id is present only while it is open. */}
+            <div data-testid="requires-subscription-dialog">
                 <DialogTitle
                     title={dialogTitle}
                     css={css`

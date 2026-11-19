@@ -34,6 +34,7 @@ namespace BloomTests.Publish.Epub
     {
         protected readonly XNamespace _xhtml = "http://www.w3.org/1999/xhtml";
         protected ZipFile _epub; // The ePUB that the test created, converted to a zip file.
+        private TemporaryFolder _epubFolder; // The folder MakeEpub saved _epub in.
         protected string _manifestFile; // The path in _epub to the main manifest file.
         protected string _manifestContent; // the contents of _manifestFile (as a string)
         protected string _page1Data; // contents of the file "1.xhtml" (the main content of the test book, typically)
@@ -80,6 +81,28 @@ namespace BloomTests.Publish.Epub
             s_pageChecksBrowser.Dispose();
             s_pageChecksBrowser = null;
             RetiredTestServers.Retire(s_testServer);
+        }
+
+        /// <summary>
+        /// Close the ePUB the test made and delete the folder it was saved in, as well as
+        /// what the base class cleans up. The open ZipFile holds the .epub file open, which
+        /// would otherwise stop the folder (and the test run's temp folder) being deleted.
+        /// </summary>
+        public override void TearDown()
+        {
+            CloseEpub();
+            base.TearDown();
+        }
+
+        /// <summary>
+        /// Release the ePUB made by the last call to MakeEpub, if any, and its folder.
+        /// </summary>
+        private void CloseEpub()
+        {
+            _epub?.Close();
+            _epub = null;
+            _epubFolder?.Dispose();
+            _epubFolder = null;
         }
 
         internal static BloomServer GetTestServer()
@@ -184,9 +207,11 @@ namespace BloomTests.Publish.Epub
             // But note that it must be done AFTER setting the branding (which in Bloom will happen well before
             // entering the Publish tab).
             book.BringBookUpToDate(new NullProgress());
-            var epubFolder = new TemporaryFolder(folderName);
+            // A test may make more than one ePUB; release the previous one before replacing it.
+            CloseEpub();
+            _epubFolder = new TemporaryFolder(folderName);
             var epubName = mainFileName + ".epub";
-            var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
+            var epubPath = Path.Combine(_epubFolder.FolderPath, epubName);
             using (var maker = CreateEpubMaker(book))
             {
                 maker.Unpaginated = unpaginated;

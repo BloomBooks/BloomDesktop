@@ -82,7 +82,6 @@ namespace Bloom.Publish.Epub
     {
         public delegate EpubMaker Factory(); // autofac uses this
 
-        public const string kEPUBExportFolder = "ePUB_export";
         private const int kPathMax = 260; // maximum path length on Windows (including terminating NUL)
 
         protected const string kEpubNamespace = "http://www.idpf.org/2007/ops";
@@ -95,10 +94,6 @@ namespace Bloom.Publish.Epub
         private Guid _thumbnailRequestId;
         private Dictionary<string, int> _omittedPageLabels = new Dictionary<string, int>();
 
-        public static readonly string EpubExportRootFolder = Path.Combine(
-            Path.GetTempPath(),
-            kEPUBExportFolder
-        );
         private string _navPageLang;
 
         public Book.Book Book
@@ -275,26 +270,7 @@ namespace Bloom.Publish.Epub
             );
             _langsForLocalization = Book.BookData.GetBasicBookLanguageCodes().ToArray();
 
-            // robustly come up with a directory we can use, even if previously used directories are locked somehow
-            Directory.CreateDirectory(EpubExportRootFolder); // this is ok if it already exists
-            for (var i = 0; i < 20; i++)
-            {
-                var dir = Path.Combine(EpubExportRootFolder, i.ToString());
-
-                if (Directory.Exists(dir))
-                {
-                    // see if we can delete this old directory first
-                    if (!SIL.IO.RobustIO.DeleteDirectoryAndContents(dir))
-                    {
-                        progress.MessageWithoutLocalizing("could not remove " + dir);
-                        continue; // if not, let's change the target directory name and try again
-                    }
-                }
-
-                Directory.CreateDirectory(dir);
-                _outerStagingFolder = TemporaryFolder.TrackExisting(dir);
-                break;
-            }
+            _outerStagingFolder = PublishStaging.CreateFolder();
 
             var tempBookPath = Path.Combine(
                 _outerStagingFolder.FolderPath,
@@ -347,7 +323,7 @@ namespace Bloom.Publish.Epub
             if (Platform.IsWindows)
             {
                 // https://issues.bloomlibrary.org/youtrack/issue/BH-5988 has a book with an image file whose name is 167 characters long.
-                // "C:\Users\steve\AppData\Local\Temp\ePUB_export\0" is already 47 characters long, and usernames can certainly be longer
+                // "C:\Users\steve\AppData\Local\Temp\bps\k3x9q" is already 43 characters long, and usernames can certainly be longer
                 // than 5 characters.  So we can't really afford much more in the folder name.  Certainly adding the full GUID will make
                 // this file's path too long, throwing an exception rather than creating an ePUB.  (This may not happen on the local user's
                 // machine, but certainly will on the harvester machine.)
@@ -591,40 +567,15 @@ namespace Bloom.Publish.Epub
 
         public static void GetPageDimensions(string pageSize, out double width, out double height)
         {
-            var path = FileLocationUtilities.GetFileDistributedWithApplication("pageSizes.json");
-            var json = RobustFile.ReadAllText(path);
-            var sizes = DynamicJson.Parse(json).sizes;
-            // FirstOrDefault would be cleaner, but I can't figure out how to use it with dynamic data.
-            for (int i = 0; i < sizes.Count; i++)
+            const double pixelsPerMillimeter = 96d / 25.4d;
+            if (!SizeAndOrientation.TryGetSizeInMillimeters(pageSize, out var dimensions))
             {
-                if (sizes[i].size == pageSize)
-                {
-                    width = ConvertDimension(sizes[i].width);
-                    height = ConvertDimension(sizes[i].height);
-                    return;
-                }
+                // Unknown: use A5Portrait.
+                SizeAndOrientation.TryGetSizeInMillimeters("A5Portrait", out dimensions);
             }
-            // unknown: use first (which should be A5Portrait)
-            width = ConvertDimension(sizes[0].width);
-            height = ConvertDimension(sizes[0].height);
-        }
 
-        // Method must parse the json input in a culture invariant manner, since the computer's culture may not match
-        // the culture of the json file.
-        // Returns the dimension in pixels at 96 DPI. Supported units: "px" (already pixels),
-        // "mm", and anything else is treated as inches.
-        private static double ConvertDimension(string input)
-        {
-            string unit = input.Substring(input.Length - 2);
-            var num = Double.Parse(
-                input.Substring(0, input.Length - 2),
-                CultureInfo.InvariantCulture
-            );
-            double pixelsPerUnit =
-                unit == "px" ? 1
-                : unit == "mm" ? 96 / 25.4
-                : 96;
-            return num * pixelsPerUnit;
+            width = dimensions.width * pixelsPerMillimeter;
+            height = dimensions.height * pixelsPerMillimeter;
         }
 
         /// <summary>

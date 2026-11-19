@@ -41,7 +41,7 @@ import * as toastr from "toastr";
 import WebSocketManager, {
     IBloomWebSocketEvent,
 } from "../../../utils/WebSocketManager";
-import { getActiveToolId, ToolBox } from "../toolbox";
+import { getEffectiveToolId } from "../toolbox";
 import * as React from "react";
 import { renderRoot } from "../../../utils/reactRender";
 import {
@@ -59,6 +59,7 @@ import { setupImageDescriptions } from "../imageDescription/imageDescription";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { createValidXhtmlUniqueId } from "../../js/xhtmlIdUtils";
 import { doesNarrationExist, kAnyRecordingApiUrl } from "./audioUtils";
+import { wrapWithRequestPageContentDelay } from "../../js/pageContentDelays";
 import {
     hideImageDescriptions,
     showImageDescriptions,
@@ -70,7 +71,11 @@ import {
     FeatureStatus,
     getFeatureStatusAsync,
 } from "../../../react_components/featureStatus";
-import { animateStyleName } from "../../../utils/shared";
+import {
+    animateStyleName,
+    getPageIFrame,
+    getPageIframeBody,
+} from "../../../utils/shared";
 import jQuery from "jquery";
 import {
     AudioHighlightManager,
@@ -99,18 +104,15 @@ export function getAllAudioModes(): AudioMode[] {
 
 const kWebsocketContext = "audio-recording";
 const kSegmentClass = "bloom-highlightSegment";
-// Indicates that the element should be highlighted.
-const kEnableHighlightClass = "ui-enableHighlight";
-// Indicates that the element should NOT be highlighted.
-// For example, some elements have highlighting prevented at this level
-// because its content has been broken into child elements, only some of which show the highlight
-const kDisableHighlightClass = "ui-disableHighlight";
 const kAudioSentence = "audio-sentence"; // Even though these can now encompass more than strict sentences, we continue to use this class name for backwards compatability reasons
 const kAudioSentenceClassSelector = "." + kAudioSentence;
 const kBloomEditableTextBoxClass = "bloom-editable";
 const kBloomEditableTextBoxSelector = "div.bloom-editable";
 const kBloomTranslationGroupClass = "bloom-translationGroup";
 const kBloomVisibleClass = "bloom-visibility-code-on";
+
+// Identifies the page-save delay this tool registers while an import is writing to the page.
+const kImportRecordingDelayId = "importRecording";
 
 const kEndTimeAttributeName: string = "data-audioRecordingEndTimes";
 const kPlaybackOrderContainerClass: string =
@@ -185,7 +187,18 @@ export default class AudioRecording implements IAudioRecorder {
     // Therefore, decided to use a cached copy instead.
     private cachedCollectionDefaultRecordingMode: RecordingMode;
 
-    private isShowing: boolean;
+    // Is the Talking Book TOOL running -- expanded, with the toolbox showing? It says nothing
+    // about whether this class is playing or recording at the moment.
+    //
+    // An AudioRecording does not belong to one tool: the Motion and Music tools each make one
+    // of their own to preview narration (motionTool.tsx, musicToolControls.tsx). On those
+    // instances this stays false, because only the Talking Book tool's lifecycle touches it --
+    // setupForRecordingAsync() sets it, handleToolHiding() clears it.
+    //
+    // It is the reliable signal for "is that tool running": getEffectiveToolId() can still
+    // answer "talkingBook" for a moment after the tool has gone. toolboxState.ts has the
+    // vocabulary.
+    private isTalkingBookToolRunning: boolean;
 
     // map<string, string[]> from a sentence to the desired IDs for that span (instead of using a new, dynamically generated one)
     // We have a string[] representing the IdList instead of just a string ID because a text box could potentially contain the same sentence multiple times.
@@ -472,7 +485,7 @@ export default class AudioRecording implements IAudioRecorder {
     // This function should contain only work that needs to be done when the tool is opened.
     // Initialization that happens for a new page should happen in newPageReady instead.
     public async setupForRecordingAsync(): Promise<void> {
-        this.isShowing = true;
+        this.isTalkingBookToolRunning = true;
 
         this.updateInputDeviceDisplay();
 
@@ -534,13 +547,13 @@ export default class AudioRecording implements IAudioRecorder {
         const page = this.getPageDocBodyJQuery();
         if (this.inShowPlaybackOrderMode) {
             // We are removing the UI because we're changing tools or pages, but we want to leave
-            // the checkbox checked for the next time this tool is active, so it will turn on the
+            // the checkbox checked for the next time this tool runs, so it will turn on the
             // playback order UI again. The 'true' param tells the method to leave the checkbox checked.
             this.removePlaybackOrderUi(<HTMLElement>page[0], true);
         }
 
         // In case of the Play -> Pause -> change page.
-        this.revertFixHighlighting();
+        this.refreshAudioTextHighlights();
     }
 
     public stopListeningForLevels() {
@@ -571,7 +584,7 @@ export default class AudioRecording implements IAudioRecorder {
     // And BL-5457: Check that we actually have recordable text in the divs we return.
     // And now (BL-7883) we want to optionally order the divs by the tabindex attribute
     // on their parent translationGroup div.
-    // And also (BL-8515) filter out image description text, if that tool is not active.
+    // And also (BL-8515) filter out image description text, if that tool is not running.
     private getRecordableDivs(
         includeCheckForText: boolean = true,
         includeCheckForPlaybackOrder: boolean = true,
@@ -927,31 +940,32 @@ export default class AudioRecording implements IAudioRecorder {
         this.updateIconMarker(null);
     }
 
-    // I'm not sure why activeToolId falsy should count as "true" but that's how some old code
+    // I'm not sure why the effective tool id being falsy should count as "true" but that's
+    // how some old code
     // in setSoundAndHighlightAsync was written. It might be because when we're first showing
     // the toolbox, the default talking book tool starts being initialized before we actually
-    // set what getActiveToolId() is looking for.
+    // set what getEffectiveToolId() is looking for.
     // This used to be isTalkingBookToolActive, but the motion tool also plays audio
     // when previewing.
-    private doesCurrentToolPlayAudio(): boolean {
-        const activeToolId = getActiveToolId();
+    private doesEffectiveToolPlayAudio(): boolean {
+        const effectiveToolId = getEffectiveToolId();
         return (
-            activeToolId === "talkingBook" ||
-            activeToolId === "motion" ||
-            (!activeToolId && this.isShowing)
+            effectiveToolId === "talkingBook" ||
+            effectiveToolId === "motion" ||
+            (!effectiveToolId && this.isTalkingBookToolRunning)
         );
     }
 
     public async setSoundAndHighlightAsync(
         setHighlightParams: ISetHighlightParams,
     ): Promise<void> {
-        // Check that the active tool is not something other than "talkingBook".  A page
-        // can specify a tool it wants to be active initially when it first loads.
+        // Check that the tool in effect is not something other than "talkingBook". A page
+        // can specify a tool it wants to be open initially when it first loads.
         // The multiple asynchronous calls during page loading can result in the wrong
         // tool getting the "newPageReady" method called when the new page specifies a
         // different tool to be activated.  This is the simplest fix that I've found.
         // See BL-14434.
-        if (!this.doesCurrentToolPlayAudio()) return;
+        if (!this.doesEffectiveToolPlayAudio()) return;
 
         // Note: setHighlightToAsync() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
         await this.setHighlightToAsync(setHighlightParams);
@@ -975,7 +989,7 @@ export default class AudioRecording implements IAudioRecorder {
     }: ISetHighlightParams): Promise<void> {
         // This is a last-ditch defense against something async turning the hightlight on
         // after we have switched to a different tool.
-        if (!this.doesCurrentToolPlayAudio()) {
+        if (!this.doesEffectiveToolPlayAudio()) {
             return;
         }
 
@@ -1278,7 +1292,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     private urlPrefix(): string {
-        const pageFrame = this.getPageFrame()!; // Note: Just fail fast if it's null.
+        const pageFrame = getPageIFrame(); // Note: Just fail fast if it's null.
         const bookSrc = pageFrame.src;
         const index = bookSrc.lastIndexOf("/");
         const bookFolderUrl = bookSrc.substring(0, index + 1);
@@ -1322,6 +1336,21 @@ export default class AudioRecording implements IAudioRecorder {
         // Otherwise the custom-highlight logic will still treat the textbox as "post split"
         // and suppress the yellow current highlight we want to show as Speak starts.
         this.clearAudioSplit();
+
+        // This recording is about to be named after the current selection, so make sure that
+        // selection is on the page being shown before the normalising step below uses it. That
+        // step walks UP from whatever is highlighted, and walking up from a node that is no
+        // longer in the page reaches nothing -- so it would hand back that same off-page node and
+        // then install it as the selection, and the recording would be filed under an id nothing
+        // on the page owns (BL-16873).
+        //
+        // Behind the synchronous check so the ordinary case adds no await here. Everything below is
+        // timing-sensitive: delaying `recording = true` by even one microtask lets a fast mouseup
+        // arrive before this method has armed anything for it to cancel, which leaves the record
+        // button looking active after the user has let go.
+        if (this.isHighlightStale()) {
+            await this.ensureHighlightIsOnTheCurrentPageAsync();
+        }
 
         // If we were paused highlighting one sentence but are recording in text box mode,
         // things could get confusing. At least make sure the selection reflects what we
@@ -1369,9 +1398,84 @@ export default class AudioRecording implements IAudioRecorder {
             });
     }
 
+    // Whether there IS a selection and it points somewhere other than the page being shown.
+    // Having no selection at all is not this: that is the ordinary "nothing chosen yet" case,
+    // which the usual default-selection code handles.
+    //
+    // Synchronous on purpose, so that a caller on a timing-sensitive path can check cheaply and
+    // pay for the async repair only when there is something to repair. See its use in
+    // startRecordCurrentAsync, where an extra await would be enough to matter.
+    private isHighlightStale(): boolean {
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) return false;
+        const current = this.highlightedElement;
+        return !!current && !pageBody.contains(current);
+    }
+
+    // Make sure the selection points at something that is actually on the page being shown, so
+    // that whatever names an audio file after it names one the page can find again.
+    //
+    // highlightedElement can be left pointing at a node that is no longer in the page: CKEditor's
+    // initialization replaces the paragraph it lived in, and a page change leaves it in the
+    // previous, detached document. (reestablishCurrentHighlightIfNeeded repairs the same staleness
+    // for the *visible* highlight; this is the equivalent for the selection we file audio under.)
+    //
+    // Walking up from a detached node reaches null rather than the enclosing text box, so asking
+    // getCurrentAudioSentence() is not enough on its own -- the selection has to be back on the
+    // live page before that walk can mean anything.
+    private async ensureHighlightIsOnTheCurrentPageAsync(): Promise<void> {
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) return;
+        const current = this.highlightedElement;
+        if (current && pageBody.contains(current)) return;
+
+        const liveEquivalent = current?.id
+            ? pageBody.ownerDocument.getElementById(current.id)
+            : null;
+        if (liveEquivalent) {
+            this.highlightedElement = liveEquivalent as HTMLElement;
+            return;
+        }
+        await this.setCurrentAudioElementToDefaultAsync();
+
+        // That gives up without choosing anything in several cases (most notably when the talking
+        // book tool is not the running one), so we may still be pointing off-page. Take one last
+        // step, but ONLY when the page leaves nothing to guess between: a single recordable box is
+        // unambiguously the one the user meant.
+        //
+        // Deliberately NOT "the first of several". The caller is about to name an audio file after
+        // whatever this leaves selected, and on a page with more than one text box (origami
+        // splits, a bilingual page) the first in document order is only a guess -- one that can put
+        // the narration on a box the user was not working in and replace what was already there.
+        // Silently destroying a recording is worse than failing to attach one, so when the page is
+        // ambiguous this leaves the selection alone and lets the caller come up empty.
+        //
+        // getRecordableDivs() rather than a DOM query, so we apply the same exclusions as every
+        // other selection path (hidden language blocks, image descriptions when that tool is off,
+        // boxes with no recordable text).
+        const afterDefault = this.highlightedElement;
+        if (afterDefault && pageBody.contains(afterDefault)) return;
+        const recordable = this.getRecordableDivs();
+        if (recordable.length === 1) this.highlightedElement = recordable[0];
+    }
+
+    // The id under which the current selection's audio file is stored, minting one if the element
+    // has not got an id yet.
+    //
+    // Callers must have made sure the highlight is on the current page first (see
+    // ensureHighlightIsOnTheCurrentPageAsync); a detached node has no ancestors to walk up to.
+    //
+    // Asks getCurrentAudioSentence() rather than reading highlightedElement, because the highlight
+    // is not always on the element that OWNS the audio: in soft-split mode it sits on the
+    // highlighted sub-element, and after switching back from By Sentence to By Whole Text Box it
+    // can still be on a paragraph inside the box. The audio belongs to the enclosing
+    // audio-sentence, and that is the only name the tool ever looks under. Name a file after a
+    // sub-element instead and the mp3 belongs to nothing the page can find, with a stray id left
+    // on the sub-element into the bargain -- the recording is simply gone as far as the user is
+    // concerned (BL-16873).
     private getCurrentAudioId(): string | undefined {
         let id: string | undefined = undefined;
-        const currentElement = this.highlightedElement;
+        const currentElement = this.getCurrentAudioSentence();
         if (currentElement) {
             if (currentElement.hasAttribute("id")) {
                 id = currentElement.getAttribute("id")!;
@@ -1551,11 +1655,6 @@ export default class AudioRecording implements IAudioRecorder {
 
         const oldElementsToPlay = this.elementsToPlayConsecutivelyStack;
         const oldTimings = this.subElementsWithTimings;
-
-        const audioElement = this.getCurrentAudioSentence();
-        if (audioElement) {
-            this.fixHighlighting(audioElement);
-        }
 
         this.elementsToPlayConsecutivelyStack = [];
 
@@ -1749,7 +1848,6 @@ export default class AudioRecording implements IAudioRecorder {
         getWorkspaceBundleExports().showAdjustTimingsDialogFromWorkspaceRoot(
             currentTextBox,
             this.split,
-            this.editTimingsFileAsync,
             this.applyTimingsFileAsync,
             (canceled) => {
                 if (!canceled) {
@@ -1874,8 +1972,6 @@ export default class AudioRecording implements IAudioRecorder {
     public async listenAsync(canvasToExclude?: HTMLElement): Promise<void> {
         this.resetAudioIfPaused();
 
-        this.fixHighlighting();
-
         this.elementsToPlayConsecutivelyStack = jQuery
             .makeArray(this.sortByTabindex(this.getAudioElements(false)))
             .reverse();
@@ -1967,7 +2063,7 @@ export default class AudioRecording implements IAudioRecorder {
             }
         }
 
-        this.revertFixHighlighting();
+        this.refreshAudioTextHighlights();
 
         // As in playEndedAsync(), Split is the natural next step. ("next" is automatically
         // substituted for "split" if we're in a mode where "split" does not apply.)
@@ -1982,7 +2078,7 @@ export default class AudioRecording implements IAudioRecorder {
     private async playEndedAsync(): Promise<void> {
         this.clearSubElementHighlightTimeout();
 
-        if (!this.doesCurrentToolPlayAudio()) {
+        if (!this.doesEffectiveToolPlayAudio()) {
             this.elementsToPlayConsecutivelyStack = [];
             this.subElementsWithTimings = [];
             this.listening = false;
@@ -2033,7 +2129,7 @@ export default class AudioRecording implements IAudioRecorder {
                     }
                 }
 
-                this.revertFixHighlighting();
+                this.refreshAudioTextHighlights();
 
                 // For Play (Check) in sentence mode, no need to adjust the current highlight. Just leave it on whatever it was on before.
                 //  (Assumption: Record by Sentence, Play by Text Box mode combination is not allowed)
@@ -2041,7 +2137,7 @@ export default class AudioRecording implements IAudioRecorder {
                 // Enhance: Or maybe for Listen To Whole Page, it should remember what the highlight was on before and move it back to there?
             }
         } else {
-            this.revertFixHighlighting();
+            this.refreshAudioTextHighlights();
         }
 
         // Change state to "Split" if possible but fallback to Next if not.
@@ -2280,7 +2376,7 @@ export default class AudioRecording implements IAudioRecorder {
     // together in one place.
     public async setShowingImageDescriptions(isOn: boolean) {
         this.showingImageDescriptions = isOn;
-        const page = ToolBox.getPage();
+        const page = getPageIframeBody();
         if (this.showingImageDescriptions) {
             if (page) {
                 // we should always have a page, but testing makes lint happy
@@ -2576,21 +2672,11 @@ export default class AudioRecording implements IAudioRecorder {
         // This only set the RECORDING mode. Don't touch the audio-sentence markup, which represents the PLAYBACK mode.
     }
 
-    // Gets the "page" iframe. May return null if the iframe doesn't exist (e.g., in testing, or while loading).
-    public getPageFrame(): HTMLIFrameElement | null {
-        // Enhance: Maybe should just use the version in workspaceFrames.ts instead?
-        //   (we could add an async version there that would return a promise which is fulfilled when the frame becomes available AND loaded.)
-        return <HTMLIFrameElement | null>(
-            parent?.window?.document?.getElementById("page")
-        );
-    }
-
     // The body of the editable page, a root for searching for document content.
+    // (This survives only because it is part of IAudioRecorder, which lets other code and the
+    // unit tests get at the page body through the recorder; the lookup itself lives in shared.ts.)
     public getPageDocBody(): HTMLElement | null {
-        // ENHANCE: What if the iFrame is there but hasn't finished loading yet? (Which will wipe contentWindow.document)
-        const page = this.getPageFrame();
-        if (!page || !page.contentWindow) return null;
-        return page.contentWindow.document.body;
+        return getPageIframeBody();
     }
 
     // The body of the editable page, a root for searching for document content.
@@ -2757,7 +2843,7 @@ export default class AudioRecording implements IAudioRecorder {
     // Determines which element should receive the Current Highlight
     //   (Notably, checks to see if we should move from the existing Current Highlight (determined via CSS classes) to the actively focused element instead.)
     private async getWhichTextBoxShouldReceiveHighlightAsync(): Promise<HTMLElement | null> {
-        const pageFrame = this.getPageFrame();
+        const pageFrame = getPageIFrame();
 
         // Determine which element should receive the current highlight
         if (
@@ -2870,7 +2956,7 @@ export default class AudioRecording implements IAudioRecorder {
         // Probably redundant, but some nasty things can happen when we try to changeStateAndSetExpectedAsync()
         // when setSoundAndHighlightAsync() didn't actually set the highlight because we're in another tool.
         // This makes things a little safer.
-        if (!this.doesCurrentToolPlayAudio()) return false;
+        if (!this.doesEffectiveToolPlayAudio()) return false;
         let boxToSelect = target.closest(kAudioSentenceClassSelector);
         if (!boxToSelect) {
             // if it isn't one and isn't inside one, see if it contains one
@@ -2951,7 +3037,7 @@ export default class AudioRecording implements IAudioRecorder {
             // Also do nothing if this instance is not the current AudioRecording (mainly a
             // concern in unit tests, which create several instances against a shared page).
             if (
-                !this.isShowing ||
+                !this.isTalkingBookToolRunning ||
                 !this.highlightedElement ||
                 (theOneAudioRecorder && theOneAudioRecorder !== this)
             ) {
@@ -3037,10 +3123,10 @@ export default class AudioRecording implements IAudioRecorder {
     private ensureHighlight(repeats: number) {
         // Stop the loop if the tool has been hidden (toolbox closed or a different tool selected).
         // Otherwise we would re-establish the highlight that handleToolHiding just cleared, leaving
-        // it stuck on the page after the tool is gone (BL-15300). getActiveToolId() can still be
-        // "talkingBook" right after closing, so isShowing -- which handleToolHiding clears -- is the
-        // reliable signal that the tool is actually active.
-        if (!this.isShowing) {
+        // it stuck on the page after the tool is gone (BL-15300). getEffectiveToolId() can still be
+        // "talkingBook" right after closing, so isTalkingBookToolRunning -- which handleToolHiding clears -- is the
+        // reliable signal that the tool is actually running.
+        if (!this.isTalkingBookToolRunning) {
             return;
         }
         this.reestablishCurrentHighlightIfNeeded();
@@ -3071,7 +3157,7 @@ export default class AudioRecording implements IAudioRecorder {
     private reestablishCurrentHighlightIfNeeded(): void {
         // Never (re-)establish the highlight while the tool is hidden; that would put back the
         // highlight handleToolHiding cleared when the toolbox was closed (BL-15300).
-        if (!this.isShowing) {
+        if (!this.isTalkingBookToolRunning) {
             return;
         }
         const pageBody = this.getPageDocBody();
@@ -3161,7 +3247,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
     public handleToolHiding() {
-        this.isShowing = false;
+        this.isTalkingBookToolRunning = false;
         this.wiredPlayer = null;
         // This ensures that no in-progress playback gets resumed by a timeout or end-play handler
         // after the tool closes.
@@ -3275,7 +3361,7 @@ export default class AudioRecording implements IAudioRecorder {
             // the async actions complete.
             await this.resetCurrentAudioElementAsync(currentTextBox);
 
-            // cleanUpNbsps() in toolbox.ts runs synchronously while we are suspended at the
+            // cleanUpNbsps() in pageEditingMarkup.ts runs synchronously while we are suspended at the
             // first await above.  It unconditionally sets editableDiv.innerHTML, detaching
             // the span that resetCurrentAudioElementAsync just registered as highlightedElement.
             // IDs are preserved through that replacement, so we can recover the live DOM node.
@@ -3469,7 +3555,7 @@ export default class AudioRecording implements IAudioRecorder {
         element: Element,
         isEarlyAbortEnabled: boolean = false,
     ): Promise<void> {
-        if (isEarlyAbortEnabled && !this.isShowing) {
+        if (isEarlyAbortEnabled && !this.isTalkingBookToolRunning) {
             // e.g., the tool was closed during the timeout interval. We must not apply any markup
             return;
         }
@@ -3507,7 +3593,7 @@ export default class AudioRecording implements IAudioRecorder {
         element: Element,
         isEarlyAbortEnabled: boolean = false,
     ) {
-        if (isEarlyAbortEnabled && !this.isShowing) {
+        if (isEarlyAbortEnabled && !this.isTalkingBookToolRunning) {
             // e.g., the tool was closed during the timeout interval. We must not apply any markup
             return;
         }
@@ -3558,18 +3644,18 @@ export default class AudioRecording implements IAudioRecorder {
     private canvasElementBeingHighlighted: HTMLElement | undefined;
 
     public async setCurrentAudioElementToDefaultAsync(): Promise<HTMLElement | null> {
-        // Seems very strange that we would be doing this when the talking book tool is not active.
+        // Seems very strange that we would be doing this when the talking book tool is not running.
         // Unfortunately there's a weird sequence of events that happens when we add a page that calls
         // for a particular tool (e.g., Game) and the toolbox isn't open. In the process of opening
         // the toolbox, we call newPageReady() for the (default) talking book tool. Various things
         // get initiated but not awaited. Then we finish switching to the desired tool. Eventually,
         // one of the async tasks completes and this gets called. On various paths it tries to
-        // select something, but setSoundAndHighlightAsync doesn't do it because the tool isn't active.
+        // select something, but setSoundAndHighlightAsync doesn't do it because the tool isn't running.
         // Then there's a loop in changeStateAndSetExpectedAsync that keeps trying to get something
         // selected...we can get into a recursive await/call stack that freezes Bloom.
         // This is one of several places where we give up trying to select something if the tool
-        // isn't active to prevent such problems.
-        if (!this.doesCurrentToolPlayAudio()) return null;
+        // isn't running to prevent such problems.
+        if (!this.doesEffectiveToolPlayAudio()) return null;
         const pageDocBody = this.getPageDocBody();
         if (!pageDocBody) {
             return null;
@@ -3811,7 +3897,12 @@ export default class AudioRecording implements IAudioRecorder {
                         name != "u" && // ckeditor underline
                         name != "sup" && // ckeditor superscript
                         name != "a" && // Allow users to manually insert hyperlinks 4.5, and support 4.6 hyperlinks
-                        !$(child).hasClass("bloom-ui") // don't process transient UI elements (e.g. the format button)
+                        !$(child).hasClass("bloom-ui") && // don't process transient UI elements (e.g. the format button)
+                        // Don't process contenteditable="false" elements inside the text, such
+                        // as an inline image (bloom-inlineImage). They hold no text to record,
+                        // and recursing into one reaches the img element, which this code would
+                        // then treat as a leaf and add audio markup to.
+                        child.getAttribute("contenteditable") !== "false"
                     ) {
                         processedChild = true;
                         updateFuncs.push(
@@ -4726,7 +4817,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     private getElementsToUpdateForCursor(): (Element | null)[] {
         const elementsToUpdate: (Element | null)[] = [];
-        elementsToUpdate.push(document.getElementById("toolbox"));
+        elementsToUpdate.push(document.querySelector(".toolboxRoot"));
 
         const pageBody = this.getPageDocBody();
         if (pageBody) {
@@ -4802,7 +4893,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public insertSegmentMarker(): void {
-        const selection = this.getPageFrame()!.contentWindow!.getSelection();
+        const selection = getPageIFrame().contentWindow!.getSelection();
         const range = selection!.getRangeAt(0);
         const marker = document.createTextNode("|");
         range.insertNode(marker);
@@ -4845,16 +4936,6 @@ export default class AudioRecording implements IAudioRecorder {
         this.notifyStateChanged();
     }
 
-    private editTimingsFileAsync = async (timingsFilePath?: string) => {
-        // we'll give this a real UI in the future. Also, not going to localize this yet.
-        const realTimingsFile = timingsFilePath;
-        alert(
-            `Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity" Either way, you will need to use the "Apply Timings File..." button to apply your changes.\r\n\r\nCurrent timings file is ${realTimingsFile}\r\nCurrent audio file is ${this.currentAudioId} (.wav or .mp3)`,
-        );
-        postJson("fileIO/openFileInDefaultEditor", {
-            path: realTimingsFile,
-        });
-    };
     private applyTimingsFileAsync = async (
         timingsFilePath?: string,
     ): Promise<string | undefined> => {
@@ -4893,6 +4974,15 @@ export default class AudioRecording implements IAudioRecorder {
         },
     };
 
+    // KNOWN LIMITATION: doesRecordingExistForCurrentSelection() reads the CACHED Play-button
+    // status, not whether the element the import is about to write to actually has a recording. So
+    // when that status is out of date with respect to the current selection, the "replace this
+    // recording?" warning is skipped and an existing recording is replaced without the user being
+    // asked.
+    //
+    // Settling the selection before this point does not help: the cached value is stale whenever
+    // it is read, whatever the selection is. Fixing it properly means asking the server about the
+    // element being written to.
     public handleImportRecordingClick(): void {
         if (this.doesRecordingExistForCurrentSelection()) {
             getWorkspaceBundleExports().showConfirmDialog(
@@ -4915,239 +5005,46 @@ export default class AudioRecording implements IAudioRecorder {
         const importPath: string = result.data;
         if (!importPath) return;
 
-        const resultAudioDir = await postJson(
-            "fileIO/getSpecialLocation",
-            "CurrentBookAudioDirectory",
-        );
+        // Everything from here changes the page across several server round trips: the owning
+        // element gets its id, and finishNewRecordingOrImportAsync rewrites the markup once the
+        // copy lands. Hold page saving off until that is finished, or a save can serialize the
+        // page before the id is written, and the mp3 then lives under an id the saved book does
+        // not contain. The wait starts only here, after the chooser has returned, so browsing for
+        // a file does not hold up a save.
+        //
+        // This narrows the window rather than closing it: requestPageContent abandons any delay
+        // after kMaxWaitTimeMs (4s) and captures the page anyway, so an import slower than that --
+        // a large mp3 on a slow disk -- can still be caught half-done. That cap belongs to the
+        // delay mechanism and is shared by everything that uses it, so it cannot be raised for
+        // this path alone.
+        await wrapWithRequestPageContentDelay(async () => {
+            // The file we are about to write is named after the current selection, so make sure
+            // that selection is really on the page being shown before we use it. The recording
+            // path does the equivalent in startRecordCurrentAsync.
+            await this.ensureHighlightIsOnTheCurrentPageAsync();
 
-        if (!resultAudioDir) {
-            return;
-        }
-
-        // If we ever import audio file types other than .mp3, we will need to update
-        // BookCompressor.AudioFileExtensions.
-        const targetPath =
-            resultAudioDir.data + "/" + this.getCurrentAudioId() + ".mp3";
-        await postData(
-            "fileIO/copyFile",
-            {
-                from: encodeURIComponent(importPath),
-                to: encodeURIComponent(targetPath),
-            },
-            this.finishNewRecordingOrImportAsync.bind(this),
-        );
-    }
-
-    // Returns all elements that match CSS selector {expr} as an array.
-    // Querying can optionally be restricted to {container}'s descendants
-    // If includeSelf is true, it includes both itself as well as its descendants.
-    // Otherwise, it only includes descendants.
-    // Also filters out imageDescriptions if we aren't supposed to be reading them.
-    private findAll(
-        expr: string,
-        container: HTMLElement | undefined = undefined,
-        includeSelf: boolean = false,
-    ): HTMLElement[] {
-        // querySelectorAll checks all the descendants
-        const allMatches: HTMLElement[] = [].slice.call(
-            (container || document).querySelectorAll(expr),
-        );
-
-        // Now check itself
-        if (includeSelf && container && container.matches(expr)) {
-            allMatches.push(container);
-        }
-
-        return allMatches;
-    }
-
-    // Match space or &nbsp; (\u00a0) or &ZeroWidthSpace; (\u200b). Must have three or more in a row to match.
-    // Geckofx would typically give something like `&nbsp;&nbsp;&nbsp; ` but wv2 usually gives something like `&nbsp; &nbsp; `
-    private multiSpaceRegex = /[ \u00a0\u200b]{3,}/;
-    private multiSpaceRegexGlobal = new RegExp(this.multiSpaceRegex, "g");
-
-    /**
-     * Finds and fixes any elements on the page that should have their audio-highlighting disabled.
-     */
-    public fixHighlighting(currentAudioElement?: HTMLElement) {
-        const audioElements = currentAudioElement
-            ? [currentAudioElement]
-            : this.getAudioElements();
-        audioElements.forEach((audioElement) => {
-            // FYI, don't need to process the bloom-linebreak spans. Nothing bad happens, just unnecessary.
-            const matches = this.findAll(
-                "span[id]:not(.bloom-linebreak)",
-                audioElement,
-                true,
+            const resultAudioDir = await postJson(
+                "fileIO/getSpecialLocation",
+                "CurrentBookAudioDirectory",
             );
-            matches.forEach((element) => {
-                // Simple check to help ensure that elements that don't need to be modified will remain untouched.
-                // This doesn't consider whether text that shouldn't be highlighted is already in inside an
-                // element with highlight disabled, but that's ok. The code down the stack checks that.
-                const containsNonHighlightText = !!element.innerText.match(
-                    this.multiSpaceRegex,
-                );
 
-                if (containsNonHighlightText) {
-                    if (!this.nodesToRestoreAfterPlayEnded.has(element.id)) {
-                        // Note: The map could already have the id if you do Play -> Pause -> Play
-                        // We want the modifications to exist during the Pause period,
-                        // and we want the original innerHTML to win, so that's why we need to check
-                        // if the ID exists already and avoid overwriting it.
-                        this.nodesToRestoreAfterPlayEnded.set(
-                            element.id,
-                            element.innerHTML,
-                        );
-                    }
+            if (!resultAudioDir) {
+                return;
+            }
 
-                    this.fixHighlightingInNode(element, element);
-                }
-            });
-        });
-    }
-
-    /**
-     * Recursively fixes the audio-highlighting within a node (whether element node or text node)
-     * @param node The node to recursively fix
-     * @param startingSpan The starting span, AKA the one that will receive .ui-audioCurrent in the future.
-     */
-    private fixHighlightingInNode(node: Node, startingSpan: HTMLSpanElement) {
-        if (
-            node.nodeType === Node.ELEMENT_NODE &&
-            (node as Element).classList.contains(kDisableHighlightClass)
-        ) {
-            // No need to process bloom-highlightDisabled elements (they've already been processed)
-            return;
-        } else if (node.nodeType === Node.TEXT_NODE) {
-            // Leaf node. Fix the highlighting, then go back up the stack.
-            this.fixHighlightingInTextNode(node, startingSpan);
-            return;
-        } else {
-            // Recursive case
-            const childNodesCopy = Array.from(node.childNodes); // Make a copy because node.childNodes is being mutated
-            childNodesCopy.forEach((childNode) => {
-                this.fixHighlightingInNode(childNode, startingSpan);
-            });
-        }
-    }
-
-    /**
-     * Analyzes a text node and fixes its highlighting.
-     */
-    private fixHighlightingInTextNode(
-        textNode: Node,
-        startingSpan: HTMLSpanElement,
-    ) {
-        if (textNode.nodeType !== Node.TEXT_NODE) {
-            throw new Error(
-                "Invalid argument to fixMultiSpaceInTextNode: node must be a TextNode",
+            // If we ever import audio file types other than .mp3, we will need to update
+            // BookCompressor.AudioFileExtensions.
+            const targetPath =
+                resultAudioDir.data + "/" + this.getCurrentAudioId() + ".mp3";
+            await postData(
+                "fileIO/copyFile",
+                {
+                    from: encodeURIComponent(importPath),
+                    to: encodeURIComponent(targetPath),
+                },
+                this.finishNewRecordingOrImportAsync.bind(this),
             );
-        }
-
-        if (!textNode.nodeValue) {
-            return;
-        }
-
-        // string.matchAll would be cleaner, but not supported in all browsers (in particular, FF60)
-        // Use RegExp.exec for greater compatibility.
-        this.multiSpaceRegexGlobal.lastIndex = 0; // RegExp.exec is stateful! Need to reset the state.
-        const matches: {
-            text: string;
-            startIndex: number;
-            endIndex: number; // the index of the first character to exclude
-        }[] = [];
-        let regexResult: RegExpExecArray | null;
-        while (
-            (regexResult = this.multiSpaceRegexGlobal.exec(
-                textNode.nodeValue,
-            )) != null
-        ) {
-            regexResult.forEach((matchingText) => {
-                matches.push({
-                    text: matchingText,
-                    startIndex:
-                        this.multiSpaceRegexGlobal.lastIndex -
-                        matchingText.length,
-                    endIndex: this.multiSpaceRegexGlobal.lastIndex, // the index of the first character to exclude
-                });
-            });
-        }
-
-        // First, generate the new DOM elements with the fixed highlighting.
-        const newNodes: Node[] = [];
-        if (matches.length === 0) {
-            // No matches
-            newNodes.push(this.makeHighlightedSpan(textNode.nodeValue));
-        } else {
-            let lastMatchEndIndex = 0; // the index of the first character to exclude of the last match
-            for (let i = 0; i < matches.length; ++i) {
-                const match = matches[i];
-
-                const preMatchText = textNode.nodeValue.slice(
-                    lastMatchEndIndex,
-                    match.startIndex,
-                );
-                lastMatchEndIndex = match.endIndex;
-                if (preMatchText)
-                    newNodes.push(this.makeHighlightedSpan(preMatchText));
-
-                newNodes.push(document.createTextNode(match.text));
-
-                if (i === matches.length - 1) {
-                    const postMatchText = textNode.nodeValue.slice(
-                        match.endIndex,
-                    );
-                    if (postMatchText) {
-                        newNodes.push(this.makeHighlightedSpan(postMatchText));
-                    }
-                }
-            }
-        }
-
-        // Next, replace the old DOM element with the new DOM elements
-        const oldNode = textNode;
-        if (oldNode.parentNode && newNodes && newNodes.length > 0) {
-            for (let i = 0; i < newNodes.length; ++i) {
-                const nodeToInsert = newNodes[i];
-                oldNode.parentNode.insertBefore(nodeToInsert, oldNode);
-            }
-
-            oldNode.parentNode.removeChild(oldNode);
-
-            // We need to set ancestor's background back to transparent (instead of highlighted),
-            // and let each of the newNodes's styles control whether to be highlighted or transparent.
-            // If ancestor was highlighted but one of its new descendant nodes was transparent,
-            // all that would happen is the descendant would allow the ancestor's highlight color to show through,
-            // which doesn't achieve what we want :(
-            startingSpan.classList.add(kDisableHighlightClass);
-        }
-    }
-
-    private makeHighlightedSpan(textContent: string) {
-        const newSpan = document.createElement("span");
-        newSpan.classList.add(kEnableHighlightClass);
-        newSpan.appendChild(document.createTextNode(textContent));
-        return newSpan;
-    }
-
-    private nodesToRestoreAfterPlayEnded = new Map<string, string>();
-
-    /**
-     * This function will undo in BloomDesktop the modifications made by fixHighlighting()
-     */
-    public revertFixHighlighting() {
-        this.nodesToRestoreAfterPlayEnded.forEach((htmlToRestore, id) => {
-            const pageDocBody = this.getPageDocBody();
-            const element = pageDocBody?.querySelector(`#${id}`);
-            if (element) {
-                element.innerHTML = htmlToRestore;
-                element.classList.remove(kDisableHighlightClass);
-            } else {
-                console.warn("Can't find element " + id);
-            }
-        });
-        this.nodesToRestoreAfterPlayEnded.clear();
-        this.refreshAudioTextHighlights();
+        }, kImportRecordingDelayId);
     }
 }
 

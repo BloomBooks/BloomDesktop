@@ -444,21 +444,10 @@ namespace Bloom.web.controllers
 
         private void ScheduleRefreshOfOneThumbnail(Book.Book book)
         {
-            // Update the badge as well as part of the thumbnail.  We need to use the exact BookInfo object stored
-            // in the BookCollection because that is the one the API server uses to provide data to the web client.
-
-            var bookInfos = _collectionModel
-                .TheOneEditableCollection.GetBookInfos()
-                .Where(info => info.Id == book.ID)
-                .ToList();
-            // Even for one book, this is sometimes slow. And this is called from an API handler that runs on the UI thread.
-            // We don't need the result, so just fire and forget.
-            Task.Run(() =>
-            {
-                _collectionModel.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(
-                    bookInfos
-                );
-            });
+            // Update the badge as well as part of the thumbnail.
+            _collectionModel.TheOneEditableCollection.FetchBloomLibraryStatusInBackground(
+                new[] { book.ID }
+            );
 
             _collectionModel.UpdateThumbnailAsync(book);
         }

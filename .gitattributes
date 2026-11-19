@@ -11,6 +11,8 @@
 *.tsx   whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2 text
 *.htm* whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2 text
 *.tmx  whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2 text
+# PowerShell scripts in this repo are space-indented, like the JS/TS above
+*.ps1  whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2 text
 *.css -whitespace text
 *.less -whitespace text
 
@@ -42,3 +44,4 @@ changelog -whitespace
 # tree as phantom modifications with an empty diff after every such install.
 src/BloomBrowserUI/package.json text eol=lf
 src/BloomBrowserUI/pnpm-lock.yaml text eol=lf
+src/content/package.json text eol=lf

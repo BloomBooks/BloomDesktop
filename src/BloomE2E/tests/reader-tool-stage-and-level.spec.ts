@@ -1,0 +1,153 @@
+// The reader tools remembering where each book is up to: every book keeps its own decodable stage
+// and leveled-reader level, and a new book starts on the stage or level the person last chose.
+//
+// These pin the toolbox's save-and-restore path, which the toolbox infrastructure rewrite (BL-16608)
+// reworked and which no unit test reaches: the stage or level is saved into the book when the person
+// changes it, restored when the book is opened again, and remembered as the default for the next new
+// book. The subtle rule, from the manual card, is that restoring a book's stage when it is opened must
+// NOT make that the default: only choosing a stage with the arrows does.
+//
+// Every test here moves off stage or level 1 on purpose, so that a restore which silently fell back
+// to the first stage or level would fail rather than pass by coincidence. The tool restores a
+// book's stage or level a moment after it appears, so what it shows after a book is opened is
+// polled for rather than read once.
+
+import { test } from "../fixtures/bloomTest";
+import { editBook, makeBookFromTemplate } from "../helpers/bookMaking";
+import {
+    expectReaderToolToShow,
+    makeBasicBookWithReaderTool,
+    expandReaderTool,
+    setReaderPhase,
+} from "../helpers/readerTools";
+import { useKnownReaderStages } from "../helpers/readerSetup";
+
+test.use({
+    collectionSpec: { name: "reader-stage-and-level", languages: ["en"] },
+});
+
+// The decodable tests move to stage 4, so the collection needs at least four stages, and a new
+// collection's stages depend on the machine it runs on (see useKnownReaderStages). Setting them
+// needs a current book, hence the book. The next book a test makes picks them up when its tool opens.
+test.beforeEach(async ({ page }) => {
+    await makeBookFromTemplate(page, "Basic Book");
+    await useKnownReaderStages(page);
+});
+
+// These tests were skipped (test.fixme) because they raced two late restores. The toolbox's
+// own settings restore re-selected the book's saved tool from settings read before the page
+// was ready, and readerToolsModel.restoreState() seeded the default stage and level over the
+// top of a choice already made -- and, because it skips saving, left nothing recorded, so
+// the stage sprang back to 1 and Bloom never learned the user had chosen 2. Both now leave
+// alone what was decided after they read their settings. toolbox-tools.spec.ts has more.
+
+test("each book remembers its own decodable stage [Test Case ID 442]", async ({
+    page,
+}) => {
+    const firstBook = await makeBasicBookWithReaderTool(
+        page,
+        "decodableReader",
+    );
+    await setReaderPhase(page, "decodableReader", 2);
+    const secondBook = await makeBasicBookWithReaderTool(
+        page,
+        "decodableReader",
+    );
+    await setReaderPhase(page, "decodableReader", 4);
+
+    await editBook(page, firstBook);
+    await expandReaderTool(page, "decodableReader");
+    await expectReaderToolToShow(
+        page,
+        "decodableReader",
+        2,
+        "The first book should come back on the stage it was left on.",
+    );
+
+    await editBook(page, secondBook);
+    await expandReaderTool(page, "decodableReader");
+    await expectReaderToolToShow(
+        page,
+        "decodableReader",
+        4,
+        "The second book should come back on its own stage, not the first book's.",
+    );
+});
+
+test("each book remembers its own level [Test Case ID 442]", async ({
+    page,
+}) => {
+    const firstBook = await makeBasicBookWithReaderTool(page, "leveledReader");
+    await setReaderPhase(page, "leveledReader", 2);
+    const secondBook = await makeBasicBookWithReaderTool(page, "leveledReader");
+    await setReaderPhase(page, "leveledReader", 3);
+
+    await editBook(page, firstBook);
+    await expandReaderTool(page, "leveledReader");
+    await expectReaderToolToShow(
+        page,
+        "leveledReader",
+        2,
+        "The first book should come back on the level it was left on.",
+    );
+
+    await editBook(page, secondBook);
+    await expandReaderTool(page, "leveledReader");
+    await expectReaderToolToShow(
+        page,
+        "leveledReader",
+        3,
+        "The second book should come back on its own level, not the first book's.",
+    );
+});
+
+test("a new book starts on the stage last chosen, not the one last seen [Test Case ID 441]", async ({
+    page,
+}) => {
+    const bookLeftOnStage2 = await makeBasicBookWithReaderTool(
+        page,
+        "decodableReader",
+    );
+    await setReaderPhase(page, "decodableReader", 2);
+    await makeBasicBookWithReaderTool(page, "decodableReader");
+    await setReaderPhase(page, "decodableReader", 4);
+    // Look at the first book again. Its stage 2 is restored, which must not become the default.
+    await editBook(page, bookLeftOnStage2);
+    await expandReaderTool(page, "decodableReader");
+    // sanity check: the restore we are guarding against really did show stage 2
+    await expectReaderToolToShow(
+        page,
+        "decodableReader",
+        2,
+        "The first book should have come back on stage 2 before the new book was made.",
+    );
+
+    await makeBookFromTemplate(page, "Decodable Reader");
+    await expandReaderTool(page, "decodableReader");
+
+    await expectReaderToolToShow(
+        page,
+        "decodableReader",
+        4,
+        "A new decodable book should start on the stage last chosen with the arrows (4), " +
+            "not on the stage of the book last looked at (2), nor on stage 1.",
+    );
+});
+
+test("a new book starts on the level last chosen [Test Case ID 460]", async ({
+    page,
+}) => {
+    await makeBasicBookWithReaderTool(page, "leveledReader");
+    await setReaderPhase(page, "leveledReader", 3);
+
+    // makeBasicBookWithReaderTool waits for the new book to show the level Bloom reports as its
+    // default, so what this test adds is that the default really is the level chosen above.
+    await makeBasicBookWithReaderTool(page, "leveledReader");
+
+    await expectReaderToolToShow(
+        page,
+        "leveledReader",
+        3,
+        "A new book should start on the level last chosen, not on level 1.",
+    );
+});

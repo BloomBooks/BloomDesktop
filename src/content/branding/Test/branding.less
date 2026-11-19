@@ -37,3 +37,22 @@ Another way would be to do it would be to include both in the html as an img and
 .standout {
     color: blue;
 }
+
+// A butterfly in the upper right corner of every page, so a book made under this
+// branding is visibly a test book. Its subscription code is checked into the tests
+// (Test-727011-1339, see SubscriptionTests.cs), and BloomE2E uses it for any spec whose
+// subject is a tier-gated feature; nobody should want to use that code for a real book.
+// Same idea as the "Versión Preliminar" stamp in MXB-Book-Literacy-Prepub.
+// pointer-events: none keeps it from swallowing clicks meant for what is under it.
+.bloom-page::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 60px;
+    height: 47px; // butterfly.png is 164x128
+    background: url("butterfly.png") no-repeat center / contain;
+    opacity: 0.6;
+    z-index: 100000;
+    pointer-events: none;
+}

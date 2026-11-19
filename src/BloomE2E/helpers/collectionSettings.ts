@@ -1,0 +1,974 @@
+// Change the settings of the collection Bloom has open: its languages, its front/back matter
+// pack, its branding.
+//
+// A person changes these in the collection Settings dialog. That dialog is a WinForms surface CDP
+// cannot reach, and the settings have no API while it is closed (see AUTOMATION-DEBT.md, "WinForms
+// surfaces are invisible to CDP"), so every helper here takes the route that IS open to a test:
+// rewrite the .bloomCollection while Bloom is stopped, or use an E2eTestingApi hook. None of this
+// is the behavior any test measures; a test that wanted to measure the Settings dialog itself could
+// not be written today.
+//
+// The exception is the NEW, React Collection Settings dialog (the "Settings" button beside "Old
+// Settings" while the two coexist), which lives in the shell document and so is reachable. The
+// helpers at the bottom of this file drive it; only the pages that have real content so far can
+// change anything.
+
+import * as fs from "node:fs";
+import * as Path from "node:path";
+import { expect, type Locator, type Page } from "@playwright/test";
+import type { IBloomApp } from "../fixtures/bloomTest";
+import {
+    makeCollectionXml,
+    type IRelaunchChanges,
+} from "../fixtures/launchBloom";
+import { apiGetJson, apiPost } from "./api";
+import { waitForCollectionReady } from "./collection";
+import { realClick } from "./realClick";
+
+/** The collection settings a test can rewrite. Everything else keeps Bloom's defaults. */
+export interface ICollectionSettings {
+    /** Language tags for Language1, Language2 and Language3, in that order. */
+    languages: string[];
+    /**
+     * The front/back matter pack's key, the part of its folder name before "-XMatter", e.g.
+     * "Traditional". Left out, the collection gets the pack makeCollectionXml gives by default.
+     */
+    xmatterPack?: string;
+    /**
+     * A subscription code, which decides the collection's tier; see kEnterpriseSubscriptionCode.
+     * Left out, the collection has no code and so is Basic.
+     */
+    subscriptionCode?: string;
+    /** The Bloom Library bookshelf, by url key; see ICollectionSpec.bookshelf. Left out, none. */
+    bookshelf?: string;
+}
+
+/**
+ * Give the collection these settings and start Bloom again on it, the way a person does by
+ * changing them in the Settings dialog and letting Bloom restart. Returns the new shell page; the
+ * old one is closed.
+ *
+ * The .bloomCollection is REPLACED, not edited, so every other setting goes back to what
+ * makeCollectionXml writes. Use this on a collection the test itself created (collectionSpec),
+ * not on a prepared collection from testing-inputs, whose other settings would be lost. For the
+ * same reason, pass every setting again, subscriptionCode and xmatterPack included: a setting left
+ * out goes back to its default, so a collection launched on a tier would drop back to Basic.
+ *
+ * Bloom is killed rather than asked to quit, so leave the page being edited before calling this,
+ * or what was typed on it is lost (see goToPage). Each call costs about six seconds.
+ *
+ * `changes` goes on to bloomApp.restart, so the same restart can also change what only a launch
+ * can change, such as which experimental features are on. A test whose subject is a feature gated
+ * both by a tier and by an experiment needs both in one step.
+ */
+export async function restartWithCollectionSettings(
+    bloomApp: IBloomApp,
+    settings: ICollectionSettings,
+    changes?: IRelaunchChanges,
+): Promise<Page> {
+    // Read the file name rather than assuming it matches the folder name, so a collection whose
+    // two names differ is rewritten instead of gaining a second .bloomCollection.
+    const settingsFiles = fs
+        .readdirSync(bloomApp.collectionDir)
+        .filter((name) => name.endsWith(".bloomCollection"));
+    if (settingsFiles.length !== 1)
+        throw new Error(
+            `Expected one .bloomCollection in ${bloomApp.collectionDir}, found ` +
+                `${settingsFiles.length}: ${settingsFiles.join(", ")}.`,
+        );
+    const settingsPath = Path.join(bloomApp.collectionDir, settingsFiles[0]);
+    return bloomApp.restart(
+        () =>
+            fs.writeFileSync(
+                settingsPath,
+                makeCollectionXml(
+                    settings.languages,
+                    settings.xmatterPack,
+                    settings,
+                ),
+                "utf8",
+            ),
+        changes,
+    );
+}
+
+/**
+ * Put the collection under this branding, e.g. "Story-Producer-App", and bring the selected book up
+ * to date with it. This stands for entering that branding's subscription code on the Subscription
+ * page of the Settings dialog, which a test cannot do: a real code carries a checksum, and the
+ * only code tests may use is kEnterpriseSubscriptionCode. The e2e/setBranding hook exists for
+ * exactly this.
+ *
+ * The change lives in memory only. A restart puts the collection back under the branding its
+ * .bloomCollection names.
+ */
+export async function setBranding(page: Page, branding: string): Promise<void> {
+    await apiPost(page, "e2e/setBranding", branding, "text/plain");
+}
+
+/** Bloom's subscription tiers, lowest first. A tier includes every lower tier's features. */
+export type SubscriptionTier =
+    | "Basic"
+    | "Pro"
+    | "LocalCommunity"
+    | "Enterprise";
+
+/**
+ * A subscription code that puts a collection on the Enterprise tier, which includes every lower
+ * tier. Give it to a test's collectionSpec (or to restartWithCollectionSettings) when the test's
+ * subject is behind a subscription tier.
+ *
+ * It has to be a real code rather than an API hook that sets the tier: Bloom reads the tier out of
+ * the code as it opens the collection, and several parts of Bloom then keep the Subscription object
+ * they were handed at startup, so a tier changed later is invisible to them. FeatureStatusApi is
+ * one, which means the Canvas tool's palette goes on hiding a tier-gated item however the tier is
+ * changed after launch.
+ *
+ * This is the same code Bloom's own unit tests use (SubscriptionTests.cs), so it adds no new code
+ * to the repository. Its descriptor, "Test", is the branding folder src/content/branding/Test,
+ * which stamps a butterfly on the corner of every page, so a book made with it is visibly a test
+ * book. That changes what a page looks like, so a spec that compares screenshots should stay on
+ * the Default branding. It expires around the year 3900. Do NOT mint another code for tests; if
+ * this one stops serving, ask.
+ */
+export const kEnterpriseSubscriptionCode = "Test-727011-1339";
+
+/**
+ * The bookshelves the Test subscription (kEnterpriseSubscriptionCode) owns on Bloom Library, by
+ * url key, which Contentful knows about. A collection under that code can name either as the
+ * bookshelf its books are uploaded to, as the Settings dialog offers a person.
+ */
+export const kTestBookshelves = ["test-bookshelf-1", "test-bookshelf-2"];
+
+/**
+ * What Bloom says about one feature, as features/status reports it. It answers with more than
+ * this, all of it about how to word the message offering an upgrade; these are the fields that say
+ * whether the feature works.
+ */
+export interface IFeatureStatus {
+    /**
+     * The tier the feature REQUIRES, not the tier the collection has. So this says "Pro" for a
+     * Pro feature whatever the collection's own subscription is; `enabled` is what tells you
+     * whether the collection reaches it.
+     */
+    subscriptionTier: SubscriptionTier;
+    /** True when the collection's tier reaches the feature's. */
+    enabled: boolean;
+    /**
+     * True when Bloom should show the feature's controls at all. A feature that is also an
+     * experiment is visible only while the experiment is on.
+     */
+    visible: boolean;
+}
+
+/**
+ * Ask Bloom whether a feature is available here, e.g. getFeatureStatus(page, "canvas").
+ *
+ * This is the same answer the front end asks for before it decides whether to show a feature's
+ * controls, so it is the right sanity check for a test whose subject is behind a subscription tier
+ * or an experiment: when the control is missing, this says whether the tier or the experiment is
+ * the reason.
+ */
+export async function getFeatureStatus(
+    page: Page,
+    featureName: string,
+): Promise<IFeatureStatus> {
+    return apiGetJson<IFeatureStatus>(
+        page,
+        `features/status?featureName=${encodeURIComponent(featureName)}&forPublishing=false`,
+    );
+}
+
+/**
+ * What is on disk at a collection folder: its name and the settings files (.bloomCollection) in
+ * it, or undefined when there is no such folder. A rename should leave one settings file, named
+ * after the folder.
+ */
+export function describeCollectionFolder(
+    collectionDir: string,
+): { name: string; settingsFiles: string[] } | undefined {
+    if (!fs.existsSync(collectionDir)) return undefined;
+    return {
+        name: Path.basename(collectionDir),
+        settingsFiles: fs
+            .readdirSync(collectionDir)
+            .filter((file) => file.endsWith(".bloomCollection")),
+    };
+}
+
+/** The new (React) Collection Settings dialog, by the title it shows. */
+function collectionSettingsDialog(page: Page): Locator {
+    // Not getByRole's name option: the dialog's aria-labelledby="title" does not give it the
+    // accessible name "Collection Settings".
+    return page.getByRole("dialog").filter({ hasText: "Collection Settings" });
+}
+
+/**
+ * Open the new Collection Settings dialog the way a person does: click "Settings" on the
+ * Collections tab's top bar (not "Old Settings", the WinForms dialog CDP cannot reach). Returns
+ * once the dialog shows its pages.
+ */
+export async function openCollectionSettings(page: Page): Promise<void> {
+    await realClick(
+        page.getByRole("button", { name: "Settings", exact: true }),
+    );
+    await expect(
+        collectionSettingsDialog(page).getByRole("tab").first(),
+        "the Collection Settings dialog never showed its pages",
+    ).toBeVisible({ timeout: 30000 });
+}
+
+/**
+ * Show one page of the open Collection Settings dialog by clicking its name in the list on the
+ * left, e.g. "Experimental". Fails naming the pages the dialog offers when there is no such page.
+ */
+export async function showCollectionSettingsPage(
+    page: Page,
+    pageName: string,
+): Promise<void> {
+    const dialog = collectionSettingsDialog(page);
+    const tab = dialog.getByRole("tab", { name: pageName, exact: true });
+    if ((await tab.count()) !== 1) {
+        const offered = await dialog.getByRole("tab").allInnerTexts();
+        throw new Error(
+            `The Collection Settings dialog has no page "${pageName}"; it offers: ${offered.join(", ")}.`,
+        );
+    }
+    await realClick(tab);
+    await expect(tab).toHaveAttribute("aria-selected", "true");
+}
+
+/**
+ * The name of the page the Collection Settings dialog is showing, e.g. "Subscription", or
+ * undefined while the dialog is not open. A test that expects some action to open the dialog on a
+ * page polls this.
+ */
+export async function getShowingCollectionSettingsPage(
+    page: Page,
+): Promise<string | undefined> {
+    const selected = collectionSettingsDialog(page).locator(
+        '[role="tab"][aria-selected="true"]',
+    );
+    if ((await selected.count()) !== 1) return undefined;
+    return (await selected.innerText()).trim();
+}
+
+/** What the Subscription page of the Collection Settings dialog shows. */
+export interface ISubscriptionPageState {
+    /** The text in the Subscription Code box. */
+    code: string;
+    /**
+     * The tier the code gives, e.g. "Enterprise", shown only for a valid, current code; otherwise
+     * undefined.
+     */
+    tier: string | undefined;
+    /** Whether the page invites the user to apply for a free community subscription. */
+    communityInvitation: boolean;
+}
+
+/** The Subscription Code box on the Subscription page of the dialog. */
+function subscriptionCodeBox(page: Page): Locator {
+    return collectionSettingsDialog(page).locator("#subscriptionCodeInput");
+}
+
+/**
+ * Read the Subscription page of the Collection Settings dialog, which must be showing. Bloom works
+ * out the tier from the code after the code changes, so poll this for a tier that is expected to
+ * appear.
+ */
+export async function getSubscriptionPage(
+    page: Page,
+): Promise<ISubscriptionPageState> {
+    const dialog = collectionSettingsDialog(page);
+    const box = subscriptionCodeBox(page);
+    await expect(
+        box,
+        "the Collection Settings dialog is not showing its Subscription page",
+    ).toHaveCount(1);
+    const tier = dialog.getByTestId("subscription-tier");
+    return {
+        code: await box.inputValue(),
+        tier:
+            (await tier.count()) === 1
+                ? (await tier.innerText()).trim()
+                : undefined,
+        communityInvitation:
+            (await dialog
+                .locator('a[href="https://bloomlibrary.org/subscriptions"]')
+                .count()) > 0,
+    };
+}
+
+/**
+ * Type a subscription code into the Subscription page of the Collection Settings dialog, replacing
+ * what the box held, as a person does by typing or pasting one. Returns once the box shows it.
+ * Nothing is saved until OK.
+ */
+export async function typeSubscriptionCode(
+    page: Page,
+    code: string,
+): Promise<void> {
+    const box = subscriptionCodeBox(page);
+    await box.fill(code);
+    await expect(box).toHaveValue(code);
+}
+
+/**
+ * The subscription code the collection's settings file holds, or undefined when it holds none.
+ * Read from the .bloomCollection on disk, which is where a save puts it.
+ */
+export function readSavedSubscriptionCode(
+    collectionDir: string,
+): string | undefined {
+    const settingsFile = fs
+        .readdirSync(collectionDir)
+        .find((name) => name.endsWith(".bloomCollection"));
+    if (!settingsFile)
+        throw new Error(`There is no .bloomCollection in ${collectionDir}.`);
+    const xml = fs.readFileSync(Path.join(collectionDir, settingsFile), "utf8");
+    return /<SubscriptionCode>([^<]+)<\/SubscriptionCode>/.exec(xml)?.[1];
+}
+
+/**
+ * Click the subscription badge on the showing page of the Collection Settings dialog, as a person
+ * does whose tier lacks the feature beside it. That asks Bloom to show the Subscription page.
+ */
+export async function clickCollectionSettingsSubscriptionBadge(
+    page: Page,
+): Promise<void> {
+    await realClick(collectionSettingsSubscriptionBadge(page));
+}
+
+/** The checkbox of the setting with this label on the showing page of the dialog. */
+function collectionSettingsCheckbox(page: Page, label: string): Locator {
+    // Config-R puts the setting's label on the element that wraps its checkbox.
+    return collectionSettingsDialog(page).locator(
+        `span[label="${label}"] input[type="checkbox"]`,
+    );
+}
+
+/** What a checkbox setting in the Collection Settings dialog shows. */
+export interface ICollectionSettingsCheckboxState {
+    checked: boolean;
+    /** False when the user cannot change it, e.g. because the subscription tier lacks it. */
+    enabled: boolean;
+}
+
+/**
+ * Read the checkbox setting with this label, e.g. "Team Collections", on the page of the
+ * Collection Settings dialog that is showing.
+ */
+export async function getCollectionSettingsCheckbox(
+    page: Page,
+    label: string,
+): Promise<ICollectionSettingsCheckboxState> {
+    const checkbox = collectionSettingsCheckbox(page, label);
+    await expect(
+        checkbox,
+        `the showing Collection Settings page has no checkbox labelled "${label}"`,
+    ).toHaveCount(1);
+    return {
+        checked: await checkbox.isChecked(),
+        enabled: await checkbox.isEnabled(),
+    };
+}
+
+/**
+ * Tick or untick the checkbox setting with this label on the showing page of the Collection
+ * Settings dialog, by clicking it if it isn't that way already, and return once it shows that
+ * state. Nothing is saved until OK.
+ */
+export async function setCollectionSettingsCheckbox(
+    page: Page,
+    label: string,
+    checked: boolean,
+): Promise<void> {
+    const checkbox = collectionSettingsCheckbox(page, label);
+    if ((await checkbox.isChecked()) !== checked) await realClick(checkbox);
+    await expect(checkbox).toBeChecked({ checked });
+}
+
+/** The text box of the setting with this label on the showing page of the dialog. */
+function collectionSettingsTextBox(page: Page, label: string): Locator {
+    // Config-R names the box after the setting's path, not its label; the label is a heading
+    // in the same row. A box that allows several lines is an MUI textarea, which comes with a
+    // hidden twin it uses to measure the text.
+    return collectionSettingsDialog(page)
+        .locator("li")
+        .filter({ has: page.locator("h4").getByText(label, { exact: true }) })
+        .locator('input[type="text"], textarea:not([aria-hidden="true"])');
+}
+
+/** What a text setting in the Collection Settings dialog shows. */
+export interface ICollectionSettingsTextState {
+    value: string;
+    /** False when the user cannot change it, e.g. the name of a Team Collection. */
+    enabled: boolean;
+}
+
+/**
+ * Read the text setting with this label, e.g. "Collection Name", on the page of the Collection
+ * Settings dialog that is showing.
+ */
+export async function getCollectionSettingsText(
+    page: Page,
+    label: string,
+): Promise<ICollectionSettingsTextState> {
+    const box = collectionSettingsTextBox(page, label);
+    await expect(
+        box,
+        `the showing Collection Settings page has no text box labelled "${label}"`,
+    ).toHaveCount(1);
+    return {
+        value: await box.inputValue(),
+        enabled: await box.isEnabled(),
+    };
+}
+
+/**
+ * Replace what the text setting with this label says, as a person does by typing over it, and
+ * return once the box shows the new text. Nothing is saved until OK.
+ */
+export async function setCollectionSettingsText(
+    page: Page,
+    label: string,
+    text: string,
+): Promise<void> {
+    const box = collectionSettingsTextBox(page, label);
+    await box.fill(text);
+    await expect(box).toHaveValue(text);
+}
+
+/** The drop-down list of the setting with this label on the showing page of the dialog. */
+function collectionSettingsList(page: Page, label: string): Locator {
+    // Config-R puts the label in an h4 in the setting's row, as for a text box; the list itself
+    // is an MUI Select, whose clickable part is the element that announces a listbox.
+    return collectionSettingsDialog(page)
+        .locator("li")
+        .filter({ has: page.locator("h4").getByText(label, { exact: true }) })
+        .locator('[aria-haspopup="listbox"]');
+}
+
+/** What a drop-down list setting in the Collection Settings dialog shows. */
+export interface ICollectionSettingsListState {
+    /** The text of the choice showing, e.g. "None". */
+    shown: string;
+    /** False when the user cannot open the list, e.g. because there is nothing to choose. */
+    enabled: boolean;
+}
+
+/**
+ * Read the drop-down list setting with this label, e.g. "Bookshelf", on the page of the
+ * Collection Settings dialog that is showing.
+ */
+export async function getCollectionSettingsList(
+    page: Page,
+    label: string,
+): Promise<ICollectionSettingsListState> {
+    return readList(collectionSettingsList(page, label), label);
+}
+
+/** Read a drop-down list in the dialog; `label` names it in the failure message. */
+async function readList(
+    list: Locator,
+    label: string,
+): Promise<ICollectionSettingsListState> {
+    await expect(
+        list,
+        `the showing Collection Settings page has no list labelled "${label}"`,
+    ).toHaveCount(1);
+    return {
+        // MUI puts a zero-width space in the list's text, so it can't collapse when empty.
+        shown: ((await list.textContent()) ?? "").replace(/\u200b/g, "").trim(),
+        enabled: (await list.getAttribute("aria-disabled")) !== "true",
+    };
+}
+
+/** The choices of an open drop-down list (MUI renders the menu outside the dialog). */
+function openListChoices(page: Page): Locator {
+    return page.getByRole("listbox").getByRole("option");
+}
+
+/**
+ * Wait until an open drop-down list has closed completely. MUI keeps the closing menu, and the
+ * invisible backdrop that catches clicks outside it, until its closing animation ends; a click in
+ * that time lands on the backdrop, so the next list clicked does not open. Other MUI menus stay
+ * mounted in Bloom's shell all the time, so this waits for the count to fall back to
+ * `menusBeforeOpening` (from countMenus, read before the list was opened) rather than to zero.
+ */
+async function waitForListToClose(
+    page: Page,
+    menusBeforeOpening: number,
+): Promise<void> {
+    await expect(page.locator(".MuiMenu-root")).toHaveCount(menusBeforeOpening);
+}
+
+/** How many MUI menus the page has mounted; see waitForListToClose. */
+function countMenus(page: Page): Promise<number> {
+    return page.locator(".MuiMenu-root").count();
+}
+
+/**
+ * The choices the drop-down list setting with this label offers, in order, as a person sees
+ * them by opening it. Opens the list, reads it and closes it again without choosing anything.
+ * The list must be enabled.
+ */
+export async function getCollectionSettingsListChoices(
+    page: Page,
+    label: string,
+): Promise<string[]> {
+    const menusBeforeOpening = await countMenus(page);
+    await realClick(collectionSettingsList(page, label));
+    const choices = openListChoices(page);
+    await expect(
+        choices.first(),
+        `the "${label}" list did not open`,
+    ).toBeVisible();
+    const texts = (await choices.allTextContents()).map((text) => text.trim());
+    await page.keyboard.press("Escape");
+    await waitForListToClose(page, menusBeforeOpening);
+    return texts;
+}
+
+/**
+ * The label the drop-down list setting with this label shows for the choice whose value is
+ * `value` (e.g. "1.5" for a line spacing, which reads "1,5" or "١٫٥" in some cultures). Opens the
+ * list, reads it and closes it again without choosing anything.
+ */
+export async function getCollectionSettingsListChoiceLabel(
+    page: Page,
+    label: string,
+    value: string,
+): Promise<string> {
+    const menusBeforeOpening = await countMenus(page);
+    await realClick(collectionSettingsList(page, label));
+    const choice = openListChoices(page).and(
+        page.locator(`[data-value="${value}"]`),
+    );
+    await expect(
+        choice,
+        `the "${label}" list offers no choice with the value ${value}`,
+    ).toHaveCount(1);
+    const text = ((await choice.textContent()) ?? "").trim();
+    await page.keyboard.press("Escape");
+    await waitForListToClose(page, menusBeforeOpening);
+    return text;
+}
+
+/**
+ * Choose `choice` in the drop-down list setting with this label, as a person does by opening the
+ * list and clicking it, and return once the list shows it. Fails naming the choices the list
+ * offered when it has no such choice. Nothing is saved until OK.
+ */
+export async function chooseCollectionSettingsListChoice(
+    page: Page,
+    label: string,
+    choice: string,
+): Promise<void> {
+    await chooseInList(
+        page,
+        collectionSettingsList(page, label),
+        label,
+        choice,
+    );
+}
+
+/**
+ * Open a drop-down list in the dialog, click `choice` in it, and return once the list shows it.
+ * `label` names the list in failure messages.
+ */
+async function chooseInList(
+    page: Page,
+    list: Locator,
+    label: string,
+    choice: string,
+): Promise<void> {
+    const menusBeforeOpening = await countMenus(page);
+    await realClick(list);
+    const choices = openListChoices(page);
+    await expect(
+        choices.first(),
+        `the "${label}" list did not open`,
+    ).toBeVisible();
+    const escaped = choice.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const wanted = choices.filter({
+        hasText: new RegExp(`^\\s*${escaped}\\s*$`),
+    });
+    if ((await wanted.count()) !== 1) {
+        const offered = (await choices.allTextContents()).map((t) => t.trim());
+        await page.keyboard.press("Escape");
+        throw new Error(
+            `The "${label}" list has no choice "${choice}"; it offers: ${offered.join(", ")}.`,
+        );
+    }
+    await realClick(wanted);
+    await waitForListToClose(page, menusBeforeOpening);
+    await expect
+        .poll(async () => (await readList(list, label)).shown)
+        .toBe(choice);
+}
+
+/** The subscription badge on the showing page of the dialog: its icon and its words. */
+function collectionSettingsSubscriptionBadge(page: Page): Locator {
+    return collectionSettingsDialog(page)
+        .locator('img[src*="bloom-enterprise-badge"]')
+        .locator("xpath=..");
+}
+
+/**
+ * What the subscription badge on the showing page of the Collection Settings dialog says:
+ * "Available with your Bloom Subscription" when the collection's tier includes the feature, or
+ * "Feature Requires Higher Subscription Tier" when it does not. Until Bloom has answered about
+ * the tier, which happens after the page shows, it says the latter, so poll for "Available".
+ */
+export async function getCollectionSettingsSubscriptionBadge(
+    page: Page,
+): Promise<string> {
+    const badge = collectionSettingsSubscriptionBadge(page);
+    await expect(
+        badge,
+        "the showing Collection Settings page has no subscription badge",
+    ).toHaveText(/Subscription/);
+    return (await badge.innerText()).trim();
+}
+
+/**
+ * The Bloom Library bookshelf the collection's settings file names, by url key, or undefined when
+ * it names none. Read from the .bloomCollection on disk, which is where a save puts it.
+ */
+export function readSavedBookshelf(collectionDir: string): string | undefined {
+    const settingsFile = fs
+        .readdirSync(collectionDir)
+        .find((name) => name.endsWith(".bloomCollection"));
+    if (!settingsFile)
+        throw new Error(`There is no .bloomCollection in ${collectionDir}.`);
+    const xml = fs.readFileSync(Path.join(collectionDir, settingsFile), "utf8");
+    return /<DefaultBookTags>[^<]*bookshelf:([^,<]+)/.exec(xml)?.[1];
+}
+
+/**
+ * The text of a setting the collection's settings file holds in an element of its own, e.g.
+ * "XMatterPack" or "Country", or undefined when the file has no such element. Read from the
+ * .bloomCollection on disk, which is where a save puts it.
+ */
+export function readSavedCollectionSetting(
+    collectionDir: string,
+    elementName: string,
+): string | undefined {
+    const settingsFile = fs
+        .readdirSync(collectionDir)
+        .find((name) => name.endsWith(".bloomCollection"));
+    if (!settingsFile)
+        throw new Error(`There is no .bloomCollection in ${collectionDir}.`);
+    const xml = fs.readFileSync(Path.join(collectionDir, settingsFile), "utf8");
+    return new RegExp(`<${elementName}>([^<]*)</${elementName}>`).exec(
+        xml,
+    )?.[1];
+}
+
+/**
+ * The caption the badge preview on the Front & Back Matter page shows, with the language name
+ * filled in, as the books' badges will show it. The page must be showing, with QR codes on.
+ */
+export async function getQrCodeBadgePreviewCaption(
+    page: Page,
+): Promise<string> {
+    // The preview is the badge HTML books get, so its caption has the class books' captions have.
+    const caption = collectionSettingsDialog(page)
+        .getByTestId("qr-code-badge-preview")
+        .locator(".bloom-blorg-caption");
+    await expect(
+        caption,
+        "the showing page has no badge preview with a caption",
+    ).toHaveCount(1);
+    return (await caption.innerText()).trim();
+}
+
+/**
+ * Click OK when it says "OK" (so no restart is coming): Bloom saves the settings and the dialog
+ * closes. Returns once it has closed. For a change that needs a restart, use
+ * restartFromCollectionSettings.
+ */
+export async function saveCollectionSettings(page: Page): Promise<void> {
+    const dialog = collectionSettingsDialog(page);
+    const ok = dialog.getByRole("button", { name: /^OK$/i });
+    await expect(
+        ok,
+        "the dialog has no OK button (it says Restart if a change needs one)",
+    ).toBeEnabled();
+    await realClick(ok);
+    await expect(dialog, "the dialog did not close after OK").toBeHidden();
+}
+
+/**
+ * Click the dialog's Help button and return the help topic it asks Bloom to open, such as
+ * "Tasks/Basic_tasks/Change_languages.htm". The request is answered here and never reaches Bloom,
+ * so no help window opens on the machine running the test.
+ */
+export async function clickCollectionSettingsHelp(page: Page): Promise<string> {
+    const helpRequest = /\/bloom\/api\/help\?/;
+    let requestedTopic: string | undefined;
+    await page.route(helpRequest, async (route) => {
+        requestedTopic =
+            new URL(route.request().url()).searchParams.get("topic") ??
+            "(no topic)";
+        await route.fulfill({ status: 200, body: "" });
+    });
+    try {
+        await realClick(
+            collectionSettingsDialog(page).getByRole("button", {
+                name: "Help",
+                exact: true,
+            }),
+        );
+        await expect
+            .poll(() => requestedTopic, {
+                message: "Help never asked Bloom for a topic",
+            })
+            .toBeDefined();
+    } finally {
+        await page.unroute(helpRequest);
+    }
+    return requestedTopic!;
+}
+
+/** Click Cancel: the dialog closes and nothing is saved. Returns once it has closed. */
+export async function cancelCollectionSettings(page: Page): Promise<void> {
+    const dialog = collectionSettingsDialog(page);
+    await realClick(dialog.getByRole("button", { name: /^Cancel$/i }));
+    await expect(dialog, "the dialog did not close after Cancel").toBeHidden();
+}
+
+/**
+ * The label on the dialog's OK button: "OK", or "Restart" when a change the user has made needs
+ * Bloom to reopen the collection.
+ */
+export async function getCollectionSettingsOkLabel(
+    page: Page,
+): Promise<string> {
+    // textContent, not innerText: the button's CSS shows its text in capitals.
+    return (
+        (await collectionSettingsDialog(page)
+            .getByRole("button", { name: /^(OK|Restart)$/i })
+            .textContent()) ?? ""
+    ).trim();
+}
+
+/**
+ * Click OK when it says "Restart": Bloom saves the settings and reopens the whole collection,
+ * which destroys the shell page. Waits out the reopen, re-finds the shell page (bloomApp.page from
+ * here on) and returns it once the collection is ready again.
+ *
+ * When the change was a new collection name, pass the folder name Bloom will give the collection
+ * as `renamedTo`: Bloom renames the folder by starting a new copy of itself on it, and this then
+ * follows that copy (bloomApp.collectionDir becomes the renamed folder).
+ */
+export async function restartFromCollectionSettings(
+    bloomApp: IBloomApp,
+    renamedTo?: string,
+): Promise<Page> {
+    const page = bloomApp.page;
+    const restart = collectionSettingsDialog(page).getByRole("button", {
+        name: "Restart",
+        exact: true,
+    });
+    await expect(
+        restart,
+        "OK does not say Restart, so pressing it would not reopen the collection",
+    ).toBeVisible();
+    return clickAndFollowRestart(bloomApp, restart, renamedTo);
+}
+
+/**
+ * Click a button that makes Bloom save and reopen the whole collection (such as the settings
+ * dialog's Restart, or the Create Team Collection dialog's Create & Restart), which destroys the
+ * shell page. Waits out the reopen, re-finds the shell page (bloomApp.page from here on) and returns
+ * it once the collection is ready again. `renamedTo` is as for restartFromCollectionSettings.
+ */
+export async function clickAndFollowRestart(
+    bloomApp: IBloomApp,
+    button: Locator,
+    renamedTo?: string,
+): Promise<Page> {
+    const page = bloomApp.page;
+    const pageClosed = page.waitForEvent("close", { timeout: 60000 });
+    // Pre-handled so a click failing for another reason cannot surface later as an unhandled
+    // rejection charged to some other test.
+    pageClosed.catch(() => undefined);
+    // Bloom can tear the page down before Playwright finishes its click; a "closed" error means
+    // the click landed. (If it never landed, the pageClosed wait times out.)
+    await realClick(button).catch((error) => {
+        if (!/closed/i.test(String(error))) throw error;
+    });
+    await pageClosed;
+    const newPage = renamedTo
+        ? await bloomApp.followRelaunch(
+              Path.join(Path.dirname(bloomApp.collectionDir), renamedTo),
+          )
+        : await bloomApp.reattachToShell();
+    await waitForCollectionReady(newPage);
+    return newPage;
+}
+
+/**
+ * The group of rows for one language on the Languages page of the dialog, found by its heading,
+ * e.g. "Written Language 1" or "Sign Language". Config-R draws a group as its heading (wrapped
+ * with any heading action, such as Remove, in a line of their own), then its description if it
+ * has one, then the box that holds its rows, which is an MUI Paper: so the box is the first
+ * Paper after the heading.
+ */
+function languageGroup(page: Page, heading: string): Locator {
+    return collectionSettingsDialog(page).locator(
+        `xpath=.//h3[normalize-space(.)="${heading}"]/following::*[contains(concat(" ",normalize-space(@class)," ")," MuiPaper-root ")][1]`,
+    );
+}
+
+/** Fail, naming the language groups the Languages page has, when it has none with this heading. */
+async function expectLanguageGroup(page: Page, heading: string): Promise<void> {
+    if ((await languageGroup(page, heading).count()) === 1) return;
+    const headings = await collectionSettingsDialog(page)
+        .locator("h3")
+        .allInnerTexts();
+    throw new Error(
+        `The showing Collection Settings page has no language group "${heading}"; it has: ${headings.join(", ")}.`,
+    );
+}
+
+/**
+ * The language a group on the Languages page shows, as "name (tag)", e.g. "English (en)", or ""
+ * when the collection has none there (a third language or sign language not set).
+ */
+export async function getCollectionSettingsLanguage(
+    page: Page,
+    heading: string,
+): Promise<string> {
+    await expectLanguageGroup(page, heading);
+    const name = languageGroup(page, heading).getByTestId("language-name");
+    return (await name.count()) === 1 ? (await name.innerText()).trim() : "";
+}
+
+/** The Default Font picker in one language's group on the Languages page. */
+function languageFontList(page: Page, heading: string): Locator {
+    return languageGroup(page, heading)
+        .locator("li")
+        .filter({
+            has: page.locator("h4").getByText("Default Font", { exact: true }),
+        })
+        .locator('[aria-haspopup="listbox"]');
+}
+
+/**
+ * The Default Font one language's group on the Languages page shows, e.g. "Andika". The fonts
+ * arrive after the page shows, so poll this for an expected font.
+ */
+export async function getCollectionSettingsLanguageFont(
+    page: Page,
+    heading: string,
+): Promise<string> {
+    await expectLanguageGroup(page, heading);
+    return (await readList(languageFontList(page, heading), "Default Font"))
+        .shown;
+}
+
+/**
+ * Choose `font` as the Default Font of one language on the Languages page, as a person does by
+ * opening its font list and clicking the font, and return once the list shows it. Fails naming the
+ * fonts offered when there is no such font. Nothing is saved until OK.
+ */
+export async function chooseCollectionSettingsLanguageFont(
+    page: Page,
+    heading: string,
+    font: string,
+): Promise<void> {
+    await expectLanguageGroup(page, heading);
+    await chooseInList(
+        page,
+        languageFontList(page, heading),
+        `${heading}: Default Font`,
+        font,
+    );
+}
+
+/** The "More" row at the bottom of one language's group, which opens its page of more settings. */
+function languageMoreRow(page: Page, heading: string): Locator {
+    // Config-R draws a row that opens a sub-page as a button, not a list item like the others.
+    return languageGroup(page, heading).getByRole("button", {
+        name: "More",
+        exact: true,
+    });
+}
+
+/** The heading a sub-page of the dialog shows above its settings, which takes the user back. */
+function subPageBackLink(page: Page): Locator {
+    // A button named after the sub-page, like the row that opened it; the row, unlike this,
+    // holds its name in a heading.
+    return collectionSettingsDialog(page)
+        .getByRole("button", { name: "More", exact: true })
+        .filter({ hasNot: page.locator("h4") });
+}
+
+/**
+ * Open the page of more settings for one language on the Languages page (line spacing, word
+ * breaking, right-to-left, and for the first language the reader tools' alphabet), as a person
+ * does by clicking "More" in its group. Returns once that page shows.
+ */
+export async function openCollectionSettingsLanguageMore(
+    page: Page,
+    heading: string,
+): Promise<void> {
+    await expectLanguageGroup(page, heading);
+    await realClick(languageMoreRow(page, heading));
+    await expect(
+        languageGroup(page, heading),
+        `clicking More for "${heading}" did not leave the Languages page`,
+    ).toHaveCount(0);
+    await expect(subPageBackLink(page)).toBeVisible();
+}
+
+/**
+ * Go back from a language's page of more settings to the Languages page, as a person does by
+ * clicking the arrow and "More" at its top. Returns once the Languages page shows again.
+ */
+export async function closeCollectionSettingsLanguageMore(
+    page: Page,
+): Promise<void> {
+    await realClick(subPageBackLink(page));
+    await expect(subPageBackLink(page)).toHaveCount(0);
+    await expect(
+        collectionSettingsDialog(page).getByTestId("language-name").first(),
+        "going back from More did not show the Languages page",
+    ).toBeVisible();
+}
+
+/**
+ * A setting of one of the collection's languages as its settings file holds it, e.g.
+ * "DefaultLanguageFontName" or "LanguageLineHeight" for language 1, or undefined when the file has
+ * no such element for it. Read from the language's own <Language L1="true"> element (not the
+ * legacy Language1... copies) in the .bloomCollection on disk, which is where a save puts it.
+ */
+export function readSavedLanguageSetting(
+    collectionDir: string,
+    languageNumber: 1 | 2 | 3,
+    elementName: string,
+): string | undefined {
+    const settingsFile = fs
+        .readdirSync(collectionDir)
+        .find((name) => name.endsWith(".bloomCollection"));
+    if (!settingsFile)
+        throw new Error(`There is no .bloomCollection in ${collectionDir}.`);
+    const xml = fs.readFileSync(Path.join(collectionDir, settingsFile), "utf8");
+    const language = new RegExp(
+        `<Language L${languageNumber}="true">([\\s\\S]*?)</Language>`,
+    ).exec(xml)?.[1];
+    if (language === undefined) {
+        const languages =
+            /<Languages>[\s\S]*?<\/Languages>/.exec(xml)?.[0] ??
+            "(no <Languages> element)";
+        throw new Error(
+            `The collection's settings file ${settingsFile} has no language ${languageNumber}. Its languages: ${languages}`,
+        );
+    }
+    return new RegExp(`<${elementName}>([^<]*)</${elementName}>`).exec(
+        language,
+    )?.[1];
+}

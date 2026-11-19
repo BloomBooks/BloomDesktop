@@ -4,29 +4,31 @@ import {
     getTheOneToolbox,
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
+    removeToolMarkupFromPageClone,
+} from "./toolbox";
+import {
     scheduleMarkupUpdateAfterPaste,
     updateMarkupAfterUndoOrRedo,
-} from "./toolbox";
+} from "./pageEditingMarkup";
 import { simulateBlurOnPageFrameMouseDown } from "../../utils/menuCloseOnBlur";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
-import { DecodableReaderTool } from "./readers/decodableReader/decodableReaderTool";
-import { LeveledReaderTool } from "./readers/leveledReader/leveledReaderTool";
-import { MusicToolAdaptor } from "./music/musicToolControls";
-import { ImpairmentVisualizerAdaptor } from "./impairmentVisualizer/impairmentVisualizer";
-import { MotionTool } from "./motion/motionTool";
 import TalkingBookTool from "./talkingBook/talkingBookTool";
-import { SignLanguageTool } from "./signLanguage/signLanguageTool";
-import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
-import { CanvasTool } from "./canvas/canvasTool";
-import { GameTool, setActiveDragActivityTab } from "./games/GameTool";
-import { SettingsTool } from "./settings/settingsTool";
+import { setActiveDragActivityTab } from "./games/GameTool";
+import { registerAllToolboxTools } from "./registerAllToolboxTools";
 // Explicit imports needed so that these symbols are in local scope for the window.toolboxBundle object
 import {
+    beginLoadSynphonySettings,
+    classifySampleTextFiles,
+    getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
+    addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
     makeLetterWordList,
+    removeSampleTextFilesChangedListener,
+    removeWordListChangedListener,
 } from "./readers/readerTools";
 import { activateLongPressFor } from "../js/bloomEditing";
 import { IAudioRecorder } from "./talkingBook/IAudioRecorder";
@@ -34,10 +36,40 @@ import { theOneAudioRecorder } from "./talkingBook/audioRecording";
 import { renderToolboxRoot } from "./ToolboxRoot";
 
 export interface IToolboxFrameExports {
+    /**
+     * Loads the collection's reader settings into the one ReaderToolsModel, if they are not
+     * already in the model actually in hand. Cheap when they are. (BL-16732)
+     */
+    beginLoadSynphonySettings(): JQueryPromise<void>;
+
+    beginSaveChangedSettings(
+        settings: import("./readers/ReaderSettings").ReaderSettings,
+        previousMoreWords: string,
+        previousLetters: string,
+        previousUseAllowedWords?: number,
+    ): Promise<void>;
+
     addWordListChangedListener(
         listenerNameAndContext: string,
         callback: () => void,
     ): void;
+
+    removeWordListChangedListener(listenerNameAndContext: string): void;
+
+    getDecodableStageMatchingWords(knownGpcs: string[]): string[];
+
+    getSynphonyAlwaysMatchSymbols(): string[];
+
+    classifySampleTextFiles(
+        paths: string[],
+    ): { path: string; validType: boolean; hasExtension: boolean }[];
+
+    addSampleTextFilesChangedListener(
+        listenerNameAndContext: string,
+        callback: () => void,
+    ): void;
+
+    removeSampleTextFilesChangedListener(listenerNameAndContext: string): void;
 
     activateLongPressFor(jQuerySetOfMatchedElements): void;
 
@@ -48,26 +80,39 @@ export interface IToolboxFrameExports {
 
     canUndo(): boolean;
     undo(): void;
+    readerToolsHandleUndoKeys(): boolean;
 
     applyToolboxStateToPage(): void;
 
     removeToolboxMarkup(): void;
+    removeToolMarkupFromPageClone(pageClone: HTMLElement): void;
     setActiveDragActivityTab(tab: number): void;
     getTheOneAudioRecorderForExportOnly(): IAudioRecorder;
     simulateBlurOnPageFrameMouseDown(): void;
 }
 
 // each of these exports shows up under this window's toolboxBundle object (see workspaceFrames.ts)
-export { removeToolboxMarkup, setActiveDragActivityTab };
+export {
+    removeToolboxMarkup,
+    removeToolMarkupFromPageClone,
+    setActiveDragActivityTab,
+};
 export {
     showSetupDialog,
     initializeReaderSetupDialog,
     closeSetupDialog,
 } from "./readers/readerSetup/readerSetupDialog";
 export {
+    beginLoadSynphonySettings,
+    classifySampleTextFiles,
+    getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
+    addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
     makeLetterWordList,
+    removeSampleTextFilesChangedListener,
+    removeWordListChangedListener,
 } from "./readers/readerTools";
 export { activateLongPressFor } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.
@@ -90,6 +135,15 @@ export function canUndo(): boolean {
         readerToolsModel.shouldHandleUndo() &&
         readerToolsModel.canUndo()
     );
+}
+
+/**
+ * Whether the reader tools take Ctrl+Z and Ctrl+Y in a text block. Their key handler on each
+ * editable claims both keys whenever a markup tool is selected (see decodableReaderTool.tsx), and
+ * the page's own handlers of those keys must leave them to it then.
+ */
+export function readerToolsHandleUndoKeys(): boolean {
+    return !!getTheOneReaderToolsModel()?.shouldHandleUndo();
 }
 
 export function undo() {
@@ -120,20 +174,10 @@ $(document).ready(() => {
     getTheOneToolbox().initialize();
 });
 
-// Make the one instance of each Toolbox class and register it with the master toolbox.
-// The imports we need to make these calls possible also serve to ensure that each
-// toolbox's code is made part of the bundle.
-ToolBox.registerTool(new DecodableReaderTool());
-ToolBox.registerTool(new LeveledReaderTool());
-ToolBox.registerTool(new MusicToolAdaptor());
-ToolBox.registerTool(new ImpairmentVisualizerAdaptor());
-ToolBox.registerTool(new MotionTool());
-ToolBox.registerTool(new TalkingBookTool());
-ToolBox.registerTool(new SignLanguageTool());
-ToolBox.registerTool(new ImageDescriptionAdapter());
-ToolBox.registerTool(new CanvasTool());
-ToolBox.registerTool(new GameTool());
-ToolBox.registerTool(new SettingsTool());
+// Make the one instance of each Toolbox class and register it with the master toolbox. The list
+// lives in registerAllToolboxTools.ts, which the test harness imports as well, so there is only
+// one list to keep right.
+registerAllToolboxTools();
 
 const toolboxBundle: ToolboxBundleApi = {
     getTheOneToolbox,
@@ -141,17 +185,25 @@ const toolboxBundle: ToolboxBundleApi = {
     updateMarkupAfterUndoOrRedo,
     applyToolboxStateToPage,
     removeToolboxMarkup,
+    removeToolMarkupFromPageClone,
     showSetupDialog,
     initializeReaderSetupDialog,
     closeSetupDialog,
+    beginLoadSynphonySettings,
+    classifySampleTextFiles,
+    getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
+    addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
     makeLetterWordList,
+    removeSampleTextFilesChangedListener,
+    removeWordListChangedListener,
     activateLongPressFor,
     TalkingBookTool,
     canUndo,
     undo,
-    applyToolboxStateToPageLegacy: applyToolboxStateToPage,
+    readerToolsHandleUndoKeys,
     setActiveDragActivityTab,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,

@@ -103,7 +103,14 @@ namespace Bloom
 
                 _scope
                     .Resolve<CollectionSettings>()
-                    .CheckAndFixDependencies(_scope.Resolve<BloomFileLocator>());
+                    .CheckAndFixDependencies(
+                        _scope.Resolve<BloomFileLocator>(),
+                        _scope.Resolve<XMatterPackFinder>(),
+                        // A command-line run (the harvester, for one) uses the collection as it
+                        // finds it.
+                        !Program.RunningInConsoleMode
+                            && _scope.Resolve<TeamCollectionManager>().OkToEditCollectionSettings
+                    );
 
                 if (!justEnoughForHtmlDialog)
                     ProjectWindow = _scope.Resolve<Shell>();

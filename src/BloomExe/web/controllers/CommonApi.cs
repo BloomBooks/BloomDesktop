@@ -11,6 +11,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.MiscUI;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
@@ -126,7 +127,7 @@ namespace Bloom.web.controllers
                             {
                                 try
                                 {
-                                    result = PortableClipboard.GetText();
+                                    result = BloomClipboard.GetText();
                                 }
                                 catch (Exception e)
                                 {
@@ -164,7 +165,7 @@ namespace Bloom.web.controllers
                                 {
                                     try
                                     {
-                                        PortableClipboard.SetText(content);
+                                        BloomClipboard.SetText(content);
                                     }
                                     catch (Exception e)
                                     {
@@ -297,6 +298,15 @@ namespace Bloom.web.controllers
                     // Control port of the dev launcher that started us (null when not
                     // launched via go.sh); see .claude/skills/run-bloom.
                     launcherControlPort = Program.StartupLauncherPort,
+                    // True when this Bloom was launched with --e2e. The workspace shell reads
+                    // this to decide whether to show the end-to-end step caption; nothing about
+                    // that caption exists in a normal run.
+                    runningE2eTests = Program.RunningE2eTests,
+                    // Where this instance keeps its user settings (user.config): the folder
+                    // --user-settings-folder named, or the usual per-version one. The e2e launch
+                    // fixture checks this to be sure the Bloom it started is not sharing settings
+                    // with anyone; see BloomSettingsProvider.
+                    userSettingsFolder = BloomSettingsProvider.GetUserSettingsFolder(),
                 }
             );
         }
@@ -491,7 +501,10 @@ namespace Bloom.web.controllers
                     throw new ApplicationException("No clipboard data could be set.");
                 }
 
+                // This endpoint sets the Windows clipboard itself, whatever BloomClipboard would do.
+#pragma warning disable RS0030
                 Clipboard.SetDataObject(dataObject, true, 10, 50);
+#pragma warning restore RS0030
             }
             finally
             {
@@ -522,30 +535,18 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// The tab which should display first when the settings dialog opens.
-        /// </summary>
-        private string SettingsDialogTab;
-
-        /// <summary>
-        /// Handle showing the settings dialog, opening it to the desired tab.
+        /// Handle showing the settings dialog, opening it on the page named by "tab". The links in
+        /// the comic book templates' ReadMe files use this; subscription badges open the dialog in
+        /// the browser directly.
         /// </summary>
         /// <remarks>
         /// This is here instead of CollectionSettingsApi because we have easier access to
-        /// showing the dialog via the WorkspaceView object.  Starting the dialog on the idle
-        /// loop allows the full functionality without locking up the API.
+        /// showing the dialog via the WorkspaceView object.
         /// </remarks>
         private void HandleShowSettingsDialog(ApiRequest request)
         {
-            SettingsDialogTab = request.Parameters["tab"];
-            Application.Idle += ShowSettingsDialogOnIdle;
+            WorkspaceView.OpenSettingsDialog(request.Parameters["tab"]);
             request.PostSucceeded();
-        }
-
-        private void ShowSettingsDialogOnIdle(object sender, EventArgs e)
-        {
-            Application.Idle -= ShowSettingsDialogOnIdle;
-            WorkspaceView.OpenLegacySettingsDialog(SettingsDialogTab);
-            SettingsDialogTab = null;
         }
 
         private void HandleLogEvent(ApiRequest request)
@@ -624,6 +625,11 @@ namespace Bloom.web.controllers
                 var langs = new List<object>();
                 foreach (var code in L10NSharp.LocalizationManager.GetAvailableLocalizedLanguages())
                 {
+                    // The hints the user writes in this dialog are stored in the book, so the
+                    // pseudo-locale (a UI-testing device, not a language anyone writes in) has
+                    // no business being offered here. See BL-16748.
+                    if (code == LocalizationManager.PseudoLocalizationLanguageId)
+                        continue;
                     var langItem = WorkspaceView.CreateLanguageItem(code);
                     langs.Add(new { label = langItem.MenuText, tag = code });
                 }

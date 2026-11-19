@@ -14,10 +14,8 @@ import {
 import { ensureFieldFitsOnCustomPage } from "./derivedFieldFitting";
 import { getAsync, postData, postString } from "../../../utils/bloomApi";
 import { Bubble, BubbleSpec } from "comicaljs";
-import {
-    recomputeSourceBubblesForPage,
-    wrapWithRequestPageContentDelay,
-} from "../../js/bloomEditing";
+import { recomputeSourceBubblesForPage } from "../../js/bloomEditing";
+import { wrapWithRequestPageContentDelay } from "../../js/pageContentDelays";
 import { updateAbovePageControls } from "../../js/AbovePageControls";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { ILanguageNameValues } from "../../bookAndPageSettings/FieldVisibilityGroup";
@@ -567,9 +565,13 @@ function renderPageLayoutMenu(page: HTMLElement): void {
                 );
                 // Persist the newly created custom layout state so a later switch back
                 // to standard has matching server-side state to work from.
+                // report: false — the edit tab declines a jump it cannot do (it is mid-save), and
+                // that is not something to raise a problem report about. See
+                // EditingModel.JumpToPage.
                 await postString(
                     "editView/jumpToPage",
                     page.getAttribute("id")!,
+                    false,
                 );
                 renderPageLayoutMenu(page);
             } else if (selection === "custom" && response) {

@@ -1,0 +1,149 @@
+/// <reference path="../../typings/ckeditor/ckeditor.d.ts" />
+
+// Preserving the user's caret while a tool rewrites the markup around it.
+//
+// This module exists to give that job a seam. It is deliberately a *pure extraction* of what
+// toolbox.ts's keystroke pipeline (handleKeyboardInput) has always done, with no behaviour change,
+// so that the CKEditor-retirement project (BL-6681) can swap the implementation without operating
+// on the most delicate code in the app. See docs/retire-ckeditor/PLAN.md 4.3 and 5.7.3, and inventory
+// rows G1-G5.
+//
+// TODAY'S IMPLEMENTATION uses CKEditor "bookmarks": a dummy span is inserted at the caret, and
+// selecting the bookmark later both restores the caret and removes the span. That has a known cost,
+// documented at the call site for years: while the span is in the DOM the markup routine sees it as
+// a word break, so fixing a letter mid-word makes the reader tools briefly mis-analyse the word
+// ("hous"-bookmark-"e"). It is corrected when the user clicks away.
+//
+// The bookmark span also SPLITS the text node the caret is in, and Chromium then goes on painting
+// a ligature's old glyphs across the join (BL-16717), so since that fix the caret is only recorded
+// when something below in the pipeline might actually rewrite the box; for ordinary typing with no
+// tool active, nothing is inserted at all. The caller decides that (it knows whether a tool is
+// active), and passes it in.
+//
+// Restoring the caret from a bookmark is also a CKEditor re-select, which in the Chromium-based
+// WebView2 plants a zero-width "filling char" (U+200B) whenever the caret sits next to an inline
+// element such as the bloom-linebreak span; a later rewrite of the box orphans it and it gets
+// saved (BL-16808). That is one more reason to record the caret only when something might
+// actually rewrite the box.
+//
+// THE PLANNED IMPLEMENTATION records the caret as a character offset into the editable's text
+// instead, which perturbs nothing and therefore fixes that mis-analysis rather than preserving it.
+// When that lands, only the four functions below change; toolbox.ts should not need to.
+
+/**
+ * An opaque record of where the caret was. Callers must not inspect it — that is the whole point
+ * of the seam. Today it holds CKEditor bookmark objects.
+ */
+export interface SavedMarkupSelection {
+    // Deliberately unknown[]: callers must treat this as opaque, and the planned replacement stores
+    // something quite different (a character offset, not DOM markers).
+    // Undefined when the caller said nothing would rewrite the box, so nothing was recorded and
+    // the restore has nothing to do (BL-16717).
+    bookmarks: unknown[] | undefined;
+}
+
+/** The editor object CKEditor attaches to each editable div, if it attached one. */
+function getEditorOfBox(editableDiv: HTMLElement): CKEDITOR.editor | undefined {
+    return (editableDiv as HTMLElement & { bloomCkEditor?: CKEDITOR.editor })
+        .bloomCkEditor;
+}
+
+/**
+ * Whether this box participates in markup at all.
+ *
+ * Normally every editable box has a rich-text editor attached, so this is true. Boxes without one
+ * are treated as not needing markup: the caller skips the whole update for them.
+ *
+ * (The comment this replaced claimed such boxes are the ArithmeticTemplate number boxes, "because
+ * the logic that invokes WireToCKEditor is looking for classes like bloom-content1 that are not
+ * present in ArithmeticTemplate". That explanation is wrong: ckeditableSelector in utils/shared.ts
+ * explicitly includes .Equation-style, added for that very template. The real case of a box with no
+ * editor is one whose computed cursor is `not-allowed`, which attachToCkEditor skips. Behaviour is
+ * unchanged either way; only the explanation is corrected.)
+ */
+export function boxParticipatesInMarkup(editableDiv: HTMLElement): boolean {
+    return !!getEditorOfBox(editableDiv);
+}
+
+/**
+ * Remember where the caret is, before the markup is rewritten.
+ *
+ * Returns undefined if the caret could not be recorded, which today means the editor reported no
+ * selection — the caller should abandon this markup pass entirely (we may be changing pages).
+ *
+ * `boxMightBeRewritten` says whether anything in the pass that follows could replace the box's
+ * content (a tool is active, or there is a comment or nbsp to clean up). If nothing can, there is
+ * no selection to preserve, and recording it would cost a bookmark span that splits the text node
+ * the user is typing in (BL-16717) — so in that case nothing is inserted, and the record returned
+ * is an empty one whose restore does nothing. The "no selection" check above still applies either
+ * way, so the caller's abandon-the-pass behaviour does not depend on this flag.
+ *
+ * Only call this when boxParticipatesInMarkup() is true.
+ */
+export function saveSelectionForMarkup(
+    editableDiv: HTMLElement,
+    boxMightBeRewritten: boolean,
+): SavedMarkupSelection | undefined {
+    const editor = getEditorOfBox(editableDiv);
+    if (!editor) {
+        return undefined;
+    }
+    const selection = editor.getSelection();
+    if (!selection) {
+        return undefined; // may be changing pages?
+    }
+    if (!boxMightBeRewritten) {
+        return { bookmarks: undefined };
+    }
+    // There is also createBookmarks2(), which avoids actually inserting anything. That has the
+    // advantage that changing a character in the middle of a word would let the whole word be
+    // evaluated by the markup routine. However, testing showed that the cursor then doesn't
+    // actually go back to where it was: it gets shifted to the right.
+    return { bookmarks: selection.createBookmarks(true) };
+}
+
+/**
+ * Put the caret back where saveSelectionForMarkup() found it.
+ *
+ * Note that with today's implementation this also removes the marker spans from the DOM, so it must
+ * be called exactly once per save, and the saved value must not be reused afterwards.
+ *
+ * Behaviour note: this re-reads the editor and no-ops if it has gone, whereas the pre-extraction
+ * code sat inside `if (ckeditorOfThisBox)` and so would have thrown. Unreachable in practice —
+ * `bloomCkEditor` is assigned once per div (BloomField.WireToCKEditor) and never cleared — but the
+ * difference is real, so it is written down rather than left to be rediscovered.
+ */
+export function restoreSelectionAfterMarkup(
+    editableDiv: HTMLElement,
+    saved: SavedMarkupSelection,
+): void {
+    if (!saved.bookmarks) {
+        return; // nothing was recorded, because nothing could have moved the caret
+    }
+    const editor = getEditorOfBox(editableDiv);
+    if (!editor) {
+        return;
+    }
+    editor.getSelection().selectBookmarks(saved.bookmarks);
+}
+
+/**
+ * Restore the caret and immediately record it again, returning the new record.
+ *
+ * Needed only on the asynchronous-markup path. There, the rest of the update happens after an
+ * await, which may be after the next keystroke has been processed; if we left fixing the selection
+ * until then, the caret would be briefly visible in the wrong place and — much worse — intervening
+ * keystrokes would go to that wrong position (BL-10133). So the caret is put right immediately, and
+ * recorded afresh for the restore that follows the actual markup change.
+ *
+ * Returns undefined under the same conditions as saveSelectionForMarkup(). The new record is made
+ * the same way the old one was: if nothing was recorded the first time, nothing is now. (In
+ * practice this path is only reached with a tool active, so a caret was recorded.)
+ */
+export function restoreAndResaveSelectionForMarkup(
+    editableDiv: HTMLElement,
+    saved: SavedMarkupSelection,
+): SavedMarkupSelection | undefined {
+    restoreSelectionAfterMarkup(editableDiv, saved);
+    return saveSelectionForMarkup(editableDiv, saved.bookmarks !== undefined);
+}

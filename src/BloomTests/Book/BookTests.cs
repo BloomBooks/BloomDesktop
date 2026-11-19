@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -537,11 +537,11 @@ namespace BloomTests.Book
 					</div>";
             var book = CreateBookWithPhysicalFile(body, bringBookUpToDate: false);
             var cssPath = Path.Combine(book.FolderPath, "customBookStyles.css");
-            File.WriteAllText(cssPath, AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme);
+            File.WriteAllText(cssPath, AppearanceMigratorTests.cssThatTriggersEbookEdgeToEdgeTheme);
             book.EnsureUpToDate();
 
             var appearanceSettings = book.BookInfo.AppearanceSettings;
-            Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("zero-margin-ebook"));
+            Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("edge-to-edge"));
 
             AssertThatXmlIn
                 .Dom(book.OurHtmlDom.RawDom)
@@ -867,19 +867,21 @@ namespace BloomTests.Book
 
             //note: our code currently only knows how to display Thai *in Thai*, French *in French*, and Spanish *in Spanish*.
             //It may be better to be writing "Thai" and "Spanish" in French.
-            //That's not part of this test, so we're currently allowing either.
+            //That's not part of this test.
             var dataDivNode =
                 book.RawDom.SelectSingleNode("//div[@data-book='languagesOfBook']")
                 as SafeXmlElement;
             var derivedNode = book.RawDom.SelectSingleNode(
                 "//div[@data-derived='languagesOfBook']"
             );
-            // We think the first one happens if there is an ICU DLL somewhere on the path, the second if not.
-            string[] expected = { "espagnol, ไทย, français", "español, ไทย, français" };
-            Assert.That(
-                dataDivNode != null && expected.Contains(dataDivNode.InnerText),
-                "languagesOfBook should be 'espagnol, ไทย, français' or 'español, ไทย, français'"
-            );
+            // This used to have to accept "espagnol" as well, depending on whether a native ICU
+            // library happened to be findable on the machine. Bloom now turns ICU off for language
+            // names (see WritingSystem's static constructor), so for a given UI language there is
+            // one answer, whatever the machine. This is the answer under an English UI; TestCulture
+            // deliberately leaves CurrentUICulture alone, so that is the machine's UI language
+            // rather than one the run pins (BL-16806).
+            Assert.That(dataDivNode, Is.Not.Null, "should have a data-book languagesOfBook");
+            Assert.That(dataDivNode.InnerText, Is.EqualTo("español, ไทย, français"));
             Assert.That(
                 derivedNode != null && derivedNode.InnerText == dataDivNode.InnerText,
                 "derived languagesOfBook should match data-book"
@@ -904,8 +906,306 @@ namespace BloomTests.Book
         {
             var book = CreateBook();
             var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            // A save that would not change the book is not written, so the test has to change the
+            // page.
+            var textarea =
+                dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']") as SafeXmlElement;
+            Assert.That(textarea, Is.Not.Null, "test setup: expected the first page's textarea");
+            Assert.That(
+                textarea.InnerText,
+                Is.EqualTo("tree"),
+                "test setup: expected the unedited value"
+            );
+            textarea.InnerText = "changed by the test";
+
             book.SavePage(dom);
+
             _storage.Verify(s => s.Save(), Times.AtLeastOnce());
+        }
+
+        [Test]
+        public void SavePage_SecondSaveWithNothingChanged_StorageNotToldToSave()
+        {
+            // The user-visible rule (BL-13502): opening a page and changing nothing must not write
+            // the book. The FIRST save is allowed to write, because opening a page can legitimately
+            // normalise it -- filling in editables for the collection's languages, say. What must
+            // not happen is that it keeps needing to be saved every time afterwards.
+            var book = CreateBook();
+
+            book.SavePage(book.GetEditableHtmlDomForPage(book.GetPages().First()));
+            Assert.That(
+                _storage.Invocations.Any(i => i.Method.Name == nameof(IBookStorage.Save)),
+                Is.True,
+                "test setup: expected the first, normalising save to write; if it did not, the "
+                    + "second save proving nothing about being skipped"
+            );
+            _storage.Invocations.Clear();
+
+            book.SavePage(book.GetEditableHtmlDomForPage(book.GetPages().First()));
+
+            _storage.Verify(s => s.Save(), Times.Never());
+        }
+
+        [Test]
+        public void UpdateDomFromEditedPage_PageOpenedAgainAndNotEdited_ReportsNothingChanged()
+        {
+            // The invariant the whole "no snapshot means no unsaved changes" idea rests on: our own
+            // save processing has to be a FIXED POINT on content that has already been through it.
+            // If ProcessPageAfterEditing (or SetImageAltAttrsFromDescriptions, or the user-style
+            // handling) altered already-saved content even slightly, every page would report a
+            // change every time it was opened, however well the browser behaved, and a book would
+            // rewrite itself forever just from being looked at. See BL-13502.
+            //
+            // The first pass is allowed to change things -- that is a page being brought up to
+            // date. It is the second that has to be quiet.
+            var book = CreateBook();
+            var pageCount = book.GetPages().Count();
+
+            for (var index = 0; index < pageCount; index++)
+            {
+                // GetEditableHtmlDomForPage is what the browser is handed; giving it straight back
+                // stands for a user who opened the page and touched nothing.
+                var firstPage = book.GetPages().ElementAt(index);
+                book.UpdateDomFromEditedPage(
+                    book.GetEditableHtmlDomForPage(firstPage),
+                    out _,
+                    needToDoFullSave: false,
+                    out _
+                );
+
+                var secondPage = book.GetPages().ElementAt(index);
+                book.UpdateDomFromEditedPage(
+                    book.GetEditableHtmlDomForPage(secondPage),
+                    out _,
+                    needToDoFullSave: false,
+                    out var changedOnSecondVisit
+                );
+
+                Assert.That(
+                    changedOnSecondVisit,
+                    Is.False,
+                    $"Page {secondPage.Id} reported a change on being opened a second time and not "
+                        + "edited. Our processing of it is not stable, so it would re-save itself "
+                        + "every time anyone looked at it."
+                );
+            }
+        }
+
+        [Test]
+        public void UpdateDomFromEditedPage_PageActuallyEdited_ReportsChanged()
+        {
+            // Guards the test above: if anythingChanged were simply always false, it would pass and
+            // mean nothing.
+            var book = CreateBook();
+            var page = book.GetPages().First();
+
+            // Settle the page first, so what we measure is our edit and not the tidy-up.
+            book.UpdateDomFromEditedPage(
+                book.GetEditableHtmlDomForPage(page),
+                out _,
+                needToDoFullSave: false,
+                out _
+            );
+
+            var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            var textarea =
+                dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']") as SafeXmlElement;
+            Assert.That(textarea, Is.Not.Null, "test setup: expected the first page's textarea");
+            textarea.InnerText = "changed by the test";
+
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out var changed);
+
+            Assert.That(changed, Is.True);
+        }
+
+        [Test]
+        public void UpdateDomFromEditedPage_OnlyAttributeOrderDiffers_ReportsUnchanged()
+        {
+            // The editing page adds data-languagetipcontent to text boxes, and the browser can hand
+            // it back in a different place among the element's attributes from where the book had
+            // it. That says nothing new, so it must not make the page look edited: if it did, every
+            // visit to such a page would rewrite the book.
+            var book = CreateBook();
+            var page = book.GetPages().First();
+            book.UpdateDomFromEditedPage(
+                book.GetEditableHtmlDomForPage(page),
+                out _,
+                needToDoFullSave: false,
+                out _
+            );
+
+            // An element INSIDE the page: the page's content is replaced wholesale by what the
+            // browser sent, so inner attribute order reaches the book as the browser had it. (The
+            // page div's own attributes are copied onto the existing div, which keeps its order.)
+            var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            var textarea =
+                dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']") as SafeXmlElement;
+            Assert.That(textarea, Is.Not.Null, "test setup: expected the first page's textarea");
+            textarea.SetAttribute("data-languagetipcontent", "English");
+            textarea.SetAttribute("data-other", "x");
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out _);
+            // That stored the textarea with data-languagetipcontent before data-other. Now hand it
+            // back with the same attributes the other way round, as the browser can.
+            dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            textarea =
+                dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']") as SafeXmlElement;
+            textarea.RemoveAttribute("data-languagetipcontent");
+            textarea.SetAttribute("data-languagetipcontent", "English");
+            Assert.That(
+                textarea.AttributePairs.Last().Name,
+                Is.EqualTo("data-languagetipcontent"),
+                "test setup: the attribute should now come last"
+            );
+
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out var changed);
+
+            Assert.That(changed, Is.False);
+        }
+
+        [Test]
+        public void UpdateDomFromEditedPage_UnlockedOriginalCopyrightUnchanged_ReportsUnchanged()
+        {
+            // While the user is allowed to edit the sentence about the original book, the editor
+            // shows it as an editable field, but the book always keeps it locked. Merely saving
+            // the page in that state, with the wording unchanged, changes nothing in the book, so
+            // it must not count as a change: if it did, every save would rewrite the book.
+            var book = CreateBook();
+            var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            var pageDiv =
+                dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-page')]")
+                as SafeXmlElement;
+            var spot = pageDiv.AppendChild(dom.RawDom.CreateElement("div")) as SafeXmlElement;
+            spot.SetAttribute("class", "copyright Credits-Page-style");
+            spot.SetAttribute("data-derived", "originalCopyrightAndLicense");
+            spot.SetAttribute("lang", "*");
+            spot.InnerXml = "<p>Some sentence about the original.</p>";
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out _);
+            HtmlDom SaveTheUnlockedPage(out bool pageChanged)
+            {
+                var unlocked = book.GetEditableHtmlDomForPage(book.GetPages().First());
+                BookCopyrightAndLicense.MakeOriginalCopyrightNoticeEditable(unlocked);
+                book.UpdateDomFromEditedPage(
+                    unlocked,
+                    out _,
+                    needToDoFullSave: false,
+                    out pageChanged
+                );
+                return unlocked;
+            }
+            // The first such save gives the book's sentence the locked form's hint and padlock,
+            // which this test's hand-made sentence lacks; a real book's already has them.
+            var firstSave = SaveTheUnlockedPage(out _);
+            Assert.That(
+                firstSave.SelectSingleNode("//div[@data-book='userOriginalCopyrightAndLicense']"),
+                Is.Not.Null,
+                "test setup: the sentence should have been an editable field"
+            );
+
+            SaveTheUnlockedPage(out var changed);
+
+            Assert.That(changed, Is.False);
+        }
+
+        // What the editor leaves when the user deletes all the text, plain or after formatting it.
+        [TestCase("<p></p>")]
+        [TestCase("<p style=\"text-align: center;\"><br /></p>")]
+        public void UpdateDomFromEditedPage_UsersOriginalCopyrightEmptied_PageGetsBloomsSentenceBack(
+            string emptiedField
+        )
+        {
+            // Emptying the unlocked field is how the user gives the sentence about the original
+            // book back to Bloom. Saving that page must leave Bloom's generated sentence on it, not
+            // the empty field (BL-16859).
+            var book = CreateBook();
+            book.BookData.Set(
+                "originalCopyright",
+                XmlString.FromUnencoded("Copyright © 2021, SIL International"),
+                "*"
+            );
+            book.BookData.Set(
+                "originalLicenseUrl",
+                XmlString.FromUnencoded("http://creativecommons.org/licenses/by/4.0/"),
+                "*"
+            );
+            book.BookData.Set(
+                "originalTitle",
+                XmlString.FromUnencoded("A Family Learns about Immunisations"),
+                "*"
+            );
+            book.BookData.Set(
+                BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense,
+                XmlString.FromXml("<p>My own words about the original.</p>"),
+                "*"
+            );
+            var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            var pageDiv =
+                dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-page')]")
+                as SafeXmlElement;
+            var spot = pageDiv.AppendChild(dom.RawDom.CreateElement("div")) as SafeXmlElement;
+            spot.SetAttribute("class", "copyright Credits-Page-style");
+            spot.SetAttribute("data-derived", "originalCopyrightAndLicense");
+            spot.SetAttribute("lang", "*");
+            spot.InnerXml = "<p>My own words about the original.</p>";
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out _);
+
+            var unlocked = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            BookCopyrightAndLicense.MakeOriginalCopyrightNoticeEditable(unlocked);
+            var editable =
+                unlocked.SelectSingleNode(
+                    "//div[@data-book='userOriginalCopyrightAndLicense' and @lang='*']"
+                ) as SafeXmlElement;
+            Assert.That(editable, Is.Not.Null, "test setup: the sentence should be editable");
+            editable.InnerXml = emptiedField;
+
+            book.UpdateDomFromEditedPage(
+                unlocked,
+                out var savedPage,
+                needToDoFullSave: true,
+                out _
+            );
+
+            Assert.That(
+                book.BookData.GetVariableOrNull(
+                    BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense,
+                    "*"
+                ).Xml,
+                Is.Null.Or.Empty,
+                "the user's wording should be gone from the data div"
+            );
+            var savedSpot =
+                savedPage.SelectSingleNode(".//div[@data-derived='originalCopyrightAndLicense']")
+                as SafeXmlElement;
+            Assert.That(savedSpot, Is.Not.Null, "the saved page lost the sentence's place");
+            Assert.That(
+                savedSpot.InnerText,
+                Does.Contain("A Family Learns about Immunisations").And.Contain("SIL International")
+            );
+            Assert.That(savedSpot.InnerXml, Does.Contain("<cite data-book=\"originalTitle\""));
+            Assert.That(savedSpot.GetAttribute("data-link-icon"), Is.EqualTo("lock"));
+        }
+
+        [Test]
+        public void UpdateDomFromEditedPage_AttributeValueChanged_ReportsChanged()
+        {
+            // Guards the test above: ignoring attribute order must not mean ignoring attributes.
+            var book = CreateBook();
+            var page = book.GetPages().First();
+            book.UpdateDomFromEditedPage(
+                book.GetEditableHtmlDomForPage(page),
+                out _,
+                needToDoFullSave: false,
+                out _
+            );
+
+            var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            var textarea =
+                dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']") as SafeXmlElement;
+            Assert.That(textarea, Is.Not.Null, "test setup: expected the first page's textarea");
+            textarea.SetAttribute("data-test-marker", "something new");
+
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out var changed);
+
+            Assert.That(changed, Is.True);
         }
 
         [Test]
@@ -1733,7 +2033,14 @@ namespace BloomTests.Book
             var newVideoSrc = newDivNode.SelectSingleNode(".//source") as SafeXmlElement;
             var srcAttrVal = newVideoSrc?.GetAttribute("src");
             Assert.That(srcAttrVal, Does.StartWith("video/"));
-            Assert.That(srcAttrVal, Does.Not.Contain("#").And.Not.Contain("t="));
+            Assert.That(
+                srcAttrVal,
+                Is.Not.Matches(Contains.Substring("#").Using(StringComparison.Ordinal))
+            );
+            Assert.That(
+                srcAttrVal,
+                Is.Not.Matches(Contains.Substring("t=").Using(StringComparison.Ordinal))
+            );
             Assert.That(srcAttrVal, Does.EndWith(".mp4"));
             var fileName = srcAttrVal.Substring("video/".Length);
             Assert.That(fileName, Is.Not.EqualTo("Crow.mp4"));
@@ -2203,13 +2510,6 @@ namespace BloomTests.Book
             Assert.IsTrue(book.CanDelete);
         }
 
-        [Test, Ignore("broken")]
-        public void CanDelete_TemplateBook_False()
-        {
-            var book = CreateBook();
-            Assert.IsFalse(book.CanDelete);
-        }
-
         [Test]
         public void GetBookletLayoutMethod_A5Portrait_NotCalendar_Fold()
         {
@@ -2383,6 +2683,38 @@ namespace BloomTests.Book
             Assert.AreEqual(
                 PublishModel.BookletLayoutMethod.CutAndStack,
                 book.GetBookletLayoutMethod(A5Landscape)
+            );
+        }
+
+        // BL-16759: HalfLetter Landscape was laid out for folding, while the print
+        // instructions told the user to cut and stack, so the pages came out in the wrong order.
+        [TestCase("HalfLetterLandscape", PublishModel.BookletLayoutMethod.CutAndStack)]
+        [TestCase("HalfLetterPortrait", PublishModel.BookletLayoutMethod.SideFold)]
+        [TestCase("A4Landscape", PublishModel.BookletLayoutMethod.SideFold)]
+        [TestCase("QuarterLetterLandscape", PublishModel.BookletLayoutMethod.SideFold)]
+        public void GetBookletLayoutMethod_NotCalendar_DependsOnSizeAndOrientation(
+            string sizeAndOrientation,
+            PublishModel.BookletLayoutMethod expected
+        )
+        {
+            _bookDom = new HtmlDom(
+                @"<html ><head>
+									</head><body></body></html>"
+            );
+            var book = CreateBook();
+            var layout = new Layout()
+            {
+                SizeAndOrientation = SizeAndOrientation.FromString(sizeAndOrientation),
+            };
+            Assert.That(
+                layout.SizeAndOrientation.ToString(),
+                Is.EqualTo(sizeAndOrientation),
+                "test setup: the layout name did not parse as expected"
+            );
+            Assert.AreEqual(
+                expected,
+                book.GetBookletLayoutMethod(layout),
+                $"wrong booklet layout for {sizeAndOrientation}"
             );
         }
 
@@ -6488,6 +6820,268 @@ namespace BloomTests.Book
                 .HasSpecifiedNumberOfMatchesForXpath(hashTimingsXpath, 1);
         }
 
+        /// <summary>
+        /// A book made before Bloom converted HEVC videos on import (BL-17114) is converted when it is
+        /// published, so the harvester's BloomPUB, Read Online and ePUB copies of it play.
+        /// </summary>
+        [Test]
+        public void PrepareBookVideoForPublishing_HevcVideo_IsConvertedToH264()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'></div>
+				<div class='bloom-page'>
+					<div class='marginBox'>
+						<div class='bloom-videoContainer'>
+							<video>
+								<source src='video/Test%20pattern%20hevc.mp4#t=0.0,2.0'></source>
+							</video>
+						</div>
+					</div>
+				</div>"
+            );
+            var book = CreateBook();
+            var bookDom = book.OurHtmlDom;
+            var videoFolder = Path.Combine(book.FolderPath, "video");
+            Directory.CreateDirectory(videoFolder);
+            var hevcPath = Path.Combine(videoFolder, "Test pattern hevc.mp4");
+            RobustFile.Copy(
+                FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestVideos,
+                    "Test pattern hevc.mp4"
+                ),
+                hevcPath
+            );
+            Assert.That(
+                SignLanguageApi.GetVideoCharacteristicsOutput(hevcPath),
+                Does.Contain("Video: hevc"),
+                "test setup: the test video should be HEVC"
+            );
+            var videoContainer =
+                bookDom.SafeSelectNodes(".//div[contains(@class, 'bloom-videoContainer')]")[0]
+                as SafeXmlElement;
+
+            var publishedPath = SignLanguageApi.PrepareVideoForPublishing(
+                videoContainer,
+                book.FolderPath,
+                videoControls: false
+            );
+
+            Assert.That(publishedPath, Is.Not.EqualTo(hevcPath));
+            Assert.That(
+                SignLanguageApi.GetVideoCharacteristicsOutput(publishedPath),
+                Does.Contain("Video: h264")
+            );
+            Assert.That(
+                RobustFile.Exists(hevcPath),
+                Is.False,
+                "the HEVC video should not be published"
+            );
+            var src = videoContainer.SelectSingleNode("video/source").GetAttribute("src");
+            Assert.That(
+                src,
+                Is.EqualTo($"video/{Path.GetFileName(publishedPath)}#t=0.0,2.0"),
+                "the book should point at the converted video, keeping its (whole-video) timings"
+            );
+        }
+
+        /// <summary>
+        /// A custom cover layout keeps a copy of its video container in bloomDataDiv, which comes first.
+        /// Converting the video for that copy deletes the original, so the cover page's container must reuse
+        /// the converted video rather than look for the deleted file.
+        /// </summary>
+        [Test]
+        public void ProcessVideos_TwoContainersShowingOneHevcVideo_BothPointAtTheConvertedVideo()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'>
+					<div data-book='customCoverContent'>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4'></source></video>
+						</div>
+					</div>
+				</div>
+				<div class='bloom-page'>
+					<div class='marginBox'>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4'></source></video>
+						</div>
+					</div>
+				</div>"
+            );
+            var book = CreateBook();
+            var videoFolder = Path.Combine(book.FolderPath, "video");
+            Directory.CreateDirectory(videoFolder);
+            RobustFile.Copy(
+                FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestVideos,
+                    "Test pattern hevc.mp4"
+                ),
+                Path.Combine(videoFolder, "Test pattern hevc.mp4")
+            );
+            var containers = HtmlDom
+                .SelectChildVideoElements(book.OurHtmlDom.RawDom.DocumentElement)
+                .Cast<SafeXmlElement>()
+                .ToList();
+            Assert.That(containers, Has.Count.EqualTo(2), "test setup: two video containers");
+
+            SignLanguageApi.ProcessVideos(containers, book.FolderPath);
+
+            var srcs = containers
+                .Select(c => c.SelectSingleNode("video/source").GetAttribute("src"))
+                .ToList();
+            Assert.That(srcs[0], Does.Not.Contain("Test"), "the video should have been converted");
+            Assert.That(
+                srcs[1],
+                Is.EqualTo(srcs[0]),
+                "both containers should show the converted video"
+            );
+            var convertedPath = Path.Combine(book.FolderPath, srcs[0]);
+            Assert.That(RobustFile.Exists(convertedPath), Is.True);
+            Assert.That(
+                SignLanguageApi.GetVideoCharacteristicsOutput(convertedPath),
+                Does.Contain("Video: h264")
+            );
+        }
+
+        /// <summary>
+        /// Two containers show one HEVC video, the second trimmed. Converting for the first must not delete
+        /// the video before the second is processed, and nothing should be left pointing at a missing file.
+        /// </summary>
+        [Test]
+        public void ProcessVideos_OneHevcVideoShownWithDifferentTimings_BothGetPlayableVideos()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'></div>
+				<div class='bloom-page'>
+					<div class='marginBox'>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4'></source></video>
+						</div>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4#t=0.5,1.5'></source></video>
+						</div>
+					</div>
+				</div>"
+            );
+            var book = CreateBook();
+            var videoFolder = Path.Combine(book.FolderPath, "video");
+            Directory.CreateDirectory(videoFolder);
+            var hevcPath = Path.Combine(videoFolder, "Test pattern hevc.mp4");
+            RobustFile.Copy(
+                FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestVideos,
+                    "Test pattern hevc.mp4"
+                ),
+                hevcPath
+            );
+            var containers = HtmlDom
+                .SelectChildVideoElements(book.OurHtmlDom.RawDom.DocumentElement)
+                .Cast<SafeXmlElement>()
+                .ToList();
+            Assert.That(containers, Has.Count.EqualTo(2), "test setup: two video containers");
+
+            SignLanguageApi.ProcessVideos(containers, book.FolderPath);
+
+            var srcs = containers
+                .Select(c => c.SelectSingleNode("video/source").GetAttribute("src"))
+                .ToList();
+            Assert.That(srcs[0], Is.Not.EqualTo(srcs[1]), "the trimmed video is a separate file");
+            foreach (var src in srcs)
+            {
+                Assert.That(
+                    src,
+                    Does.Not.Contain("Test"),
+                    $"{src} should not be the HEVC original"
+                );
+                var path = Path.Combine(book.FolderPath, src);
+                Assert.That(RobustFile.Exists(path), Is.True, $"{src} should exist");
+                Assert.That(
+                    SignLanguageApi.GetVideoCharacteristicsOutput(path),
+                    Does.Contain("Video: h264"),
+                    $"{src} should be H.264"
+                );
+            }
+            Assert.That(
+                RobustFile.Exists(hevcPath),
+                Is.False,
+                "the HEVC original should be deleted once nothing uses it"
+            );
+        }
+
+        /// <summary>
+        /// Two containers ask for the same trim of one video (as a custom cover's bloomDataDiv copy does):
+        /// they should share one trimmed file rather than each carry its own copy.
+        /// </summary>
+        [Test]
+        public void ProcessVideos_TwoContainersWithTheSameTrim_ShareOneTrimmedFile()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'></div>
+				<div class='bloom-page'>
+					<div class='marginBox'>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4#t=0.5,1.5'></source></video>
+						</div>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4#t=0.5,1.5'></source></video>
+						</div>
+					</div>
+				</div>"
+            );
+            var book = CreateBook();
+            var videoFolder = Path.Combine(book.FolderPath, "video");
+            Directory.CreateDirectory(videoFolder);
+            RobustFile.Copy(
+                FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestVideos,
+                    "Test pattern hevc.mp4"
+                ),
+                Path.Combine(videoFolder, "Test pattern hevc.mp4")
+            );
+            var containers = HtmlDom
+                .SelectChildVideoElements(book.OurHtmlDom.RawDom.DocumentElement)
+                .Cast<SafeXmlElement>()
+                .ToList();
+            Assert.That(containers, Has.Count.EqualTo(2), "test setup: two video containers");
+
+            SignLanguageApi.ProcessVideos(containers, book.FolderPath);
+
+            var srcs = containers
+                .Select(c => c.SelectSingleNode("video/source").GetAttribute("src"))
+                .ToList();
+            Assert.That(srcs[0], Does.Not.Contain("Test"), "the video should have been replaced");
+            Assert.That(
+                srcs[0],
+                Does.Not.Contain("#t="),
+                "a trimmed video's src has no timings; timings left means the trim failed"
+            );
+            Assert.That(
+                srcs[1],
+                Is.EqualTo(srcs[0]),
+                "both containers should share one trimmed file"
+            );
+            Assert.That(
+                Directory.GetFiles(videoFolder),
+                Has.Length.EqualTo(1),
+                "only the shared trimmed file should be left"
+            );
+            var description = SignLanguageApi.GetVideoCharacteristicsOutput(
+                Path.Combine(book.FolderPath, srcs[0])
+            );
+            var duration = TimeSpan.Parse(
+                System
+                    .Text.RegularExpressions.Regex.Match(description, @"Duration: ([0-9:.]+),")
+                    .Groups[1]
+                    .Value,
+                CultureInfo.InvariantCulture
+            );
+            Assert.That(
+                duration.TotalSeconds,
+                Is.LessThan(1.5),
+                "the shared file should hold the trimmed second, not the whole 2-second video"
+            );
+        }
+
         [Test]
         public void SelectAudioSentenceElements_SentenceWithNoId_SkipsIt()
         {
@@ -7563,6 +8157,35 @@ namespace BloomTests.Book
                 Is.EqualTo(Path.Combine(_storage.Object.FolderPath, "front-real.jpg"))
             );
             Assert.That(coverImgElt.GetAttribute("id"), Is.EqualTo("front-real-image"));
+        }
+
+        [Test]
+        public void SetIsLeveled_TurnedOff_ClearsTheLevelOnTheBody()
+        {
+            // A branding stylesheet reads the grade from this attribute, so it has to say the book
+            // has no level as soon as the user says the book is not leveled. The Leveled Reader
+            // tool keeps its level, so the tool state alone cannot answer that (BL-16775).
+            var book = CreateBook();
+            var levelState = Bloom.Edit.ToolboxToolState.CreateFromToolId("leveledReader");
+            levelState.State = "7";
+            levelState.Enabled = true;
+            book.BookInfo.Tools.Add(levelState);
+
+            book.SetIsLeveled(true);
+
+            // Sanity check: with the book leveled, the tool's level does reach the body.
+            Assert.That(
+                book.OurHtmlDom.Body.GetAttribute("data-leveledreaderlevel"),
+                Is.EqualTo("7"),
+                "test setup failed to put the level on the body"
+            );
+
+            book.SetIsLeveled(false);
+
+            Assert.That(
+                book.OurHtmlDom.Body.GetAttribute("data-leveledreaderlevel"),
+                Is.EqualTo("0")
+            );
         }
 
         [Test]

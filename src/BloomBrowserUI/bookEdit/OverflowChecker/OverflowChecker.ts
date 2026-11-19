@@ -2,16 +2,14 @@
 /// <reference path="../StyleEditor/StyleEditor.ts" />
 /// <reference path="../js/bloomQtipUtils.ts" />
 
-import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
-import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
 import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
-import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
-import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
+import { removeScrollOffset } from "../js/scrollOffset";
+import { refreshOverflowIndicatorsSoon } from "./overflowIndicators";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -23,6 +21,7 @@ function getElementsThatCanOverflowOrNeedToBeResized(
     container: HTMLElement,
 ): HTMLElement[] {
     //NB: for some historical reason in March 2014 the calendar still uses textareas
+    // (kBoxSelector in overflowIndicators.ts lists the same two kinds of box.)
     // I think .bloom-visibility-code-on is more reliable here than :visible;
     // possibly this is set up before everything has been computed to be visible?
     // Note: this can probably be done with querySelectorAll, but a simple substitution
@@ -43,10 +42,14 @@ function getElementsThatCanOverflowOrNeedToBeResized(
     return results;
 }
 
+// The page-wide overflow check waiting to run for each margin box (see
+// CheckPageAncestorOverflowSoon).
+const pageChecksWaiting = new WeakMap<Element, ReturnType<typeof setTimeout>>();
+
 export default class OverflowChecker {
     private;
 
-    // When a div is overfull, these handlers will add the overflow class so it gets a red background or something
+    // When a div is overfull, these handlers will add the overflow class, which overflowIndicators.ts shows
     // But this function should just do some basic checks and ADD the HANDLERS!
     public AddOverflowHandlers(container: HTMLElement) {
         const $editablePageElements = $(
@@ -56,9 +59,7 @@ export default class OverflowChecker {
         // BL-1260: disable overflow checking for pages with too many elements
         if ($editablePageElements.length > 30) {
             // since we're not going to check it, remove any indications from
-            // previous checking. (Normal code also removes some qtips. I don't
-            // think those survive from one page load to the next, so we don't
-            // need to remove them here.)
+            // previous checking.
             const cleanup = (className: string) => {
                 Array.from(container.getElementsByClassName(className)).forEach(
                     (x) => x.classList.remove(className),
@@ -69,6 +70,7 @@ export default class OverflowChecker {
             cleanup("childOverflowingThis");
             cleanup("Layout-Problem-Detected");
             cleanup("pageOverflows");
+            refreshOverflowIndicatorsSoon();
 
             return;
         }
@@ -230,6 +232,10 @@ export default class OverflowChecker {
         //         " shortBoxFudgeFactor: " +
         //         shortBoxFudgeFactor
         // );
+        // As far as we can tell, horizontal overflow can't actually happen in a Bloom text box:
+        // basePage-sharedRules.less gives visible bloom-editables overflow-wrap: anywhere, so text
+        // wraps, even in the middle of a long word, rather than running out sideways (BL-12330,
+        // BL-14920). That is also why no test in OverflowChecker.browser.spec.ts covers it.
         const overflowX = element.scrollWidth - element.clientWidth;
 
         return [overflowX, overflowY];
@@ -244,6 +250,9 @@ export default class OverflowChecker {
         // Otherwise, the text box can get scrolled back to the top when the user types. See BL-13942.
         const elementClone = element.cloneNode(true) as HTMLElement;
         elementClone.style.visibility = "hidden";
+        // The clone is not scrolled, so it must not keep the original's scroll offset, which would
+        // move its language label down and add to its height.
+        removeScrollOffset(elementClone);
         elementClone.style.position = "absolute"; // prevent any inadvertent layout effects
         // position:absolute is not enough for accurate layout, we also need to make sure the width
         // of the cloned element is the same as the original.  This is because position:absolute
@@ -378,22 +387,59 @@ export default class OverflowChecker {
     // We want to check for overflow, but we can't afford the delay right now.
     // (checking all elements on a complex page can take several seconds, and this
     // is called on every mouse move when adjusting origami). We will wait a second.
-    // If we're asked to check the same element again before that second is up, we'll
-    // cancel that timer and start a new one. When we don't get a new request for a
-    // whole second, we'll do the check.
+    // If we're asked to check the same element again before that second is up, the check
+    // already waiting covers the new request too, since it runs later than the request.
+    // Don't restart the timer instead: a steady stream of requests (a long origami drag, or
+    // window resize events arriving every 100 ms or so) would then postpone the check for as
+    // long as the stream lasts.
     // A further benefit of this delay is that a single mouse movement could resize
     // several origami elements, and the loop over all of them used to be in the
     // handling of one mouse move. Now, each timeout will be its own event, and
     // hopefully other events can be processed in between if they occur.
+    // Only the box's own check runs on its timer. The page-wide check measures every box in the
+    // margin box, so running it for each box would make a page of n boxes force n * n layouts:
+    // about 800 for a table of 28 text cells, which is over ten seconds of work. Instead, every
+    // box whose timer comes due at the same time shares one page-wide check, which runs after
+    // all of them (see CheckPageAncestorOverflowSoon).
     public static AdjustSizeOrMarkOverflowSoon(editable: HTMLElement) {
-        const timeOut = (editable as any).overflowCheckTimeout;
-        if (timeOut) {
-            clearTimeout(timeOut);
+        if ((editable as any).overflowCheckTimeout) {
+            return;
         }
         (editable as any).overflowCheckTimeout = setTimeout(() => {
+            (editable as any).overflowCheckTimeout = undefined;
             this.CheckOnMinHeight(editable);
-            OverflowChecker.AdjustSizeOrMarkOverflow(editable);
+            OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable);
+            OverflowChecker.CheckPageAncestorOverflowSoon(editable);
         }, 1000);
+    }
+
+    // Run CheckPageAncestorOverflow for the margin box holding `editable` once the timers that
+    // are already due have run. Each call replaces any check still waiting for the same margin
+    // box, so a batch of boxes whose timers fire together gets one page-wide check, not one each.
+    // The check finds the margin box from the box it is given, so any box in the margin box will
+    // do; that matters when `editable` has been deleted but the rest of the margin box is still there.
+    private static CheckPageAncestorOverflowSoon(editable: HTMLElement) {
+        const marginBox = editable.closest(".marginBox");
+        if (!marginBox) {
+            // CheckPageAncestorOverflow looks only within a margin box, so it would do nothing.
+            return;
+        }
+        const waiting = pageChecksWaiting.get(marginBox);
+        if (waiting) {
+            clearTimeout(waiting);
+        }
+        pageChecksWaiting.set(
+            marginBox,
+            setTimeout(() => {
+                pageChecksWaiting.delete(marginBox);
+                const box = editable.isConnected
+                    ? editable
+                    : marginBox.querySelector<HTMLElement>(".bloom-editable");
+                if (box?.isConnected) {
+                    OverflowChecker.CheckPageAncestorOverflow(box);
+                }
+            }, 0),
+        );
     }
 
     // Checks for overflow on a bloom-page and adds/removes the proper class
@@ -417,6 +463,36 @@ export default class OverflowChecker {
         OverflowChecker.CheckPageAncestorOverflow(editable);
     } // end AdjustSizeOrMarkOverflow
 
+    // Whether a bloom-padForOverflow box should measure its descenders and store the resulting
+    // padding-bottom in its style attribute.
+    // The book title is one data-book field shown on several xmatter pages (the front cover, the
+    // title page, sometimes more), and Bloom keeps the style attribute of all its copies in sync.
+    // In particular, the style attribute is used to store the padding-bottom that we compute here
+    // to prevent descenders from extending outside their box. So each time we save a page with
+    // a book-title, the padding-bottom on that page gets copied to all the other places that
+    // use the same combination of data-book and lang attributes, just like the title text.
+    // For example, if we edited the title page last, and had updated the padding to be ideal for
+    // the title there, the front cover would get the title page's padding. It would get corrected
+    // the next time we edit the front cover, but a publication made in the meantime would have
+    // things subtly the wrong size and position. (Claude thought there might even be a situation
+    // where the front cover descenders could be cut off, but I haven't been able to reproduce that.)
+    // We could not find any acceptably simple way to prevent padding migrating like this,
+    // given that content in xmatter pages is only preserved through the data-div,
+    // so we decided to kluge it by only allowing the padding to be adjusted by this code on the
+    // front cover. The other copies of the book title will inherit the front cover's padding.
+    // We may come up with a better approach in a later version.
+    // Other padded fields are measured wherever they are. None of them are currently likely to
+    // be in more than one place with a different style in each.
+    public static shouldMeasurePaddingForOverflow(
+        editable: HTMLElement,
+    ): boolean {
+        if (editable.getAttribute("data-book") !== "bookTitle") {
+            return true;
+        }
+        const page = editable.closest(".bloom-page");
+        return !!page && page.classList.contains("outsideFrontCover");
+    }
+
     // Type 1 overflow handling: checks/resizes the element's containing canvas element and
     // marks whether the element overflows its own box. This is the per-element part of
     // overflow handling and can be called in a loop over multiple elements before calling
@@ -427,9 +503,6 @@ export default class OverflowChecker {
         growAsMuchAsPossible?: boolean,
     ) {
         const $editable = $(editable);
-        if ($editable.hasClass("overflow")) {
-            OverflowChecker.RemoveOverflowQtip($editable);
-        }
 
         // We used to remove the "overflow" class unconditionally, then add it back if needed.
         // But in 6.0, that started causing the box to scroll back to the top sometimes. See BL-13942.
@@ -437,19 +510,16 @@ export default class OverflowChecker {
         // $box.removeClass("overflow");
 
         $editable.removeClass("thisOverflowingParent");
-        $editable.off("mousemove.overflow");
-        $editable.off("mouseleave.overflow");
-        $editable.parents(".childOverflowingThis").each((dummy, parent) => {
-            OverflowChecker.RemoveOverflowQtip($(parent));
-        });
-        OverflowChecker.RemoveOverflowQtip($editable);
         $editable.parents().removeClass("childOverflowingThis");
 
         const preventOverflowY = editable.classList.contains(
             "bloom-padForOverflow",
         );
 
-        if (preventOverflowY) {
+        if (
+            preventOverflowY &&
+            OverflowChecker.shouldMeasurePaddingForOverflow(editable)
+        ) {
             editable.style.paddingBottom = "0";
             const measurements =
                 MeasureText.getDescentMeasurementsOfBox(editable);
@@ -504,36 +574,6 @@ export default class OverflowChecker {
             if (overflowY > 0 && page.length) {
                 OverflowChecker.fixScrollBarsSoon(page[0]);
             }
-            const isButton =
-                $editable.closest("." + kBloomButtonClass).length > 0;
-            // don't show an overflow warning if we have scrolling available (unless it's a button)
-            const scrollingWillBeAvailable =
-                !!page[0] &&
-                OverflowChecker.GetScrollInsteadOfOverflow(page[0]);
-            if (!scrollingWillBeAvailable || isButton) {
-                theOneLocalizationManager
-                    .asyncGetText(
-                        "EditTab.Overflow",
-                        "This box has more text than will fit",
-                        "",
-                    )
-                    .done((overflowText) => {
-                        $editable.qtip({
-                            content:
-                                '<img data-overflow="true" height="20" width="20" style="vertical-align:middle" src="/bloom/images/Attention.svg">' +
-                                overflowText,
-                            show: { event: "mouseenter" },
-                            hide: { event: "mouseleave" },
-                            position: {
-                                // Anchor the tooltip at the top left of buttons to avoid overlap with the canvas-element-context-controls
-                                // and avoid getting cut off by the left edge of the editing pane
-                                my: isButton ? "bottom left" : "top right",
-                                at: isButton ? "left top" : "right bottom",
-                                container: bloomQtipUtils.qtipZoomContainer(),
-                            },
-                        });
-                    });
-            }
         } else {
             $editable.removeClass("overflow");
             const page = $editable.closest(".bloom-page");
@@ -541,6 +581,7 @@ export default class OverflowChecker {
                 OverflowChecker.fixScrollBarsSoon(page[0]);
             }
         }
+        refreshOverflowIndicatorsSoon();
     }
 
     // Type 2 overflow handling: scans all editable elements on the page (within the same
@@ -575,16 +616,6 @@ export default class OverflowChecker {
                     $this.removeClass("thisOverflowingParent");
                 }
             } else {
-                const $overflowingAncestor = $(overflowingAncestor);
-                // We may already have a qtip on this parent in the form of a hint or source
-                // bubble.  We don't want to override that qtip with an overflow warning since
-                // we have other indications of overflow available on the child.
-                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6295.
-                const oldQtip =
-                    OverflowChecker.GetQtipContent($overflowingAncestor);
-                if (oldQtip && !OverflowChecker.DoesQtipMarkOverflow(oldQtip)) {
-                    return; // don't override existing qtip (probably hint or source bubble)
-                }
                 // BL-1261: don't want the typed-in box to be marked overflow just because it made another box
                 // go past the margins
                 // $box.addClass('overflow'); // probably typing in the focused element caused this
@@ -593,59 +624,11 @@ export default class OverflowChecker {
                     return;
                 }
                 $this.addClass("thisOverflowingParent"); // but it's this one that is actually overflowing
-                $overflowingAncestor.addClass("childOverflowingThis");
-                theOneLocalizationManager
-                    .asyncGetText(
-                        "EditTab.OverflowContainer",
-                        "A container on this page is overflowing",
-                        "",
-                    )
-                    .done((overflowText) => {
-                        $overflowingAncestor.qtip({
-                            content:
-                                '<img data-overflow="true" height="20" width="20" style="vertical-align:middle" src="/bloom/images/Attention.svg">' +
-                                overflowText,
-                            show: { event: "enterBorder" }, // nonstandard events triggered by mouse move in code below
-                            hide: { event: "leaveBorder" },
-                            position: {
-                                my: "top right",
-                                at: "right bottom",
-                                container: bloomQtipUtils.qtipZoomContainer(),
-                            },
-                        });
-                    });
-                let showing = false;
-                $overflowingAncestor.on("mousemove.overflow", (event) => {
-                    if (overflowingAncestor === null) return; // prevent bad static analysis
-                    const bounds = overflowingAncestor.getBoundingClientRect();
-                    const scaleY =
-                        bounds.height / overflowingAncestor.offsetHeight;
-                    const offsetY = (event.clientY - bounds.top) / scaleY;
-                    // The cursor is likely to be a text cursor at this point, so it's hard to point exactly at the line. If the mouse is close,
-                    // show the tooltip.
-                    const shouldShow =
-                        offsetY >= $overflowingAncestor.innerHeight() - 10 &&
-                        offsetY <=
-                            $overflowingAncestor.outerHeight(false) + 10 &&
-                        // I don't like this module knowing about this, but how else to hide it?
-                        !playingBloomGame(overflowingAncestor);
-                    if (shouldShow && !showing) {
-                        showing = true;
-                        $overflowingAncestor.trigger("enterBorder");
-                    } else if (!shouldShow && showing) {
-                        showing = false;
-                        $overflowingAncestor.trigger("leaveBorder");
-                    }
-                });
-                $overflowingAncestor.on("mouseleave.overflow", () => {
-                    if (showing) {
-                        showing = false;
-                        $overflowingAncestor.trigger("leaveBorder");
-                    }
-                });
+                overflowingAncestor.classList.add("childOverflowingThis");
             }
         });
         OverflowChecker.UpdatePageOverflow(container.closest(".bloom-page"));
+        refreshOverflowIndicatorsSoon();
     }
 
     // Fix the NiceScroll scrollbars after a short delay to prevent flickering
@@ -662,55 +645,6 @@ export default class OverflowChecker {
             cleanupNiceScroll();
             addScrollbarsToPage(page);
         }, 200);
-    }
-
-    // Destroy any qtip on this element that marks overflow, but leave other qtips alone.
-    // This restriction is an attempt not to remove bloom hint and source bubbles.
-    private static RemoveOverflowQtip(element: JQuery) {
-        const qtipContent = OverflowChecker.GetQtipContent(element);
-        if (OverflowChecker.DoesQtipMarkOverflow(qtipContent)) {
-            element.qtip("destroy");
-        }
-    }
-
-    // Test whether this qtip (if it exists) marks an overflow condition.
-    private static DoesQtipMarkOverflow(qtipContent: any): boolean {
-        if (!qtipContent) {
-            return false;
-        }
-        // This is the most reliable way I can find to detect data-overflow tooltips,
-        // at least on canvas element boxes. By experiment in the debugger, qtipContent does
-        // not seem to be an element at all, but some sort of configuration object
-        // for the qtip, so trying to retrieve it as an attribute (as the code below does)
-        // does not work.
-        // Note that qtipContent.text can be an object or a string, so we need to check
-        // that the startsWith method exists before calling it.  (The check verifies that
-        // it's a string.)  See BL-13126.
-        if (
-            qtipContent.text &&
-            qtipContent.text.startsWith &&
-            qtipContent.text.startsWith('<img data-overflow="true"')
-        ) {
-            return true;
-        }
-        // keeping this out of paranoia...old code that no longer seems to work,
-        // but I'm not sure it's never needed.
-        if ($(qtipContent).attr("data-overflow") == "true") {
-            return true;
-        }
-        return false;
-    }
-
-    // Return any qtip content attached to this element, or null if none is attached.
-    private static GetQtipContent(element: JQuery): any {
-        const qtipData = element.data("qtip");
-        if (qtipData) {
-            const options = qtipData.options;
-            if (options) {
-                return options.content;
-            }
-        }
-        return null;
     }
 
     private static GetScrollInsteadOfOverflow(page: HTMLElement): boolean {

@@ -16,6 +16,7 @@ minimumReleaseAgeExclude:
     - bloom-player
     - comicaljs
     - "@ethnolib/*"
+    - "@sillsdev/config-r"
 savePrefix: ""
 
 # Formerly the yarn "resolutions" block: force a single @types/react across the

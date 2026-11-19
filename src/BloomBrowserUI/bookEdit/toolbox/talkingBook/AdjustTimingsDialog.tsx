@@ -19,7 +19,16 @@ import {
     DialogOkButton,
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../../react_components/l10nHooks";
-import { getAsync, postBoolean, postJsonAsync } from "../../../utils/bloomApi";
+import {
+    getAsync,
+    postBoolean,
+    postJson,
+    postJsonAsync,
+} from "../../../utils/bloomApi";
+import {
+    BloomMessageBox,
+    showBloomMessageBox,
+} from "../../../utils/BloomMessageBox";
 import { AdjustTimingsControl, TimedTextSegment } from "./AdjustTimingsControl";
 import {
     getUrlPrefixFromWindowHref,
@@ -41,7 +50,6 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
     currentTextBox: HTMLElement;
     split: (timingFilePath: string) => Promise<string | undefined>;
-    editTimingsFile: (timingsFilePath?: string) => Promise<void>;
     applyTimingsFile: (timingsFilePath?: string) => Promise<string | undefined>;
     closing: (canceling: boolean) => void;
 }> = (props) => {
@@ -356,14 +364,16 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                     />
                     <LocalizableMenuItem
                         l10nId="EditTab.Toolbox.TalkingBookTool.EditTimingsFile"
-                        onClick={() => {
+                        onClick={async () => {
                             closeMoreMenu();
-                            exportTimingsFile(
+                            // Finish writing the file before we open it for editing.
+                            await exportTimingsFile(
                                 timingsFilePath!,
                                 endTimes,
                                 props.currentTextBox,
                             );
-                            props.editTimingsFile(timingsFilePath);
+                            // The message's OK button opens the file.
+                            showBloomMessageBox();
                         }}
                         icon={<EditIcon />}
                         english={"Edit timings file..."}
@@ -404,6 +414,21 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                 />
                 <DialogCancelButton default={false} />
             </DialogBottomButtons>
+            {/* The wrapper keeps the message's mouse events from reaching this dialog: React passes
+                them up through portals, so dragging the message's title would drag this dialog too. */}
+            <div onMouseDown={(e) => e.stopPropagation()}>
+                {timingsFilePath && (
+                    <EditTimingsFileMessage
+                        timingsFilePath={timingsFilePath}
+                        audioFileName={props.currentTextBox.id}
+                        okClicked={() => {
+                            postJson("fileIO/openFileInDefaultEditor", {
+                                path: timingsFilePath,
+                            });
+                        }}
+                    />
+                )}
+            </div>
         </BloomDialog>
     );
 };
@@ -415,7 +440,6 @@ let show: () => void = () => {
 export function showAdjustTimingsDialog(
     currentTextBox: HTMLElement,
     split: (timingFilePath: string) => Promise<string | undefined>,
-    editTimingsFile: (timingsFilePath?: string) => Promise<void>,
     applyTimingsFile: (timingsFilePath?: string) => Promise<string | undefined>,
     closing: (canceling: boolean) => void,
 ) {
@@ -424,7 +448,6 @@ export function showAdjustTimingsDialog(
             <AdjustTimingsDialog
                 currentTextBox={currentTextBox}
                 split={split}
-                editTimingsFile={editTimingsFile}
                 applyTimingsFile={applyTimingsFile}
                 closing={closing}
             />,
@@ -529,3 +552,52 @@ const exportTimingsFile = async (
         content: fileContent,
     });
 };
+
+// Tells the user how to edit the timings file, and which files are involved. It starts closed;
+// showBloomMessageBox() opens it, and the caller opens the file when the user clicks OK.
+const EditTimingsFileMessage: React.FunctionComponent<{
+    timingsFilePath: string;
+    audioFileName: string;
+    okClicked: () => void;
+}> = (props) => {
+    const explanation = useL10n(
+        'Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.',
+        "EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation",
+    );
+    const timingsFileLine = useL10n(
+        "Current timings file is {0}",
+        "EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile",
+        undefined,
+        escapeHtml(props.timingsFilePath),
+    );
+    // The audio file is named for the text box, as the timings file is.
+    const audioFileLine = useL10n(
+        "Current audio file is {0} (.wav or .mp3)",
+        "EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile",
+        undefined,
+        escapeHtml(props.audioFileName),
+    );
+    const okText = useL10n("OK", "Common.OK");
+    return (
+        <BloomMessageBox
+            // pre-wrap, because a path can contain runs of spaces that HTML would otherwise collapse.
+            messageHtml={`<p>${escapeHtml(explanation)}</p><p style="white-space: pre-wrap">${timingsFileLine}<br/>${audioFileLine}</p>`}
+            rightButtonDefinitions={[
+                { text: okText, id: "OKButton", default: true },
+            ]}
+            dialogEnvironment={{
+                dialogFrameProvidedExternally: false,
+                initiallyOpen: false,
+            }}
+            buttonClicked={() => props.okClicked()}
+        />
+    );
+};
+
+// Makes text (such as a file path, which may contain "&") safe to insert into a message's HTML.
+function escapeHtml(text: string): string {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}

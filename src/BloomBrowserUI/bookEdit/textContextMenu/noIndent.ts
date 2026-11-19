@@ -21,6 +21,11 @@ export function findParagraphForTextContextMenu(
     const paragraph = target.closest("p");
     if (!paragraph) return undefined;
     if (!paragraph.closest(".bloom-editable")) return undefined;
+    // A table cell holds an ordinary Bloom text box, and a right-click in one is either the
+    // table's own Cell menu or this menu; setupTextContextMenu decides which. The cell test has
+    // to come before the canvas-element test, because a table dropped on a Canvas page lives
+    // inside a canvas element, and rejecting it here would leave such a cell with no menu at all.
+    if (paragraph.closest(".bloom-cell")) return paragraph;
     if (paragraph.closest(kCanvasElementSelector)) return undefined;
     return paragraph;
 }
@@ -48,6 +53,6 @@ export function canToggleNoIndent(paragraph: HTMLElement): boolean {
 /** Turn "Do Not Indent This Paragraph" on or off for this one paragraph. */
 export function toggleNoIndent(paragraph: HTMLElement): void {
     paragraph.classList.toggle(kNoIndentClass);
-    // The class is plain content markup inside the bloom-editable, so it is saved with the
-    // page the next time Bloom asks the browser for the page content; nothing to post here.
+    // The class is plain content markup inside the bloom-editable, so the page snapshot picks it
+    // up like any other edit and it is saved with the page; nothing to post here.
 }

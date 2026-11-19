@@ -409,8 +409,17 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "getBookOnBloomBadgeInfo",
-                GetBookOnBloomBadgeInfo,
+                kApiUrlPart + "bloomLibraryBadges",
+                HandleBloomLibraryBadges,
+                false,
+                false
+            );
+            // Building the url may need a blocking server lookup of the Bloom Library url prefix,
+            // so keep it off the UI thread and the API lock. It only reads the book info and opens a browser.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "openBookOnBloomLibrary",
+                OpenBookOnBloomLibrary,
+                false,
                 false
             );
             // This one can take quite a long time and lock up the browser if no other thread can do anything. And it doesn't manipulate any
@@ -613,8 +622,6 @@ namespace Bloom.web.controllers
             return RobustFile.Exists(linkFile);
         }
 
-        private string _currentCollectionPath;
-
         public void HandleBooksRequest(ApiRequest request)
         {
             var collection = GetCollectionOfRequest(request);
@@ -625,23 +632,15 @@ namespace Bloom.web.controllers
 
             // Note: the winforms version used ImproveAndRefreshBookButtons(), which may load the whole book.
 
+            // GetBookInfos starts the background query for the badges when it first builds the list.
             var bookInfos = collection.GetBookInfos();
-            // Load the initial values for the bloom library status of each book.
-            if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+            if (
+                collection.Type == BookCollection.CollectionType.TheOneEditableCollection
+                && request.Parameters["reload"] == "true"
+            )
             {
-                var reload = request.Parameters["reload"] == "true";
-                if (reload || collection.PathToDirectory != _currentCollectionPath)
-                {
-                    _currentCollectionPath = collection.PathToDirectory;
-                    // This request is run on a background thread without locking, but at startup, the collection
-                    // content won't update until we get it. So it can't afford to wait around for queries to
-                    // bloomlibrary. Do this updating on (another) background thread.
-                    // (Playing safe here. Currently reload=true is never used as far as I can tell. So it might not
-                    // affect startup. But any time we do it the user is probably waiting on the results, and
-                    // does not want to wait for the bloomlibrary queries to finish just to get the badges
-                    // exactly right.)
-                    Task.Run(() => collection.UpdateBloomLibraryStatusOfBooks(bookInfos.ToList()));
-                }
+                // The page was reloaded (e.g., F5 in a dev build), so get fresh badge statuses too.
+                collection.FetchBloomLibraryStatusInBackground(bookInfos.Select(info => info.Id));
             }
             var jsonInfos = bookInfos
                 .Where(info =>
@@ -918,37 +917,34 @@ namespace Bloom.web.controllers
             request.ReplyWithFileContent(filePath);
         }
 
-        private void GetBookOnBloomBadgeInfo(ApiRequest apiRequest)
+        /// <summary>
+        /// Give the Collections tab the badge info for every book in the editable collection that is
+        /// on Bloom Library (see BookCollection.GetBloomLibraryBadgeInfo). The same data is broadcast
+        /// as bookCollection/bloomLibraryBadges whenever it changes; this is for a book list that
+        /// starts listening after that. It deliberately does not include the books' urls: building one
+        /// can mean a blocking server lookup during startup (BL-16726). OpenBookOnBloomLibrary builds
+        /// the url when the user actually clicks the link.
+        /// </summary>
+        private void HandleBloomLibraryBadges(ApiRequest apiRequest)
         {
-            var bookId = apiRequest.RequiredParam("book-id");
+            apiRequest.ReplyWithJson(
+                _collectionModel.TheOneEditableCollection.GetBloomLibraryBadgeInfo()
+            );
+        }
 
-            var infos = _collectionModel
-                .TheOneEditableCollection.GetBookInfos()
-                .Where(info => info.Id == bookId && info.BloomLibraryStatus != null)
-                .ToList();
-            if (infos.Count == 0)
-            {
-                apiRequest.ReplyWithJson(new { bookUrl = "" });
-            }
-            else
-            {
-                // There should only ever be one or zero, since we go to great trouble in CollectionTabView.CheckForDuplicatesAndRepair
-                // to make sure the main editable collection does NOT have duplicate book IDs.
-                // If by any chance there is more than one book with the same ID in the collection, we'll just take the first one.
-                // Since the data is derived from the ID, it should be the same for all of them anyway.
-                var info = infos[0];
-                apiRequest.ReplyWithJson(
-                    new
-                    {
-                        bookUrl = info.BloomLibraryStatus.BloomLibraryBookUrl,
-                        draft = info.BloomLibraryStatus.Draft,
-                        inCirculation = !info.BloomLibraryStatus.NotInCirculation,
-                        harvestState = info
-                            .BloomLibraryStatus.HarvesterState.ToString()
-                            .ToLowerInvariant(),
-                    }
-                );
-            }
+        /// <summary>
+        /// Open the book's Bloom Library page in the user's browser.
+        /// </summary>
+        private void OpenBookOnBloomLibrary(ApiRequest apiRequest)
+        {
+            var status = _collectionModel.TheOneEditableCollection.GetBloomLibraryStatus(
+                apiRequest.RequiredParam("book-id")
+            );
+            // The status can be missing if a fresh query has just found the book is no longer on
+            // Bloom Library and the badge has not disappeared yet. Then there is nothing to open.
+            if (status != null)
+                ProcessExtra.SafeStartInFront(status.GetBloomLibraryBookUrl());
+            apiRequest.PostSucceeded();
         }
 
         /// <summary>

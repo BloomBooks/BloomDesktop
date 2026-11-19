@@ -63,8 +63,17 @@ export default class PlaceholderProvider {
                             // We have a race condition beween getting the placeholder text and initializing the ckeditor
                             // for the editable, which is likely to reset the text. Both involve async code (here to get
                             // localization), and the ckeditor init also involves timeouts. So either could finish first.
-                            // If there's a ckEditor that isn't ready yet, set the text again when it is.
+                            // If there's a ckEditor that isn't ready yet, set the text again when it is,
+                            // if the box is blank by then. (keepTypingWhenCkEditorLoads normally keeps the
+                            // text we set, and anything typed over it before the editor was ready must not
+                            // be replaced.)
                             ckEditor.on("instanceReady", (e) => {
+                                if (
+                                    !PlaceholderProvider.isBlank(
+                                        l1Editable as HTMLElement,
+                                    )
+                                )
+                                    return;
                                 // ckEditor may even have replaced the whole paragraph we found before.
                                 const para2 =
                                     l1Editable.getElementsByTagName("p")[0];

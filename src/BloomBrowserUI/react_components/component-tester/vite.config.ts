@@ -418,9 +418,33 @@ export default defineConfig({
         port: 4173,
     },
     resolve: {
-        alias: {
-            "@component-tester": resolve(__dirname),
-        },
+        alias: [
+            {
+                find: "@component-tester",
+                replacement: resolve(__dirname),
+            },
+            // Use the ESM build of each icon. The default `@mui/icons-material/X` files are
+            // CommonJS and `require` @mui/material, which makes esbuild's dependency pre-bundle
+            // wrap @mui/material's `styled` in a lazy initializer. Depending on how the chunks
+            // fall out, a chunk such as Popper's can then call `styled` before it is initialized,
+            // and every component that loads it fails with "styled_default is not a function".
+            {
+                find: /^@mui\/icons-material\/(?!esm\/)([A-Za-z0-9]+)$/,
+                replacement: "@mui/icons-material/esm/$1",
+            },
+            // Use the language chooser's ESM build, for the same reason: any CommonJS module that
+            // `require`s @mui/material makes the pre-bundle wrap all of it in lazy initializers,
+            // and an ESM icon then calls createSvgIcon before SvgIcon is initialized ("Cannot read
+            // properties of undefined (reading 'muiName')"). The package ships index.mjs, but its
+            // `exports` names only the CommonJS index.js, so point at the file directly.
+            {
+                find: /^@ethnolib\/language-chooser-react-mui$/,
+                replacement: resolve(
+                    __dirname,
+                    "../../node_modules/@ethnolib/language-chooser-react-mui/index.mjs",
+                ),
+            },
+        ],
     },
     build: {
         rollupOptions: {

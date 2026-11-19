@@ -13,11 +13,12 @@
 # and would not match how we lint and type-check everywhere else. Instead we invoke
 # the project's own tools directly.
 #
-# The two groups of checks below have deliberately different reach, which is the thing
-# to understand before editing either:
+# The groups of checks below have deliberately different reach, which is the thing
+# to understand before editing any of them:
 #
 #   formatting      repo-wide, and runs on EVERY commit
 #   lint+typecheck  front-end only, and runs only when a front-end source file is staged
+#   e2e typecheck   src/BloomE2E only, and runs only when one of its sources is staged
 #
 # What they have in common: NOTHING here is skippable. A check that cannot run blocks the
 # commit. The `pnpm dlx` fallback exists so that a worktree which never ran `pnpm install`
@@ -180,6 +181,33 @@ if [ -n "$staged_frontend" ]; then
     # --no-stash keeps linting fast and is safe because lint-staged doesn't modify files here.
     lint-staged --no-stash || exit 1
     node scripts/typecheck.js || exit 1
+    cd "$repo_root" || exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# Typecheck the e2e tests -- only when their sources are staged
+# ---------------------------------------------------------------------------
+# src/BloomE2E is its own TypeScript project, and Playwright runs it without type-checking
+# it, so nothing else catches a type error there before the nightly does: an import of a
+# name that moved stopped the whole suite from loading, and a call missing a newly required
+# argument broke the fixture's following of a relaunched Bloom. The same reasoning as above
+# picks the files: its sources, deletions and moves out included, and the config files that
+# change what the typecheck means. It does not import front-end modules, so front-end
+# changes cannot break it and do not trigger it.
+staged_e2e=$(git -c core.quotePath=false diff --cached --no-renames --name-only -z --diff-filter=ACMD |
+    tr '\0' '\n' |
+    grep -E '^src/BloomE2E/(.*\.(ts|tsx|mts|cts|js|mjs|cjs)|tsconfig\.json|package\.json|pnpm-lock\.yaml)$')
+
+if [ -n "$staged_e2e" ]; then
+    if [ ! -x "$repo_root/src/BloomE2E/node_modules/.bin/tsc" ]; then
+        echo "pre-commit: e2e test sources are staged, but src/BloomE2E/node_modules is" >&2
+        echo "            missing, so they cannot be type-checked. Run 'pnpm install' in" >&2
+        echo "            src/BloomE2E." >&2
+        exit 1
+    fi
+
+    cd src/BloomE2E || exit 1
+    node_modules/.bin/tsc --noEmit -p . || exit 1
     cd "$repo_root" || exit 1
 fi
 

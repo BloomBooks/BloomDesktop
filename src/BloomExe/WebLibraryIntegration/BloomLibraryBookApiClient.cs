@@ -25,6 +25,17 @@ namespace Bloom.WebLibraryIntegration
             : base(message) { }
     }
 
+    /// <summary>
+    /// Thrown when BloomLibrary.org refuses the saved sign-in, typically because the session
+    /// expired on the server. By the time this is thrown, the client has already signed the user
+    /// out, so the UI offers "Sign in" again. The message, localized, tells the user to sign in again.
+    /// </summary>
+    public class SessionRejectedException : ApplicationException
+    {
+        public SessionRejectedException(string message)
+            : base(message) { }
+    }
+
     // This class began its life as BloomParseClient, and it encapsulated all the interactions with parse server.
     // But we are trying to move away from any direct interaction with parse server to favor our own bloomlibrary.org/api calls.
     // This will help facilitate moving away from parse server altogether in the future.
@@ -98,7 +109,7 @@ namespace Bloom.WebLibraryIntegration
             var originalEndpoint = request.Resource;
 
             // Make the initial call. If all goes well, we get an Accepted (202) response with a URL to poll.
-            var response = AzureRestClient.Execute(request);
+            var response = Execute(request);
             if (response.StatusCode != HttpStatusCode.Accepted)
             {
                 LogApiError(request, response);
@@ -125,7 +136,7 @@ namespace Bloom.WebLibraryIntegration
             );
             while (!progress.CancelRequested && !IsStatusTerminal(status))
             {
-                response = AzureRestClient.Execute(statusRequest);
+                response = Execute(statusRequest);
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
                     LogApiError(statusRequest, response, originalRequest: request);
@@ -244,6 +255,52 @@ namespace Bloom.WebLibraryIntegration
                 throw new WebException(
                     "BloomLibrary.org isn't responding right now. Please try again in a few minutes."
                 );
+        }
+
+        /// <summary>
+        /// True if the response is the API's refusal of our Authentication-Token: for the actions
+        /// that need a signed-in user, bloom-azure-functions (books/index.ts) answers 400 with this
+        /// text when the Parse server does not accept the session token, e.g. because it expired.
+        /// </summary>
+        internal static bool IsSessionRejected(IRestResponse response)
+        {
+            return response.StatusCode == HttpStatusCode.BadRequest
+                && (response.Content ?? "").StartsWith(
+                    "Unable to validate user",
+                    StringComparison.Ordinal
+                );
+        }
+
+        /// <summary>
+        /// Send a request to api.bloomlibrary.org. Every request goes through here, so that if the
+        /// server refuses our saved sign-in (see IsSessionRejected), we sign the user out, so that
+        /// Bloom stops claiming they are signed in and offers "Sign in" again, and throw a
+        /// SessionRejectedException whose message asks them to sign in again. Trying again later
+        /// would never help, since the same token would be refused every time.
+        /// If the user signed in again while the request was on its way, the refused token is no
+        /// longer the current one; then we leave the new sign-in alone and return the response,
+        /// and the caller reports an ordinary failure, which trying again will fix.
+        /// </summary>
+        private IRestResponse Execute(IRestRequest request)
+        {
+            var response = AzureRestClient.Execute(request);
+            if (!IsSessionRejected(response))
+                return response;
+            LogApiError(request, response);
+            var tokenSent =
+                request.Parameters.FirstOrDefault(p => p.Name == "Authentication-Token")?.Value
+                as string;
+            if (tokenSent != _authenticationToken)
+                return response;
+            // Not the website's (Firebase) sign-out: that opens a browser page, and signing in
+            // again through the website is what gets Bloom a new session token.
+            Logout(includeFirebaseLogout: false);
+            throw new SessionRejectedException(
+                LocalizationManager.GetString(
+                    "PublishTab.Upload.SignInRejected",
+                    "BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again."
+                )
+            );
         }
 
         // This calls an azure function which does the following:
@@ -555,13 +612,12 @@ namespace Bloom.WebLibraryIntegration
         /// and 'rebrand' is not true and 'inCirculation' is not false and 'draft' is not true.</remarks>
         public int GetBookCountByLanguage(string languageTag)
         {
-            if (!UrlLookup.CheckGeneralInternetAvailability(false))
-                return -1;
+            // No separate check for internet access first: this request fails just as well without it.
             var request = MakeGetRequest();
             request.AddQueryParameter("lang", languageTag);
             request.AddQueryParameter("limit", "0");
             request.AddQueryParameter("count", "true");
-            var response = AzureRestClient.Execute(request);
+            var response = Execute(request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 LogApiError(request, response);
@@ -596,7 +652,7 @@ namespace Bloom.WebLibraryIntegration
         public dynamic GetBookPermissions(string existingBookObjectId)
         {
             var request = MakeGetRequest($"{existingBookObjectId}:permissions");
-            var response = AzureRestClient.Execute(request);
+            var response = Execute(request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 LogApiError(request, response);
@@ -637,7 +693,7 @@ namespace Bloom.WebLibraryIntegration
             if (includeLanguageInfo)
                 request.AddQueryParameter("expand", "languages");
             request.AddJsonBody(requestBody);
-            var response = AzureRestClient.Execute(request);
+            var response = Execute(request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 LogApiError(request, response);
@@ -680,35 +736,30 @@ namespace Bloom.WebLibraryIntegration
         /// an entry for each book that has been uploaded to Bloom Library. The keys are the book instance ids
         /// from the BookInfo objects.
         /// Books with no entry in the dictionary have not been uploaded to Bloom Library. Books that have
-        /// multiple uploads with the same bookInstanceId are flagged as having a problem by having an empty
-        /// string for the BloomLibraryStatus.BloomLibraryBookUrl field. (The other fields are meaningless
-        /// in that case.)
+        /// multiple uploads with the same bookInstanceId are flagged as having a problem by having a
+        /// HarvesterState of Multiple. (The other fields are meaningless in that case.)
+        /// Returns null if we could not find out, e.g., because there is no internet.
         /// </summary>
         /// <remarks>
-        /// We want to minimize the number of queries we make to the API, so we batch up the book instance
-        /// ids as much as possible.
+        /// We want to minimize the number of queries we make to the API, so all the ids go in one query.
+        /// There is no separate check for internet access first: the query itself fails if there is none.
         /// </remarks>
         public Dictionary<string, BloomLibraryStatus> GetLibraryStatusForBooks(
-            List<BookInfo> bookInfos,
+            List<string> bookInstanceIds,
             bool forceUseProductionData = false
         )
         {
-            System.Diagnostics.Debug.WriteLine(
-                $"DEBUG BloomLibraryBookApiClient.GetLibraryStatusForBooks(): {bookInfos.Count} books"
-            );
             var bloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
-            if (!UrlLookup.CheckGeneralInternetAvailability(true))
-                return bloomLibraryStatusesById;
-
-            List<string> bookInstanceIds = bookInfos.Select(book => book.Id).ToList();
             var request = MakePostRequest("", forceUseProductionData);
+            // This only feeds the badges, so don't let a connection that never answers tie up a thread.
+            request.Timeout = 60000;
             var requestBody = new { instanceIds = bookInstanceIds };
             request.AddJsonBody(requestBody);
-            var response = AzureRestClient.Execute(request);
+            var response = Execute(request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 LogApiError(request, response);
-                return bloomLibraryStatusesById;
+                return null;
             }
 
             dynamic rawResult = JObject.Parse(response.Content);
@@ -721,15 +772,11 @@ namespace Bloom.WebLibraryIntegration
                 {
                     if (bloomLibraryStatusesById.ContainsKey(bookInstanceId))
                     {
-                        bloomLibraryStatusesById[bookInstanceId] = new BloomLibraryStatus(
-                            false,
-                            false,
-                            HarvesterState.Multiple,
-                            BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(
+                        bloomLibraryStatusesById[bookInstanceId] =
+                            BloomLibraryStatus.ForMultipleUploads(
                                 bookInstanceId,
                                 forceUseProductionData
-                            )
-                        );
+                            );
                     }
                     else
                     {

@@ -1469,7 +1469,7 @@ namespace Bloom.Api
             {
                 if (ShouldReportFailedRequest(info, CurrentBook?.FolderPath))
                 {
-                    ReportMissingFile(localPath, path);
+                    ReportMissingFile(localPath, path, info);
                 }
                 return false; // from here we head off to BloomServer.MakeReply() which now uses the same ShouldReportFailedRequest() method.
             }
@@ -1486,11 +1486,43 @@ namespace Bloom.Api
             );
         }
 
-        private static void ReportMissingFile(string localPath, string path)
+        private static void ReportMissingFile(string localPath, string path, IRequestInfo info)
         {
             if (path == null)
             {
                 path = "(was null)";
+            }
+
+            // A url containing a JavaScript value is our bug, and there is nothing the user can do
+            // about it, so record it for ourselves without interrupting them. This matters because
+            // ShouldReportFailedRequest deliberately stopped suppressing these: without this branch,
+            // un-suppressing them would start showing "Cannot Find File" toasts (and, on beta, a
+            // modal) to users on pages that previously failed silently. The distinct message also
+            // gives this class its own Sentry issue rather than burying it in the general one.
+            //
+            // We ask IsJavascriptValueRequest(info) rather than testing localPath, so that this
+            // decision cannot disagree with the one ShouldReportFailedRequest made from the same
+            // request. If they ever diverged, a request it had decided to stop suppressing would
+            // fall through to the loud branch below - which is precisely the toast this exists to
+            // prevent. See BL-16666.
+            if (IsJavascriptValueRequest(info))
+            {
+                NonFatalProblem.Report(
+                    ModalIf.None,
+                    PassiveIf.None,
+                    "Url built from a JavaScript value",
+                    String.Format(
+                        "Server could not find the file {0}. LocalPath was {1}{2}{3}",
+                        path,
+                        localPath,
+                        GetJavascriptValueDiagnostics(info),
+                        // Both kinds of detail, because they answer different questions and this
+                        // request can raise both: a bare "undefined" has no directory AND is a
+                        // JavaScript value.
+                        GetBareNameDiagnostics(localPath)
+                    )
+                );
+                return;
             }
 
             // we have any number of incidences where something asks for a page after we've navigated from it. E.g. BL-3715, BL-3769.
@@ -1535,6 +1567,8 @@ namespace Bloom.Api
                     "Server could not find the file {0}. LocalPath was {1}{2}{3}",
                     path,
                     localPath,
+                    // No GetJavascriptValueDiagnostics here: JavaScript-value urls were reported
+                    // quietly above and never reach this branch.
                     GetBareNameDiagnostics(localPath),
                     Environment.NewLine
                 );
@@ -1575,6 +1609,55 @@ namespace Bloom.Api
                 // become the thing that fails.
                 return Environment.NewLine + "Could not gather diagnostics: " + e.Message;
             }
+        }
+
+        /// <summary>
+        /// True if any part of the requested path is literally "undefined", "null" or "NaN" - what a
+        /// JavaScript value of that kind becomes when something puts it into a url without checking.
+        /// No real file is named any of those, so such a request is always a front-end bug rather
+        /// than a genuinely missing file. See BL-16666 (split from BL-16577), and BL-16447 for one instance we have fixed.
+        /// </summary>
+        internal static bool LooksLikeAJavascriptValueInAUrl(string localPath)
+        {
+            if (String.IsNullOrEmpty(localPath))
+                return false;
+            foreach (var segment in localPath.Split('/', '\\'))
+            {
+                // Not case-insensitive: JavaScript produces exactly these spellings, and being
+                // strict keeps us from flagging a book or file someone really did call "Undefined".
+                if (segment == "undefined" || segment == "null" || segment == "NaN")
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Whether this request is the JavaScript-value bug above. Everything that needs to know
+        /// asks *this*, from the request itself, so that the decision to keep reporting it (in
+        /// ShouldReportFailedRequest) and the decision to report it quietly (in ReportMissingFile)
+        /// can never be made from two separately-derived strings and disagree. See BL-16666.
+        /// </summary>
+        private static bool IsJavascriptValueRequest(IRequestInfo info)
+        {
+            return LooksLikeAJavascriptValueInAUrl(GetLocalPathWithoutQuery(info));
+        }
+
+        /// <summary>
+        /// The extra detail we attach when the request looks like the JavaScript-value bug above.
+        /// The referrer is the whole point: it names the page that issued the bogus request, which
+        /// is what lets us find the code responsible. See BL-16666.
+        /// </summary>
+        private static string GetJavascriptValueDiagnostics(IRequestInfo info)
+        {
+            if (!IsJavascriptValueRequest(info))
+                return "";
+            return String.Format(
+                "{0}Part of this path is a JavaScript value turned into text, so some of our front-end code built a url out of something it did not have yet."
+                    + " The page that asked for it was {1}. The raw url was {2}.",
+                Environment.NewLine,
+                String.IsNullOrEmpty(info.Referer) ? "(the browser did not say)" : info.Referer,
+                info.RawUrl
+            );
         }
 
         private static bool IsSimulatedFileUrl(string localPath)
@@ -2238,7 +2321,12 @@ namespace Bloom.Api
         private void ReportMissingFile(IRequestInfo info)
         {
             var localPath = GetLocalPathWithoutQuery(info);
-            Logger.WriteEvent("**{0}: File Missing: {1}", GetType().Name, localPath);
+            Logger.WriteEvent(
+                "**{0}: File Missing: {1}{2}",
+                GetType().Name,
+                localPath,
+                GetJavascriptValueDiagnostics(info)
+            );
         }
 
         /// <summary>
@@ -2263,6 +2351,13 @@ namespace Bloom.Api
                 return false;
 
             var localPath = GetLocalPathWithoutQuery(info);
+
+            // A path containing "undefined"/"null"/"NaN" is one of our own bugs, never a file the
+            // user is responsible for, so none of the suppressions below should hide it - and the
+            // book-folder one in particular was hiding most of them, since a bogus url built by a
+            // book page resolves inside that book's folder. See BL-16666.
+            if (IsJavascriptValueRequest(info))
+                return true;
             var localFolderTestPath = localPath;
             // We don't need even a toast for missing files in the book folder. That's the user's problem
             // and should be adequately documented by the browser message saying the file is missing.
@@ -2280,16 +2375,11 @@ namespace Bloom.Api
                 )
             )
                 return false;
-            // Likewise if it's part of the current book we're publishing. If we didn't give a message about something being
-            // missing while creating the book, it's just confusing to do so when they create a publication preview. See BL-9738
-            // for one example.
-            if (
-                PublishApi.CurrentPublicationFolder != null
-                && localPath.StartsWith(
-                    PublishApi.CurrentPublicationFolder.Replace("\\", "/"),
-                    StringComparison.Ordinal
-                )
-            )
+            // Likewise if it's part of a BloomPUB or ePUB we're making, whether for a preview or for real. If we didn't
+            // give a message about something being missing while creating the book, it's just confusing to do so when
+            // they create a publication preview. See BL-9738 for one example. (This also covers the Readium files an
+            // ePUB preview asks for that we don't ship, because they support controls we hide.)
+            if (PublishStaging.IsInStagingFolder(localPath))
             {
                 return false;
             }
@@ -2345,10 +2435,6 @@ namespace Bloom.Api
                 ".well-known/appspecific/com.chrome.devtools.json",
                 // Just like we skip missing files within the book folder and missing book files when we're create a preview in the if cases above,
                 // we don't want to complain about missing parts of the book now when we're saving publication files.
-                // There is also readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
-                // of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
-                EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
-                BloomPubMaker.BRExportFolder.ToLowerInvariant(),
                 BookUpload.kUploadStagingFolder.ToLowerInvariant(),
                 // old quiz pages ask for this script, but it's now bundled with rest of edit code
                 "simplecomprehensionquiz.js",

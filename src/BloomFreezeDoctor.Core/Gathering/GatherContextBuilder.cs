@@ -27,7 +27,8 @@ public static class GatherContextBuilder
         string artifactDirectory,
         string? logDirectory = null,
         Protocol.DoctorChannelSnapshot? lastSeenPublishedState = null,
-        Action? targetNoLongerNeeded = null
+        Action? targetNoLongerNeeded = null,
+        Task<EarlyFreezeDump.Taken?>? earlyDump = null
     )
     {
         // Bloom's own session file, when there is one, is better than anything we can work out from
@@ -57,6 +58,7 @@ public static class GatherContextBuilder
             Session = session,
             PublishedState = ReadPublishedState(target.ProcessId) ?? lastSeenPublishedState,
             TargetNoLongerNeeded = targetNoLongerNeeded,
+            EarlyDump = earlyDump,
         };
     }
 

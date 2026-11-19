@@ -9,8 +9,19 @@
 //   node ... --start [--wait-ready] [--json]        # relaunch, only when awaiting-restart
 //   node ... --quit-bloom [--json]                  # durably stop Bloom, launcher stays
 //   node ... --shutdown [--json]                    # stop Bloom + launcher + Vite
-//   node ... --ensure-running [--wait-ready] [--json]  # start the stack if nobody's home
-//   options: --repo-root <path> (default: this checkout), --timeout-ms <n> (default 300000)
+//   node ... --ensure-running [--wait-ready] [--nowatch] [--vite-port <n>] [--json]  # start the stack if nobody's home
+//   options: --repo-root <path> (default: this checkout), --timeout-ms <n> (default 300000),
+//            --nowatch (only with --ensure-running: pass --nowatch through to go.mjs, so
+//            Bloom runs without "dotnet watch" - halves the time to a running Bloom, at the
+//            cost of C# edits no longer rebuilding by themselves; use --restart for those),
+//            --vite-port <n> (only with --ensure-running: pass --vite-port through to go.mjs.
+//            The Edit tab's page list and toolbox load only from a dev server on 5173, so pass
+//            5173 when a check needs them)
+//
+// --ensure-running always starts go.mjs with --dont-disturb: this script is how an agent starts
+// Bloom, and a Bloom an agent drives must not take the foreground or the keyboard from the person
+// at the machine. (A person testing by hand runs ./go.sh without it, and Bloom behaves as usual.)
+// A launcher that is already running keeps whatever it was started with.
 //
 // Exit codes: 0 = success; 2 = no live launcher found (fall back to
 // --ensure-running or launching go.sh yourself); 1 = other failure.
@@ -26,6 +37,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 import {
+    asksForHelp,
     getDefaultRepoRoot,
     requireOptionValue,
 } from "./bloomProcessCommon.mjs";
@@ -43,18 +55,46 @@ const actionNames = [
     "--ensure-running",
 ];
 
+const usage = `Command the go.sh launcher for this worktree.
+
+  node launcherControl.mjs <action> [options]
+
+  actions: ${actionNames.join(", ")}
+  options: --json, --wait-ready, --repo-root <path>, --timeout-ms <n>
+           --nowatch, --vite-port <n>   (--ensure-running only) passed through to go.mjs
+           --help, -h   Print this and exit without commanding anything.
+
+  --restart rebuilds and relaunches; --quit-bloom stops Bloom and leaves the launcher;
+  --shutdown stops Bloom, the launcher, and Vite.`;
+
 const parseArgs = () => {
     const args = process.argv.slice(2);
+    // Asking a destructive script how to use it must never be the destructive move, and the
+    // request counts wherever it sits: see asksForHelp.
+    if (asksForHelp(args)) {
+        console.log(usage);
+        process.exit(0);
+    }
     const options = {
         action: undefined,
         json: false,
         waitReady: false,
         repoRoot: getDefaultRepoRoot(),
         timeoutMs: 300000,
+        // Only meaningful for --ensure-running, the one action that starts go.mjs.
+        noWatch: false,
+        vitePort: undefined,
     };
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
+
+        // Print the usage and stop, before any action can run. Asking a destructive script how to
+        // use it must never be the destructive move.
+        if (arg === "--help" || arg === "-h") {
+            console.log(usage);
+            process.exit(0);
+        }
 
         if (actionNames.includes(arg)) {
             if (options.action) {
@@ -73,6 +113,28 @@ const parseArgs = () => {
 
         if (arg === "--wait-ready") {
             options.waitReady = true;
+            continue;
+        }
+
+        if (arg === "--nowatch" || arg === "--no-watch") {
+            options.noWatch = true;
+            continue;
+        }
+
+        if (arg === "--vite-port") {
+            options.vitePort = Number(
+                requireOptionValue(args, i, "--vite-port"),
+            );
+            if (
+                !Number.isInteger(options.vitePort) ||
+                options.vitePort < 1 ||
+                options.vitePort > 65535
+            ) {
+                throw new Error(
+                    "--vite-port must be a port number, 1 to 65535.",
+                );
+            }
+            i++;
             continue;
         }
 
@@ -99,12 +161,25 @@ const parseArgs = () => {
         }
 
         throw new Error(
-            `Unsupported option ${arg}. Actions: ${actionNames.join(", ")}; options: --json, --wait-ready, --repo-root <path>, --timeout-ms <n>.`,
+            `Unsupported option ${arg}. Actions: ${actionNames.join(", ")}; options: --json, --wait-ready, --nowatch, --vite-port <n>, --repo-root <path>, --timeout-ms <n>.`,
         );
     }
 
     if (!options.action) {
         throw new Error(`An action is required: ${actionNames.join(", ")}.`);
+    }
+
+    // Fail rather than silently ignoring it: --nowatch only has anywhere to go when we
+    // are the ones starting go.mjs. An existing launcher keeps whatever mode it started in.
+    if (options.noWatch && options.action !== "ensure-running") {
+        throw new Error(
+            "--nowatch only applies to --ensure-running (it is passed through to go.mjs when the stack is started).",
+        );
+    }
+    if (options.vitePort !== undefined && options.action !== "ensure-running") {
+        throw new Error(
+            "--vite-port only applies to --ensure-running (it is passed through to go.mjs when the stack is started).",
+        );
     }
 
     return options;
@@ -270,10 +345,10 @@ const goMjsPath = (repoRoot) =>
 // Launches the go.sh flow in its own Orca terminal tab. The tab is owned by
 // the Orca app — visible to the human, independent of the agent session that
 // requested it, and controllable by any agent via the HTTP API.
-const launchViaOrca = (repoRoot) => {
+const launchViaOrca = (repoRoot, goArgs) => {
     // "node <go.mjs>" rather than "./go.sh" because the Orca terminal's shell
     // may not be bash; go.sh is a 4-line shim around exactly this command.
-    const command = `node "${goMjsPath(repoRoot)}"`;
+    const command = [`node "${goMjsPath(repoRoot)}"`, ...goArgs].join(" ");
     const output = execFileSync(
         "orca",
         [
@@ -306,19 +381,23 @@ const launchViaOrca = (repoRoot) => {
 // Non-Orca fallback: a fully detached process. It has no terminal window, but
 // it survives the agent session that started it; its output goes to a log
 // file that /status advertises as logPath.
-const launchDetached = (repoRoot) => {
+const launchDetached = (repoRoot, goArgs) => {
     const logPath = path.join(repoRoot, "output", "bloom-launcher.log");
     mkdirSync(path.dirname(logPath), { recursive: true });
     const logFd = openSync(logPath, "a");
 
     try {
-        const child = spawn(process.execPath, [goMjsPath(repoRoot)], {
-            cwd: repoRoot,
-            detached: true,
-            stdio: ["ignore", logFd, logFd],
-            env: { ...process.env, BLOOM_LAUNCHER_LOG: logPath },
-            windowsHide: true,
-        });
+        const child = spawn(
+            process.execPath,
+            [goMjsPath(repoRoot), ...goArgs],
+            {
+                cwd: repoRoot,
+                detached: true,
+                stdio: ["ignore", logFd, logFd],
+                env: { ...process.env, BLOOM_LAUNCHER_LOG: logPath },
+                windowsHide: true,
+            },
+        );
         child.unref();
         return { method: "detached", goPid: child.pid, logPath };
     } finally {
@@ -405,9 +484,16 @@ const ensureRunning = async (options, deadline) => {
             launch = { method: "waited-for-other-agent" };
         } else {
             try {
+                const goArgs = [
+                    "--dont-disturb",
+                    ...(options.noWatch ? ["--nowatch"] : []),
+                    ...(options.vitePort !== undefined
+                        ? ["--vite-port", String(options.vitePort)]
+                        : []),
+                ];
                 launch = isOrcaRuntimeReachable()
-                    ? launchViaOrca(options.repoRoot)
-                    : launchDetached(options.repoRoot);
+                    ? launchViaOrca(options.repoRoot, goArgs)
+                    : launchDetached(options.repoRoot, goArgs);
                 probe = await waitForLauncher(options.repoRoot, deadline);
             } finally {
                 releaseStartingLock(lock.lockPath);

@@ -59,7 +59,7 @@ namespace Bloom.Book
         HtmlDom Dom { get; }
         void Save();
 
-        void SaveForPageChanged(string pageId, SafeXmlElement modifiedPage);
+        bool SaveForPageChanged(string pageId, SafeXmlElement modifiedPage);
         HtmlDom GetRelocatableCopyOfDom(bool withUpdatedStylesheets = true);
         HtmlDom MakeDomRelocatable(HtmlDom dom);
         string SaveHtml(HtmlDom bookDom);
@@ -765,15 +765,19 @@ namespace Bloom.Book
         /// And currently Bloom Saves even when just switching pages without changing anything.
         /// On a long book (e.g., BL-7253) using this makes page switching two seconds faster,
         /// as well as preventing heap fragmentation that eventually leads to running out of memory.
+        ///
+        /// Returns FALSE if it did not write, which today means the page looked empty and was
+        /// refused. The caller must then not treat the book as written: the next per-page save will
+        /// name a different page, so the change would be lost for good.
         /// </summary>
-        public void SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
+        public bool SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
         {
             // We've seen pages get emptied out, and we don't know why. This is a safety check.
             // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
             if (CheckForEmptyMarginBoxOnPage(modifiedPage))
             {
                 // This has been logged and reported to the user. We don't want to save the empty page.
-                return;
+                return false;
             }
 
             // Convert the one page to HTML
@@ -803,6 +807,7 @@ namespace Bloom.Book
             });
             ValidateSave(tempPath);
             BookInfo.Save();
+            return true;
         }
 
         private static string GetBloomFormatVersionToWrite(string existingVersion)
@@ -1492,20 +1497,7 @@ namespace Bloom.Book
             //Delete any files still in the list
             foreach (var fileName in audioFilesToDeleteIfNotUsed)
             {
-                var path = Path.Combine(audioFolderPath, fileName);
-                try
-                {
-                    Debug.WriteLine("Removed unused audio file: " + path);
-                    Logger.WriteEvent("Removed unused audio file: " + path);
-                    RobustFile.Delete(path);
-                }
-                catch (Exception ex) when (ex is IOException || ex is SecurityException)
-                {
-                    // It's not worth bothering the user about, we'll get it someday.
-                    // We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
-                    Debug.WriteLine("Could not remove unused audio file: " + path);
-                    Logger.WriteEvent("Could not remove unused audio file: " + path);
-                }
+                TryDeleteUnusedFile(Path.Combine(audioFolderPath, fileName), "audio");
             }
         }
 
@@ -1673,20 +1665,28 @@ namespace Bloom.Book
             //Delete any files still in the list
             foreach (var fileName in videoFilesToDeleteIfNotUsed)
             {
-                var path = Path.Combine(videoFolderPath, fileName);
-                try
-                {
-                    Debug.WriteLine("Removed unused video file: " + path);
-                    Logger.WriteEvent("Removed unused video file: " + path);
-                    RobustFile.Delete(path);
-                }
-                catch (Exception ex) when (ex is IOException || ex is SecurityException)
-                {
-                    // It's not worth bothering the user about, we'll get it someday.
-                    // We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
-                    Debug.WriteLine("Could not remove unused video file: " + path);
-                    Logger.WriteEvent("Could not remove unused video file: " + path);
-                }
+                TryDeleteUnusedFile(Path.Combine(videoFolderPath, fileName), "video");
+            }
+        }
+
+        /// <summary>
+        /// Delete a file the book no longer uses. If Windows refuses (antivirus folder protection
+        /// often does), log it and go on: it's not worth bothering the user about, and a later
+        /// cleanup will try again. kind names the sort of file for the log.
+        /// </summary>
+        private static void TryDeleteUnusedFile(string path, string kind)
+        {
+            try
+            {
+                RobustFile.Delete(path);
+                Debug.WriteLine($"Removed unused {kind} file: {path}");
+                Logger.WriteEvent($"Removed unused {kind} file: {path}");
+            }
+            catch (Exception ex) when (FileAccessDiagnostics.IsRefusal(ex))
+            {
+                // We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
+                Debug.WriteLine($"Could not remove unused {kind} file: {path}");
+                Logger.WriteEvent($"Could not remove unused {kind} file: {path}: {ex.Message}");
             }
         }
 
@@ -2257,7 +2257,23 @@ namespace Bloom.Book
             return Path.Combine(folderPath, Path.GetFileName(folderPath) + ".htm");
         }
 
+        /// <summary>
+        /// The book's HTML file in <paramref name="folderPath"/>, or an empty string if there is
+        /// none. A missing folder tells the user Bloom can't save the book, and throws.
+        /// </summary>
         public static string FindBookHtmlInFolder(string folderPath)
+        {
+            return FindBookHtmlInFolder(folderPath, true);
+        }
+
+        /// <summary>
+        /// <see cref="FindBookHtmlInFolder(string)"/>, but code that only reads a book, which the
+        /// user may rename or delete while it reads (e.g. the Apps screen's size estimates,
+        /// BL-17097), passes false for <paramref name="notifyIfFolderMissing"/>: then a missing
+        /// folder throws DirectoryNotFoundException, like other failed reads, rather than telling
+        /// the user that Bloom can't save the book.
+        /// </summary>
+        public static string FindBookHtmlInFolder(string folderPath, bool notifyIfFolderMissing)
         {
             string p = GetHtmCandidate(folderPath);
             if (RobustFile.Exists(p))
@@ -2268,6 +2284,8 @@ namespace Bloom.Book
 
             if (!Directory.Exists(folderPath)) //bl-291 (user had 4 month-old version, so the bug may well be long gone)
             {
+                if (!notifyIfFolderMissing)
+                    throw new DirectoryNotFoundException($"The book folder {folderPath} is gone.");
                 //in version 1.012 I got this because I had tried to delete the folder on disk that had a book
                 //open in Bloom.
                 ErrorReport.NotifyUserOfProblem(
@@ -3001,58 +3019,102 @@ namespace Bloom.Book
             var qrWrappers = dom.SafeSelectNodes(
                     "//div[contains(@class, 'bloom-branding-wrapper')]"
                 )
-                .Cast<SafeXmlElement>();
-            var url = "https://bloomlibrary.org/language:" + langCode;
-            // The address we actually show to the reader on the badge. We deliberately drop the
-            // "https://" and use the friendlier capitalization, but keep the same path as the real
-            // link and QR code target above.
-            var displayUrl = "BloomLibrary.org/language:" + langCode;
+                .Cast<SafeXmlElement>()
+                .ToList();
 
-            string qrFileName = null;
-            const string kQrFileName = "lang-qr-code.png";
-            var qrFilePath = Path.Combine(bookFolderPath, kQrFileName);
+            if (
+                shouldHaveQrCode
+                && qrWrappers.Count > 0
+                && (
+                    updateQrCodeFileEvenIfItExists
+                    || !RobustFile.Exists(Path.Combine(bookFolderPath, kQrFileName))
+                )
+            )
+                GenerateQrCodeImage(bookFolderPath, langCode);
 
+            // change both data-div and back page
             foreach (var qrWrapper in qrWrappers)
-            {
-                var anchor =
-                    qrWrapper.ChildNodes.FirstOrDefault(n =>
-                        n is SafeXmlElement element && element.Name.ToLowerInvariant() == "a"
-                    ) as SafeXmlElement;
-                if (anchor == null)
-                    continue; // html structure is corrupt/empty: nothing we can do
-
-                var imgBranding = FindChildElement(anchor, "img", "branding");
-                var imgQr = FindChildElement(anchor, "img", kQrCodeClass);
-                var label = FindChildElement(anchor, "div", "bloom-lang-on-blorg");
-
-                if (!shouldHaveQrCode)
-                {
-                    AdjustHtmlForNoQrCode(qrWrapper, anchor, imgBranding, imgQr, label);
-                    continue; // change both data-div and back page
-                }
-
-                anchor.SetAttribute("href", url + "?utm_source=badgeclick");
-
-                if (qrFileName == null)
-                {
-                    if (updateQrCodeFileEvenIfItExists || !RobustFile.Exists(qrFilePath))
-                        qrFileName = GenerateQrCodeImage(bookFolderPath, url + "?utm_source=qr");
-                    else
-                        qrFileName = kQrFileName;
-                }
-
-                AdjustHtmlForHavingQrCode(
+                UpdateBadge(
                     qrWrapper,
-                    anchor,
-                    imgBranding,
-                    imgQr,
-                    label,
-                    qrFileName,
+                    shouldHaveQrCode,
+                    langCode,
                     badgeCaptionPattern,
                     languageName,
-                    displayUrl
+                    kQrFileName
                 );
+        }
+
+        /// <summary>
+        /// Makes one "Made with Bloom" badge (a .bloom-branding-wrapper) show the QR code, the
+        /// caption and the language's link, or be the plain badge when it should have no QR code.
+        /// </summary>
+        private static void UpdateBadge(
+            SafeXmlElement qrWrapper,
+            bool shouldHaveQrCode,
+            string langCode,
+            string badgeCaptionPattern,
+            string languageName,
+            string qrCodeSrc
+        )
+        {
+            var anchor =
+                qrWrapper.ChildNodes.FirstOrDefault(n =>
+                    n is SafeXmlElement element && element.Name.ToLowerInvariant() == "a"
+                ) as SafeXmlElement;
+            if (anchor == null)
+                return; // html structure is corrupt/empty: nothing we can do
+
+            var imgBranding = FindChildElement(anchor, "img", "branding");
+            var imgQr = FindChildElement(anchor, "img", kQrCodeClass);
+            var label = FindChildElement(anchor, "div", "bloom-lang-on-blorg");
+
+            if (!shouldHaveQrCode)
+            {
+                AdjustHtmlForNoQrCode(qrWrapper, anchor, imgBranding, imgQr, label);
+                return;
             }
+
+            anchor.SetAttribute("href", GetLanguagePageUrl(langCode) + "?utm_source=badgeclick");
+
+            AdjustHtmlForHavingQrCode(
+                qrWrapper,
+                anchor,
+                imgBranding,
+                imgQr,
+                label,
+                qrCodeSrc,
+                badgeCaptionPattern,
+                languageName,
+                // The address we actually show to the reader on the badge. We deliberately drop
+                // the "https://" and use the friendlier capitalization, but keep the same path as
+                // the real link and QR code target.
+                "BloomLibrary.org/language:" + langCode
+            );
+        }
+
+        /// <summary>
+        /// The HTML of the default "Made with Bloom" badge as UpdateQrCode makes it in a book, for
+        /// the Collection Settings dialog's preview. Since there is no book folder, the badge
+        /// picture comes from imageFolderUrl and the QR code from qrCodeSrc. The preview has no
+        /// link, because following one would take the dialog away from Bloom.
+        /// </summary>
+        public static string MakeBadgePreviewHtml(
+            bool showQrCode,
+            string langCode,
+            string captionPattern,
+            string languageName,
+            string imageFolderUrl,
+            string qrCodeSrc
+        )
+        {
+            var dom = new HtmlDom("<html><body>" + kBloomBadgeDefaultHtml + "</body></html>");
+            var wrapper = dom.SelectSingleNode("//div[contains(@class, 'bloom-branding-wrapper')]");
+            UpdateBadge(wrapper, showQrCode, langCode, captionPattern, languageName, qrCodeSrc);
+            var anchor = (SafeXmlElement)wrapper.SelectSingleNode("a");
+            anchor.RemoveAttribute("href");
+            var imgBranding = FindChildElement(anchor, "img", "branding");
+            imgBranding.SetAttribute("src", imageFolderUrl + imgBranding.GetAttribute("src"));
+            return wrapper.OuterXml;
         }
 
         private static SafeXmlElement FindChildElement(
@@ -3183,45 +3245,60 @@ namespace Bloom.Book
                 captionDiv.AppendChild(doc.CreateTextNode(after));
         }
 
-        private static string GenerateQrCodeImage(string bookFolderPath, string url)
+        // The file in the book folder that holds the badge's QR code.
+        private const string kQrFileName = "lang-qr-code.png";
+
+        private static void GenerateQrCodeImage(string bookFolderPath, string langCode)
         {
-            string qrFileName;
+            using (var qrBitmap = MakeLanguageQrCodeBitmap(langCode))
+            {
+                // Reports a failure to write the file as a NonFatalProblem rather than
+                // throwing, so the book can still be selected (BL-16915).
+                ImageUtils.SaveOrDeletePngImageToPath(
+                    qrBitmap,
+                    Path.Combine(bookFolderPath, kQrFileName)
+                );
+            }
+        }
+
+        private static string GetLanguagePageUrl(string langCode)
+        {
+            return "https://bloomlibrary.org/language:" + langCode;
+        }
+
+        /// <summary>
+        /// The QR code of a badge whose link goes to the given language's page on
+        /// BloomLibrary.org, as UpdateQrCode puts it in a book. The Collection Settings dialog
+        /// shows it in its preview of the badge. The caller disposes of the bitmap.
+        /// </summary>
+        public static Bitmap MakeLanguageQrCodeBitmap(string langCode)
+        {
+            var url = GetLanguagePageUrl(langCode) + "?utm_source=qr";
             using (var qrGenerator = new QRCodeGenerator())
             {
                 using (var qrData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q))
                 {
                     using (var qrCode = new ArtQRCode(qrData))
                     {
-                        using (
-                            var qrBitmap = qrCode.GetGraphic(
-                                20,
-                                Color.FromArgb(255, 91, 91, 91), // medium dark gray
-                                Color.White,
-                                Color.White,
-                                null,
-                                1,
-                                false
-                            )
-                        )
-                        {
-                            // Modify image to make corner detection pattern centers red
-                            // (TODO) Round off corners of detection squares
-                            // (These first two might be possible to do with the QR code library.  GetGraphic has
-                            // a "finderPatternImage" parameter that might work for these.)
-                            // Also make center square white to overlay Bloom logo and overlay the Bloom logo
-                            TweakQrCodeBitmap(qrBitmap);
-                            qrFileName = "lang-qr-code.png";
-                            // Reports a failure to write the file as a NonFatalProblem rather than
-                            // throwing, so the book can still be selected (BL-16915).
-                            ImageUtils.SaveOrDeletePngImageToPath(
-                                qrBitmap,
-                                Path.Combine(bookFolderPath, qrFileName)
-                            );
-                        }
+                        var qrBitmap = qrCode.GetGraphic(
+                            20,
+                            Color.FromArgb(255, 91, 91, 91), // medium dark gray
+                            Color.White,
+                            Color.White,
+                            null,
+                            1,
+                            false
+                        );
+                        // Modify image to make corner detection pattern centers red
+                        // (TODO) Round off corners of detection squares
+                        // (These first two might be possible to do with the QR code library.  GetGraphic has
+                        // a "finderPatternImage" parameter that might work for these.)
+                        // Also make center square white to overlay Bloom logo and overlay the Bloom logo
+                        TweakQrCodeBitmap(qrBitmap);
+                        return qrBitmap;
                     }
                 }
             }
-            return qrFileName;
         }
 
         public static void TweakQrCodeBitmap(Bitmap qrBitmap)
@@ -3588,10 +3665,6 @@ namespace Bloom.Book
                 "Errors.CannotUpdateFile",
                 "There was a problem updating a support file"
             );
-            var howToTroubleshoot = LocalizationManager.GetString(
-                "Errors.CannotUpdateTroubleshoot",
-                "How to troubleshoot file updating errors"
-            );
 
             var longerMsgTemplate = LocalizationManager.GetString(
                 "Errors.CannotUpdateFileLonger",
@@ -3600,12 +3673,12 @@ namespace Bloom.Book
             var longerMsg = string.Format(
                 longerMsgTemplate,
                 Path.GetFileName(documentPath),
-                $"<a href='https://docs.bloomlibrary.org/troubleshooting-file-access' target='_blank'>{howToTroubleshoot}</a>"
+                FileAccessDiagnostics.TroubleshootingLinkHtml()
             );
 
             // Something like this was called for in the comment on BL-11863 that led to this,
             // but we finally decided not to.
-            // var avProgs = MiscUtils.InstalledAntivirusProgramNames();
+            // var avProgs = string.Join(", ", FileAccessDiagnostics.GetActiveAntivirusNames());
             //if (!string.IsNullOrEmpty(avProgs))
             //{
             //	var avTemplate = LocalizationManager.GetString("Errors.TryPausingAV",
@@ -4555,6 +4628,82 @@ namespace Bloom.Book
             zipFile.Save();
 
             return destPath;
+        }
+
+        /// <summary>
+        /// Put the book folder back as SaveCopyBeforeImportOverwrite saved it. Each file in the backup
+        /// that is missing or different is written back; one that is still the same is left alone,
+        /// so a file nothing changed keeps its attributes (a read-only thumbnail.png is how a user
+        /// marks a custom thumbnail that Bloom must not regenerate). Then the files such a backup
+        /// would hold that this one doesn't (ones added since it was made) are deleted. Writing first
+        /// means that a failure partway leaves no file missing. What a backup leaves out (hidden and
+        /// system files, the AI Image Editor's folder) is not touched.
+        /// </summary>
+        public static void RestoreFromPreImportBackup(string bookFolder, string backupPath)
+        {
+            var filesNotInBackup = BloomZipFile.GetEntryNamesForDirectory(bookFolder);
+            // Retrying is safe: a second pass skips the files the first one already wrote back.
+            RetryUtility.Retry(() =>
+            {
+                using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(backupPath))
+                {
+                    foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in zipFile)
+                    {
+                        if (!entry.IsFile)
+                            continue;
+                        filesNotInBackup.Remove(entry.Name);
+                        var path = Path.Combine(bookFolder, entry.Name);
+                        if (RobustFile.Exists(path))
+                        {
+                            if (IsSameAsZipEntry(path, entry))
+                                continue;
+                            MakeWritable(path);
+                        }
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                        using (var input = zipFile.GetInputStream(entry))
+                        using (var output = RobustFile.Create(path))
+                            input.CopyTo(output);
+                    }
+                }
+            });
+            foreach (var name in filesNotInBackup)
+            {
+                var path = Path.Combine(bookFolder, name);
+                MakeWritable(path);
+                RobustFile.Delete(path);
+            }
+        }
+
+        /// <summary>
+        /// Whether the file holds exactly what the zip entry does (same length and checksum).
+        /// </summary>
+        private static bool IsSameAsZipEntry(
+            string path,
+            ICSharpCode.SharpZipLib.Zip.ZipEntry entry
+        )
+        {
+            if (new FileInfo(path).Length != entry.Size)
+                return false;
+            var crc = new ICSharpCode.SharpZipLib.Checksum.Crc32();
+            var buffer = new byte[81920];
+            using (var stream = RobustFile.OpenRead(path))
+            {
+                int count;
+                while ((count = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    crc.Update(new ArraySegment<byte>(buffer, 0, count));
+            }
+            return crc.Value == entry.Crc;
+        }
+
+        /// <summary>
+        /// Clear the file's read-only flag so it can be replaced or deleted.
+        /// </summary>
+        private static void MakeWritable(string path)
+        {
+            RobustFile.SetAttributes(
+                path,
+                RobustFile.GetAttributes(path) & ~FileAttributes.ReadOnly
+            );
         }
 
         // These are files that should never be searched for outside of the book folder, should not be cached, etc.

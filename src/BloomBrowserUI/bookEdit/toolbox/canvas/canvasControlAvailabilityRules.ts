@@ -30,7 +30,19 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
     },
     resetImage: {
         visible: (ctx) => ctx.hasImage,
-        enabled: (ctx) => ctx.isCropped,
+        // Reset Image puts the picture back the way it arrived, so it applies to a crop, to a
+        // rotation or a mirror of the picture, and to a rotation of its box.
+        enabled: (ctx) =>
+            ctx.isCropped || ctx.isImageContentTransformed || ctx.isBoxRotated,
+    },
+    rotateRight: {
+        // Navigation buttons are not rotated.
+        visible: (ctx) => ctx.hasImage && !ctx.isNavigationButton,
+        enabled: (ctx) => ctx.hasRealImage && ctx.canModifyImage,
+    },
+    flipImage: {
+        visible: (ctx) => ctx.hasImage,
+        enabled: (ctx) => ctx.hasRealImage && ctx.canModifyImage,
     },
     editWithAi: {
         // Only offered when the AI Image Editing experimental feature is turned on.
@@ -167,6 +179,17 @@ export const textAvailabilityRules: AvailabilityRulesMap = {
 export const bubbleAvailabilityRules: AvailabilityRulesMap = {
     addChildBubble: {
         visible: (ctx) => ctx.canHaveChildBubbles && !ctx.isInDraggableGame,
+    },
+};
+
+export const layerAvailabilityRules: AvailabilityRulesMap = {
+    layer: {
+        // The background image is always at the very back, so it has no layer to change.
+        visible: (ctx) => !ctx.isBackgroundImage,
+        // The whole submenu is disabled when there is nothing to move past, i.e. this is the
+        // only movable element on its canvas. Each command inside it is further disabled in
+        // the direction the element cannot go (see makeLayerMenuItem).
+        enabled: (ctx) => ctx.canBringForward || ctx.canSendBackward,
     },
 };
 

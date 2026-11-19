@@ -2,9 +2,11 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Collection;
@@ -47,6 +49,12 @@ namespace Bloom
         // finished, overwriting the saved RestoreBounds before they are applied.
         private bool _finishedLoading;
 
+        // When something other than the person at the keyboard is driving Bloom (--dont-disturb:
+        // an agent, or a test suite on a developer's machine) the window must not steal their
+        // keyboard focus when it is shown. That holds wherever the window is: on the developer's
+        // desktop, on a monitor of its own, or off every monitor.
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
+
         public Shell(
             Func<WorkspaceView> projectViewFactory,
             CollectionSettings collectionSettings,
@@ -66,6 +74,19 @@ namespace Bloom
             _controlKeyEvent = controlKeyEvent;
             _audioRecording = audioRecording;
             InitializeComponent();
+            if (AutomationWindowPlacement.IsOffEveryMonitor)
+            {
+                // Keep the off-screen window out of the task bar, so such a run leaves no trace
+                // on the developer's desktop.
+                //
+                // This has to happen before the window handle exists, which is why it is here
+                // and not in Shell_Load with the rest of the headless placement. Assigning
+                // ShowInTaskbar on a form that is already showing makes Windows Forms recreate
+                // the form's handle, and every child handle with it, including the WebView2
+                // host. The Edit tab survived that with a browser that no longer answered a
+                // jump to another page, so every e2e test that moves between pages hung.
+                ShowInTaskbar = false;
+            }
             Activated += (sender, args) =>
             {
                 // In at least one case (BL-15060) we seem to have gotten activated
@@ -91,6 +112,10 @@ namespace Bloom
             bookDownloadStartingEvent.Subscribe(
                 (x) =>
                 {
+                    // Not while something other than the person at the keyboard drives Bloom
+                    // (--dont-disturb): the download goes ahead, but the foreground stays theirs.
+                    if (Program.StartupDontDisturb)
+                        return;
                     try
                     {
                         this.Invoke((Action)this.Activate);
@@ -178,102 +203,100 @@ namespace Bloom
             _workspaceView.Invalidate(true);
         }
 
-        public bool AppIsShuttingDown => _startedClosingEvent || _finishedClosingEvent;
+        public bool AppIsShuttingDown => _closing;
 
-        private bool _startedClosingEvent;
-        private bool _finishedClosingEvent;
+        private bool _closing;
 
-        protected override void OnClosing(CancelEventArgs e)
+        // Tell Windows why we are slow to answer a shutdown, so that the shutdown screen says
+        // "Bloom is saving your book" against our name rather than that we are not responding.
+        // Windows shows it only if we take longer than it likes (about five seconds); otherwise
+        // nobody sees it. Must be called on the thread that owns the window, i.e. the UI thread.
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern bool ShutdownBlockReasonCreate(IntPtr hWnd, string reason);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool ShutdownBlockReasonDestroy(IntPtr hWnd);
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            // We want to get everything saved (under the old collection name, if we are changing the name and restarting).
-            // This is tricky because we may need to save current changes to a book we are editing, and this
-            // involves an inherently asynchronous process (thanks to WebView2). We tried endless ways to
-            // wait for the data we need from the page we're editing, and nothing worked reliably.
-            // If we go ahead and close the Shell, the message we eventually get on our API with the data to save
-            // tries to use Invoke on the Shell to get on the UI thread, but the Shell is already disposed.
-            // So, the first time OnClosing is called, we raise an event that will do the saving, and cancel
-            // the close. In case the user manages to click the Close button again before the saving is done,
-            // we set a flag to say it is in progress, so that we can ignore any subsequent OnClosing events
-            // until we are done saving. When we ARE done saving, we set a flag to say so, and then call Close()
-            // to actually get the window closed.
-            if (_finishedClosingEvent)
-            {
-                base.OnClosing(e);
-                return;
-            }
-
-            if (_startedClosingEvent)
-            {
-                e.Cancel = true;
-                return;
-            }
-
+            // Everything here is synchronous: EditingModel already has the page being edited (see
+            // PageSnapshot), so the closing event returns with the book on disk.
+            _closing = true;
             Logger.WriteMinorEvent("starting to shut Bloom down");
 
-            _startedClosingEvent = true;
+            // OnFormClosing rather than OnClosing, for the close reason. When Windows itself is
+            // shutting down, restarting or logging off, it gives us about five seconds before
+            // treating us as hung, and the browser is being shut down alongside us -- so the save
+            // must not wait on the browser (see EditingModel.SaveEverythingBeforeClosing), and we
+            // tell Windows what we are doing in case the write runs long. Windows-only API.
+            var windowsIsShuttingDown = e.CloseReason == CloseReason.WindowsShutDown;
+            var toldWindowsWhy =
+                windowsIsShuttingDown
+                && SIL.PlatformUtilities.Platform.IsWindows
+                && ShutdownBlockReasonCreate(
+                    Handle,
+                    L10NSharp.LocalizationManager.GetString(
+                        "Shell.SavingBeforeWindowsShutsDown",
+                        "Bloom is saving your book"
+                    )
+                );
+            try
+            {
+                _collectionClosingEvent.Raise(windowsIsShuttingDown);
+            }
+            finally
+            {
+                if (toldWindowsWhy)
+                    ShutdownBlockReasonDestroy(Handle);
+            }
 
-            _collectionClosingEvent.Raise(
-                new CollectionClosingArgs()
+            if (
+                !string.IsNullOrEmpty(_nameToChangeCollectionUponClosing)
+                && _nameToChangeCollectionUponClosing != _collectionSettings.CollectionName
+                && UserWantsToOpeReopenProject
+            )
+            {
+                // Without checking and resetting this flag, Linux endlessly spawns new instances. Apparently the Mono runtime
+                // calls OnClosing again as a result of calling Program.RestartBloom() which calls Application..Exit().
+                UserWantsToOpeReopenProject = false;
+                //Actually restart Bloom with a parameter requesting this name change. It's way more likely to succeed
+                //when this run isn't holding onto anything.
+                try
                 {
-                    PostponedWork = () =>
-                    {
-                        if (
-                            !string.IsNullOrEmpty(_nameToChangeCollectionUponClosing)
-                            && _nameToChangeCollectionUponClosing
-                                != _collectionSettings.CollectionName
-                            && UserWantsToOpeReopenProject
+                    var existingDirectoryPath = Path.GetDirectoryName(
+                        _collectionSettings.SettingsFilePath
+                    );
+                    var parentDirectory = Path.GetDirectoryName(existingDirectoryPath);
+                    var newDirectoryPath = Path.Combine(
+                        parentDirectory,
+                        _nameToChangeCollectionUponClosing
+                    );
+
+                    // Our process id goes last, so the new copy can wait for us to
+                    // exit before it moves the folder.
+                    Program.RestartBloom(
+                        true,
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "--rename \"{0}\" \"{1}\" {2}",
+                            existingDirectoryPath,
+                            newDirectoryPath,
+                            Environment.ProcessId
                         )
-                        {
-                            // Without checking and resetting this flag, Linux endlessly spawns new instances. Apparently the Mono runtime
-                            // calls OnClosing again as a result of calling Program.RestartBloom() which calls Application..Exit().
-                            UserWantsToOpeReopenProject = false;
-                            //Actually restart Bloom with a parameter requesting this name change. It's way more likely to succeed
-                            //when this run isn't holding onto anything.
-                            try
-                            {
-                                var existingDirectoryPath = Path.GetDirectoryName(
-                                    _collectionSettings.SettingsFilePath
-                                );
-                                var parentDirectory = Path.GetDirectoryName(existingDirectoryPath);
-                                var newDirectoryPath = Path.Combine(
-                                    parentDirectory,
-                                    _nameToChangeCollectionUponClosing
-                                );
-
-                                Program.RestartBloom(
-                                    true,
-                                    string.Format(
-                                        "--rename \"{0}\" \"{1}\" ",
-                                        existingDirectoryPath,
-                                        newDirectoryPath
-                                    )
-                                );
-                            }
-                            catch (Exception error)
-                            {
-                                SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-                                    error,
-                                    "Sorry, Bloom failed to even prepare for the rename of the project to '{0}'",
-                                    _nameToChangeCollectionUponClosing
-                                );
-                            }
-                        }
-
-                        _finishedClosingEvent = true;
-                        Logger.WriteMinorEvent("closing the Shell");
-                        Close();
-                    },
-                    FailureAction = () =>
-                    {
-                        // We didn't want a second attempt at saving if the user clicks the close box while we are
-                        // still trying to save after the first click on Close. But if the first attempt fails,
-                        // we don't want to stay in a state where all attempts to close the program are ignored.
-                        _startedClosingEvent = false;
-                    },
+                    );
                 }
-            );
-            e.Cancel = true;
-            base.OnClosing(e);
+                catch (Exception error)
+                {
+                    SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+                        error,
+                        "Sorry, Bloom failed to even prepare for the rename of the project to '{0}'",
+                        _nameToChangeCollectionUponClosing
+                    );
+                }
+            }
+
+            Logger.WriteMinorEvent("closing the Shell");
+            base.OnFormClosing(e);
         }
 
         public void SetWindowText(string bookName)
@@ -406,9 +429,17 @@ namespace Bloom
         /// </summary>
         public void FinishPuttingShellInFront()
         {
-            // An instant toggle is what we used to do here, and it is why Bloom could come up
-            // behind Chrome. (BL-16784)  See comments for BringToFrontNow for why this works better.
-            this.BringToFrontNow();
+            // Under --dont-disturb, grabbing focus would yank the user's keyboard away from
+            // whatever they are doing while an agent or a test drives Bloom, and a window placed
+            // off every monitor cannot come to the front at all: TopMost and taking the
+            // foreground on it would take the foreground away for nothing.
+            if (!Program.StartupDontDisturb)
+            {
+                // An instant topmost toggle is what we used to do here, and it is why Bloom could
+                // come up behind Chrome. (BL-16784)  See comments for BringToFrontNow for why this
+                // works better.
+                this.BringToFrontNow();
+            }
             // Flag that it's safe to restore the window size and location on Linux.
             _finishedLoading = true;
         }
@@ -422,7 +453,50 @@ namespace Bloom
             {
                 SuspendLayout();
 
-                if (Settings.Default.WindowSizeAndLocation == null)
+                // Where an automation run puts its window is BLOOM_AUTOMATION_MONITOR's to
+                // decide (see AutomationWindowPlacement). A run that it says nothing about falls
+                // through to the ordinary cases below, window placement and all, so the
+                // developer sees the Bloom they would see without the variable.
+                var placement = AutomationWindowPlacement.GetChoice();
+                if (Program.StartupAutomation)
+                {
+                    // Say in the log which monitor this run chose and what the alternatives were.
+                    // The number in the variable is not the number Windows Settings shows; see
+                    // AutomationWindowPlacement.DescribeChoice.
+                    Logger.WriteEvent(AutomationWindowPlacement.DescribeChoice());
+                }
+                if (placement == AutomationWindowPlacement.Choice.OffEveryMonitor)
+                {
+                    // The window goes off every monitor and out of the task bar, so a test can
+                    // run while the developer works. It stays Normal (not minimized) and full
+                    // size, because WebView2 only paints a window that is neither minimized nor
+                    // hidden. See AutomationWindowPlacement.GetBoundsOffEveryMonitor.
+                    StartPosition = FormStartPosition.Manual;
+                    WindowState = FormWindowState.Normal;
+                    Bounds = AutomationWindowPlacement.GetBoundsOffEveryMonitor();
+                    // ShowInTaskbar is set in the constructor, not here. See the comment there.
+                }
+                else if (placement == AutomationWindowPlacement.Choice.OnTheChosenMonitor)
+                {
+                    // Open on the monitor the variable named, not on whichever one the developer
+                    // is working on, and leave the saved window placement alone.
+                    StartPosition = FormStartPosition.Manual;
+                    WindowState = FormWindowState.Normal;
+                    Bounds = AutomationWindowPlacement.GetChosenMonitor().WorkingArea;
+                    // Maximizing keeps the window on the screen that contains its bounds.
+                    WindowState = FormWindowState.Maximized;
+                }
+                else if (Program.StartupAutomation)
+                {
+                    // An automation run the variable said nothing about: open exactly where a
+                    // Bloom with no saved placement opens, and write nothing. The guard below
+                    // keeps it from touching the developer's saved placement either way, which
+                    // it must not do whatever the variable says: every Bloom of one build shares
+                    // one user.config.
+                    StartPosition = FormStartPosition.WindowsDefaultLocation;
+                    WindowState = FormWindowState.Maximized;
+                }
+                else if (Settings.Default.WindowSizeAndLocation == null)
                 {
                     StartPosition = FormStartPosition.WindowsDefaultLocation;
                     WindowState = FormWindowState.Maximized;
@@ -433,7 +507,11 @@ namespace Bloom
                 // This feature is not yet a normal part of Bloom, since we think just maximizing is more rice-farmer-friendly.
                 // However, we added the ability to remember this stuff at the request of the person making videos, who needs
                 // Bloom to open in the same place / size each time.
-                if (Settings.Default.MaximizeWindow == false)
+                if (Program.StartupAutomation)
+                {
+                    // Placement is settled above; leave the developer's saved placement alone.
+                }
+                else if (Settings.Default.MaximizeWindow == false)
                 {
                     Settings.Default.WindowSizeAndLocation.InitializeForm(this);
                 }
@@ -490,6 +568,11 @@ namespace Bloom
             if (!_finishedLoading)
                 return;
             if (WindowState != FormWindowState.Normal)
+                return;
+            // An automation run must never write the saved bounds. Where BLOOM_AUTOMATION_MONITOR
+            // put its window is somewhere the developer is not looking, off every monitor or on a
+            // monitor of the run's choosing, and saving that would move their next Bloom there.
+            if (Program.StartupAutomation)
                 return;
 
             Settings.Default.RestoreBounds = new Rectangle(Left, Top, Width, Height);

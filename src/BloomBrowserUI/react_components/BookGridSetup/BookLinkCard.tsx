@@ -119,6 +119,8 @@ export const BookLinkCard: React.FC<BookCardProps> = ({
                         css={css`
                             color: white;
                             height: 3em;
+                            /* keep long titles off the card's edges */
+                            padding: 0 6px;
                             overflow: hidden;
                             display: -webkit-box;
                             -webkit-line-clamp: 2;

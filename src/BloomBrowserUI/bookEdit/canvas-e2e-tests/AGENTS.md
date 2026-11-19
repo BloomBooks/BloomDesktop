@@ -51,7 +51,8 @@ Bloom's Edit tab is several iframes. Resolve frames by **name**, never by positi
 
 Selectors the helpers rely on (keep them centralized in `helpers/`):
 
-- Canvas tool tab header: `h3[data-toolid="canvasTool"]`. Check whether `#canvasToolControls`
+- Canvas tool tab header (the toolbox is a MUI accordion; the header's icon carries the tool's
+  canonical id): `.MuiAccordionSummary-root:has([data-toolid="canvas"])`. Check whether `#canvasToolControls`
   is already visible first; if it is, do not click the tab again.
 - Canvas surface: `.bloom-canvas`. Created elements: `.bloom-canvas-element`.
 - Speech/comic palette item: `img[src*="comic-icon.svg"]`.
@@ -69,9 +70,12 @@ that times out usually means you selected the top frame instead of `page`.
 Do **not** let a native OS dialog open unprepared: Playwright cannot see or dismiss it and the
 run hangs. `Change image` and `Choose image from your computer...` are safe (they open the web
 image gallery); the gallery's `Open File...` under `This Computer`, and either command on a GIF,
-reach the native file picker; nothing in this suite can drive that picker, so do not click them.
-Do not invoke `Choose Video from your Computer...` or `Record yourself...` either; if coverage
-needs any of these commands, verify presence/enabled state only.
+reach the native file picker. This suite attaches to an ordinary running Bloom, not one started
+with `--e2e`, so the `e2e/nextFileToChoose` hook is **not** registered (posting to it raises
+Bloom's missing-endpoint problem dialog). To get past a picker here use `winformsUia.ps1` in the
+`run-bloom` skill, which fills the picker over UI Automation with no pointer input. Do not
+invoke `Choose Video from your Computer...` or `Record yourself...`; if coverage needs them,
+verify presence/enabled state only.
 
 ## Stability notes for future agents
 
@@ -79,7 +83,7 @@ needs any of these commands, verify presence/enabled state only.
 - Prefer visible-only locators for context controls and menu lists (`:visible`), because hidden duplicate portal/menu nodes can appear during long headed runs.
 - Keep real drag/drop for tests that validate drag behavior.
 - Prefer close-to-user-behavior setup in specs: create the same element type the test is validating, using real drag/drop.
-- If a test is flaky, prefer bounded retries around the same user-like interaction. Any any non-user-like setup shortcuts require explicit human approval, recorded in a code comment. For example, avoid substituting different element types just to reduce flakiness unless explicitly approved and clearly documented in the spec.
+- Never accept a flaky test; working around one, retries included, needs the developer's permission first (see "Never accept a flaky test" in the root AGENTS.md). Any non-user-like setup shortcuts require explicit human approval, recorded in a code comment. For example, avoid substituting different element types just to reduce flakiness unless explicitly approved and clearly documented in the spec.
 - `specs/11-shared-mode-cleanup.spec.ts` is a regression check that shared-mode per-test cleanup restores baseline element count.
 
 

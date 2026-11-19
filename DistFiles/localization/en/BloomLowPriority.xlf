@@ -17,9 +17,19 @@
         <note>ID: Errors.CorruptImageFile</note>
         <note>The placeholder {0} represents the name of the corrupt file. The placeholder {1} represents a message describing the problem with the file.</note>
       </trans-unit>
+      <trans-unit id="ErrorReport.Details">
+        <source xml:lang="en">Details</source>
+        <note>ID: ErrorReport.Details</note>
+        <note>Button on a small notification that tells the user something went wrong. Clicking it opens a message with more information about the problem.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable" translate="no">
+        <source xml:lang="en">Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable</note>
+        <note>On the "More" page of the first language in the Collection Settings dialog, shown under the alphabet and sentence punctuation (which cannot be edited) when the file the Decodable and Leveled Reader tools keep their settings in is damaged.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
@@ -58,26 +68,6 @@
         <source xml:lang="en">Choose Link Target</source>
         <note>ID: LinkTargetChooser.Dialog.Title</note>
         <note>Title of the Link Target chooser dialog that lets users pick where a link should go.</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.BookList.Heading">
-        <source xml:lang="en">Books in this Collection</source>
-        <note>ID: LinkTargetChooser.BookList.Heading</note>
-        <note>Heading above the list of books in the Link Target chooser dialog.</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.PageList.Heading">
-        <source xml:lang="en">Pages in the selected book</source>
-        <note>ID: LinkTargetChooser.PageList.Heading</note>
-        <note>Heading above the list of pages for the currently selected book in the Link Target chooser dialog.</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.SelectionError.BookNotFound">
-        <source xml:lang="en">Book not found: {0}</source>
-        <note>ID: LinkTargetChooser.SelectionError.BookNotFound</note>
-        <note>Shown in the Link Target chooser when the stored link points to a book that is no longer available. {0} is the missing book ID.</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.SelectionError.PageNotFound">
-        <source xml:lang="en">Page {0} not found in book "{1}"</source>
-        <note>ID: LinkTargetChooser.SelectionError.PageNotFound</note>
-        <note>Shown in the Link Target chooser when the stored link points to a page that no longer exists. {0} is the missing page ID and {1} is the book title.</note>
       </trans-unit>
       <trans-unit id="LinkTargetChooser.PageList.SelectBookPrompt">
         <source xml:lang="en">Select a book to see its pages</source>
@@ -183,13 +173,14 @@
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.HowToVideo</note>
         <note>Text of a link at the bottom of the USB debugging instructions dialog; it opens a short YouTube video showing the same steps.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.CheckEmailFailed">
-        <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
-        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.BookshelfError">
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</source>
         <note>ID: PublishTab.Upload.BookshelfError</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignInRejected" translate="no">
+        <source xml:lang="en">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</source>
+        <note>ID: PublishTab.Upload.SignInRejected</note>
+        <note>Shown in the progress box of Publish → Web when the website refuses the user's saved sign-in, for example because it is about a year old. Bloom has already signed the user out, so the "Sign in" button is showing again. "BloomLibrary.org" is the website's name and must not be translated.</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true">
         <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
@@ -284,6 +275,11 @@
         <note>ID: Feature.Spreadsheet</note>
         <note>This is the name of a feature in Bloom</note>
       </trans-unit>
+      <trans-unit id="Feature.Table">
+        <source xml:lang="en">Table</source>
+        <note>ID: Feature.Table</note>
+        <note>This is the name of a feature in Bloom: tables on a page, whose cells hold text or pictures</note>
+      </trans-unit>
       <!-- TODO: add other features -->
 
       <trans-unit id="Spreadsheet.DataDivConflictWarning">
@@ -298,6 +294,21 @@
         <source xml:lang="en">Export failed: {0}</source>
         <note>ID: Spreadsheet.ExportFailed</note>
         <note>{0} is a placeholder for an exception message</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ImportFailed" translate="no">
+        <source xml:lang="en">Import failed: {0}</source>
+        <note>ID: Spreadsheet.ImportFailed</note>
+        <note>{0} is a placeholder for an exception message</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ImageSourceComment" translate="no">
+        <source xml:lang="en">A full path like (C:\foo) or a path relative to the location of this spreadsheet like images\foo.png</source>
+        <note>ID: Spreadsheet.ImageSourceComment</note>
+        <note>A comment on the heading of the image path column in a spreadsheet that Bloom exports. Do not translate the example paths.</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ImageThumbnailComment" translate="no">
+        <source xml:lang="en">This is usually just so you can see what the image is. Import is based on the path in a hidden column next to this one.</source>
+        <note>ID: Spreadsheet.ImageThumbnailComment</note>
+        <note>A comment on the heading of the image thumbnail column in a spreadsheet that Bloom exports.</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.SpreadsheetLocked">
         <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
@@ -338,9 +349,6 @@
         <note>ID: Spreadsheet.CannotExportDragAndDropGamePages</note>
         <note>{0} is a placeholder for the number of pages</note>
       </trans-unit>
-      <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
-        <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
-      </trans-unit>
       <trans-unit id="Download.PleaseSendLogFile">
         <source xml:lang="en">Please also send us the latest log file found at {0}.</source>
         <note>ID: Download.PleaseSendLogFile</note>
@@ -349,6 +357,21 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem">
         <source xml:lang="en">Bloom was not able to access a microphone.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation">
+        <source xml:lang="en">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation</note>
+        <note>Shown when the user chooses "Edit Timings File..." in the Adjust Timings dialog. Audacity is a product name. "labels" is the name of a file type in Audacity's Import and Export menus. "Apply Timings File..." should match the translation of that menu item.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile">
+        <source xml:lang="en">Current timings file is {0}</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile</note>
+        <note>Shown below EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation. {0} is replaced with the full path of the timings file on the user's computer.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile">
+        <source xml:lang="en">Current audio file is {0} (.wav or .mp3)</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile</note>
+        <note>Shown below EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile. {0} is replaced with the name of the audio file, without its extension; the file may be either .wav or .mp3.</note>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.OneDriveProblem">
         <source xml:lang="en">OneDrive Problem</source>
@@ -370,6 +393,87 @@
       <trans-unit id="TeamCollection.InvalidAdminEmails">
         <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
         <note>ID: TeamCollection.InvalidAdminEmails</note>
+      </trans-unit>
+      <trans-unit id="Common.TryAgainOrRestart" translate="no">
+        <source xml:lang="en">Please try again later. If the problem continues, restart your computer.</source>
+        <note>ID: Common.TryAgainOrRestart</note>
+        <note>Last part of a three-part message shown when Bloom cannot get exclusive access to a file, for example a book file in a Team Collection folder.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AgentSynchronizing" translate="no">
+        <source xml:lang="en">Some other program may be busy with it. This may just be {0} synchronizing the file.</source>
+        <note>ID: TeamCollection.AgentSynchronizing</note>
+        <note>Middle part of a three-part message shown when Bloom cannot get exclusive access to a book file in a Team Collection folder. The other parts are a sentence saying which file, and Common.TryAgainOrRestart.</note>
+        <note>{0} is the name of the program that is probably synchronizing the folder, such as "Dropbox".</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.SomethingSynchronizing" translate="no">
+        <source xml:lang="en">Some other program may be busy with it. This may just be something synchronizing the file.</source>
+        <note>ID: TeamCollection.SomethingSynchronizing</note>
+        <note>Middle part of a three-part message shown when Bloom cannot get exclusive access to a book file in a Team Collection folder. The other parts are a sentence saying which file, and Common.TryAgainOrRestart.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.BadZipFile" translate="no">
+        <source xml:lang="en">Bloom was not able to open the zip file, which may be corrupted.</source>
+        <note>ID: TeamCollection.BadZipFile</note>
+        <note>Each book in a Team Collection folder is stored as a zip file. This is shown when one of those files cannot be opened.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.BookFileDownloading" translate="no">
+        <source xml:lang="en">The book '{0}' in the Team Collection appears to be downloading. Please wait a few minutes and then click Reload Collection.</source>
+        <note>ID: TeamCollection.BookFileDownloading</note>
+        <note>{0} is the name of the book. "Reload Collection" is the label of a button in the Team Collection status dialog.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.BookFileDownloadingJoin" translate="no">
+        <source xml:lang="en">Cannot join the Team Collection: the book '{0}' appears to be downloading. Please wait for the download to complete and then double-click the Join file again.</source>
+        <note>ID: TeamCollection.BookFileDownloadingJoin</note>
+        <note>{0} is the name of the book. The Join file is the file a user double-clicks to join a Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckOutForDelete" translate="no">
+        <source xml:lang="en">Please check out the book before deleting it.</source>
+        <note>ID: TeamCollection.CheckOutForDelete</note>
+        <note>Shown when the user tries to delete a book in a Team Collection without first checking it out.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConnectForDelete" translate="no">
+        <source xml:lang="en">Please connect to the Team Collection before deleting books that are part of it.</source>
+        <note>ID: TeamCollection.ConnectForDelete</note>
+        <note>Shown when the user tries to delete a book while Bloom is disconnected from the Team Collection folder.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingEditOrCheckout" translate="no">
+        <source xml:lang="en">Someone else has edited the book {0} or checked it out even though it was being edited here! Local changes have been saved to Lost and Found</source>
+        <note>ID: TeamCollection.ConflictingEditOrCheckout</note>
+        <note>{0} is the name of the book. "Lost and Found" is a folder in the Team Collection where Bloom keeps copies of changes it could not save in the usual way.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConnectToJoin" translate="no">
+        <source xml:lang="en">Bloom cannot currently join this collection.</source>
+        <note>ID: TeamCollection.ConnectToJoin</note>
+        <note>Shown when the user double-clicks a Join file for a Team Collection that Bloom cannot connect to right now. A message saying what is wrong follows it.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.QuitOtherBloom" translate="no">
+        <source xml:lang="en">Please close Bloom before joining a Team Collection</source>
+        <note>ID: TeamCollection.QuitOtherBloom</note>
+        <note>Shown when the user double-clicks a Team Collection's Join file while Bloom is already running.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.DropboxSyncSettingsWarning" translate="no">
+        <source xml:lang="en">Important: synchronization problems can be caused when one or more members of your team have incorrect Dropbox settings. Please ensure all members of your team collection are using the correct settings. See [critical Dropbox settings](https://docs.bloomlibrary.org/critical-dropbox-settings/).</source>
+        <note>ID: TeamCollection.DropboxSyncSettingsWarning</note>
+        <note>Added to Team Collection error messages when the collection is shared through Dropbox. The part in square brackets becomes a link to the web address in parentheses; translate the text in the brackets but do not change the web address. "Dropbox" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MustBeAdmin" translate="no">
+        <source xml:lang="en">You must be an administrator to change collection settings</source>
+        <note>ID: TeamCollection.MustBeAdmin</note>
+        <note>Shown when someone who is not an administrator of a Team Collection tries to open the collection settings. A list of the administrators' email addresses follows it.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.NoWriteAccess" translate="no">
+        <source xml:lang="en">Bloom does not have permission to write to the selected folder. The system reported {0}</source>
+        <note>ID: TeamCollection.NoWriteAccess</note>
+        <note>Shown when the user chooses a folder for a new Team Collection that Bloom cannot write to. {0} is the error message from the system, which is usually in English.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ProblemLocation" translate="no">
+        <source xml:lang="en">There is a problem with this location</source>
+        <note>ID: TeamCollection.ProblemLocation</note>
+        <note>Shown when the user chooses a folder for a new Team Collection that cannot be used, for example because it is already part of another Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ProblemWithBook" translate="no">
+        <source xml:lang="en">There is a problem with the book "{0}" in the Team Collection system.</source>
+        <note>ID: TeamCollection.ProblemWithBook</note>
+        <note>{0} is the name of the book. Other sentences saying what the problem is may follow it.</note>
       </trans-unit>
       <trans-unit id="Common.Preparing">
         <source xml:lang="en">Preparing...</source>
@@ -442,6 +546,11 @@
         <source xml:lang="en">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</source>
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
         <note>Shown as a toast when the one-time shrinking of an old book's oversized pictures fails. The book still works; the pictures are just left large, and Bloom retries later. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="Shell.SavingBeforeWindowsShutsDown" translate="no">
+        <source xml:lang="en">Bloom is saving your book</source>
+        <note>ID: Shell.SavingBeforeWindowsShutsDown</note>
+        <note>Shown by Windows itself, next to Bloom's name on the screen Windows displays when an application is slow to let it shut down, restart or log off. It appears only if Bloom takes more than a few seconds to finish saving. "Bloom" is a product name and must not be translated.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Credits.AccountCreditsUsed">
         <source xml:lang="en">{0} used of {1} account credits</source>
@@ -802,6 +911,90 @@
         <note>ID: AiImageEditor.Tool.remove_object.Title</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="Errors.FileAccessCheck.Blocked" translate="no">
+        <source xml:lang="en">Windows is not letting Bloom change files in this collection.</source>
+        <note>ID: Errors.FileAccessCheck.Blocked</note>
+        <note>A short warning that pops up soon after a collection opens, when Bloom finds that it cannot create, change or delete files in the collection's folder. Clicking it shows Errors.FileAccessCheck.BlockedLonger.</note>
+      </trans-unit>
+      <trans-unit id="Errors.FileAccessCheck.BlockedLonger" translate="no">
+        <source xml:lang="en">Windows is not letting Bloom create, change, rename or delete files in the folder where this collection is stored. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see "{0}".</source>
+        <note>ID: Errors.FileAccessCheck.BlockedLonger</note>
+        <note>{0} is a link whose text is the translation of Errors.CannotUpdateTroubleshoot. "Ransomware Shield" is the name of a feature of the Avast antivirus program, and "Controlled Folder Access" is the name of a setting in Windows Security; use the names those programs show in your language, if they are translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader.Description" sil:dynamic="true">
+        <source xml:lang="en">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader.Description</note>
+        <note>Description of the "ABC- Reader" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader Device.Description</note>
+        <note>Description of the "ABC- Reader - Device" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Dari language.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari.Description</note>
+        <note>Description of the "Afghan - Children - Read - Dari" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Dari language and used for digital publishing.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Dari Device.Description</note>
+        <note>Description of the "Afghan - Children - Read - Dari - Device" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Pashto language.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto.Description</note>
+        <note>Description of the "Afghan - Children - Read - Pashto" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for the Afghanistan government, this provides various special pages for use in their project.
+This version is specific to the Pashto language and used for digital publishing.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Afghan Children Read Pashto Device.Description</note>
+        <note>Description of the "Afghan - Children - Read - Pashto - Device" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Kyrgyzstan 2020.Description" sil:dynamic="true">
+        <source xml:lang="en">Supports full-bleed cover color (but not images), and a place to paste a graphic on the back which is used to show what level this book is.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Kyrgyzstan 2020.Description</note>
+        <note>Description of the "Kyrgyzstan 2020" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Book.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Book.Description</note>
+        <note>Description of the "MXB Book" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Literacy.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for literacy books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Literacy.Description</note>
+        <note>Description of the "MXB Literacy" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Literacy Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Used by ILV Mexico Branch, 2022.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Literacy Device.Description</note>
+        <note>Description of the "MXB Literacy - Device" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture.Description" sil:dynamic="true">
+        <source xml:lang="en">Designed for Scripture books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture.Description</note>
+        <note>Description of the "MXB Scripture" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture Device.Description" sil:dynamic="true">
+        <source xml:lang="en">Used by ILV Mexico Branch, 2022.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.MXB Scripture Device.Description</note>
+        <note>Description of the "MXB Scripture - Device" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Story Producer.Description" sil:dynamic="true">
+        <source xml:lang="en">Based on the Device front/back matter, this also provides some special inputs which are passed to Story Producer for its configuration.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Story Producer.Description</note>
+        <note>Description of the "Story Producer" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog. Bloom and Story Producer are product names.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Uzbekistan 2023.Description" sil:dynamic="true">
+        <source xml:lang="en">Supports full-bleed cover color with images, adds a specific graphic tied to the grade level, which we get from the chosen bookshelf.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Uzbekistan 2023.Description</note>
+        <note>Description of the "Uzbekistan 2023" Front/Back Matter Pack, shown below the pack chooser in the Collection Settings dialog.</note>
       </trans-unit>
     </body>
   </file>

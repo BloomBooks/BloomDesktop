@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Utils;
 
 namespace Bloom.web.controllers
 {
@@ -16,14 +17,19 @@ namespace Bloom.web.controllers
                     try
                     {
                         //detect if some keyboarding system is active, e.g. KeyMan. If it is, don't enable LongPress
+                        // TSF keeps the active input method per thread, so ask on the form's (UI) thread.
+                        // Use a MethodInvoker: WinForms calls it directly, while a Func<bool> goes
+                        // through Delegate.DynamicInvoke, whose generated stub threw on ARM64 (BL-17067).
                         var form = Application.OpenForms.Cast<Form>().Last();
-                        request.ReplyWithText(
-                            SIL.Windows.Forms.Keyboarding.KeyboardController.IsFormUsingInputProcessor(
-                                form
+                        var usingInputProcessor = false;
+                        form.Invoke(
+                            (MethodInvoker)(
+                                () =>
+                                    usingInputProcessor =
+                                        InputProcessorDetector.IsInputProcessorActive()
                             )
-                                ? "false"
-                                : "true"
                         );
+                        request.ReplyWithText(usingInputProcessor ? "false" : "true");
                     }
                     catch (Exception error)
                     {

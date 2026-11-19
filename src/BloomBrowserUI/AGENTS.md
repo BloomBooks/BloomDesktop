@@ -51,17 +51,32 @@ Tests for components under /react_components have a playwright test system based
 
 Don't check for styles in tests as a way to know the status of something. That is fragile. If necessary have components add css classes or whatever that tests can check.
 
-Don't use timeouts in tests, that slows things down and is fragile. If a timeout is justified, get my approval and add a comment explaining it.
+
+Unit tests (vitest) must not reach the network. `vitest.setup.ts` refuses every request and fails the test that made it, naming the URL. Mock the call with `vi.mock` of `utils/bloomApi`, replacing just the function the code under test calls (a `bloomApi` helper that calls another one internally is not intercepted, so mock the one the code imports). Don't use `bloomApi`'s `mockReplies` for this: it is global and is never reset between tests.
 
 ## Troubleshooting UI Problems
 
-Usually if you get stuck, the best thing to do is to look at the real thing: attach to the running Bloom's WebView2 over CDP with the `run-bloom` skill (DOM, console, network, screenshots), or get the component showing in the component-tester harness (`component-test` skill). Add console messages that should show, then read the browser's console to test your assumptions.
+Usually if you get stuck, the best thing to do is to look at the real thing: attach to the running Bloom's WebView2 over CDP with the `run-bloom` skill (DOM, console, network, screenshots), or get the component showing in the component-tester harness (`component-test` skill). Add console messages that should show, then read the browser's console to test your assumptions. When the backend is running, you can open http://localhost:8089/bloom/CURRENTPAGE to inspect and interact with the screen.
 
 ## Localization
 
 Localizable strings live in `DistFiles/localization/en/Bloom*.xlf`. Whenever you add, change,
 review or retire one, follow `.claude/skills/xlf-strings/SKILL.md`; the root `AGENTS.md` states
 the two rules that hold even outside that skill (edit only `en/`; never delete a `<trans-unit>`).
+
+A library that Bloom hosts (bloom-image-gallery, bloom-table, bloom-ai-image-tools) gets its
+strings translated in one way, and a new one follows it too:
+
+- The library exports every string it shows, keyed by its id in Bloom's XLF, with its English, and
+  Bloom's XLF has a `<trans-unit>` for each. A Bloom test checks that the two agree
+  (`tableUiStrings.test.ts` does this for bloom-table).
+- The library takes `getLocalizations: (strings: Record<string, string>) => Promise<Record<string, string>>`,
+  calls it once with all those strings, and shows the English for any id the answer lacks.
+- The library shows none of its UI until the answer arrives, so the user never sees English change
+  into their language.
+- Bloom passes `getLocalizations` from `lib/localizationManager/getLocalizations.ts`, never its
+  own preload or a synchronous localizer. bloom-ai-image-tools runs in its own frame, so it posts
+  to the same `i18n/loadStrings` endpoint itself.
 
 ## Other notes
 
@@ -90,7 +105,9 @@ has Bloom's WebView2 load the UI from it (not from a `vite build --watch`). Two 
 touch `output\browser`, so they never disturb the dev server or a watch:
 
 - `pnpm test` (Vitest) — runs in jsdom and transforms modules in memory. This is your primary
-  "does my logic/component work" check. (`pnpm lint` and `pnpm typecheck` are likewise safe.)
+  "does my logic/component work" check. Tests that need real layout (sizes, positions, canvas)
+  go in `*.browser.spec.ts`, which `pnpm test` runs in headless Edge instead (the `browser`
+  project in `vite.config.mts`; `--project unit` or `--project browser` runs just one). (`pnpm lint` and `pnpm typecheck` are likewise safe.)
 
 **To confirm the real production bundle compiles** — bundling / CommonJS-interop errors and
 the manifest post-build step that the lenient dev server never exercises — use the isolated
@@ -114,7 +131,22 @@ You have a complete set of faster, non-disruptive alternatives, so don't run the
 - **Confirm the real production bundle compiles** — `build/agent-vite.sh`, which builds into an isolated tree and leaves `output\browser` alone.
 - **See a change in the running Bloom** — just edit the source; the dev server pushes it in. No build.
 
-The full `pnpm build` exists to (re)populate the shared `output\browser` — `clean.js` plus content assets plus the bundle. It's slow, and it wrecks any running Vite dev server / `--watch` and the Bloom loading from it, so it's a developer/CI job, not something to spring on a live session. If you think you genuinely need it, ask the developer to run it (they can stop Bloom first) rather than running it yourself.
+The full `pnpm build` exists to (re)populate the shared `output\browser` — `clean.js` plus content assets plus the bundle. It's slow, and it wrecks any running Vite dev server / `--watch` and the Bloom loading from it, so it's a developer/CI job, not something to spring on a live session.
+
+**"Live" means live in *this* worktree.** Each worktree has its own `output\browser`, so a
+`Bloom.exe` or dev server belonging to another one is irrelevant — on a machine with many
+worktrees, a bare "is Bloom running?" is the wrong question. Check whether a process is using the
+tree you are about to rebuild:
+
+```powershell
+Get-CimInstance Win32_Process -Filter "Name='Bloom.exe' OR Name='node.exe'" |
+  Where-Object { $_.CommandLine -like "*$(Get-Location)*" } | Select-Object CommandLine
+```
+
+If something here is live, it is the developer's call — ask them; they can stop Bloom first. If
+nothing is, run it when you genuinely need it, and say that you did. (The usual trigger is the e2e
+suite refusing to run against a stale bundle. `BLOOM_E2E_VITE_PORT` with a dev server tests the
+working tree without a rebuild — see `src/BloomE2E/README.md`.)
 
 ### If the front-end test suite seems to hang
 

@@ -300,7 +300,6 @@ namespace Bloom.web
                     "createTeamCollectionDialogBundle",
                     "/teamCollection/CreateTeamCollection.entry.tsx"
                 },
-                { "duplicateManyDlgBundle", "/bookEdit/duplicateManyDialog.entry.tsx" },
                 {
                     "joinTeamCollectionDialogBundle",
                     "/teamCollection/JoinTeamCollectionDialog.entry.tsx"
@@ -328,6 +327,10 @@ namespace Bloom.web
                 },
                 { "appBundle", "/app/App.entry.tsx" },
                 { "collectionChooserBundle", "/collection/CollectionChooserDialog.entry.tsx" },
+                {
+                    "printInstructionsBundle",
+                    "/publish/PDFPrintPublish/PrintInstructionsWindow.entry.tsx"
+                },
             };
             string viteModulePath = null;
             var useViteDev = ShouldUseViteDev(() =>
@@ -529,6 +532,16 @@ namespace Bloom.web
             if (Program.StartupVitePort.HasValue)
                 return true;
 
+            // Under --e2e, a dev server counts only when the run named it with --vite-port.
+            // Otherwise a run's front end depends on what else happens to hold 5173, and the probe
+            // below cannot tell Bloom's dev server from any other project's: seen 2026-09-04, where
+            // another repository's Vite dev server held the port and every launched Bloom sat on
+            // its loading spinner for ever, because the front end it asked that server for does not
+            // exist there. See AUTOMATION-DEBT.md, "Which front end the e2e suite tests depends on
+            // what else is running".
+            if (Program.RunningE2eTests)
+                return false;
+
             // Should we load relevant assets from the Vite Dev server?
             // To save time, only consider it if this is a dev build.
             // This also guards against trying to load assets from the vite server
@@ -555,7 +568,12 @@ namespace Bloom.web
                 return true;
             }
 
-            if (ApplicationUpdateSupport.IsDev && IsLocalPortOpen(kDefaultViteDevPort, 40))
+            // Under --e2e, only a dev server the run named counts; see ShouldUseViteDev.
+            if (
+                !Program.RunningE2eTests
+                && ApplicationUpdateSupport.IsDev
+                && IsLocalPortOpen(kDefaultViteDevPort, 40)
+            )
             {
                 vitePort = kDefaultViteDevPort;
                 return true;

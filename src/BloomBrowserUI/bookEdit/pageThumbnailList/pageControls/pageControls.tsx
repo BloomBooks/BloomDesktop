@@ -20,6 +20,12 @@ import "errorHandler";
 
 const kPageControlsContext = "pageThumbnailList-pageControls";
 
+// Duplicating or deleting a page makes C# save the current page first, which it does from the
+// snapshot the page has already sent it (see pageSnapshot.ts).
+function postPageControlCommand(endpoint: string) {
+    postThatMightNavigate(endpoint);
+}
+
 interface IPageControlsState {
     canAddState: boolean;
     canDuplicateState: boolean;
@@ -112,8 +118,12 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
                         enabled={this.state.canDuplicateState}
                         l10nKey="EditTab.DuplicatePageButton"
                         l10nComment="Button that tells Bloom to duplicate the currently selected page."
-                        clickApiEndpoint="edit/pageControls/duplicatePage"
-                        mightNavigate={true}
+                        data-testid="duplicate-page-button"
+                        onClick={() =>
+                            postPageControlCommand(
+                                "edit/pageControls/duplicatePage",
+                            )
+                        }
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/duplicatePage.svg"
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/duplicatePageDisabled.svg"
                         hasText={false}
@@ -124,10 +134,11 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
                         l10nKey="EditTab.DeletePageButton"
                         transparent={true}
                         l10nComment="Button that tells Bloom to delete the currently selected page."
+                        data-testid="remove-page-button"
                         enabled={this.state.canDeleteState}
                         onClick={() =>
                             confirmRemovePage(() =>
-                                postThatMightNavigate(
+                                postPageControlCommand(
                                     "edit/pageControls/deletePage",
                                 ),
                             )

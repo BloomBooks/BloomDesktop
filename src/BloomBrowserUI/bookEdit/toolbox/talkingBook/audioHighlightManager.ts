@@ -1,6 +1,7 @@
 import StyleEditor from "../../StyleEditor/StyleEditor";
 import {
-    makeRangeForNodeContents,
+    makeRangeFromTextOffsets,
+    mapVisibleText,
     TextHighlightManager,
 } from "../../js/textHighlightManager";
 
@@ -9,6 +10,39 @@ const kEnableHighlightClass = "ui-enableHighlight";
 const kDisableHighlightClass = "ui-disableHighlight";
 const kPostAudioSplitClass = "bloom-postAudioSplit";
 const kTextBoxRecordingMode = "textbox";
+
+// A run of three or more spaces (ordinary, non-breaking or zero-width) is layout -- authors use
+// them to space out the words of a poem or a song -- so it is left unpainted, and the words on
+// either side are highlighted separately. Two or fewer are just the gap between words.
+const kLongGapRegex = /[ \u00a0\u200b]{3,}/g;
+const kAllWhitespaceRegex = /^[\s\u00a0\u200b]*$/;
+
+// Ranges covering the visible text under node, leaving out every long gap (see kLongGapRegex) and
+// any piece that is only whitespace, so the highlight skips layout space without adding markup to
+// the page. A gap that runs across inline markup (<em>, <strong>, a coloured span) counts as one
+// gap, because we look at the text as the reader sees it, not node by node.
+export function makeRangesSkippingLongGaps(node: Node): Range[] {
+    const map = mapVisibleText(node);
+    const ranges: Range[] = [];
+    const addPiece = (start: number, end: number): void => {
+        if (kAllWhitespaceRegex.test(map.text.slice(start, end))) {
+            return;
+        }
+        const range = makeRangeFromTextOffsets(map, start, end);
+        if (range) {
+            ranges.push(range);
+        }
+    };
+    kLongGapRegex.lastIndex = 0; // exec on a global regex is stateful
+    let pieceStart = 0;
+    let gap: RegExpExecArray | null;
+    while ((gap = kLongGapRegex.exec(map.text)) !== null) {
+        addPiece(pieceStart, gap.index);
+        pieceStart = gap.index + gap[0].length;
+    }
+    addPiece(pieceStart, map.text.length);
+    return ranges;
+}
 
 const kCurrentHighlightBackgroundCssVar =
     "--bloom-audio-current-highlight-background";
@@ -173,15 +207,14 @@ export class AudioHighlightManager {
             return undefined;
         }
 
-        // copilot says: fixHighlighting() can carve the visible pieces into nested ui-enableHighlight
-        // spans so punctuation or outer whitespace stays unpainted. Prefer those exact
-        // spans whenever they exist so the pseudo-highlight matches the background-color highlight behavior
+        // A book can carry its own ui-enableHighlight spans inside a sentence whose own highlight
+        // is disabled, marking the only parts that should be painted. Honour them when present.
         const enabledDescendants = Array.from(
             currentHighlight.querySelectorAll(`span.${kEnableHighlightClass}`),
         );
-        const enabledRanges = enabledDescendants
-            .map((enabledSpan) => makeRangeForNodeContents(enabledSpan))
-            .filter((range): range is Range => !!range);
+        const enabledRanges = enabledDescendants.flatMap((enabledSpan) =>
+            makeRangesSkippingLongGaps(enabledSpan),
+        );
         if (enabledRanges.length > 0) {
             return {
                 ranges: enabledRanges,
@@ -195,9 +228,9 @@ export class AudioHighlightManager {
 
         if (currentHighlight === currentTextBox) {
             const paragraphs = Array.from(currentTextBox.querySelectorAll("p"));
-            const paragraphRanges = paragraphs
-                .map((paragraph) => makeRangeForNodeContents(paragraph))
-                .filter((range): range is Range => !!range);
+            const paragraphRanges = paragraphs.flatMap((paragraph) =>
+                makeRangesSkippingLongGaps(paragraph),
+            );
             if (paragraphRanges.length > 0) {
                 return {
                     ranges: paragraphRanges,
@@ -206,13 +239,13 @@ export class AudioHighlightManager {
             }
         }
 
-        const wholeElementRange = makeRangeForNodeContents(currentHighlight);
-        if (!wholeElementRange) {
+        const wholeElementRanges = makeRangesSkippingLongGaps(currentHighlight);
+        if (wholeElementRanges.length === 0) {
             return undefined;
         }
 
         return {
-            ranges: [wholeElementRange],
+            ranges: wholeElementRanges,
             styleSource: currentHighlight,
         };
     }
@@ -285,15 +318,12 @@ export class AudioHighlightManager {
     private getRangesForSegment(segment: Element): Range[] {
         const enabledRanges = Array.from(
             segment.querySelectorAll(`span.${kEnableHighlightClass}`),
-        )
-            .map((enabledSpan) => makeRangeForNodeContents(enabledSpan))
-            .filter((range): range is Range => !!range);
+        ).flatMap((enabledSpan) => makeRangesSkippingLongGaps(enabledSpan));
 
         if (enabledRanges.length > 0) {
             return enabledRanges;
         }
 
-        const wholeSegmentRange = makeRangeForNodeContents(segment);
-        return wholeSegmentRange ? [wholeSegmentRange] : [];
+        return makeRangesSkippingLongGaps(segment);
     }
 }

@@ -1707,6 +1707,240 @@ namespace BloomTests.TeamCollection
             );
         }
 
+        private const string kPausedSettings =
+            "<Collection version=\"0.2\"><AllowSharedFolderChanges>False</AllowSharedFolderChanges></Collection>";
+
+        private const string kMovedToCloudSettings =
+            "<Collection version=\"0.2\"><AllowSharedFolderChanges>False</AllowSharedFolderChanges><CloudCollectionId>cloud-42</CloudCollectionId></Collection>";
+
+        /// <summary>
+        /// CheckConnection() reports having no network before it gets as far as the settings, so the
+        /// tests of what it says about the settings can only run where there is one.
+        /// </summary>
+        private static void AssumeNetworkAvailable()
+        {
+            Assume.That(
+                System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable(),
+                "CheckConnection() needs a network to get as far as reading the settings"
+            );
+        }
+
+        [TestCase("<Collection version=\"0.2\"><AllowNewBooks>True</AllowNewBooks></Collection>")]
+        [TestCase(
+            "<Collection version=\"0.2\"><AllowSharedFolderChanges>True</AllowSharedFolderChanges><CloudCollectionId>cloud-42</CloudCollectionId></Collection>"
+        )]
+        public void CheckConnection_RepoAllowsSharedFolderChanges_IsNull(string repoSettings)
+        {
+            AssumeNetworkAvailable();
+            WithRepoSettingsFile(
+                "CheckConnectionAllowed",
+                repoSettings,
+                (tc, settings) => Assert.That(tc.CheckConnection(), Is.Null)
+            );
+        }
+
+        /// <summary>
+        /// The shared folder's settings saying changes are paused counts as a connection problem,
+        /// which is what puts us in Disconnected mode. See BL-16928.
+        /// </summary>
+        [Test]
+        public void CheckConnection_RepoPaused_GivesPausedMessage()
+        {
+            AssumeNetworkAvailable();
+            WithRepoSettingsFile(
+                "CheckConnectionPaused",
+                kPausedSettings,
+                (tc, settings) =>
+                {
+                    Assert.That(
+                        settings.AllowSharedFolderChanges,
+                        Is.True,
+                        "setup failed: only the shared folder should say paused"
+                    );
+                    var message = tc.CheckConnection();
+                    Assert.That(message, Is.Not.Null);
+                    Assert.That(message.MessageType, Is.EqualTo(MessageAndMilestoneType.Error));
+                    Assert.That(
+                        message.L10NId,
+                        Is.EqualTo(
+                            Bloom.TeamCollection.TeamCollection.kSharedFolderChangesPausedL10nId
+                        )
+                    );
+                    Assert.That(message.TextForDisplay, Does.Contain("paused changes"));
+                }
+            );
+        }
+
+        [Test]
+        public void CheckConnection_RepoPausedWithCloudId_GivesMovedToCloudMessage()
+        {
+            AssumeNetworkAvailable();
+            WithRepoSettingsFile(
+                "CheckConnectionMoved",
+                kMovedToCloudSettings,
+                (tc, settings) =>
+                {
+                    var message = tc.CheckConnection();
+                    Assert.That(message, Is.Not.Null);
+                    Assert.That(
+                        message.L10NId,
+                        Is.EqualTo(Bloom.TeamCollection.TeamCollection.kMovedToCloudL10nId)
+                    );
+                    Assert.That(message.TextForDisplay, Does.Contain("reopen the collection"));
+                }
+            );
+        }
+
+        /// <summary>
+        /// Not being able to read the shared folder's settings is normally transient (Dropbox
+        /// mid-sync, say) and is no reason on its own to disconnect. See BL-16928.
+        /// </summary>
+        [TestCase(false)]
+        [TestCase(true)]
+        public void CheckConnection_RepoSettingsMissingOrUnreadable_IsNull(bool zipExists)
+        {
+            AssumeNetworkAvailable();
+            WithRepoSettingsFile(
+                "CheckConnectionNoSettings" + zipExists,
+                null,
+                (tc, settings) =>
+                {
+                    var zipPath = FolderTeamCollection.GetRepoProjectFilesZipPath(
+                        tc.RepoDescription
+                    );
+                    if (zipExists)
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
+                        File.WriteAllText(zipPath, "this is not a zip file");
+                    }
+                    Assert.That(File.Exists(zipPath), Is.EqualTo(zipExists), "setup failed");
+                    Assert.That(tc.CheckConnection(), Is.Null);
+                }
+            );
+        }
+
+        /// <summary>
+        /// Being disconnected by the pause is marked on the DisconnectedTeamCollection, for the book
+        /// status panel, and the usual advice to resolve the problem and reload is left out, since
+        /// the user can do nothing about it. A real connection problem still gets that advice.
+        /// See BL-16928.
+        /// </summary>
+        [TestCase(
+            Bloom.TeamCollection.TeamCollection.kSharedFolderChangesPausedL10nId,
+            true,
+            false
+        )]
+        [TestCase(Bloom.TeamCollection.TeamCollection.kMovedToCloudL10nId, true, true)]
+        [TestCase("TeamCollection.NoNetwork", false, false)]
+        public void MakeDisconnected_MarksPauseAndOmitsReloadAdvice(
+            string l10nId,
+            bool expectPaused,
+            bool expectMoved
+        )
+        {
+            WithRealTeamCollectionManager(
+                "MakeDisconnected" + expectPaused + expectMoved,
+                (tcManager, collectionFolder) =>
+                {
+                    tcManager.MakeDisconnected(
+                        new TeamCollectionMessage(
+                            MessageAndMilestoneType.Error,
+                            l10nId,
+                            "some explanation"
+                        ),
+                        "some repo"
+                    );
+
+                    var disconnected =
+                        tcManager.CurrentCollectionEvenIfDisconnected as DisconnectedTeamCollection;
+                    Assert.That(disconnected, Is.Not.Null);
+                    Assert.That(tcManager.CurrentCollection, Is.Null);
+                    Assert.That(
+                        disconnected.DisconnectedBecauseSharedFolderChangesPaused,
+                        Is.EqualTo(expectPaused)
+                    );
+                    Assert.That(disconnected.MovedToCloud, Is.EqualTo(expectMoved));
+                    var ids = disconnected.MessageLog.CurrentErrors.Select(m => m.L10NId).ToList();
+                    Assert.That(ids, Does.Contain(l10nId));
+                    Assert.That(
+                        ids.Contains("TeamCollection.OperatingDisconnected"),
+                        Is.EqualTo(!expectPaused)
+                    );
+                }
+            );
+        }
+
+        /// <summary>
+        /// A pause that arrives while Bloom is running switches it to Disconnected mode straight
+        /// away, through the same handler that notices a new minimum Bloom version. See BL-16928.
+        /// </summary>
+        [Test]
+        public void HandleCollectionSettingsChange_RepoNowPaused_Disconnects()
+        {
+            AssumeNetworkAvailable();
+            WithRealTeamCollectionManager(
+                "SettingsChangePaused",
+                (tcManager, collectionFolder) =>
+                {
+                    var tc = tcManager.CurrentCollection;
+                    Assert.That(tc, Is.Not.Null, "setup failed: should start out connected");
+                    File.WriteAllText(
+                        CollectionSettings.GetDefaultSettingsFilePath(collectionFolder),
+                        kMovedToCloudSettings
+                    );
+                    tc.CopyRepoCollectionFilesFromLocal(collectionFolder);
+                    Assert.That(
+                        tcManager.CurrentCollection,
+                        Is.SameAs(tc),
+                        "setup failed: pushing the pause should not itself disconnect us"
+                    );
+
+                    var lockedOut = tc.HandleCollectionSettingsChange(new RepoChangeEventArgs());
+
+                    Assert.That(lockedOut, Is.False);
+                    Assert.That(tcManager.CurrentCollection, Is.Null);
+                    var disconnected =
+                        tcManager.CurrentCollectionEvenIfDisconnected as DisconnectedTeamCollection;
+                    Assert.That(disconnected, Is.Not.Null);
+                    Assert.That(disconnected.DisconnectedBecauseSharedFolderChangesPaused, Is.True);
+                    Assert.That(disconnected.MovedToCloud, Is.True);
+                }
+            );
+        }
+
+        /// <summary>
+        /// Makes a real TeamCollectionManager for a local collection linked to an empty shared
+        /// folder, which it connects to (and so copies the local collection files up to), and runs
+        /// the test against it.
+        /// </summary>
+        private void WithRealTeamCollectionManager(
+            string testName,
+            Action<TeamCollectionManager, string> test
+        )
+        {
+            using (var collectionFolder = new TemporaryFolder(testName + "_Collection"))
+            using (var repoFolder = new TemporaryFolder(testName + "_Repo"))
+            {
+                var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                    collectionFolder.FolderPath
+                );
+                File.WriteAllText(settingsPath, "<Collection version=\"0.2\"></Collection>");
+                FolderTeamCollection.CreateTeamCollectionLinkFile(
+                    collectionFolder.FolderPath,
+                    repoFolder.FolderPath
+                );
+                var tcManager = new TeamCollectionManager(
+                    settingsPath,
+                    null,
+                    new BookStatusChangeEvent(),
+                    null,
+                    null,
+                    null
+                );
+                test(tcManager, collectionFolder.FolderPath);
+            }
+        }
+
         /// <summary>
         /// Picking up the repo's minimum version matters even when this Bloom is new enough to carry
         /// on working. CollectionSettings.Save() rebuilds the file from memory, so if we were still

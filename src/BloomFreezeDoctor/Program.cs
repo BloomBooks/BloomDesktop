@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using BloomFreezeDoctor.Outbox;
 
 namespace BloomFreezeDoctor;
@@ -18,6 +19,11 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        // Like Bloom itself, run in the invariant culture so that the reports, logs and queue files we
+        // write read the same on every machine (BL-16981). Nothing here shows the user a number or date
+        // that needs their regional format.
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
         var options = CommandLineOptions.Parse(args);
 
         // The queue-inspection switches are for support and for testing, and must work whether or not

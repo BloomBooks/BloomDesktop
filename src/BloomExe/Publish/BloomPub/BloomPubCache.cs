@@ -351,7 +351,7 @@ namespace Bloom.Publish.BloomPub
         private static string ComputeContentHash(string bookFolderPath)
         {
             return Book.Book.ComputeHashForAllBookRelatedFiles(
-                BookStorage.FindBookHtmlInFolder(bookFolderPath)
+                BookStorage.FindBookHtmlInFolder(bookFolderPath, false)
             );
         }
 

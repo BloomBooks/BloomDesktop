@@ -77,7 +77,7 @@
   <Import Project="../.nuget/NuGet.targets" />
   <Target Name="RestoreBuildTasks" DependsOnTargets="CheckPrerequisites">
     <Message Text="RestartBuild=$(RestartBuild)"/>
-    <Exec Command='$(NuGetCommand) install SIL.BuildTasks -version 3.2.0 -excludeVersion -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
+    <Exec Command='$(NuGetCommand) install SIL.BuildTasks -excludeVersion -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
     <Exec Command='$(NuGetCommand) install SIL.BuildTasks.AWS -excludeVersion -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="BuildInternal"
 			Properties="Configuration=$(Configuration)" Condition="$(RestartBuild)" />
@@ -95,7 +95,7 @@
     <Message Text="BuildHash: $(BuildHash)" Importance="high"/>
     <!-- Note, after some thought, we've decided this is the best place to keep the version number
 			(not on TeamCity, not in the projects). -->
-    <CreateProperty Value="6.5.$(BuildCounter)">
+    <CreateProperty Value="6.6.$(BuildCounter)">
       <Output PropertyName="Version" TaskParameter="Value"/>
     </CreateProperty>
     <CreateProperty Value="$(Version).$(BuildHash)">
@@ -181,7 +181,9 @@
     <Exec Command='dotnet build "$(RootDir)\src\BloomFreezeDoctor\BloomFreezeDoctor.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
   <!--If the number of directories between output and OutDir changes, we need a corresponding
     change in BloomFileLocatorTests.kRelativePathToBrowserFolder and XMatterHelperTests.OneTimeSetup-->
-    <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\Tests\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <!-- SkipBloomTests=true leaves the test assembly out, for a run that only launches Bloom
+    (bot-verify.yml when it was asked for no C# tests). -->
+    <Exec Condition="'$(SkipBloomTests)' != 'true'" Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\Tests\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
 
     <CallTarget Targets="CheckForConflictingDependencyVersions"/>
 

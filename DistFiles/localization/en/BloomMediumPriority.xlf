@@ -34,16 +34,146 @@
         <note>ID: Common.Working</note>
         <note>Shown next to a spinner while an operation is in progress.</note>
       </trans-unit>
+      <trans-unit id="Common.ClickHereForHelp" translate="no">
+        <source xml:lang="en">Please click [here] to get help from the Bloom support team.</source>
+        <note>ID: Common.ClickHereForHelp</note>
+        <note>Added to the end of some error messages. [here] will become a link. Keep the brackets to mark the translated text that should form the link.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder">
         <source xml:lang="en">App Builder</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
         <note>This checkbox enables the experimental publish-to-apps workflow.</note>
         <note>Obsolete as of Bloom 6.5</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate.Description" translate="no">
+        <source xml:lang="en">When a new version of Bloom is available, Bloom will get it for you.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate.Description</note>
+        <note>Shown under the "Automatically Update Bloom" checkbox on the Advanced page of the Collection Settings dialog. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Collection" translate="no">
+        <source xml:lang="en">Collection</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Collection</note>
+        <note>Heading of the group of settings about the collection itself (its name) on the Advanced page of the Collection Settings dialog. A collection is a folder of books that share settings.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.NoRenameTeamCollection" translate="no">
+        <source xml:lang="en">The collection name cannot be changed because this is a Team Collection. Contact the Bloom team for more information.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.NoRenameTeamCollection</note>
+        <note>Shown under the disabled Collection Name box on the Advanced page of the Collection Settings dialog when the collection is shared as a Team Collection. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.Tables" translate="no">
+        <source xml:lang="en">Tables</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.Tables</note>
+        <note>Label of a checkbox in the Experimental Features list of the Advanced tab of Collection Settings. Turning it on lets the user add a table to a custom page.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BloomLibraryPage.Bookshelf" translate="no">
+        <source xml:lang="en">Bookshelf</source>
+        <note>ID: CollectionSettingsDialog.BloomLibraryPage.Bookshelf</note>
+        <note>On the Bloom Library page of the Collection Settings dialog: the heading of a group, and the label of the list beside it. A bookshelf is a named collection of books on the BloomLibrary.org website, which a project with a subscription can have set up for its books.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BloomLibraryPage.BookshelfDescription" translate="no">
+        <source xml:lang="en">Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.</source>
+        <note>ID: CollectionSettingsDialog.BloomLibraryPage.BookshelfDescription</note>
+        <note>Explains the bookshelf list on the Bloom Library page of the Collection Settings dialog. "Bloom Enterprise" and "Bloom Library" are product names and should not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Places" translate="no">
+        <source xml:lang="en">Places</source>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Places</note>
+        <note>On the Front &amp; Back Matter page of the Collection Settings dialog: the heading of a group of boxes for the country, province and district where the books are made.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Places.Description" translate="no">
+        <source xml:lang="en">Some front matters will show the following place names. If there are any that you don't want to show, leave them empty.</source>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Places.Description</note>
+        <note>Explains the Places group on the Front &amp; Back Matter page of the Collection Settings dialog. "Front matter" is the pages at the start of a book, such as the title and credits pages.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Style" translate="no">
+        <source xml:lang="en">Style</source>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Style</note>
+        <note>On the Front &amp; Back Matter page of the Collection Settings dialog: the label of the list of front and back matter styles (such as "Traditional" or "Paper Saver"), which decide which pages come at the start and end of every book.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.LineSpacing.Description" translate="no">
+        <source xml:lang="en">Use this to increase the default line spacing if this language has tall characters that tend to run into other lines of text.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.LineSpacing.Description</note>
+        <note>Explains the "Default line spacing" list on the "More" page of one language in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ReaderTools.Language1Changed" translate="no">
+        <source xml:lang="en">These belong to the language you are replacing. To change them for the new language, click OK, then open these settings again.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Language1Changed</note>
+        <note>On the "More" page of the first language in the Collection Settings dialog, shown under the alphabet and sentence punctuation (which cannot be edited) after the user has chosen a different first language. "OK" is the dialog's OK button.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.RightToLeft.Description" translate="no">
+        <source xml:lang="en">If you are not **SURE**, then do not turn this on. If your language is written starting on the right and moving left, you will **KNOW**.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.RightToLeft.Description</note>
+        <note>Explains the checkbox for a language written right to left, on the "More" page of one language in the Collection Settings dialog. The pairs of asterisks make SURE and KNOW bold; keep them around the matching words in your language.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ToolFontSize.Description" translate="no">
+        <source xml:lang="en">Use this to increase the font size when this language is shown in places like the Decodable Reader Tool.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ToolFontSize.Description</note>
+        <note>Explains the "Font size when displayed in tools" list on the "More" page of one language in the Collection Settings dialog. "Decodable Reader Tool" is the name of a Bloom tool.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage1.Description" translate="no">
+        <source xml:lang="en">Example: the local language</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage1.Description</note>
+        <note>On the Languages page of the Collection Settings dialog, under the heading "Written Language 1": an example of what the first language usually is.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage2.Description" translate="no">
+        <source xml:lang="en">Example: national language</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage2.Description</note>
+        <note>On the Languages page of the Collection Settings dialog, under the heading "Written Language 2": an example of what the second language usually is.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage3.Description" translate="no">
+        <source xml:lang="en">Example: regional language</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage3.Description</note>
+        <note>On the Languages page of the Collection Settings dialog, under the heading "Written Language 3": an example of what the third language usually is.</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>
         <note>Name of the AI image editing feature, used in subscription messages.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyrightThisDerivedVersion" translate="no">
+        <source xml:lang="en">Copyright and license this translated version</source>
+        <note>ID: EditTab.CopyrightThisDerivedVersion</note>
+        <note>Checkbox at the top of the dialog for editing a book's copyright and license, when the book is a translation of a book someone else made. Checking it lets the user give the translation its own copyright and license.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.ImageFailed" translate="no">
+        <source xml:lang="en">Failed to load image</source>
+        <note>ID: EditTab.Image.ImageFailed</note>
+        <note>Short message in the problem report shown when Bloom cannot load a picture in the Edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.CannotEditEmbeddedImage" translate="no">
+        <source xml:lang="en">Bloom can't edit image information for this image because it is embedded data, not a file image.</source>
+        <note>ID: EditTab.ImageMetadata.CannotEditEmbeddedImage</note>
+        <note>Shown when the user tries to edit the credits, copyright and license of a picture that is stored inside the page itself rather than in its own file.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.NoGifOnClipboard" translate="no">
+        <source xml:lang="en">To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element</source>
+        <note>ID: EditTab.NoGifOnClipboard</note>
+        <note>Shown when the user pastes into an animated GIF picture on a page but the clipboard does not hold a GIF. "Gif" and "GIF" are the name of an image file format.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.RotateRight" translate="no">
+        <source xml:lang="en">Rotate right</source>
+        <note>ID: EditTab.Image.RotateRight</note>
+        <note>Command on the menu for a picture in the Edit tab. It rotates the picture 90 degrees clockwise.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Flip" translate="no">
+        <source xml:lang="en">Flip</source>
+        <note>ID: EditTab.Image.Flip</note>
+        <note>Command on the menu for a picture in the Edit tab. It opens a submenu with the two items "Flip horizontal" and "Flip vertical". "Flip" here means to mirror the picture, as a mirror reverses what it shows.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.FlipHorizontal" translate="no">
+        <source xml:lang="en">Flip horizontal</source>
+        <note>ID: EditTab.Image.FlipHorizontal</note>
+        <note>Item on the "Flip" submenu for a picture in the Edit tab. It mirrors the picture from side to side, so that the left of the picture becomes the right.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.FlipVertical" translate="no">
+        <source xml:lang="en">Flip vertical</source>
+        <note>ID: EditTab.Image.FlipVertical</note>
+        <note>Item on the "Flip" submenu for a picture in the Edit tab. It mirrors the picture from top to bottom, so that the top of the picture becomes the bottom.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Rotate" translate="no">
+        <source xml:lang="en">Rotate</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Rotate</note>
+        <note>Tooltip on the small handle above a selected item on a page in the Edit tab. Dragging that handle around the item rotates the item to any angle.</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditWithAI">
         <source xml:lang="en">Edit with AI...</source>
@@ -56,10 +186,40 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Names one picture of a page that has several, shown over the picture in the AI image editor's strip of the book's images. This is the picture behind the page, which other pictures sit on top of. The code puts the page name in front of it, giving e.g. "Page 3 - Canvas Background".</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.UnlockOriginalCopyrightAndLicenseTooltip" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Unlock to edit</source>
+        <note>ID: EditTab.FrontMatter.UnlockOriginalCopyrightAndLicenseTooltip</note>
+        <note>Tooltip on the padlock button in the hint bubble beside the sentence Bloom writes on the credits page about the original book's copyright and license. Clicking it lets the user reword that sentence.</note>
+      </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">Do Not Indent This Paragraph</source>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
         <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. It is a checkable on/off command; when it is checked, this one paragraph loses the first-line indent that its style would otherwise give it. Typically used on a paragraph continued from the previous page.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.OnePage.Tooltip" translate="no">
+        <source xml:lang="en">Show one page at a time</source>
+        <note>ID: EditTab.PageView.OnePage.Tooltip</note>
+        <note>Tooltip on the left button of a two-button switch at the top right of the Edit tab. This button shows only the page being edited.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.AllPages.Tooltip" translate="no">
+        <source xml:lang="en">Show all pages</source>
+        <note>ID: EditTab.PageView.AllPages.Tooltip</note>
+        <note>Tooltip on the right button of a two-button switch at the top right of the Edit tab. This button shows all the pages of the book around the page being edited, as they would be laid out in the printed book.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.BlankPage" translate="no">
+        <source xml:lang="en">Blank page</source>
+        <note>ID: EditTab.PageView.BlankPage</note>
+        <note>Shown on an empty, uneditable page in the Edit tab's view of all the pages of the book. It stands for a page that is not one of the book's own pages but that the printed book has, so that the inside back cover and the back cover are printed on the two sides of one sheet.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.BlankPage.Note" translate="no">
+        <source xml:lang="en">The printed book has an empty page here, so that the inside back cover and the back cover are the two sides of one sheet.</source>
+        <note>ID: EditTab.PageView.BlankPage.Note</note>
+        <note>Shown below "Blank page" on that same empty page, to say why it is there.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.InlineImage.InsertImage" translate="no">
+        <source xml:lang="en">Insert Image</source>
+        <note>ID: EditTab.InlineImage.InsertImage</note>
+        <note>Command in the menu you get by right-clicking a block of text in the Edit tab. It puts a picture inside the text block, with the text wrapping around it (like an inline image in Word).</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
@@ -119,17 +279,9 @@
         <source xml:lang="en">Objects that do not Move</source>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions">
-        <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
-        <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell">
         <source xml:lang="en">Edit Word to Spell</source>
         <note>ID: EditTab.Toolbox.DragActivity.EditWordToSpell</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Instructions">
-        <source xml:lang="en">Instructions</source>
-        <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Text">
         <source xml:lang="en">Text</source>
@@ -192,10 +344,6 @@
         <source xml:lang="en">Keep all targets the same size so students can't use size as a clue.</source>
         <note>ID: EditTab.Toolbox.DragActivity.TargetsSameSize</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions">
-        <source xml:lang="en">Properties of the Scene</source>
-        <note>ID: EditTab.Toolbox.DragActivity.SceneInstructions</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SentenceHint">
         <source xml:lang="en">Type a sentence. The reader will be asked to sort the words.</source>
         <note>ID: EditTab.Toolbox.DragActivity.SentenceHint</note>
@@ -220,10 +368,6 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.TestInstructions">
         <source xml:lang="en">Try it out!</source>
         <note>ID: EditTab.Toolbox.DragActivity.TestInstructions</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.TryAgain">
-        <source xml:lang="en">Try Again</source>
-        <note>ID: EditTab.Toolbox.DragActivity.TryAgain</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectSound">
         <source xml:lang="en">Correct Sound</source>
@@ -409,13 +553,6 @@
         <note>Legend label next to a green dot, explaining that statistics shown in green are within the current level's limit.</note>
       </trans-unit>
       <!-- Talking Book Advanced -->
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true">
-        <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
-        <note>Shown if you open TalkingBookTool, enable "Record the whole text box...", make a recording, and then attempt to uncheck the "Record the whole text box..." input (without first clearing the audio recordings you are about to lose)</note>
-        <note>For "split", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
-        <note>For "clear", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
         <source xml:lang="en">Import Recording...</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
@@ -477,10 +614,6 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title</note>
         <note>Title of the dialog launched by the previous command. Usually they differ only by leaving out the ...</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip" sil:dynamic="true">
-        <source xml:lang="en">This is disabled because there is not a whole text box recording</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true">
         <source xml:lang="en">Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
@@ -514,18 +647,6 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecordingDisabledTip" sil:dynamic="true">
         <source xml:lang="en">This is disabled because this box is not in `Record by Text Box` mode.</source>
         <note>EditTab.Toolbox.TalkingBookTool.ImportRecordingDisabledTip</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip" sil:dynamic="true">
-        <source xml:lang="en">Open the timing file in a text editor. After you save your changes, click the "Apply Timings File" button.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFileDisabledTip" sil:dynamic="true">
-        <source xml:lang="en">This is only enabled after doing a "Split" of a recording of the whole text box.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFileDisabledTip</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitRecordingTip" sil:dynamic="true">
-        <source xml:lang="en">This lets you choose a file containing timings for aligning the audio with the text. The format of the file is tab-separated values, with the first column being the start time in seconds, and the second column being the end time in seconds. The third column is often a label, but it will be ignored.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.SplitRecordingTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrderTip" sil:dynamic="true">
         <source xml:lang="en">Control the order in which various boxes on the page are played back.</source>
@@ -600,10 +721,455 @@
         <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
         <note>Label for an expandable section in the Canvas Tool that contains navigation-related objects (e.g. buttons and book grids) that can be dragged onto a page.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText" sil:dynamic="true">
-        <source xml:lang="en">Go Somewhere</source>
-        <note>ID: EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText</note>
-        <note>Default text for a navigation button</note>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Table">
+        <source xml:lang="en">A table whose cells can hold text or pictures</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Table</note>
+        <note>Tooltip on the table icon in the Canvas Tool. The user drags the icon onto a page to add a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Pill.ColumnMenu">
+        <source xml:lang="en">Column menu</source>
+        <note>ID: EditTab.Table.Pill.ColumnMenu</note>
+        <note>Tooltip on the small round button above a column of a table; clicking it opens the Column menu.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Pill.RowMenu">
+        <source xml:lang="en">Row menu</source>
+        <note>ID: EditTab.Table.Pill.RowMenu</note>
+        <note>Tooltip on the small round button beside a row of a table; clicking it opens the Row menu.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Pill.TableMenu">
+        <source xml:lang="en">Table menu</source>
+        <note>ID: EditTab.Table.Pill.TableMenu</note>
+        <note>Tooltip on the small round button at the corner of a table; clicking it opens the Table menu.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.AddButton.ColumnAtRightEdge">
+        <source xml:lang="en">Add column at the right edge</source>
+        <note>ID: EditTab.Table.AddButton.ColumnAtRightEdge</note>
+        <note>Tooltip on the + button at the right edge of a table, which adds a new column there.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.AddButton.RowAtBottomEdge">
+        <source xml:lang="en">Add row at the bottom edge</source>
+        <note>ID: EditTab.Table.AddButton.RowAtBottomEdge</note>
+        <note>Tooltip on the + button at the bottom edge of a table, which adds a new row there.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.Heading">
+        <source xml:lang="en">Row</source>
+        <note>ID: EditTab.Table.RowMenu.Heading</note>
+        <note>Heading of the Row menu of a table. In the Row menu, which opens from the round button beside a row of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.AddAbove">
+        <source xml:lang="en">Add Row Above</source>
+        <note>ID: EditTab.Table.RowMenu.AddAbove</note>
+        <note>In the Row menu, which opens from the round button beside a row of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.AddBelow">
+        <source xml:lang="en">Add Row Below</source>
+        <note>ID: EditTab.Table.RowMenu.AddBelow</note>
+        <note>In the Row menu, which opens from the round button beside a row of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.MoveUp">
+        <source xml:lang="en">Move Row Up</source>
+        <note>ID: EditTab.Table.RowMenu.MoveUp</note>
+        <note>In the Row menu, which opens from the round button beside a row of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.MoveDown">
+        <source xml:lang="en">Move Row Down</source>
+        <note>ID: EditTab.Table.RowMenu.MoveDown</note>
+        <note>In the Row menu, which opens from the round button beside a row of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.Duplicate">
+        <source xml:lang="en">Duplicate Row</source>
+        <note>ID: EditTab.Table.RowMenu.Duplicate</note>
+        <note>In the Row menu, which opens from the round button beside a row of a table. Adds a copy of the row below it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.Delete">
+        <source xml:lang="en">Delete Row</source>
+        <note>ID: EditTab.Table.RowMenu.Delete</note>
+        <note>In the Row menu, which opens from the round button beside a row of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.Heading">
+        <source xml:lang="en">Column</source>
+        <note>ID: EditTab.Table.ColumnMenu.Heading</note>
+        <note>Heading of the Column menu of a table. In the Column menu, which opens from the round button above a column of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.AddLeft">
+        <source xml:lang="en">Add Column Left</source>
+        <note>ID: EditTab.Table.ColumnMenu.AddLeft</note>
+        <note>In the Column menu, which opens from the round button above a column of a table. Adds a new column to the left of this one.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.AddRight">
+        <source xml:lang="en">Add Column Right</source>
+        <note>ID: EditTab.Table.ColumnMenu.AddRight</note>
+        <note>In the Column menu, which opens from the round button above a column of a table. Adds a new column to the right of this one.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.MoveLeft">
+        <source xml:lang="en">Move Left</source>
+        <note>ID: EditTab.Table.ColumnMenu.MoveLeft</note>
+        <note>In the Column menu, which opens from the round button above a column of a table. Moves the column one place to the left.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.MoveRight">
+        <source xml:lang="en">Move Right</source>
+        <note>ID: EditTab.Table.ColumnMenu.MoveRight</note>
+        <note>In the Column menu, which opens from the round button above a column of a table. Moves the column one place to the right.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.Duplicate">
+        <source xml:lang="en">Duplicate Column</source>
+        <note>ID: EditTab.Table.ColumnMenu.Duplicate</note>
+        <note>In the Column menu, which opens from the round button above a column of a table. Adds a copy of the column to its right.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.Delete">
+        <source xml:lang="en">Delete Column</source>
+        <note>ID: EditTab.Table.ColumnMenu.Delete</note>
+        <note>In the Column menu, which opens from the round button above a column of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Menu.CellMenuNote">
+        <source xml:lang="en">Right click on a cell for Cell menu</source>
+        <note>ID: EditTab.Table.Menu.CellMenuNote</note>
+        <note>A note at the bottom of the Row and Column menus of a table, telling the user how to open the menu for a single cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.Heading">
+        <source xml:lang="en">Table</source>
+        <note>ID: EditTab.Table.TableMenu.Heading</note>
+        <note>Heading of the Table menu. In the Table menu, which opens from the round button at the corner of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.HorizontalSpace">
+        <source xml:lang="en">Horizontal space between cells</source>
+        <note>ID: EditTab.Table.TableMenu.HorizontalSpace</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table. Label of a slider that sets the gap between neighbouring cells, left to right.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.VerticalSpace">
+        <source xml:lang="en">Vertical space between cells</source>
+        <note>ID: EditTab.Table.TableMenu.VerticalSpace</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table. Label of a slider that sets the gap between neighbouring cells, top to bottom.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.CopyProperties">
+        <source xml:lang="en">Copy properties</source>
+        <note>ID: EditTab.Table.TableMenu.CopyProperties</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table. Copies the table's formatting (borders, fill, spacing, alignment), not its content, so it can be pasted onto another table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.PasteProperties">
+        <source xml:lang="en">Paste properties</source>
+        <note>ID: EditTab.Table.TableMenu.PasteProperties</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table. Applies formatting copied with "Copy properties" to this table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.CopyTable">
+        <source xml:lang="en">Copy Table</source>
+        <note>ID: EditTab.Table.TableMenu.CopyTable</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.CutTable">
+        <source xml:lang="en">Cut Table</source>
+        <note>ID: EditTab.Table.TableMenu.CutTable</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.DeleteTable">
+        <source xml:lang="en">Delete Table</source>
+        <note>ID: EditTab.Table.TableMenu.DeleteTable</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellMenu.Heading">
+        <source xml:lang="en">Table Cell</source>
+        <note>ID: EditTab.Table.CellMenu.Heading</note>
+        <note>Heading of the Cell menu. In the Cell menu, which opens when the user right-clicks a cell of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellMenu.MergeRight">
+        <source xml:lang="en">Merge with cell to the right</source>
+        <note>ID: EditTab.Table.CellMenu.MergeRight</note>
+        <note>In the Cell menu, which opens when the user right-clicks a cell of a table. Joins this cell with the cell to its right, making one bigger cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellMenu.MergeDown">
+        <source xml:lang="en">Merge with cell below</source>
+        <note>ID: EditTab.Table.CellMenu.MergeDown</note>
+        <note>In the Cell menu, which opens when the user right-clicks a cell of a table. Joins this cell with the cell below it, making one bigger cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellMenu.Split">
+        <source xml:lang="en">Split</source>
+        <note>ID: EditTab.Table.CellMenu.Split</note>
+        <note>In the Cell menu, which opens when the user right-clicks a cell of a table. Separates a merged cell back into its original cells.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.PaintFormat.Command">
+        <source xml:lang="en">Paint format</source>
+        <note>ID: EditTab.Table.PaintFormat.Command</note>
+        <note>A command in the table menus. After choosing it, the user clicks other cells to give them the same formatting as this one (like the Format Painter in word processors).</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.PaintFormat.End">
+        <source xml:lang="en">End format painting</source>
+        <note>ID: EditTab.Table.PaintFormat.End</note>
+        <note>Text on a small badge that shows while the user is painting formatting onto table cells; clicking it stops painting.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.PaintFormat.EndWithShortcut">
+        <source xml:lang="en">End format painting (Esc)</source>
+        <note>ID: EditTab.Table.PaintFormat.EndWithShortcut</note>
+        <note>Tooltip on the badge that ends format painting in a table. Esc is the Escape key on the keyboard.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.Label">
+        <source xml:lang="en">Size</source>
+        <note>ID: EditTab.Table.Size.Label</note>
+        <note>Label of the control in the Row and Column menus of a table that chooses how the row's height or the column's width is decided.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.Grow">
+        <source xml:lang="en">Grow</source>
+        <note>ID: EditTab.Table.Size.Grow</note>
+        <note>Tooltip on a button in the Size control of the Row and Column menus of a table: the row or column grows to share the space the table has.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.Hug">
+        <source xml:lang="en">Hug</source>
+        <note>ID: EditTab.Table.Size.Hug</note>
+        <note>Tooltip on a button in the Size control of the Row and Column menus of a table: the row or column shrinks to fit closely around its contents.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.Fixed">
+        <source xml:lang="en">Fixed size</source>
+        <note>ID: EditTab.Table.Size.Fixed</note>
+        <note>Tooltip on a button in the Size control of the Row and Column menus of a table: the row or column keeps a fixed size, given in millimetres.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.FixedButton">
+        <source xml:lang="en">mm</source>
+        <note>ID: EditTab.Table.Size.FixedButton</note>
+        <note>The text on the button that gives a table row or column a fixed size. "mm" is the abbreviation for millimetres; use your language's usual abbreviation.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Units.Pixels">
+        <source xml:lang="en">{0}px</source>
+        <note>ID: EditTab.Table.Units.Pixels</note>
+        <note>A measurement shown next to sliders in the table menus. {0} is a number of pixels; "px" is the abbreviation for pixels. Keep it short.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Units.Millimetres">
+        <source xml:lang="en">{0}mm</source>
+        <note>ID: EditTab.Table.Units.Millimetres</note>
+        <note>The size of a table row or column, shown on the fixed-size button. {0} is a number; "mm" is the abbreviation for millimetres. Keep it short.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Label">
+        <source xml:lang="en">Content Type</source>
+        <note>ID: EditTab.Table.ContentType.Label</note>
+        <note>Label of a row of buttons in the table menus that choose what a cell holds: text, a table, an image or a video.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Text">
+        <source xml:lang="en">Text</source>
+        <note>ID: EditTab.Table.ContentType.Text</note>
+        <note>One of the kinds of content a table cell can hold, shown as a button tooltip in the table menus.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Table">
+        <source xml:lang="en">Table</source>
+        <note>ID: EditTab.Table.ContentType.Table</note>
+        <note>One of the kinds of content a table cell can hold (a table inside the cell), shown as a button tooltip in the table menus.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Image">
+        <source xml:lang="en">Image</source>
+        <note>ID: EditTab.Table.ContentType.Image</note>
+        <note>One of the kinds of content a table cell can hold, shown as a button tooltip in the table menus.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Video">
+        <source xml:lang="en">Video</source>
+        <note>ID: EditTab.Table.ContentType.Video</note>
+        <note>One of the kinds of content a table cell can hold, shown as a button tooltip in the table menus.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Heading">
+        <source xml:lang="en">Format</source>
+        <note>ID: EditTab.Table.Format.Heading</note>
+        <note>Heading of the section of the table menus that sets alignment, padding, fill, corners and borders.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Alignment">
+        <source xml:lang="en">Alignment</source>
+        <note>ID: EditTab.Table.Format.Alignment</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of the buttons that align the contents of a cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Align.Left">
+        <source xml:lang="en">Left</source>
+        <note>ID: EditTab.Table.Format.Align.Left</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on the button that aligns a cell's contents to the left.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Align.Center">
+        <source xml:lang="en">Center</source>
+        <note>ID: EditTab.Table.Format.Align.Center</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on the button that centres a cell's contents from left to right.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Align.Right">
+        <source xml:lang="en">Right</source>
+        <note>ID: EditTab.Table.Format.Align.Right</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on the button that aligns a cell's contents to the right.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.VAlign.Top">
+        <source xml:lang="en">Top</source>
+        <note>ID: EditTab.Table.Format.VAlign.Top</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on the button that puts a cell's contents at the top of the cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.VAlign.Middle">
+        <source xml:lang="en">Middle</source>
+        <note>ID: EditTab.Table.Format.VAlign.Middle</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on the button that puts a cell's contents halfway between the top and bottom of the cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.VAlign.Bottom">
+        <source xml:lang="en">Bottom</source>
+        <note>ID: EditTab.Table.Format.VAlign.Bottom</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on the button that puts a cell's contents at the bottom of the cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Text">
+        <source xml:lang="en">Padding between border and text</source>
+        <note>ID: EditTab.Table.Format.Padding.Text</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of a slider that sets the space between a cell's border and the text inside it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Image">
+        <source xml:lang="en">Padding between border and image</source>
+        <note>ID: EditTab.Table.Format.Padding.Image</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of a slider that sets the space between a cell's border and the image inside it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Video">
+        <source xml:lang="en">Padding between border and video</source>
+        <note>ID: EditTab.Table.Format.Padding.Video</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of a slider that sets the space between a cell's border and the video inside it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Table">
+        <source xml:lang="en">Padding between border and table</source>
+        <note>ID: EditTab.Table.Format.Padding.Table</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of a slider that sets the space between a cell's border and the table inside it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Cell">
+        <source xml:lang="en">Padding inside the cell</source>
+        <note>ID: EditTab.Table.Format.Padding.Cell</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of a slider that sets the space between the border of the cells and their contents, when the cells hold different kinds of content.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Fill">
+        <source xml:lang="en">Fill</source>
+        <note>ID: EditTab.Table.Format.Fill</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of the control that sets the background colour of cells.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Corners">
+        <source xml:lang="en">Corners</source>
+        <note>ID: EditTab.Table.Format.Corners</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of the buttons that choose how rounded the corners of the cells are.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.CornerRadius">
+        <source xml:lang="en">Corner radius {0}</source>
+        <note>ID: EditTab.Table.Format.CornerRadius</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on a button that sets how rounded the corners are. {0} is the radius, a number of pixels.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeTabs">
+        <source xml:lang="en">Which borders to change</source>
+        <note>ID: EditTab.Table.Border.ScopeTabs</note>
+        <note>In the border controls of the Format section of the table menus. Describes a row of tabs (All, Outer, Inner, Border Brush) that choose which borders the settings below them change. Read aloud by screen readers.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Scope.All">
+        <source xml:lang="en">All</source>
+        <note>ID: EditTab.Table.Border.Scope.All</note>
+        <note>In the border controls of the Format section of the table menus. A tab: change all the borders, both around the outside and between the cells.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Scope.Outer">
+        <source xml:lang="en">Outer</source>
+        <note>ID: EditTab.Table.Border.Scope.Outer</note>
+        <note>In the border controls of the Format section of the table menus. A tab: change only the borders around the outside.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Scope.Inner">
+        <source xml:lang="en">Inner</source>
+        <note>ID: EditTab.Table.Border.Scope.Inner</note>
+        <note>In the border controls of the Format section of the table menus. A tab: change only the borders between cells.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Scope.Brush">
+        <source xml:lang="en">Border Brush</source>
+        <note>ID: EditTab.Table.Border.Scope.Brush</note>
+        <note>In the border controls of the Format section of the table menus. A tab: choose a border colour, style and weight, then click individual edges in the table to give them that border.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Cell">
+        <source xml:lang="en">Every edge of this cell</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.All.Cell</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Cell menu with the All tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Row">
+        <source xml:lang="en">Every edge in this row</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.All.Row</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Row menu with the All tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Column">
+        <source xml:lang="en">Every edge in this column</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.All.Column</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Column menu with the All tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Table">
+        <source xml:lang="en">Every edge in the table</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.All.Table</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Table menu with the All tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Cell">
+        <source xml:lang="en">The four edges of this cell</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Cell</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Cell menu with the Outer tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Row">
+        <source xml:lang="en">The outside edges of this row</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Row</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Row menu with the Outer tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Column">
+        <source xml:lang="en">The outside edges of this column</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Column</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Column menu with the Outer tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Table">
+        <source xml:lang="en">The four outside edges of the table</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Table</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Table menu with the Outer tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Row">
+        <source xml:lang="en">Only the edges between cells in this row</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Inner.Row</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Row menu with the Inner tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Column">
+        <source xml:lang="en">Only the edges between cells in this column</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Inner.Column</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Column menu with the Inner tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Table">
+        <source xml:lang="en">Only the edges between cells</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Inner.Table</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Table menu with the Inner tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Brush">
+        <source xml:lang="en">Set the color, style and weight below, then click edges in the table</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Brush</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown with the Border Brush tab chosen: the user sets the border below, then clicks edges of the table to apply it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Color">
+        <source xml:lang="en">Border color</source>
+        <note>ID: EditTab.Table.Border.Color</note>
+        <note>In the border controls of the Format section of the table menus. Label of the control that sets the colour of the borders.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Label">
+        <source xml:lang="en">Border Style</source>
+        <note>ID: EditTab.Table.Border.Style.Label</note>
+        <note>In the border controls of the Format section of the table menus. Label of the buttons that choose the kind of line a border is drawn with.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.None">
+        <source xml:lang="en">None</source>
+        <note>ID: EditTab.Table.Border.Style.None</note>
+        <note>In the border controls of the Format section of the table menus. Tooltip on a border style button: no border line.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Solid">
+        <source xml:lang="en">Solid</source>
+        <note>ID: EditTab.Table.Border.Style.Solid</note>
+        <note>In the border controls of the Format section of the table menus. Tooltip on a border style button: a continuous line.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Dashed">
+        <source xml:lang="en">Dashed</source>
+        <note>ID: EditTab.Table.Border.Style.Dashed</note>
+        <note>In the border controls of the Format section of the table menus. Tooltip on a border style button: a line made of short dashes.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Dotted">
+        <source xml:lang="en">Dotted</source>
+        <note>ID: EditTab.Table.Border.Style.Dotted</note>
+        <note>In the border controls of the Format section of the table menus. Tooltip on a border style button: a line made of dots.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Double">
+        <source xml:lang="en">Double</source>
+        <note>ID: EditTab.Table.Border.Style.Double</note>
+        <note>In the border controls of the Format section of the table menus. Tooltip on a border style button: two parallel lines.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Weight.Label">
+        <source xml:lang="en">Border Weight</source>
+        <note>ID: EditTab.Table.Border.Weight.Label</note>
+        <note>In the border controls of the Format section of the table menus. Label of the buttons that choose how thick a border line is.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Weight.None">
+        <source xml:lang="en">0 (None)</source>
+        <note>ID: EditTab.Table.Border.Weight.None</note>
+        <note>In the border controls of the Format section of the table menus. Tooltip on the border weight button for a thickness of zero, which means no border.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true">
         <source xml:lang="en">Set Destination</source>
@@ -856,20 +1422,10 @@
         <note>BookSettings.LockedByBranding</note>
         <note>{0} is the name of a Branding pack</note>
       </trans-unit>
-      <trans-unit id="BookSettings.LockedByLegacy" sil:dynamic="true">
-        <source xml:lang="en">Locked by Legacy-5-6 theme</source>
-        <note>BookSettings.LockedByLegacy</note>
-      </trans-unit>
       <trans-unit id="BookSettings.LockedByXMatter" sil:dynamic="true">
         <source xml:lang="en">Locked by {0} Front/Back matter</source>
         <note>BookSettings.LockedByXMatter</note>
         <note>{0} is the name of an xmatter pack</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.Title" sil:dynamic="true">
-        <source xml:lang="en">Book Settings</source>
-        <note>BookSettings.Title</note>
-        <note>the heading of the dialog</note>
-        <note>Obsolete as of 6.4</note>
       </trans-unit>
       <trans-unit id="BookAndPageSettings.Title" sil:dynamic="true">
         <source xml:lang="en">Book and Page Settings</source>
@@ -935,16 +1491,6 @@
         <source xml:lang="en">Cover</source>
         <note>BookSettings.CoverGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage" sil:dynamic="true">
-        <source xml:lang="en">Fill the front cover with a single image</source>
-        <note>BookSettings.CoverIsImage</note>
-        <note>Obsolete as of Bloom 6.4</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage.Description.V2" sil:dynamic="true">
-        <source xml:lang="en">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
-        <note>BookSettings.CoverIsImage.Description.V2</note>
-        <note>Obsolete as of Bloom 6.4</note>
-      </trans-unit>
       <trans-unit id="BookSettings.FullBleed" sil:dynamic="true">
         <source xml:lang="en">Use full bleed page layout</source>
         <note>BookSettings.FullBleed</note>
@@ -952,11 +1498,12 @@
       <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true">
         <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
         <note>BookSettings.FullBleed.Description</note>
+        <note>Obsolete as of Bloom 6.6</note>
       </trans-unit>
-      <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true">
-        <source xml:lang="en">Content Pages</source>
-        <note>BookSettings.ContentPagesGroupLabel</note>
-        <note>obsolete as of Bloom 6.4, replaced by BookSettings.ThemeAndLayoutGroupLabel</note>
+      <trans-unit id="BookSettings.FullBleed.Description.EdgeToEdge" sil:dynamic="true">
+        <source xml:lang="en">Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
+        <note>ID: BookSettings.FullBleed.Description.EdgeToEdge</note>
+        <note>Help text under the "Use full bleed page layout" option in Book Settings. "Edge to Edge" is the name of a page theme (AppearanceTheme.edge-to-edge); translate it the same way here.</note>
       </trans-unit>
       <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Theme &amp; Layout</source>
@@ -1050,16 +1597,6 @@
         <source xml:lang="en">Note: some Page Themes may not know how to change the location of the Page Number.</source>
         <note>BookSettings.PageNumberLocationNote</note>
       </trans-unit>
-      <trans-unit id="BookSettings.FrontAndBackMatter" sil:dynamic="true">
-        <source xml:lang="en">Front &amp; Back Matter</source>
-        <note>BookSettings.FrontAndBackMatter</note>
-        <note>&amp; is an abbreviation symbol for "and"</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.FrontAndBackMatter.Description" sil:dynamic="true">
-        <source xml:lang="en">Normally, books use the front &amp; back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one.</source>
-        <note>BookSettings.FrontAndBackMatter.Description</note>
-        <note>&amp; is an abbreviation symbol for "and"</note>
-      </trans-unit>
       <trans-unit id="BookSettings.Resolution" sil:dynamic="true">
         <source xml:lang="en">Resolution</source>
         <note>BookSettings.Resolution</note>
@@ -1098,6 +1635,11 @@
         <source xml:lang="en">The selected [Page Theme] does not support the following settings.</source>
         <note>BookSettings.ThemeDisablesOptionsNoticeWithLink</note>
         <note>When you translate, make sure to include some text in between square brackets. Those become the clickable link that opens Book and Page Settings.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.EdgeToEdgeNeedsFullBleed" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Pictures cannot reach the edge of a printed page unless this book uses full bleed. Turn it on in [Print Publishing].</source>
+        <note>ID: BookSettings.EdgeToEdgeNeedsFullBleed</note>
+        <note>Warning on the Theme &amp; Layout page of Book Settings, shown when the "Edge to Edge" page theme is chosen but "Use full bleed page layout" is off. "Print Publishing" is the name of another page of Book Settings (BookSettings.PrintPublishingGroupLabel); translate it the same way. Keep the square brackets around it: that text becomes a link which opens that page.</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" sil:dynamic="true">
         <source xml:lang="en">This feature requires a newer [Page Theme].</source>
@@ -1165,6 +1707,11 @@
         <note>ID: BookSettings.Fonts.All</note>
         <note>flags that the same font is used for all languages for the given style</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Fonts.NoLanguage" translate="no">
+        <source xml:lang="en">(no language)</source>
+        <note>ID: BookSettings.Fonts.NoLanguage</note>
+        <note>In the Language column of the Fonts table in Book Settings. Flags a font used only by a field that is not in any language, such as the ISBN on the credits page.</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true">
         <source xml:lang="en">Page {0}</source>
         <note>ID: BookSettings.Fonts.PageNumber</note>
@@ -1188,6 +1735,11 @@
       </trans-unit> -->
       <trans-unit id="AppearanceTheme.zero-margin-ebook" sil:dynamic="true">
         <source xml:lang="en">Zero Margin Ebook</source>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+        <note>Obsolete as of Bloom 6.6</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.edge-to-edge" sil:dynamic="true">
+        <source xml:lang="en">Edge to Edge</source>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.narrow-margin-ebook" sil:dynamic="true">

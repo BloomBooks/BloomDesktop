@@ -149,6 +149,11 @@ const parseArgs = () => {
         // through Vite, so TypeScript and LESS edits are live exactly as before; this option only
         // concerns the C# half.
         noWatch: false,
+        // Start Bloom with --dont-disturb, so none of its windows takes the foreground or the
+        // keyboard. For an agent (or anything else) driving Bloom on someone's machine; the
+        // run-bloom skill's launcherControl.mjs --ensure-running always asks for it. A person
+        // starting ./go.sh to test by hand leaves it off and gets Bloom's ordinary behavior.
+        dontDisturb: false,
         // Libraries to serve live from a local checkout: [{ name, checkoutPath? }, ...].
         withLibs: [],
     };
@@ -175,6 +180,11 @@ const parseArgs = () => {
 
         if (arg === "--nowatch" || arg === "--no-watch") {
             options.noWatch = true;
+            continue;
+        }
+
+        if (arg === "--dont-disturb") {
+            options.dontDisturb = true;
             continue;
         }
 
@@ -891,6 +901,10 @@ const startBloomExe = (vitePort) => {
 
     if (options.noWatch) {
         args.push("--nowatch");
+    }
+
+    if (options.dontDisturb) {
+        args.push("--dont-disturb");
     }
 
     const child = spawn(process.execPath, args, {

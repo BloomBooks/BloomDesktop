@@ -1,0 +1,31 @@
+// How a table looks and behaves in the edit tab when Bloom, not the bloom-table
+// library, decides. Edit-only: loaded by tableEditing.ts, so none of it reaches a
+// published book.
+
+// Change Layout mode puts origami-layout-mode on the marginBox. A table there is
+// background, like the faded text of a text box: out of the way of the mouse, and
+// showing nothing that suggests it can be edited. The table stays attached; the
+// library still notices the mouse near it (it measures distance, not what is under
+// the pointer), so its selection highlights have to be hidden here as well.
+.origami-layout-mode {
+    .bloom-table {
+        pointer-events: none;
+        outline: none !important;
+    }
+    // A table in a cell is left at full opacity, or it would fade twice.
+    .bloom-table:not(.bloom-cell .bloom-table) {
+        opacity: 0.5;
+    }
+    .bloom-cell {
+        outline: none !important;
+    }
+    .bloom-cell.cell--selected::after {
+        display: none;
+    }
+}
+
+// The library puts its buttons, menus and highlight boxes on the body, outside the
+// marginBox, so only a rule on the body can reach them.
+body:has(.origami-layout-mode) [data-table-overlay] {
+    display: none !important;
+}

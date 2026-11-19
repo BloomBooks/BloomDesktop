@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { ResetLanguageDataInstance } from "./libSynphony/synphony_lib";
+import {
+    ResetLanguageDataInstance,
+    theOneLanguageDataInstance,
+} from "./libSynphony/synphony_lib";
 import { getTheOneReaderToolsModel } from "./readerToolsModel";
+import { getSynphonyAlwaysMatchSymbols } from "./readerTools";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 
 describe("Bloom Edit Controls tests", () => {
@@ -93,6 +97,42 @@ describe("Bloom Edit Controls tests", () => {
     });
     it("reports the correct number of levels", () => {
         expect(getTheOneReaderToolsModel().getNumberOfLevels()).toBe(3);
+    });
+
+    // The setup dialog runs in a different frame, whose copy of the Synphony data is empty, so
+    // it has to ask the toolbox for these. selectWordsFromSynphony concats AlwaysMatch (so that
+    // one may be a string or an array) and pushes the other three; this has to agree with it,
+    // or symbols would quietly go missing from the dialog's matching-word preview.
+    describe("getSynphonyAlwaysMatchSymbols", () => {
+        it("returns nothing when the language defines none of them", () => {
+            expect(getSynphonyAlwaysMatchSymbols()).toEqual([]);
+        });
+
+        it("returns a single symbol from each of the four fields", () => {
+            theOneLanguageDataInstance["SyllableBreak"] = ".";
+            theOneLanguageDataInstance["StressSymbol"] = "ˈ";
+            theOneLanguageDataInstance["MorphemeBreak"] = "-";
+            theOneLanguageDataInstance["AlwaysMatch"] = "'";
+
+            expect(getSynphonyAlwaysMatchSymbols().sort()).toEqual(
+                ["'", "-", ".", "ˈ"].sort(),
+            );
+        });
+
+        it("flattens AlwaysMatch when it holds an array of symbols", () => {
+            theOneLanguageDataInstance["AlwaysMatch"] = ["'", "’"];
+
+            expect(getSynphonyAlwaysMatchSymbols().sort()).toEqual(
+                ["'", "’"].sort(),
+            );
+        });
+
+        it("skips fields left empty", () => {
+            theOneLanguageDataInstance["AlwaysMatch"] = "";
+            theOneLanguageDataInstance["SyllableBreak"] = "-";
+
+            expect(getSynphonyAlwaysMatchSymbols()).toEqual(["-"]);
+        });
     });
     it("exposes max values that track the current level", () => {
         const model = getTheOneReaderToolsModel();

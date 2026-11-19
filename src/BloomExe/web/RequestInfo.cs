@@ -404,15 +404,8 @@ namespace Bloom.Api
             var folderToCheck = (originalPath ?? path).Replace('\\', '/');
             if (folderToCheck.StartsWith(DoNotCacheFolder, StringComparison.Ordinal))
                 return false; // in the folder we never cache, typically the editable project folder.)
-            if (
-                folderToCheck.StartsWith(
-                    Bloom.Publish.Epub.EpubMaker.EpubExportRootFolder.Replace('\\', '/'),
-                    StringComparison.Ordinal
-                )
-            )
-                return false; // ePUB export files should not be cached.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6253.
-            if (folderToCheck.Contains(PublishApi.kStagingFolder))
-                return false; // Don't cache when showing BloomPUB preview
+            if (Bloom.Publish.PublishStaging.IsInStagingFolder(folderToCheck))
+                return false; // Don't cache BloomPUB or ePUB previews. See https://silbloom.myjetbrains.com/youtrack/issue/BL-6253.
             if (BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(Path.GetFileName(path)))
                 return false;
 
@@ -686,6 +679,11 @@ namespace Bloom.Api
         public string RawUrl
         {
             get { return _actualContext.Request.RawUrl; }
+        }
+
+        public string Referer
+        {
+            get { return _actualContext.Request.Referer; }
         }
 
         HttpMethods IRequestInfo.HttpMethod

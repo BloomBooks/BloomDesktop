@@ -19,6 +19,8 @@ import { useIsTeamCollection } from "../teamCollection/teamCollectionApi";
 
 export const SubscriptionStatus: React.FunctionComponent<{
     minimalUI?: boolean;
+    // The code to describe instead of the one Bloom knows (see useSubscriptionInfo).
+    code?: string;
 }> = (props) => {
     const deprecatedBrandingsExpiryDateAsYYYYMMDD = useApiString(
         "settings/deprecatedBrandingsExpiryDate",
@@ -29,7 +31,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
         expiryDateStringAsYYYYMMDD,
         subscriptionDescriptor,
         haveData,
-    } = useSubscriptionInfo();
+    } = useSubscriptionInfo(props.code);
 
     let descriptorToShow = "";
     let subscriptionTier: SubscriptionTier = "Basic"; // default value

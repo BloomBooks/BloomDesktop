@@ -506,6 +506,20 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
         },
     };
 }
+
+// Files that neither vitest project (see `test.projects` below) should treat as tests.
+const testExcludes = [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/cypress/**",
+    "**/.{idea,git,cache,output,temp}/**",
+    "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+    "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via pnpm e2e canvas)
+    "**/bookEdit/inline-images-e2e/**", // Exclude Playwright e2e suite (run via pnpm e2e inline-images)
+    "**/react_components/component-tester/**", // Exclude playwright component tests
+    "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
+];
+
 // Use dynamic imports so that if Vite/esbuild emits a CommonJS wrapper for this
 // config, Node can still load ESM-only plugins (like @vitejs/plugin-react) via
 // native dynamic import instead of require().
@@ -583,7 +597,6 @@ export default defineConfig(async ({ command }) => {
             "./teamCollection/JoinTeamCollectionDialog.tsx",
         autoUpdateSoftwareDlgBundle:
             "./react_components/AutoUpdateSoftwareDialog.tsx",
-        duplicateManyDlgBundle: "./bookEdit/duplicateManyDialog.tsx",
         copyrightAndLicenseBundle:
             "./bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog.tsx",
         languageChooserBundle: "./collection/LanguageChooserDialog.tsx",
@@ -593,6 +606,8 @@ export default defineConfig(async ({ command }) => {
             "./collection/CollectionChooserDialog.entry.tsx",
         registrationDialogBundle:
             "./react_components/registration/registrationDialog.tsx",
+        printInstructionsBundle:
+            "./publish/PDFPrintPublish/PrintInstructionsWindow.tsx",
     };
 
     // MAIN VITE CONFIGURATION
@@ -715,6 +730,24 @@ export default defineConfig(async ({ command }) => {
             },
         },
 
+        // CSS PREPROCESSING
+        css: {
+            // Compile LESS on the main thread instead of in Vite's worker pool.
+            //
+            // In the pool, the worker blocks on Atomics.wait() while the main thread
+            // resolves each @import for it, and gives up after ~5s if the main thread
+            // looks idle, on the theory that the two have deadlocked. A busy CI machine
+            // makes that guess wrong: the build dies with "[vite:css] [less] timed-out"
+            // naming whichever .less file was in flight, which reads like a fault in that
+            // file and isn't one.
+            //
+            // 0 means "no worker" (Vite treats max <= 0 as disabling the real worker), so
+            // the watchdog does not exist and the error cannot occur. We lose preprocessor
+            // parallelism, which is nearly free here: most of our LESS is compiled by the
+            // compile-less plugin in closeBundle, not through this path.
+            preprocessorMaxWorkers: 0,
+        },
+
         // BUILD CONFIGURATION
         // Controls how Vite creates production bundles
         build: {
@@ -834,26 +867,59 @@ export default defineConfig(async ({ command }) => {
         // Vitest is Vite's test runner (replaces Karma + Jasmine)
         // See vitest.dev for full documentation
         test: {
-            setupFiles: ["./vitest.setup.ts"], // Run this file before each test file
-            include: ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"], // Which files are tests
             reporters: globalThis.process?.env?.TEAMCITY_VERSION
                 ? ["default", "junit"]
                 : ["default"],
             outputFile: "./bloombrowserui-test-results.xml",
             includeConsoleOutput: false,
-            // Uncomment to run only specific test files during development:
-            // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
-            exclude: [
-                "**/node_modules/**",
-                "**/dist/**",
-                "**/cypress/**",
-                "**/.{idea,git,cache,output,temp}/**",
-                "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
-                "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via pnpm e2e canvas)
-                "**/react_components/component-tester/**", // Exclude playwright component tests
-                "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
+            // Two projects, both run by `pnpm test`.
+            projects: [
+                {
+                    extends: true,
+                    test: {
+                        name: "unit",
+                        setupFiles: ["./vitest.setup.ts"], // Run this file before each test file
+                        include: ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"], // Which files are tests
+                        // Uncomment to run only specific test files during development:
+                        // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
+                        exclude: [
+                            ...testExcludes,
+                            "**/*.browser.spec.ts", // Run by the browser project below
+                        ],
+                        environment: "jsdom", // Use jsdom to simulate browser DOM in Node
+                        environmentOptions: {
+                            jsdom: {},
+                        },
+                    },
+                },
+                {
+                    // Tests that need a real layout engine (scrollHeight, offsetTop, canvas
+                    // pixels, ...), which jsdom doesn't have. They run in headless Edge, which
+                    // is the engine behind WebView2 and is already installed on Windows.
+                    // This project deliberately does not extend the rest of this config.
+                    // The app's optimizeDeps and plugins stop Vite from pre-bundling the
+                    // CommonJS dependencies a browser needs, and the jsdom setup file (which
+                    // mocks canvas, innerText and more) would break real layout measurement.
+                    test: {
+                        name: "browser",
+                        setupFiles: ["./vitest.browser.setup.ts"],
+                        include: ["./**/*.browser.spec.ts"],
+                        exclude: testExcludes,
+                        browser: {
+                            enabled: true,
+                            headless: true,
+                            provider: playwright({
+                                launchOptions: { channel: "msedge" },
+                            }),
+                            instances: [
+                                {
+                                    browser: "chromium",
+                                },
+                            ],
+                        },
+                    },
+                },
             ],
-            environment: "jsdom", // Use jsdom to simulate browser DOM in Node
             globals: false, // Don't inject global test functions (use imports instead)
             testTimeout: 30000, // 30 second timeout for async operations
             teardownTimeout: 10000, // 10s max for after-test cleanup; prevents hung workers from blocking the pool
@@ -871,19 +937,15 @@ export default defineConfig(async ({ command }) => {
             maxWorkers: 4,
             minWorkers: 2,
             sourcemap: true, // Enable source maps for debugging test code
-            browser: {
-                // This whole block is unused since enabled is false. The settings are our current
-                // best guess for our next attempt to get browser mode working.
-                enabled: false, // Browser mode disabled (we use jsdom instead)
-                provider: playwright(),
-                instances: [
-                    {
-                        browser: "chromium",
-                    },
-                ],
-            },
-            environmentOptions: {
-                jsdom: {},
+            server: {
+                deps: {
+                    // Process bloom-table with Vite's resolver rather than handing it to
+                    // Node's ESM loader. Its ESM build imports MUI by subpath
+                    // (@mui/material/Divider and friends), and MUI 5 ships no "exports"
+                    // map, so Node rejects those as unsupported directory imports and the
+                    // whole test file fails to load. Vite resolves them via "main".
+                    inline: ["bloom-table"],
+                },
             },
         },
 
@@ -893,10 +955,30 @@ export default defineConfig(async ({ command }) => {
             include: [
                 "jquery", // Always pre-bundle jQuery
                 "comicaljs", // Pre-bundle comicaljs (webpack UMD bundle needs processing)
+                // bloom-table is excluded below, so Vite never scans its imports. Any of
+                // these it imports that is not pre-bundled would be served raw, and the page
+                // then fails to load (react/jsx-runtime is CommonJS; MUI's ESM files import
+                // the CommonJS prop-types).
+                "bloom-table > @mui/material/Divider",
+                "bloom-table > @mui/material/IconButton",
+                "bloom-table > @mui/material/ListItemIcon",
+                "bloom-table > @mui/material/ListItemText",
+                "bloom-table > @mui/material/MenuItem",
+                "bloom-table > @mui/material/ToggleButton",
+                "bloom-table > react",
+                "bloom-table > react/jsx-runtime",
+                "bloom-table > react-dom",
+                "bloom-table > react-dom/client",
             ],
             exclude: [
                 "lib/localizationManager/localizationManager", // Don't pre-bundle this
                 "bloom-image-gallery", // TypeScript source entry point — must go through Vite's transform pipeline, not esbuild pre-bundling
+                // bloom-table comes from a committed-dist tag on GitHub, but a developer
+                // working on the library pnpm-links a local build instead (see the note in
+                // package.json). A pre-bundled copy would outlive that swap, so it is served
+                // as is. A running dev server still keeps the copy it first transformed:
+                // restart the whole go.sh stack to pick up a new build.
+                "bloom-table",
             ],
             // Force Vite to treat comicaljs as having named exports even though it's CommonJS/UMD
             esbuildOptions: {
