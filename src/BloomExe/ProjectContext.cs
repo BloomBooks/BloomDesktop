@@ -490,7 +490,6 @@ namespace Bloom
                 .Resolve<BloomWebSocketServer>()
                 .Init(BloomServer.WebSocketPort.ToString(CultureInfo.InvariantCulture));
             HelpLauncher.RegisterWithApiHandler(server.ApiHandler);
-            ExternalLinkController.RegisterWithApiHandler(server.ApiHandler);
             ToolboxView.RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PageTemplatesApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<AddOrChangePageApi>().RegisterWithApiHandler(server.ApiHandler);

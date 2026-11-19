@@ -1,8 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Bloom.ErrorReporter;
-using L10NSharp;
+using Bloom.MiscUI;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
@@ -11,7 +10,7 @@ namespace Bloom.Utils
 {
     /// <summary>
     /// When a collection opens, check in the background that Windows lets Bloom create, change,
-    /// rename and delete files in the collection's folder, and tell the user quietly if it does not.
+    /// rename and delete files in the collection's folder, and tell the user if it does not.
     /// Antivirus folder protection (Avast's Ransomware Shield, Windows Security's Controlled Folder
     /// Access...) often refuses exactly these operations, which later shows up as books that can't
     /// be renamed, saved or even opened (BL-17056). Testing the operations themselves, rather than
@@ -58,10 +57,11 @@ namespace Bloom.Utils
             var problem = ProbeFolder(collectionFolder, out var failedPath);
             if (problem != null)
             {
-                ReportBlocked(
+                // Books that can't be saved, renamed or opened are serious enough for a dialog.
+                DefenderFolderProtectionCheck.ReportPartlyBlocked(
+                    problem,
                     collectionFolder,
-                    failedPath,
-                    $"{problem.GetType().Name}: {problem.Message}"
+                    failedPath
                 );
             }
 
@@ -144,42 +144,6 @@ namespace Bloom.Utils
                     $"Could not remove file access check folder {probeFolder}: {e.Message}"
                 );
             }
-        }
-
-        /// <summary>
-        /// Log the evidence about why Bloom can't change files in collectionFolder and show the user
-        /// a toast that leads to an explanation. problem says what went wrong, at failedPath.
-        /// </summary>
-        private static void ReportBlocked(
-            string collectionFolder,
-            string failedPath,
-            string problem
-        )
-        {
-            var details = FileAccessDiagnostics.Collect(failedPath, out var likelyCause);
-            Logger.WriteEvent(
-                $"File access check of {collectionFolder} failed at {failedPath}: {problem}{Environment.NewLine}{details}"
-            );
-
-            var shortMsg = LocalizationManager.GetString(
-                "Errors.FileAccessCheck.Blocked",
-                "Windows is not letting Bloom change files in this collection."
-            );
-            var longerMsgTemplate = LocalizationManager.GetString(
-                "Errors.FileAccessCheck.BlockedLonger",
-                "Windows is not letting Bloom create, change, rename or delete files in the folder where this collection is stored. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see \"{0}\"."
-            );
-            // No folder path: users needn't know where their collections are stored, and the log
-            // above has it for whoever helps them.
-            var longerMsg = string.Format(
-                longerMsgTemplate,
-                FileAccessDiagnostics.TroubleshootingLinkHtml()
-            );
-            // The likely cause names a product and setting, which a person helping the user needs,
-            // even though it is only in English.
-            if (likelyCause != null)
-                longerMsg += "<br><br>" + likelyCause;
-            BloomErrorReport.NotifyUserUnobtrusively(shortMsg, longerMsg);
         }
     }
 }

@@ -178,27 +178,14 @@ namespace Bloom.WebLibraryIntegration
             }
             catch (CollectionFolderNotWritableException notWritable)
             {
-                InvokeOnShell(() => DefenderFolderProtectionCheck.ReportProblem(notWritable));
+                DefenderFolderProtectionCheck.ReportProblem(notWritable);
                 return false;
             }
         }
 
-        /// <summary>
-        /// Run action on the Shell's thread if there is a Shell (downloads run on a worker thread),
-        /// otherwise here.
-        /// </summary>
-        private static void InvokeOnShell(Action action)
-        {
-            var shellWindow = ShellWindow;
-            if (shellWindow != null)
-                shellWindow.Invoke(action);
-            else
-                action.Invoke();
-        }
-
         private static void DisplayProblem(Exception e, string message, bool showSendReport = true)
         {
-            InvokeOnShell(() =>
+            var action = new Action(() =>
                 NonFatalProblem.Report(
                     ModalIf.Alpha,
                     PassiveIf.All,
@@ -208,6 +195,11 @@ namespace Bloom.WebLibraryIntegration
                     showSendReport
                 )
             );
+            var shellWindow = ShellWindow;
+            if (shellWindow != null)
+                shellWindow.Invoke(action);
+            else
+                action.Invoke();
         }
 
         public static string DownloadFolder

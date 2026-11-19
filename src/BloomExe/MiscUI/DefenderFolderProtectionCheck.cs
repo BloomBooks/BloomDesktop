@@ -1,6 +1,10 @@
 using System;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
 using System.Windows.Forms;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Utils;
 using L10NSharp;
@@ -33,8 +37,9 @@ namespace Bloom.MiscUI
     }
 
     /// <summary>
-    /// This class tests whether Bloom can write in a folder. Besides ordinary causes (a read-only
-    /// folder, a share without write permission), a Windows Defender setting can stop it.
+    /// This class tests whether Bloom can write in a folder, and tells the user when it can't.
+    /// Besides ordinary causes (a read-only folder, a share without write permission), antivirus
+    /// folder protection such as Windows Security's Controlled Folder Access can stop it.
     /// </summary>
     public static class DefenderFolderProtectionCheck
     {
@@ -117,52 +122,139 @@ namespace Bloom.MiscUI
             ReportProblem(notWritable.InnerException, notWritable.FolderPath);
         }
 
+        /// <summary>
+        /// Tell the user that, although the collection in collectionFolder opened, Windows refused
+        /// one of the things Bloom does to books (problem, at failedPath), which antivirus that
+        /// protects some kinds of files often does (BL-17056). May be called on any thread.
+        /// </summary>
+        public static void ReportPartlyBlocked(
+            Exception problem,
+            string collectionFolder,
+            string failedPath
+        )
+        {
+            var partlyBlocked = LocalizationManager.GetString(
+                "Errors.FolderPartlyBlocked",
+                "Bloom opened the collection, but books may fail to save, be renamed or open until this is fixed."
+            );
+            Report(problem, collectionFolder, failedPath, partlyBlocked);
+        }
+
         private static void ReportProblem(Exception writeProblem, string failingFolder)
         {
+            Report(writeProblem, failingFolder, Path.Combine(failingFolder, "probe"), null);
+        }
+
+        /// <summary>
+        /// Gather and log the evidence for why Bloom couldn't write at diagnosticsPath, then show the
+        /// message: the folder, extraParagraph if any, then what the evidence points to.
+        /// </summary>
+        private static void Report(
+            Exception writeProblem,
+            string folder,
+            string diagnosticsPath,
+            string extraParagraph
+        )
+        {
             var details = FileAccessDiagnostics.Collect(
-                Path.Combine(failingFolder, "probe"),
+                diagnosticsPath,
                 out var likelyCause,
                 out var antivirusSuspected
             );
             Logger.WriteEvent(
-                $"Cannot write to {failingFolder}: {writeProblem.GetType().Name}: {writeProblem.Message}{Environment.NewLine}{details}"
+                $"Cannot write to {folder} (at {diagnosticsPath}): {writeProblem.GetType().Name}: {writeProblem.Message}{Environment.NewLine}{details}"
             );
+            var messageHtml = MakeMessageHtml(
+                folder,
+                extraParagraph,
+                IsPermissionProblem(writeProblem, antivirusSuspected),
+                likelyCause
+            );
+            ShowOnUiThread(messageHtml);
+        }
+
+        /// <summary>
+        /// The message telling the user Bloom can't write in folder: the folder, extraParagraph if
+        /// any, what the evidence points to (permission, or antivirus) with a link to the help page
+        /// for that, and the likely cause if we found one.
+        /// </summary>
+        internal static string MakeMessageHtml(
+            string folder,
+            string extraParagraph,
+            bool isPermissionProblem,
+            string likelyCause
+        )
+        {
             var heading = LocalizationManager.GetString(
                 "Errors.DefenderFolderProtectionHeading",
                 "This program cannot write to the folder {0}."
             );
-            var isPermissionProblem = IsPermissionProblem(writeProblem, antivirusSuspected);
-            string mainMsg;
+            string cause;
+            string helpUrl;
             if (isPermissionProblem)
             {
-                mainMsg = LocalizationManager.GetString(
+                cause = LocalizationManager.GetString(
                     "Errors.FolderNotWritable",
-                    "You may not have permission to change files there, or the folder may be read-only. Move the collection to a folder you can change, such as Documents, or ask whoever manages this computer or network for permission."
+                    "You may not have permission to change files there, or the folder may be read-only. Choose a folder you can change, or ask whoever manages this computer or network for permission."
                 );
+                helpUrl = BookStorage.kFileAccessPermissionHelpUrl;
             }
             else
             {
-                mainMsg = LocalizationManager.GetString(
-                    "Errors.DefenderFolderProtection",
-                    "This might be caused by Windows Defender \"Controlled Folder Access\" or some other virus protection."
+                cause = LocalizationManager.GetString(
+                    "Errors.FolderAntivirusProtection",
+                    "Antivirus software, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access, may be stopping Bloom. Tell that program that you trust Bloom."
                 );
+                helpUrl = FileAccessDiagnostics.kTroubleshootingUrl;
             }
+            var seeWebPage = LocalizationManager.GetString("Common.SeeWebPage", "See {0}.");
+            var link = $"<a href='{helpUrl}'>{WebUtility.HtmlEncode(helpUrl)}</a>";
+            var html = new StringBuilder();
+            html.Append(Paragraph(string.Format(heading, folder)));
+            if (extraParagraph != null)
+                html.Append(Paragraph(extraParagraph));
+            html.Append(Paragraph(cause));
+            html.Append($"<p>{string.Format(WebUtility.HtmlEncode(seeWebPage), link)}</p>");
             // The likely cause names a product, setting or sync program, which a person helping
             // the user needs, even though it is only in English.
             if (likelyCause != null)
-                mainMsg += Environment.NewLine + Environment.NewLine + likelyCause;
-            var msg =
-                string.Format(heading, failingFolder)
-                + Environment.NewLine
-                + Environment.NewLine
-                + mainMsg;
-            var caption = LocalizationManager.GetString("Common.ProblemTitle", "Bloom Problem");
-            MessageBox.Show(msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-            SIL.Program.Process.SafeStart(
-                isPermissionProblem
-                    ? BookStorage.kFileAccessPermissionHelpUrl
-                    : FileAccessDiagnostics.kTroubleshootingUrl
-            );
+                html.Append(Paragraph(likelyCause));
+            return html.ToString();
+        }
+
+        private static string Paragraph(string text) => $"<p>{WebUtility.HtmlEncode(text)}</p>";
+
+        /// <summary>
+        /// Show messageHtml in a Bloom dialog, so its link works. Bloom may still be starting up,
+        /// or have no collection open, so make sure the splash screen is out of the way and the
+        /// local server the dialog needs is running; and the caller may be on a background thread.
+        /// </summary>
+        private static void ShowOnUiThread(string messageHtml)
+        {
+            void Show()
+            {
+                StartupScreenManager.HideSplashScreenForDialog();
+                BloomServer._theOneInstance.EnsureListening();
+                var closeButton = new MessageBoxButton()
+                {
+                    Text = LocalizationManager.GetString("Common.Close", "Close"),
+                    Id = "close",
+                    Default = true,
+                };
+                // Room for the folder, two or three paragraphs and a link without scrolling.
+                BloomMessageBox.Show(
+                    Application.OpenForms.OfType<Shell>().FirstOrDefault(),
+                    messageHtml,
+                    new[] { closeButton },
+                    logicalWidth: 600,
+                    logicalHeight: 380
+                );
+            }
+            var uiForm = Application.OpenForms.Cast<Form>().FirstOrDefault();
+            if (uiForm != null && uiForm.InvokeRequired)
+                uiForm.Invoke((Action)Show);
+            else
+                Show();
         }
 
         private static void Cleanup(string testPath)
