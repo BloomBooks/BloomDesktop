@@ -59,8 +59,8 @@ namespace Bloom.MiscUI
         /// Call before showing a ReactDialog when Bloom may still be starting up or have no
         /// collection open: it moves the splash screen out of the way (it would sit on top of the
         /// dialog) and makes sure the local server that every ReactDialog loads from is listening,
-        /// which normally happens only when a collection opens. Ordinary dialogs don't call this:
-        /// starting the server can end Bloom if it fails, which only these callers should risk.
+        /// which normally happens only when a collection opens. Dialogs shown once a collection is
+        /// open don't need it.
         /// </summary>
         public static void GetReadyToShowBeforeACollectionIsOpen()
         {

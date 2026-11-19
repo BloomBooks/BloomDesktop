@@ -307,7 +307,6 @@ namespace Bloom.Collection
             SettingsFilePath = desiredOrExistingSettingsFilePath;
             CollectionName = Path.GetFileNameWithoutExtension(desiredOrExistingSettingsFilePath);
             var collectionDirectory = Path.GetDirectoryName(desiredOrExistingSettingsFilePath);
-            var parentDirectoryPath = Path.GetDirectoryName(collectionDirectory);
 
             // Reading an existing collection's settings doesn't need its folder to be writable; the
             // ProjectContext checks that when it opens the collection for editing.
@@ -317,23 +316,7 @@ namespace Bloom.Collection
             }
             else
             {
-                try
-                {
-                    if (!Directory.Exists(parentDirectoryPath))
-                        Directory.CreateDirectory(parentDirectoryPath);
-
-                    if (!Directory.Exists(collectionDirectory))
-                        Directory.CreateDirectory(collectionDirectory);
-                }
-                catch (UnauthorizedAccessException e)
-                {
-                    // Where the user may not write, Windows won't even make the folder.
-                    throw new CollectionFolderNotWritableException(collectionDirectory, e);
-                }
-
-                DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(
-                    collectionDirectory
-                );
+                DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(collectionDirectory);
                 Save();
             }
         }

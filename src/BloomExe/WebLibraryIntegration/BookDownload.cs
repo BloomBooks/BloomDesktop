@@ -165,30 +165,20 @@ namespace Bloom.WebLibraryIntegration
         }
 
         /// <summary>
-        /// Make sure the folder a download goes into exists and Bloom can write in it: the
-        /// collection for downloaded books (which startup only tries to make), or, for a download
-        /// for editing, the folder the new collection for the book will go in. If not, explain why
-        /// and return false, so we don't download a book only to fail at the last step with a
-        /// vague message. (BL-16728)
+        /// Make sure destination, the folder a download goes into, exists and Bloom can write in
+        /// it: the collection for downloaded books (which startup only tries to make), or, for a
+        /// download for editing, the folder the new collection for the book will go in. If not,
+        /// explain why and return false, so we don't download a book only to fail at the last step
+        /// with a vague message. (BL-16728)
         /// </summary>
-        private static bool DownloadDestinationIsReady(bool forEdit)
+        private static bool DownloadDestinationIsReady(string destination)
         {
             try
             {
-                if (forEdit)
-                {
-                    DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(
-                        NewCollectionWizard.DefaultParentDirectoryForCollections
-                    );
-                }
-                else
-                {
+                // The collection for downloaded books needs its settings file too.
+                if (destination == DownloadFolder)
                     BookDownloadSupport.EnsureDownloadFolderExists();
-                    // It may have been there already, yet not be writable.
-                    DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(
-                        DownloadFolder
-                    );
-                }
+                DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(destination);
                 return true;
             }
             catch (CollectionFolderNotWritableException notWritable)
@@ -374,16 +364,12 @@ namespace Bloom.WebLibraryIntegration
             if (IsUrlOrder(_bookOrderUrl))
             {
                 var link = new BloomLinkArgs(_bookOrderUrl);
-                if (!DownloadDestinationIsReady(link.ForEdit))
+                var destination = link.ForEdit
+                    ? NewCollectionWizard.DefaultParentDirectoryForCollections
+                    : DownloadFolder;
+                if (!DownloadDestinationIsReady(destination))
                     return;
-                DownloadFromOrderUrl(
-                    _bookOrderUrl,
-                    link.ForEdit
-                        ? NewCollectionWizard.DefaultParentDirectoryForCollections
-                        : DownloadFolder,
-                    link.Title,
-                    link.ForEdit
-                );
+                DownloadFromOrderUrl(_bookOrderUrl, destination, link.Title, link.ForEdit);
                 if (link.ForEdit && link.DatabaseId != null && LastBookDownloadedPath != null)
                 {
                     // Write a collection-level json file that we will read again when we reupload the book

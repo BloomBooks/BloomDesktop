@@ -126,7 +126,7 @@ namespace BloomTests.MiscUI
             using (var temp = new SIL.TestUtilities.TemporaryFolder("EnsureFolderDeniedParent"))
             {
                 var folder = Path.Combine(temp.Path, "Bloom");
-                using (BloomTests.FolderAccessForTests.DenyWrite(new DirectoryInfo(temp.Path)))
+                using (FolderAccessForTests.DenyWrite(new DirectoryInfo(temp.Path)))
                 {
                     var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
                         DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(folder)
@@ -148,7 +148,7 @@ namespace BloomTests.MiscUI
             {
                 var folder = new DirectoryInfo(Path.Combine(temp.Path, "Bloom"));
                 folder.Create();
-                using (BloomTests.FolderAccessForTests.DenyWrite(folder))
+                using (FolderAccessForTests.DenyWrite(folder))
                 {
                     var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
                         DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(

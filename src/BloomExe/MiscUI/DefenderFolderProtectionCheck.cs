@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Utils;
 using L10NSharp;
@@ -239,8 +238,8 @@ namespace Bloom.MiscUI
         private static string Paragraph(string text) => $"<p>{WebUtility.HtmlEncode(text)}</p>";
 
         /// <summary>
-        /// Show messageHtml in a Bloom dialog, so its link works. Bloom may still be starting up,
-        /// or have no collection open, and the caller may be on a background thread.
+        /// Show messageHtml in a Bloom dialog, so its link works; the caller may be on a background
+        /// thread.
         /// </summary>
         private static void ShowOnUiThread(string messageHtml)
         {

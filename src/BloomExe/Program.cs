@@ -2253,8 +2253,6 @@ namespace Bloom
                 // themselves rather than warn a person, this is the decision to revisit.
                 if (MinimumBloomVersionCheck.IsThisBloomTooOld(path, out var minimumBloomVersion))
                 {
-                    // We're normally still showing the splash screen at this point, and it would sit on
-                    // top of our dialog. Also, the dialog is a ReactDialog, so it needs the server.
                     ReactDialog.GetReadyToShowBeforeACollectionIsOpen();
                     if (
                         MinimumBloomVersionCheck.ReportCollectionNeedsNewerBloom(
