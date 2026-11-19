@@ -32,6 +32,11 @@
         <target xml:lang="ha" state="needs-translation">Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.</target>
         <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable</note>
       </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.CouldNotSaveBecauseFileInUse" translate="no">
+        <source xml:lang="en">Bloom could not save the copyright and license information you just entered, because the picture's file was busy. Please wait a moment, then open Copyright and License for this picture again and enter the information again. If this keeps happening, restarting your computer may help. (The picture's file is {0}.)</source>
+        <target xml:lang="ha" state="needs-translation">Bloom could not save the copyright and license information you just entered, because the picture's file was busy. Please wait a moment, then open Copyright and License for this picture again and enter the information again. If this keeps happening, restarting your computer may help. (The picture's file is {0}.)</target>
+        <note>ID: EditTab.ImageMetadata.CouldNotSaveBecauseFileInUse</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
         <target xml:lang="ha" state="needs-translation">Conversion file used:</target>
