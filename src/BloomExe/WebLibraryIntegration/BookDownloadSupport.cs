@@ -36,15 +36,10 @@ namespace Bloom.WebLibraryIntegration
             {
                 EnsureDownloadFolderExists();
             }
-            // Working out the folder's path can be refused too, when it means making the
-            // Collections folder above it.
-            catch (Exception e)
-                when (e is CollectionFolderNotWritableException
-                    || FileAccessDiagnostics.IsRefusal(e)
-                )
+            catch (CollectionFolderNotWritableException e)
             {
                 Logger.WriteEvent(
-                    $"Could not make the collection for downloaded books: {e.GetType().Name}: {e.Message}"
+                    $"Could not make the collection for downloaded books in {e.FolderPath}: {e.InnerException.GetType().Name}: {e.InnerException.Message}"
                 );
             }
         }
@@ -55,7 +50,7 @@ namespace Bloom.WebLibraryIntegration
         /// </summary>
         public static void EnsureDownloadFolderExists()
         {
-            string downloadFolder = BookDownload.DownloadFolder;
+            string downloadFolder = GetDownloadFolder();
             if (Directory.Exists(downloadFolder))
                 return;
             try
@@ -79,6 +74,30 @@ namespace Bloom.WebLibraryIntegration
                 // Saving the new collection's settings, or making a folder above it, can be
                 // refused too; callers need only handle one kind of exception.
                 throw new CollectionFolderNotWritableException(downloadFolder, e);
+            }
+        }
+
+        /// <summary>
+        /// BookDownload.DownloadFolder, or, if Windows won't let Bloom make the folders above it
+        /// (getting DownloadFolder makes them), CollectionFolderNotWritableException naming where
+        /// the collection would be.
+        /// </summary>
+        public static string GetDownloadFolder()
+        {
+            try
+            {
+                return BookDownload.DownloadFolder;
+            }
+            catch (Exception e) when (FileAccessDiagnostics.IsRefusal(e))
+            {
+                var expected = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "SIL",
+                    "Bloom",
+                    "Collections",
+                    BookCollection.DownloadedBooksCollectionNameInEnglish
+                );
+                throw new CollectionFolderNotWritableException(expected, e);
             }
         }
 

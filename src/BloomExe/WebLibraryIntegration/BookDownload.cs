@@ -165,19 +165,27 @@ namespace Bloom.WebLibraryIntegration
         }
 
         /// <summary>
-        /// Make sure destination, the folder a download goes into, exists and Bloom can write in
-        /// it: the collection for downloaded books (which startup only tries to make), or, for a
-        /// download for editing, the folder the new collection for the book will go in. If not,
-        /// explain why and return false, so we don't download a book only to fail at the last step
-        /// with a vague message. (BL-16728)
+        /// Work out the folder a download goes into, make sure it exists and that Bloom can write
+        /// in it: the collection for downloaded books (which startup only tries to make), or, for a
+        /// download for editing, the folder the new collection for the book will go in. If Windows
+        /// won't allow that, explain why and return false, so we don't download a book only to
+        /// fail at the last step with a vague message. (BL-16728)
         /// </summary>
-        private static bool DownloadDestinationIsReady(string destination)
+        private static bool DownloadDestinationIsReady(bool forEdit, out string destination)
         {
+            destination = null;
             try
             {
-                // The collection for downloaded books needs its settings file too.
-                if (destination == DownloadFolder)
+                if (forEdit)
+                {
+                    destination = NewCollectionWizard.DefaultParentDirectoryForCollections;
+                }
+                else
+                {
+                    // This collection needs its settings file too.
                     BookDownloadSupport.EnsureDownloadFolderExists();
+                    destination = DownloadFolder;
+                }
                 DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(destination);
                 return true;
             }
@@ -364,10 +372,7 @@ namespace Bloom.WebLibraryIntegration
             if (IsUrlOrder(_bookOrderUrl))
             {
                 var link = new BloomLinkArgs(_bookOrderUrl);
-                var destination = link.ForEdit
-                    ? NewCollectionWizard.DefaultParentDirectoryForCollections
-                    : DownloadFolder;
-                if (!DownloadDestinationIsReady(destination))
+                if (!DownloadDestinationIsReady(link.ForEdit, out var destination))
                     return;
                 DownloadFromOrderUrl(_bookOrderUrl, destination, link.Title, link.ForEdit);
                 if (link.ForEdit && link.DatabaseId != null && LastBookDownloadedPath != null)
