@@ -13,7 +13,6 @@ import { ILanguageNameValues } from "../toolbox/canvas/canvasControlTypes";
 import { theOneUndoStack } from "../undo/UndoStack";
 import { isInChangeLayoutMode } from "../undo/redoKeyBinding";
 import {
-    addLanguageTagsToShownBoxes,
     setUpBoxesBuiltAfterLoad,
     showLanguagesInTranslationGroup,
 } from "./translationGroupLanguages";
@@ -224,9 +223,9 @@ function settingOfRoles(roles: LanguageRole[]): string {
  * Make `group` store `setting` exactly as given, including no setting at all, and show the
  * languages it stands for, in role order. Where the group has no bloom-editable in one of those
  * languages yet (a cell made since the page loaded has only its first one), one is added. Returns
- * what showLanguagesInTranslationGroup returns: the added boxes, which need
- * setUpBoxesBuiltAfterLoad once they are in the page, and the boxes shown again, which need
- * addLanguageTagsToShownBoxes. Each is best done once for every group changed together.
+ * what showLanguagesInTranslationGroup returns: the added boxes and the boxes shown again, both
+ * for setUpBoxesBuiltAfterLoad once they are in the page, best in one call for every group changed
+ * together.
  */
 export function showSettingInGroup(
     group: HTMLElement,
@@ -332,9 +331,9 @@ export function toggleRole(
     });
 }
 
-// Give each of `groups` the setting at the same index, then set up the boxes that adds and tag the
-// boxes it shows again, each once for all the groups. Setting up and tagging measure the boxes, so
-// doing them group by group would lay the page out once per cell.
+// Give each of `groups` the setting at the same index, then set up the boxes that adds, and tag
+// the boxes it shows again, in one call for all the groups. Setting up and tagging measure the
+// boxes, so doing them group by group would lay the page out once per cell.
 function showSettingsInGroups(
     groups: HTMLElement[],
     settings: (string | null)[],
@@ -343,8 +342,10 @@ function showSettingsInGroups(
     const results = groups.map((group, index) =>
         showSettingInGroup(group, settings[index], languages),
     );
-    setUpBoxesBuiltAfterLoad(results.flatMap((result) => result.added));
-    addLanguageTagsToShownBoxes(results.flatMap((result) => result.shown));
+    setUpBoxesBuiltAfterLoad(
+        results.flatMap((result) => result.added),
+        results.flatMap((result) => result.shown),
+    );
 }
 
 function translationGroupsOf(pageDocument: Document): HTMLElement[] {

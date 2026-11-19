@@ -26,10 +26,7 @@ import "bloom-table/bloom-table-edit.css";
 import "./tableEditing.less";
 import { SetupImagesInContainer } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
-import {
-    addLanguageTagsToShownBoxes,
-    setUpBoxesBuiltAfterLoad,
-} from "./translationGroupLanguages";
+import { setUpBoxesBuiltAfterLoad } from "./translationGroupLanguages";
 import { get, post } from "../../utils/bloomApi";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
 import {
@@ -286,8 +283,7 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
     );
     // Each new box gets what page load gives every box: editing, CKEditor, its language tag, its
     // group's inline pictures and its direction.
-    setUpBoxesBuiltAfterLoad(newEditables);
-    addLanguageTagsToShownBoxes(shownBoxes);
+    setUpBoxesBuiltAfterLoad(newEditables, shownBoxes);
     // `root` itself is one of these when a cell has just become a picture cell.
     const imageCellSelector = ".bloom-cell[data-content-type='image']";
     const imageCells = Array.from(
