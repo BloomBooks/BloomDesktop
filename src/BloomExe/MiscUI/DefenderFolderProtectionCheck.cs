@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Windows.Forms;
-using Bloom.Api;
 using Bloom.Book;
 using Bloom.Utils;
 using L10NSharp;
@@ -66,6 +65,24 @@ namespace Bloom.MiscUI
             var problem = GetWriteProblem(collectionFolder);
             if (problem != null)
                 throw new CollectionFolderNotWritableException(collectionFolder, problem);
+        }
+
+        /// <summary>
+        /// Make folder if it isn't there, then check Bloom can write in it. Throws
+        /// CollectionFolderNotWritableException if Windows refuses either. For folders that
+        /// collections go into, such as Documents\Bloom when a book is downloaded for editing.
+        /// </summary>
+        public static void EnsureFolderExistsAndIsWritable(string folder)
+        {
+            try
+            {
+                Directory.CreateDirectory(folder);
+            }
+            catch (Exception e) when (FileAccessDiagnostics.IsRefusal(e))
+            {
+                throw new CollectionFolderNotWritableException(folder, e);
+            }
+            ThrowIfCollectionFolderNotWritable(folder);
         }
 
         /// <summary>
@@ -223,15 +240,13 @@ namespace Bloom.MiscUI
 
         /// <summary>
         /// Show messageHtml in a Bloom dialog, so its link works. Bloom may still be starting up,
-        /// or have no collection open, so make sure the splash screen is out of the way and the
-        /// local server the dialog needs is running; and the caller may be on a background thread.
+        /// or have no collection open, and the caller may be on a background thread.
         /// </summary>
         private static void ShowOnUiThread(string messageHtml)
         {
             void Show()
             {
-                StartupScreenManager.HideSplashScreenForDialog();
-                BloomServer._theOneInstance.EnsureListening();
+                ReactDialog.GetReadyToShowBeforeACollectionIsOpen();
                 var closeButton = new MessageBoxButton()
                 {
                     Text = LocalizationManager.GetString("Common.Close", "Close"),

@@ -98,6 +98,69 @@ namespace BloomTests.MiscUI
         }
 
         /// <summary>
+        /// A folder that isn't there yet, under one Bloom may write in, is made and passes.
+        /// </summary>
+        [Test]
+        public void EnsureFolderExistsAndIsWritable_MissingWritableFolder_MakesIt()
+        {
+            using (var temp = new SIL.TestUtilities.TemporaryFolder("EnsureFolderWritable"))
+            {
+                var folder = Path.Combine(temp.Path, "Bloom");
+                Assert.That(Directory.Exists(folder), Is.False, "Sanity check");
+
+                DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(folder);
+
+                Assert.That(Directory.Exists(folder), Is.True);
+            }
+        }
+
+        /// <summary>
+        /// Where Windows won't make the folder (write denied on its parent), as when a book is
+        /// downloaded for editing into an unwritable Documents, we get the exception the caller
+        /// reports, naming the folder, rather than a bare UnauthorizedAccessException. (BL-16728)
+        /// </summary>
+        [Test]
+        [Platform(Include = "Win")]
+        public void EnsureFolderExistsAndIsWritable_ParentDenied_Throws()
+        {
+            using (var temp = new SIL.TestUtilities.TemporaryFolder("EnsureFolderDeniedParent"))
+            {
+                var folder = Path.Combine(temp.Path, "Bloom");
+                using (BloomTests.FolderAccessForTests.DenyWrite(new DirectoryInfo(temp.Path)))
+                {
+                    var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
+                        DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(folder)
+                    );
+                    Assert.That(thrown.FolderPath, Is.EqualTo(folder));
+                    Assert.That(Directory.Exists(folder), Is.False);
+                }
+            }
+        }
+
+        /// <summary>
+        /// A folder that is there but can't be written fails too.
+        /// </summary>
+        [Test]
+        [Platform(Include = "Win")]
+        public void EnsureFolderExistsAndIsWritable_ExistingFolderDenied_Throws()
+        {
+            using (var temp = new SIL.TestUtilities.TemporaryFolder("EnsureFolderDenied"))
+            {
+                var folder = new DirectoryInfo(Path.Combine(temp.Path, "Bloom"));
+                folder.Create();
+                using (BloomTests.FolderAccessForTests.DenyWrite(folder))
+                {
+                    var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
+                        DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(
+                            folder.FullName
+                        )
+                    );
+                    Assert.That(thrown.FolderPath, Is.EqualTo(folder.FullName));
+                }
+            }
+        }
+
+        /// <summary>
         /// Controlled Folder Access refuses a new file with FileNotFoundException; that is never
         /// a permission problem.
         /// </summary>

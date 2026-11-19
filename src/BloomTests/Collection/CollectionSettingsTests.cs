@@ -3,8 +3,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security.AccessControl;
-using System.Security.Principal;
 using System.Threading;
 using Bloom;
 using Bloom.Book;
@@ -117,7 +115,7 @@ namespace BloomTests.Collection
                 "Sanity check: loading should want to save the one-time settings check"
             );
             var folder = new DirectoryInfo(Path.GetDirectoryName(settingsPath));
-            using (DenyWrite(folder))
+            using (FolderAccessForTests.DenyWrite(folder))
             {
                 var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
                     DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(
@@ -157,7 +155,7 @@ namespace BloomTests.Collection
             parent.Create();
             var collectionFolder = Path.Combine(parent.FullName, "New");
             var settingsPath = Path.Combine(collectionFolder, "New.bloomCollection");
-            using (DenyWrite(parent))
+            using (FolderAccessForTests.DenyWrite(parent))
             {
                 var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
                     new CollectionSettings(settingsPath)
@@ -168,51 +166,6 @@ namespace BloomTests.Collection
                     Is.False,
                     "Windows should not have made the collection's folder"
                 );
-            }
-        }
-
-        /// <summary>
-        /// Deny the current user write access to folder and everything in it, until disposed.
-        /// </summary>
-        private static System.IDisposable DenyWrite(DirectoryInfo folder)
-        {
-            var security = folder.GetAccessControl();
-            var denyWrite = new FileSystemAccessRule(
-                WindowsIdentity.GetCurrent().Name,
-                FileSystemRights.Write,
-                InheritanceFlags.ObjectInherit | InheritanceFlags.ContainerInherit,
-                PropagationFlags.None,
-                AccessControlType.Deny
-            );
-            security.AddAccessRule(denyWrite);
-            folder.SetAccessControl(security);
-            return new RestoreAccess(folder, security, denyWrite);
-        }
-
-        /// <summary>
-        /// Removes the rule DenyWrite added.
-        /// </summary>
-        private sealed class RestoreAccess : System.IDisposable
-        {
-            private readonly DirectoryInfo _folder;
-            private readonly DirectorySecurity _security;
-            private readonly FileSystemAccessRule _rule;
-
-            public RestoreAccess(
-                DirectoryInfo folder,
-                DirectorySecurity security,
-                FileSystemAccessRule rule
-            )
-            {
-                _folder = folder;
-                _security = security;
-                _rule = rule;
-            }
-
-            public void Dispose()
-            {
-                _security.RemoveAccessRule(_rule);
-                _folder.SetAccessControl(_security);
             }
         }
 

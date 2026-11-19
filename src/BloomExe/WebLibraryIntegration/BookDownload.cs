@@ -165,17 +165,30 @@ namespace Bloom.WebLibraryIntegration
         }
 
         /// <summary>
-        /// Make sure the collection that downloaded books go into exists (startup only tries) and
-        /// Bloom can write in it. If not, explain why and return false, so we don't
-        /// download a book only to fail at the last step with a vague message. (BL-16728)
+        /// Make sure the folder a download goes into exists and Bloom can write in it: the
+        /// collection for downloaded books (which startup only tries to make), or, for a download
+        /// for editing, the folder the new collection for the book will go in. If not, explain why
+        /// and return false, so we don't download a book only to fail at the last step with a
+        /// vague message. (BL-16728)
         /// </summary>
-        private static bool DownloadFolderIsReady()
+        private static bool DownloadDestinationIsReady(bool forEdit)
         {
             try
             {
-                BookDownloadSupport.EnsureDownloadFolderExists();
-                // It may have been there already, yet not be writable.
-                DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(DownloadFolder);
+                if (forEdit)
+                {
+                    DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(
+                        NewCollectionWizard.DefaultParentDirectoryForCollections
+                    );
+                }
+                else
+                {
+                    BookDownloadSupport.EnsureDownloadFolderExists();
+                    // It may have been there already, yet not be writable.
+                    DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(
+                        DownloadFolder
+                    );
+                }
                 return true;
             }
             catch (CollectionFolderNotWritableException notWritable)
@@ -361,7 +374,7 @@ namespace Bloom.WebLibraryIntegration
             if (IsUrlOrder(_bookOrderUrl))
             {
                 var link = new BloomLinkArgs(_bookOrderUrl);
-                if (!link.ForEdit && !DownloadFolderIsReady())
+                if (!DownloadDestinationIsReady(link.ForEdit))
                     return;
                 DownloadFromOrderUrl(
                     _bookOrderUrl,
