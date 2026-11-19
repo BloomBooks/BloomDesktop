@@ -373,8 +373,8 @@ namespace BloomTests.Edit
             // Relocating a page raises RelocatePageEvent, and OnRelocatePage refreshes the display
             // of the page whose HTML just changed, so the action asks to navigate while we are
             // still in Editing. That is allowed while an action runs (the browser's content is
-            // already in the book DOM, so there is nothing left to lose), and it is held back
-            // until the book is written.
+            // already in the book DOM, so there is nothing left to lose), but the navigation is
+            // prevented because the book is being written; we go to the page the action returns.
             GoToEditing("page1");
             _navigatedTo.Clear();
 
@@ -398,7 +398,7 @@ namespace BloomTests.Edit
         }
 
         [Test]
-        public void SaveThenNavigate_ActionNavigates_NavigationWaitsUntilTheBookIsWritten()
+        public void SaveThenNavigate_ActionNavigates_PageIsShownOnlyAfterTheBookIsWritten()
         {
             // Writing the book can rename its folder: the first full save after a new book gets a
             // title. The page's URL is in that folder, so a page shown before the write is asked

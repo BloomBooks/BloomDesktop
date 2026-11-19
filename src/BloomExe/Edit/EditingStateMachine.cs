@@ -57,9 +57,10 @@ public class EditingStateMachine
 
     // Set while SaveThenNavigate runs its changeBookBeforeWriting and writes the book. The browser's
     // content is already in the book DOM, so there are no unsaved changes left to lose; a request
-    // for another save is declined rather than re-entered, and a navigation is held back until the
-    // write is done, because the write can rename the book's folder, which the page's URL is in
-    // (BL-17055). We then go to the page the action named.
+    // for another save is declined rather than re-entered. Navigation is prevented because the book
+    // is being written: the write can rename the book's folder, which the page's URL is in
+    // (BL-17055). A navigation asked for meanwhile is not kept for later; once the book is written
+    // we go to the page the action named.
     private bool _saveInProgress;
     private Action _hidePage;
 
@@ -170,7 +171,7 @@ public class EditingStateMachine
         if (_saveInProgress)
         {
             Log(
-                $"Holding back navigate({pageId}) until the book is written; we will go to the page the save's action names"
+                $"Not navigating to {pageId} because the book is being written; we will go to the page the save's action names"
             );
             return true;
         }
@@ -246,8 +247,8 @@ public class EditingStateMachine
     /// and before the book is written (so a page it duplicates or deletes already reflects the
     /// user's latest edits). It returns the id of the page to show afterwards, or null to leave the
     /// editor blank. It may ask to navigate (relocating a page refreshes it, and so does closing a
-    /// picture's Copyright and License dialog), but that waits until the book is written, and is
-    /// then replaced by our navigation to the page it returns (see _saveInProgress).
+    /// picture's Copyright and License dialog), but that is prevented because the book is being
+    /// written; we go to the page it returns instead (see _saveInProgress).
     ///
     /// If something throws we report it and do NOT navigate: that would throw away the edits we
     /// failed to save, and the browser still has the page intact and editable.
@@ -347,7 +348,7 @@ public class EditingStateMachine
             _saveInProgress = false;
         }
         // Cleared before we navigate, so that if loading the page fails, the fallback to the first
-        // page (EditingModel.StartNavigationToEditPage) is not held back.
+        // page (EditingModel.StartNavigationToEditPage) is not prevented.
         if (pageIdToGoTo == null)
         {
             if (_currentState != State.NoPage)
