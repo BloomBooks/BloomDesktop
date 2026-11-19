@@ -89,6 +89,40 @@ describe("showLanguagesInTranslationGroup", () => {
         expect(shownLangsOf(group)).toEqual(["en", "ar"]);
     });
 
+    it("adds a box from one with a Talking Book recording without claiming that recording", () => {
+        const group = makeGroup(
+            "<div class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on audio-sentence bloom-postAudioSplit ui-audioCurrent' " +
+                "lang='en' id='i0a8b' data-audiorecordingmode='TextBox' data-duration='2.5' " +
+                "data-audiorecordingendtimes='1.2 2.5'><p>Hello there.</p></div>",
+        );
+        const source = group.querySelector("[lang='en']")!;
+        // sanity check: the source box carries every piece of recording state
+        expect(source.getAttribute("data-audiorecordingmode")).toBe("TextBox");
+        expect(source.classList.contains("audio-sentence")).toBe(true);
+
+        const [box] = showLanguagesInTranslationGroup(group, ["fr"]);
+
+        for (const attribute of [
+            "id",
+            "data-audiorecordingmode",
+            "data-duration",
+            "data-audiorecordingendtimes",
+        ]) {
+            expect(box.hasAttribute(attribute), attribute).toBe(false);
+        }
+        for (const name of [
+            "audio-sentence",
+            "bloom-postAudioSplit",
+            "ui-audioCurrent",
+        ]) {
+            expect(box.classList.contains(name), name).toBe(false);
+        }
+        expect(box.classList.contains("normal-style")).toBe(true);
+        expect(box.innerHTML).toBe("<p></p>");
+        // the source box keeps its recording
+        expect(source.getAttribute("data-duration")).toBe("2.5");
+    });
+
     it("prefers the group's z box as the one to copy", () => {
         const group = makeGroup(
             kEditedEnglishBox +

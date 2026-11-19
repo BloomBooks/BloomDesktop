@@ -159,7 +159,12 @@ function addBox(group: HTMLElement, tag: string, order: string[]): HTMLElement {
 }
 
 // What a box carries that belongs to its own language or to its editing session (CKEditor adds
-// role, aria-*, title, spellcheck and tabindex), and so is not copied into a new box.
+// role, aria-*, title, spellcheck and tabindex), and so is not copied into a new box. That
+// includes its Talking Book recording, which the new box does not have: the same attributes and
+// classes that C# leaves out when it makes a box from another at load
+// (TranslationGroupManager.MakeElementWithLanguageForOneGroup), and ui-audioCurrent, the mark an
+// older Bloom left on the box being recorded.
 const kAttributesNotCopied =
-    /^(id|lang|dir|contenteditable|data-languagetipcontent|role|aria-.*|title|spellcheck|tabindex|data-cke-.*)$/i;
-const kClassesNotCopied = /^(bloom-content|cke_)/;
+    /^(id|lang|dir|contenteditable|data-languagetipcontent|role|aria-.*|title|spellcheck|tabindex|data-cke-.*|data-duration|data-audiorecordingmode|data-audiorecordingendtimes)$/i;
+const kClassesNotCopied =
+    /^(bloom-content.*|cke_.*|audio-sentence|bloom-postAudioSplit|ui-audioCurrent)$/;
