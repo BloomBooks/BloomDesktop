@@ -1,5 +1,7 @@
 import { css } from "@emotion/react";
+import { CircularProgress } from "@mui/material";
 import * as React from "react";
+import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
 import {
     BloomDialog,
@@ -70,17 +72,26 @@ export const AppBuilderChooseBooksDialog: React.FunctionComponent<{
     );
     const [selectedLinks, setSelectedLinks] =
         React.useState<BookSelectionLink[]>(initialLinks);
+    // True from clicking OK until the books are saved and the dialog closes, so that the user
+    // can see their click was taken and can't click OK again (BL-17062).
+    const [saving, setSaving] = React.useState(false);
 
     async function saveBooks(): Promise<void> {
-        // Preserve the UI order; RAB should show books in the same sequence the user chose here.
-        await postJsonAsync(
-            "publish/rab/books",
-            selectedLinks.map((link) => ({
-                bookId: link.book.id,
-                folderPath: link.book.folderPath,
-                title: link.book.title,
-            })),
-        );
+        setSaving(true);
+        try {
+            // Preserve the UI order; RAB should show books in the same sequence the user chose here.
+            await postJsonAsync(
+                "publish/rab/books",
+                selectedLinks.map((link) => ({
+                    bookId: link.book.id,
+                    folderPath: link.book.folderPath,
+                    title: link.book.title,
+                })),
+            );
+        } finally {
+            // If saving failed, this lets the user try again; the failure itself is still reported.
+            setSaving(false);
+        }
         props.onSaved();
         props.onClose();
     }
@@ -90,7 +101,11 @@ export const AppBuilderChooseBooksDialog: React.FunctionComponent<{
             open={true}
             dialogFrameProvidedExternally={false}
             onClose={props.onClose}
-            onCancel={() => props.onClose()}
+            onCancel={() => {
+                // Once OK is clicked the save can't be stopped, so closing now would only
+                // pretend to cancel it.
+                if (!saving) props.onClose();
+            }}
             draggable={false}
             maxWidth={false}
         >
@@ -143,14 +158,24 @@ export const AppBuilderChooseBooksDialog: React.FunctionComponent<{
                 </div>
             </DialogMiddle>
             <DialogBottomButtons>
+                {saving && (
+                    <CircularProgress
+                        size={24}
+                        thickness={5}
+                        css={css`
+                            align-self: center;
+                            color: ${kBloomBlue};
+                        `}
+                    />
+                )}
                 <DialogOkButton
                     default={true}
-                    enabled={selectedLinks.length > 0}
+                    enabled={selectedLinks.length > 0 && !saving}
                     onClick={() => {
                         void saveBooks();
                     }}
                 />
-                <DialogCancelButton />
+                <DialogCancelButton enabled={!saving} />
             </DialogBottomButtons>
         </BloomDialog>
     );

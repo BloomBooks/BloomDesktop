@@ -480,10 +480,14 @@ namespace Bloom.Collection
                     reusableSelectionInfo = null;
                 }
                 var bookInfo = reusableSelectionInfo ?? new BookInfo(folderPath, editable, sc);
-                bookInfo.ThumbnailLabel = bookInfo.GetBestDisplayTitle(
-                    _collectionSettings,
-                    _bookSelection.CurrentSelection
-                );
+                // ThumbnailLabel is read only for a book whose meta.json has no title (see
+                // CollectionApi.HandleBooksRequest); otherwise the button shows the title. Working it
+                // out can mean parsing the whole book, so don't do it for books that will not use it.
+                if (string.IsNullOrEmpty(bookInfo.Title))
+                    bookInfo.ThumbnailLabel = bookInfo.GetBestDisplayTitle(
+                        _collectionSettings,
+                        _bookSelection.CurrentSelection
+                    );
                 _bookInfos.Add(bookInfo);
             }
             catch (Exception e)
