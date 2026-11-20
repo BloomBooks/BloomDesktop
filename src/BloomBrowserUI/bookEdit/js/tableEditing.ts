@@ -137,6 +137,7 @@ function ensureTableLibrarySetUp(): void {
 
     setDefaultCellContentTypeId("text");
     installHostHooks();
+    requestCellLanguages();
 
     // The library asks the server for the translations of every string it shows,
     // the content type names registered above among them, and holds its UI back
@@ -189,22 +190,18 @@ function installHostHooks(): void {
         snapshot: (cell) => {
             const group = textGroupOfCell(cell);
             if (!group) return undefined;
-            return group.getAttribute("data-default-languages") ?? kNoSetting;
+            return storedSettingOf(group);
         },
         apply: (cell, value) => {
             const group = textGroupOfCell(cell);
             // undefined: the cell copied from is not a text cell, so it has no languages to give.
             if (!group || value === undefined) return;
             // Pasting over many cells mostly gives a cell the setting it already has.
-            if (
-                (group.getAttribute("data-default-languages") ?? kNoSetting) ===
-                value
-            )
-                return;
+            if (storedSettingOf(group) === value) return;
             const setting = value === kNoSetting ? null : value;
             if (!cellLanguages) {
                 // The collection's languages have not arrived yet; the cell gets its setting when
-                // they do (refreshCellLanguages).
+                // they do (requestCellLanguages).
                 settingsCopiedBeforeLanguages.push({ group, setting });
                 return;
             }
@@ -229,16 +226,18 @@ let settingsCopiedBeforeLanguages: {
 // uses undefined for a cell with nothing to copy, so "no setting" needs a value of its own.
 const kNoSetting = "";
 
-// The collection's languages as a table cell can show them. Asked for once per page load, like
-// the table feature's status; until it arrives, the menus have no Languages item.
-let cellLanguages: ICellLanguage[] | undefined;
-let cellLanguagesRequested = false;
+// A text cell's language setting as setHostCellSettings carries it.
+function storedSettingOf(group: HTMLElement): string {
+    return group.getAttribute("data-default-languages") ?? kNoSetting;
+}
 
-// SetupTableEditing runs again whenever a canvas element is added; the languages cannot change
-// within one page load (this module lives in the page iframe), so they are asked for once.
-function refreshCellLanguages(): void {
-    if (cellLanguagesRequested) return;
-    cellLanguagesRequested = true;
+// The collection's languages as a table cell can show them. Asked for once, when the page's first
+// table is attached; until they arrive, the menus have no Languages item.
+let cellLanguages: ICellLanguage[] | undefined;
+
+// The languages cannot change within one page load (this module lives in the page iframe), so
+// ensureTableLibrarySetUp asks for them once.
+function requestCellLanguages(): void {
     const settings = GetSettings();
     // The languages ticked in the toolbar, the first one first.
     const toolbarTags = [
@@ -296,11 +295,14 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
         ),
     );
     // Each new box gets what page load gives every box: editing, CKEditor, its language tag, its
-    // group's inline pictures and its direction. Every other box in `root` gets its language tag
-    // again, in the same pass: an operation can change a cell's width, which decides whether its
-    // box has a tag, and a copied setting can show a box that was hidden.
+    // group's inline pictures and its direction. Every other box in `root` that is showing gets
+    // its language tag again, in the same pass: an operation can change a cell's width, which
+    // decides whether its box has a tag, and a copied setting can show a box that was hidden.
+    // (A hidden box needs no tag, and measuring one makes jQuery lay out the page for it alone.)
     const oldEditables = Array.from(
-        root.querySelectorAll<HTMLElement>(".bloom-editable"),
+        root.querySelectorAll<HTMLElement>(
+            ".bloom-editable.bloom-visibility-code-on",
+        ),
     ).filter((editable) => !newEditables.includes(editable));
     setUpBoxesBuiltAfterLoad(newEditables, oldEditables);
     // `root` itself is one of these when a cell has just become a picture cell.
@@ -477,7 +479,6 @@ export function SetupTableEditing(container: HTMLElement): void {
     // it: until it arrives the answer is "no", which is the safe way round, since
     // it withholds chrome rather than showing chrome that then has to disappear.
     void refreshTableFeatureStatus();
-    refreshCellLanguages();
     // Both listeners go on the document, not on `container`. SetupElements (and
     // so this) runs again on a subtree whenever a canvas element is added, and a
     // listener on that subtree would hear a cell's event a second time on its

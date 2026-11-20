@@ -291,10 +291,9 @@ export function toggleRole(
     });
     // Make each changed group store its setting from `from` again; check first that every one
     // stores its setting from the other side of the change.
-    const show = (
-        from: "beforeSetting" | "afterSetting",
-        expected: "beforeSetting" | "afterSetting",
-    ) => {
+    const show = (from: "beforeSetting" | "afterSetting") => {
+        const expected =
+            from === "beforeSetting" ? "afterSetting" : "beforeSetting";
         const all = translationGroupsOf(pageDocument);
         const groups = changes.map((change) => {
             const group = all[change.place];
@@ -326,8 +325,8 @@ export function toggleRole(
         // In Change Layout mode the table is faded and cannot be edited, as with table operations.
         isAvailable: () => !isInChangeLayoutMode(pageDocument),
         // Hiding languages never adds an editable, so undo sets nothing up.
-        undo: () => show("beforeSetting", "afterSetting"),
-        redo: () => show("afterSetting", "beforeSetting"),
+        undo: () => show("beforeSetting"),
+        redo: () => show("afterSetting"),
     });
 }
 

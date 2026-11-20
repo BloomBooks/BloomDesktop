@@ -39,7 +39,7 @@ import { isInChangeLayoutMode } from "../undo/redoKeyBinding";
 import { theOneUndoStack } from "../undo/UndoStack";
 import { EditableDivUtils } from "./editableDivUtils";
 import { getToolboxBundleExports } from "./workspaceFrames";
-import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
+import { isInCanvasElementOutsideTableCell } from "../toolbox/canvas/canvasElementConstants";
 import { buildCanvasElementControlRegistryContext } from "../toolbox/canvas/buildCanvasElementControlRegistryContext";
 import { imageAvailabilityRules } from "../toolbox/canvas/canvasControlAvailabilityRules";
 import { getMenuSections } from "../toolbox/canvas/canvasControlResolution";
@@ -220,14 +220,7 @@ export function getInlineImageActionTarget(
     const translationGroup = editable.parentElement;
     if (!translationGroup?.classList.contains("bloom-translationGroup"))
         return { kind: "none" };
-    // A table cell holds an ordinary text box of fixed size, even when the table is on a Canvas
-    // page and so inside a canvas element; findParagraphForTextContextMenu lets it through the
-    // same way.
-    if (
-        !editable.closest(".bloom-cell") &&
-        editable.closest(kCanvasElementSelector)
-    )
-        return { kind: "none" };
+    if (isInCanvasElementOutsideTableCell(editable)) return { kind: "none" };
     if (isFieldBloomWritesItself(editable)) return { kind: "none" };
     // An image description is a translation group of its own, inside the bloom-canvas but not
     // inside any canvas element, so none of the checks above exclude it. It is what a reader

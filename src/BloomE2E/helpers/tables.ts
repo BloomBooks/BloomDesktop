@@ -2129,13 +2129,16 @@ export async function getCellLanguagesShownIn(
     await target.waitFor({ state: "attached", timeout: 30000 });
     return target.evaluate(
         (element, where) => {
-            const columns = (
-                element.getAttribute("data-column-widths") ?? ""
-            ).split(",").length;
+            const widths = element.getAttribute("data-column-widths") ?? "";
+            // An empty attribute means no columns yet, not one ("".split gives one item).
+            const columns = widths === "" ? 0 : widths.split(",").length;
             const cells = Array.from(
                 element.querySelectorAll(":scope > .bloom-cell"),
             );
-            const cellElement = cells[where.row * columns + where.column];
+            const cellElement =
+                columns === 0
+                    ? undefined
+                    : cells[where.row * columns + where.column];
             if (!cellElement)
                 throw new Error(
                     `The table has ${cells.length} cells in ${columns} columns, so there is ` +
