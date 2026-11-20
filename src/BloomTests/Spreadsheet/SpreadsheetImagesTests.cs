@@ -7,6 +7,7 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Spreadsheet;
 using BloomTemp;
+using BloomTests.ImageProcessing;
 using BloomTests.TeamCollection;
 using Moq;
 using NUnit.Framework;
@@ -233,12 +234,7 @@ namespace BloomTests.Spreadsheet
             _spreadsheetFolder = new TemporaryFolder(_testFolder, "Spreadsheet");
             _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
-            var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
-            mockLangDisplayNameResolver
-                .Setup(x => x.GetLanguageDisplayName("en"))
-                .Returns("English");
-
-            _exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+            _exporter = MakeExporter();
             var path = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
                 _pathToTestImages
             );
@@ -599,21 +595,17 @@ namespace BloomTests.Spreadsheet
                     );
                 }
 
-                var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
-                mockLangDisplayNameResolver
-                    .Setup(x => x.GetLanguageDisplayName("en"))
-                    .Returns("English");
-                var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
                 var progressSpy = new ProgressSpy();
 
-                var sheet = exporter.ExportToFolder(
-                    new HtmlDom(conflictingImageNamesBook, true),
-                    bookFolder.FolderPath,
-                    outputFolder.FolderPath,
-                    out string outputPath,
-                    progressSpy,
-                    OverwriteOptions.Overwrite
-                );
+                var sheet = MakeExporter()
+                    .ExportToFolder(
+                        new HtmlDom(conflictingImageNamesBook, true),
+                        bookFolder.FolderPath,
+                        outputFolder.FolderPath,
+                        out string outputPath,
+                        progressSpy,
+                        OverwriteOptions.Overwrite
+                    );
 
                 // Sanity check: all three images made it into the export as image content rows.
                 var imageSourceColumn = sheet.GetColumnForTag(
@@ -660,6 +652,153 @@ namespace BloomTests.Spreadsheet
         }
 
         /// <summary>
+        /// An exporter that knows "en" is English, which is all these tests' books need.
+        /// </summary>
+        private static SpreadsheetExporter MakeExporter()
+        {
+            var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+            mockLangDisplayNameResolver
+                .Setup(x => x.GetLanguageDisplayName("en"))
+                .Returns("English");
+            return new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+        }
+
+        /// <summary>
+        /// A canvas element holding a background picture. With imgStyle set, the picture is cropped.
+        /// </summary>
+        private static string BackgroundPicture(
+            string src,
+            string imgStyle,
+            string dataBook = null
+        ) =>
+            ReallyCropImagesTests.MakeImageCanvasElement(
+                null,
+                src,
+                "height: 378.826px; left: 325px; top: 6px; width: 140px;",
+                imgStyle,
+                true,
+                dataBook
+            );
+
+        /// <summary>
+        /// A content page whose canvas holds the given canvas elements.
+        /// </summary>
+        private static string ContentPage(string pageNumber, string canvasElements) =>
+            $@"
+    <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""aaaaaaaa-1111-1111-1111-11111111111{pageNumber}"" data-page-number=""{pageNumber}"" lang="""">
+        <div class=""marginBox"">
+            <div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"">{canvasElements}
+            </div>
+        </div>
+    </div>";
+
+        private const string kCropStyle = "width: 280px; left: -80px; top: -20px";
+
+        /// <summary>
+        /// A book whose custom front cover has a cropped background picture (man.jpg) that is
+        /// also used uncropped on page 1, and whose pages 2 and 3 use the same cropped picture
+        /// (lady24b.png). In both cases cropping has to give the cropped picture a new name, so
+        /// the cropped file exists only in the export's images folder, not in the book folder.
+        /// </summary>
+        private static string CroppedImagesBook =>
+            @"
+<html><head></head>
+<body data-l1=""en"" data-l2="""" data-l3="""">
+    <div id=""bloomDataDiv"">
+        <div data-book=""coverImage"" lang=""*"" src=""man.jpg"">man.jpg</div>
+    </div>
+    <div class=""bloom-page cover coverColor bloom-frontMatter frontCover A5Portrait side-right"" data-page=""required singleton"" id=""cccccccc-0000-0000-0000-000000000000"" lang="""">
+        <div class=""marginBox"">
+            <div class=""bloom-canvas bloom-has-canvas-element"">"
+            + BackgroundPicture("man.jpg", kCropStyle, "coverImage")
+            + @"
+            </div>
+        </div>
+    </div>"
+            + ContentPage("1", BackgroundPicture("man.jpg", null))
+            + ContentPage("2", BackgroundPicture("lady24b.png", kCropStyle))
+            + ContentPage("3", BackgroundPicture("lady24b.png", kCropStyle))
+            + @"
+</body></html>";
+
+        /// <summary>
+        /// Regression test for BL-16990. Exporting crops the pictures, and a cropped picture that
+        /// needs a new name is written only to the export's images folder. The exporter must not
+        /// then warn that the picture is missing just because it is not in the book folder.
+        /// </summary>
+        [Test]
+        public void Export_CroppedPicturesWithNewNames_NoMissingImageWarning()
+        {
+            using (var bookFolder = new TemporaryFolder(_testFolder, "CroppedImages_Book"))
+            using (var outputFolder = new TemporaryFolder(_testFolder, "CroppedImages_Out"))
+            {
+                var imageFolder =
+                    SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                        _pathToTestImages
+                    );
+                foreach (var name in new[] { "man.jpg", "lady24b.png" })
+                    RobustFile.Copy(
+                        Path.Combine(imageFolder, name),
+                        Path.Combine(bookFolder.FolderPath, name)
+                    );
+
+                var progressSpy = new ProgressSpy();
+                var dom = new HtmlDom(CroppedImagesBook, true);
+
+                var sheet = MakeExporter()
+                    .ExportToFolder(
+                        dom,
+                        bookFolder.FolderPath,
+                        outputFolder.FolderPath,
+                        out string _,
+                        progressSpy,
+                        OverwriteOptions.Overwrite
+                    );
+
+                // Sanity checks: cropping really did give both cropped pictures new names that
+                // exist only in the export folder, which is the situation that produced the warning.
+                var coverSrc = dom.SelectSingleNode(
+                        "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                    )
+                    .InnerText.Trim();
+                var pageSrcs = dom.SafeSelectNodes("//div[@data-page-number]//img")
+                    .Select(img => img.GetAttribute("src"))
+                    .ToList();
+                Assert.That(pageSrcs[0], Is.EqualTo("man.jpg"));
+                Assert.That(
+                    pageSrcs[2],
+                    Is.EqualTo(pageSrcs[1]),
+                    "Setup sanity check: pages 2 and 3 should share one cropped file."
+                );
+                var outputImages = Path.Combine(outputFolder.FolderPath, "images");
+                foreach (var croppedSrc in new[] { coverSrc, pageSrcs[1] })
+                {
+                    // The book folder holds only man.jpg and lady24b.png, so a new name is not there.
+                    Assert.That(
+                        croppedSrc,
+                        Is.Not.EqualTo("man.jpg").And.Not.EqualTo("lady24b.png"),
+                        "Setup sanity check: cropping should have renamed the picture."
+                    );
+                    Assert.That(
+                        RobustFile.Exists(Path.Combine(outputImages, croppedSrc)),
+                        Is.True,
+                        $"The cropped picture {croppedSrc} should be in the export's images folder."
+                    );
+                }
+                var imageSourceColumn = sheet.GetColumnForTag(
+                    InternalSpreadsheet.ImageSourceColumnLabel
+                );
+                Assert.That(
+                    sheet.AllRows().Select(r => r.GetCell(imageSourceColumn).Text),
+                    Does.Contain(Path.Combine("images", coverSrc)),
+                    "The spreadsheet should point at the cropped cover picture."
+                );
+
+                Assert.That(progressSpy.Warnings, Is.Empty);
+            }
+        }
+
+        /// <summary>
         /// A minimal book holding a single image, so a test can inspect exactly one thumbnail.
         /// </summary>
         private static string MinimalImageBook(string imageFileName) =>
@@ -702,20 +841,15 @@ namespace BloomTests.Spreadsheet
                 Path.Combine(bookFolder.FolderPath, imageFileName)
             );
 
-            var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
-            mockLangDisplayNameResolver
-                .Setup(x => x.GetLanguageDisplayName("en"))
-                .Returns("English");
-            var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
-
-            exporter.ExportToFolder(
-                new HtmlDom(MinimalImageBook(imageFileName), true),
-                bookFolder.FolderPath,
-                outputFolder.FolderPath,
-                out string outputPath,
-                new ProgressSpy(),
-                OverwriteOptions.Overwrite
-            );
+            MakeExporter()
+                .ExportToFolder(
+                    new HtmlDom(MinimalImageBook(imageFileName), true),
+                    bookFolder.FolderPath,
+                    outputFolder.FolderPath,
+                    out string outputPath,
+                    new ProgressSpy(),
+                    OverwriteOptions.Overwrite
+                );
             return outputPath;
         }
 

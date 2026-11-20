@@ -1503,14 +1503,16 @@ namespace BloomTests.ImageProcessing
             string src,
             string ceStyle,
             string imgStyle = null,
-            bool background = false
+            bool background = false,
+            string dataBook = null
         )
         {
             var backgroundString = background ? " bloom-backgroundImage" : "";
             var imgStyleString = imgStyle == null ? "" : $"style=\"{imgStyle}\"";
+            var dataBookString = dataBook == null ? "" : $"data-book=\"{dataBook}\"";
             return $"<div class=\"bloom-canvas-element{backgroundString}\" style=\"{ceStyle}\" data-bubble=\"{{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:4,`backgroundColors`:[`transparent`],`shadowOffset`:0}}\">"
                 + $"  <div tabindex=\"0\" class=\"bloom-imageContainer bloom-leadingElement\">"
-                + $"      <img id=\"{imgId}\" src=\"{src}\" {imgStyleString} />"
+                + $"      <img id=\"{imgId}\" src=\"{src}\" {imgStyleString} {dataBookString} />"
                 + $"  </div>"
                 + $"</div>";
         }
