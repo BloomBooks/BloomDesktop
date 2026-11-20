@@ -78,14 +78,14 @@ export function showLanguagesInTranslationGroup(
  * page has at most 30 of them (OverflowChecker.AddOverflowHandlers), and a box added later cannot
  * join that without counting again.
  *
- * `boxesShownAgain` are boxes that were already set up but hidden and are now shown, which
- * showLanguagesInTranslationGroup returns: they only need their language tags, which a hidden box
- * does not get, since AddLanguageTags skips a box too narrow to hold one. They are tagged with the
- * new boxes, so the page is laid out once to measure them all.
+ * `boxesToTagAgain` are boxes already set up that need only their language tags worked out again:
+ * those showLanguagesInTranslationGroup has shown again (a hidden box gets no tag, since
+ * AddLanguageTags skips a box too narrow to hold one), or boxes whose width may have changed. They
+ * are tagged with the new boxes, so the page is laid out once to measure them all.
  */
 export function setUpBoxesBuiltAfterLoad(
     boxes: HTMLElement[],
-    boxesShownAgain: HTMLElement[] = [],
+    boxesToTagAgain: HTMLElement[] = [],
 ): void {
     const groups = Array.from(
         new Set(
@@ -125,7 +125,7 @@ export function setUpBoxesBuiltAfterLoad(
     // Must come before attachToCkEditor: CKEditor's inline mode decides whether the editor is
     // read-only from the element's contenteditable state at the moment it attaches.
     boxes.forEach((box) => box.setAttribute("contenteditable", "true"));
-    addLanguageTagsToBoxes($([...boxes, ...boxesShownAgain]));
+    addLanguageTagsToBoxes($([...boxes, ...boxesToTagAgain]));
     boxes.forEach((box) => attachToCkEditor(box));
     // After CKEditor, which can replace the boxes' nodes, as at page load.
     activateLongPressFor($boxes);

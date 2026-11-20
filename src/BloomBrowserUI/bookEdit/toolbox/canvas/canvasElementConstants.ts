@@ -8,6 +8,18 @@ export const kBloomButtonClass = "bloom-canvas-button";
 export const kCanvasElementClass = "bloom-canvas-element";
 export const kCanvasElementSelector = `.${kCanvasElementClass}`;
 
+/**
+ * Whether `element` is in a canvas element's own content. A table cell's text is not: it is an
+ * ordinary text box of fixed size, even when the table is on a Canvas page and so inside a canvas
+ * element. But a canvas element inside a cell (a text overlay on an image cell's picture) is, so
+ * the nearer of the two boundaries decides.
+ */
+export function isInCanvasElementOutsideTableCell(element: Element): boolean {
+    return !!element
+        .closest(`.bloom-cell, ${kCanvasElementSelector}`)
+        ?.matches(kCanvasElementSelector);
+}
+
 export const kHasCanvasElementClass = "bloom-has-canvas-element";
 // The requestPageContent delay id held for the whole conversion of an old-style background
 // image (an img directly in the bloom-canvas) into a background canvas element, cleanup
