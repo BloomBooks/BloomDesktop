@@ -899,9 +899,10 @@ function languageMoreRow(page: Page, heading: string): Locator {
 /** The heading a sub-page of the dialog shows above its settings, which takes the user back. */
 function subPageBackLink(page: Page): Locator {
     // A button named after the sub-page, like the row that opened it; the row, unlike this,
-    // holds its name in a heading.
+    // holds its name in a heading. The button's name starts with the group the sub-page belongs
+    // to, e.g. "Written Language 1 · English › More".
     return collectionSettingsDialog(page)
-        .getByRole("button", { name: "More", exact: true })
+        .getByRole("button", { name: /(^| › )More$/ })
         .filter({ hasNot: page.locator("h4") });
 }
 
@@ -1052,10 +1053,11 @@ export async function getCollectionSettingsSearchResults(
         (await area.locator(selector).allInnerTexts())
             .map((text) => text.trim())
             .filter((text) => text !== "");
-    return {
-        pages: await texts("h2"),
-        groups: await texts("h3"),
-        settings: await texts("h4"),
-        text: await area.innerText(),
-    };
+    const [pages, groups, settings, text] = await Promise.all([
+        texts("h2"),
+        texts("h3"),
+        texts("h4"),
+        area.innerText(),
+    ]);
+    return { pages, groups, settings, text };
 }

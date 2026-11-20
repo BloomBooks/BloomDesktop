@@ -114,11 +114,26 @@ export const ConfigrSubscriptionBadge: React.FunctionComponent<{
 );
 
 /**
- * The place in a settings dialog's title bar where Config-R shows its search box. Put it in the
- * DialogTitle's children and pass a state setter as containerRef; give the ConfigrPane that state
- * as its searchBoxContainer. (State, not a ref, so the pane renders again once the element exists.)
+ * Puts Config-R's search box in a settings dialog's title bar. Put `searchBox` in the
+ * DialogTitle's children and pass `searchBoxContainer` as the ConfigrPane's searchBoxContainer.
  */
-export const ConfigrSearchBoxContainer: React.FunctionComponent<{
+export function useConfigrSearchBox(): {
+    searchBox: React.ReactElement;
+    searchBoxContainer: HTMLDivElement | null;
+} {
+    // State, not a ref, so the pane renders again once the element exists.
+    const [searchBoxContainer, setSearchBoxContainer] =
+        React.useState<HTMLDivElement | null>(null);
+    return {
+        searchBox: (
+            <ConfigrSearchBoxContainer containerRef={setSearchBoxContainer} />
+        ),
+        searchBoxContainer,
+    };
+}
+
+// The place in the title bar where Config-R shows its search box.
+const ConfigrSearchBoxContainer: React.FunctionComponent<{
     containerRef: React.RefCallback<HTMLDivElement>;
 }> = (props) => (
     <div
@@ -195,6 +210,11 @@ export const ConfigrDialogMiddle: React.FunctionComponent<{
             }
 
             ${kConfigrSearchMatchCss}
+
+            // The arrow of the button that goes back from a sub-page.
+            .configr-subpage-back .configr-subpage-back-icon {
+                color: ${kBloomBlue};
+            }
 
             // In a disabled config-r checkbox row, the label and checkbox colors are already
             // faded; MUI also fades the whole row (opacity 0.38), so it was applied twice and the

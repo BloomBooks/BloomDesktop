@@ -456,7 +456,9 @@ const DraggablePaperCore: FunctionComponent<EnhancedPaperProps> = (props) => {
     return (
         <Draggable
             handle={"#" + handleId}
-            cancel={'[class*="MuiDialogContent-root"]'}
+            // A press on a control in the title bar (a search box, say) works the control
+            // instead of dragging the dialog.
+            cancel={'[class*="MuiDialogContent-root"], input, textarea, button'}
             bounds="body" // don't let the dialog be dragged outside the window
         >
             <Paper

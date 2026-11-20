@@ -8,10 +8,10 @@ import {
 } from "../../react_components/BloomDialog/BloomDialog";
 import {
     ConfigrDialogMiddle,
-    ConfigrSearchBoxContainer,
     kConfigrDialogSizeCss,
     kConfigrPaneClassName,
     kConfigrThemeOverrides,
+    useConfigrSearchBox,
 } from "../../react_components/ConfigrDialogMiddle";
 import { useSetupBloomDialog } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import {
@@ -195,10 +195,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         undefined,
     );
     const dialogRef = React.useRef<HTMLDivElement>(null);
-    // The place in the title bar where Config-R shows its search box. State, not a ref, so the
-    // pane renders again once the element exists.
-    const [searchBoxContainer, setSearchBoxContainer] =
-        React.useState<HTMLDivElement | null>(null);
+    const { searchBox, searchBoxContainer } = useConfigrSearchBox();
 
     const setDialogVisibleWhileColorPickerOpen = React.useCallback(
         (open: boolean) => {
@@ -451,11 +448,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             draggable={false}
             maxWidth={false}
         >
-            <DialogTitle title={bookSettingsTitle}>
-                <ConfigrSearchBoxContainer
-                    containerRef={setSearchBoxContainer}
-                />
-            </DialogTitle>
+            <DialogTitle title={bookSettingsTitle}>{searchBox}</DialogTitle>
             <ConfigrDialogMiddle>
                 {configrInitialValues && (
                     <ConfigrPane

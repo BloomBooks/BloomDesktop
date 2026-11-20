@@ -9,9 +9,11 @@ import { expect, test } from "../fixtures/bloomTest";
 import {
     cancelCollectionSettings,
     clearCollectionSettingsSearch,
+    closeCollectionSettingsLanguageMore,
     getCollectionSettingsSearchResults,
     getShowingCollectionSettingsPage,
     openCollectionSettings,
+    openCollectionSettingsLanguageMore,
     searchCollectionSettings,
 } from "../helpers/collectionSettings";
 
@@ -83,10 +85,11 @@ test("searching for a group's heading shows the settings in that group", async (
     expect(results.settings).toEqual(expect.arrayContaining(kPlaceSettings));
     expect(results.settings).not.toContain("Show QR Codes");
 
-    // A group on a language's More page.
+    // A group on a language's More page. In search results a group on a sub-page is headed by
+    // the path to it, since the sub-page has no heading of its own there.
     await searchCollectionSettings(page, "Fonts");
     results = await getCollectionSettingsSearchResults(page);
-    expect(results.groups).toContain("Fonts");
+    expect(results.groups).toContain("More › Fonts");
     expect(results.settings).toEqual(
         expect.arrayContaining([
             "Font size when displayed in tools",
@@ -153,4 +156,42 @@ test("clearing the search shows the pages again", async ({ page }) => {
     const afterClearing = await getCollectionSettingsSearchResults(page);
     expect(afterClearing.settings).toEqual(languagesPage.settings);
     expect(afterClearing.groups).toEqual(languagesPage.groups);
+});
+
+test("results name the language a setting belongs to", async ({ page }) => {
+    // The Language row, which names each written language, does not match, so the group's
+    // heading names the language instead.
+    await searchCollectionSettings(page, "Default Font");
+    const results = await getCollectionSettingsSearchResults(page);
+    expect(results.groups).toEqual(
+        expect.arrayContaining([
+            "Written Language 1 · English",
+            "Written Language 2 · French",
+        ]),
+    );
+    expect(results.groups).not.toContain("Written Language 1");
+});
+
+test("searching for a language's name finds that language's settings", async ({
+    page,
+}) => {
+    await searchCollectionSettings(page, "French");
+    const results = await getCollectionSettingsSearchResults(page);
+    // The Language row shows, so the heading does not repeat the name.
+    expect(results.groups).toContain("Written Language 2");
+    expect(results.groups).not.toContain("Written Language 1");
+    expect(results.settings).toContain("Default Font");
+});
+
+test("a language's More page says which language it is for", async ({
+    page,
+}) => {
+    // The More page no longer shows the Language row, so its back button names the language.
+    await openCollectionSettingsLanguageMore(page, "Written Language 2");
+    await expect(
+        page.getByRole("button", {
+            name: "Written Language 2 · French › More",
+        }),
+    ).toBeVisible();
+    await closeCollectionSettingsLanguageMore(page);
 });
