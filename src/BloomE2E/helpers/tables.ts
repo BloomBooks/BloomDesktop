@@ -1936,7 +1936,8 @@ export interface IMenuCellLanguage {
 // The Languages item is Bloom's own, drawn into the library's menu, and its check boxes are in a
 // submenu that opens while the pointer is on the item. These attributes are the ones
 // TableCellLanguagesSection.tsx puts on them for this purpose.
-async function openLanguagesSubmenu(page: Page): Promise<Locator> {
+/** Open the Languages submenu of whichever table menu is open, and return it. */
+export async function openLanguagesSubmenu(page: Page): Promise<Locator> {
     const menu = openTableMenuPanel(page);
     const item = menu
         .locator("[data-table-cell-languages] [role='menuitem']")
@@ -2342,6 +2343,23 @@ export async function expectTableButtonsShowing(page: Page): Promise<void> {
         frame.locator("button[data-btable-menu-pill]:visible"),
         "The table did not show a round menu button with the pointer resting on it.",
     ).not.toHaveCount(0, { timeout: kTableWaitMs });
+}
+
+/**
+ * Scroll the open table menu, as it scrolls when it is taller than the window: it is made shorter
+ * than its items, then scrolled down a little. Fails if the menu did not scroll.
+ */
+export async function scrollOpenTableMenu(page: Page): Promise<void> {
+    const scrolledBy = await openTableMenuPanel(page).evaluate((menu) => {
+        const panel = menu as HTMLElement;
+        panel.style.maxHeight = "100px";
+        panel.scrollTop = 30;
+        return panel.scrollTop;
+    });
+    if (scrolledBy === 0)
+        throw new Error(
+            "The open table menu did not scroll, so its items must fit in 100 px.",
+        );
 }
 
 /** The table menu that is open, whichever it is. */

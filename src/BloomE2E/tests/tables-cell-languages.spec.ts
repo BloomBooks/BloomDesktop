@@ -37,8 +37,10 @@ import {
     getTableCellLanguages,
     getTableShape,
     makeBookWithTableOnCanvasPage,
+    openLanguagesSubmenu,
     openTableMenu,
     paintFormatFromCellOntoCell,
+    scrollOpenTableMenu,
     toggleCellLanguageInCellMenu,
     toggleMenuCellLanguage,
     typeInCell,
@@ -367,6 +369,22 @@ test.describe("the languages of a table's text cells", () => {
                 ).toBe("Pomme");
             },
         );
+    });
+
+    // The Languages submenu is placed beside its item when it opens and stays there. A menu taller
+    // than the window scrolls, which would carry the item away from it, so scrolling the menu
+    // closes the submenu.
+    test("scrolling the table menu closes its Languages submenu", async ({
+        page,
+    }) => {
+        await openTableMenu(page, "table");
+        const submenu = await openLanguagesSubmenu(page);
+        await scrollOpenTableMenu(page);
+        await expect(
+            submenu,
+            "Scrolling the table menu should have closed its Languages submenu.",
+        ).toBeHidden();
+        await closeAnyMenu(page);
     });
 
     // Which languages a published table shows is decided twice over: by what Bloom writes into the

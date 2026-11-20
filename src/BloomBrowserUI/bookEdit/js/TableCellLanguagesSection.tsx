@@ -94,6 +94,10 @@ export const TableCellLanguagesSection: React.FunctionComponent<{
 
     // A layout effect because the submenu's place depends on its own measured width (it opens to
     // the left when there is no room on the right), and it must be in place before it is painted.
+    // It also closes the submenu if the library's menu scrolls: the menu scrolls when it is taller
+    // than the window, which would carry the Languages item away from the fixed submenu, and a
+    // person scrolling the menu is looking for another item anyway. (The page scrolling moves
+    // neither, since the library's menu is fixed too.)
     useLayoutEffect(() => {
         if (!open || !item.current || !submenu.current) return;
         const itemRect = item.current.getBoundingClientRect();
@@ -104,6 +108,10 @@ export const TableCellLanguagesSection: React.FunctionComponent<{
             left: roomOnRight ? itemRect.right - 2 : itemRect.left - width + 2,
             top: itemRect.top - 4,
         });
+        const menu = item.current.closest<HTMLElement>("[data-btable-menu]")!;
+        const close = () => setOpen(false);
+        menu.addEventListener("scroll", close);
+        return () => menu.removeEventListener("scroll", close);
     }, [open]);
 
     const someCellHasOneLanguage = someGroupHasOneLanguage(
