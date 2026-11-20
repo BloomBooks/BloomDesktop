@@ -1236,6 +1236,11 @@
         <target xml:lang="ky" state="needs-translation">Info</target>
         <note>ID: Common.Info</note>
       </trans-unit>
+      <trans-unit id="Common.Languages" translate="no">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="ky" state="needs-translation">Languages</target>
+        <note>ID: Common.Languages</note>
+      </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
         <target xml:lang="ky" state="needs-translation">Learn More</target>
