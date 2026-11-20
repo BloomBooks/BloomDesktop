@@ -20,6 +20,13 @@ declare module "*.css?raw" {
     export default content;
 }
 
+// Allow importing LESS files compiled to a CSS string (e.g. a browser test that puts the real
+// book styles on its test page)
+declare module "*.less?inline" {
+    const content: string;
+    export default content;
+}
+
 // Allow side-effect imports of stylesheets, e.g. import "./App.less".
 // TypeScript 6.0 began requiring a module declaration for side-effect imports
 // (TS2882); Vite handles the actual loading, so an ambient declaration is enough.
