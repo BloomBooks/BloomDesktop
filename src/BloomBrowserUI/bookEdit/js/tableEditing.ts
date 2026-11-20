@@ -275,9 +275,10 @@ function requestCellLanguages(): void {
 }
 
 /**
- * Give the Bloom content of the cells inside `root` the wiring that Bloom
- * normally applies to a whole page as it loads, for the cells that have not had
- * it yet.
+ * Give the Bloom content of the cells inside `roots` (cells or tables) the wiring
+ * that Bloom normally applies to a whole page as it loads, for the cells that have
+ * not had it yet. The boxes of all of them are set up in one pass, so the page is
+ * measured once however many roots there are.
  *
  * The library builds cell content itself, and it does so long after the page
  * loaded: a new row or column, every cell of a nested table, a cell whose
@@ -292,35 +293,40 @@ function requestCellLanguages(): void {
  * through here has a contenteditable attribute, which is what identifies the
  * ones that still need the treatment.
  */
-function wireBloomContentOfNewCells(root: HTMLElement): void {
+function wireBloomContentOfNewCells(allRoots: HTMLElement[]): void {
     // A table made in Change Layout mode is not editable there, like the
     // mode's text boxes, which origami makes not contenteditable. Leaving the
     // mode rebuilds the page, and the page-load pass wires these cells then.
-    if (root.closest(".origami-layout-mode")) return;
-    // `root` is a cell or a table, so everything below it that is a
-    // bloom-editable belongs to some cell of some table.
-    const newEditables = Array.from(
-        root.querySelectorAll<HTMLElement>(
-            ".bloom-editable:not([contenteditable])",
-        ),
+    // A root inside another (a cell of a nested table, announced along with the cell that holds
+    // it) is covered by that one, and would otherwise have its boxes set up twice.
+    const roots = allRoots.filter(
+        (root) =>
+            !root.closest(".origami-layout-mode") &&
+            !allRoots.some((other) => other !== root && other.contains(root)),
     );
+    if (roots.length === 0) return;
+    const within = (selector: string) =>
+        roots.flatMap((root) =>
+            Array.from(root.querySelectorAll<HTMLElement>(selector)),
+        );
+    // Each root is a cell or a table, so everything below it that is a
+    // bloom-editable belongs to some cell of some table.
+    const newEditables = within(".bloom-editable:not([contenteditable])");
     // Each new box gets what page load gives every box: editing, CKEditor, its language tag, its
-    // group's inline pictures and its direction. Every other box in `root` that is showing gets
+    // group's inline pictures and its direction. Every other box in the roots that is showing gets
     // its language tag again, in the same pass: an operation can change a cell's width, which
     // decides whether its box has a tag, and a copied setting can show a box that was hidden.
     // (A hidden box needs no tag, and measuring one makes jQuery lay out the page for it alone.)
-    const oldEditables = Array.from(
-        root.querySelectorAll<HTMLElement>(
-            ".bloom-editable.bloom-visibility-code-on",
-        ),
+    const oldEditables = within(
+        ".bloom-editable.bloom-visibility-code-on",
     ).filter((editable) => !newEditables.includes(editable));
     setUpBoxesBuiltAfterLoad(newEditables, oldEditables);
-    // `root` itself is one of these when a cell has just become a picture cell.
+    // A root is itself one of these when a cell has just become a picture cell.
     const imageCellSelector = ".bloom-cell[data-content-type='image']";
-    const imageCells = Array.from(
-        root.querySelectorAll<HTMLElement>(imageCellSelector),
-    );
-    if (root.matches(imageCellSelector)) imageCells.push(root);
+    const imageCells = [
+        ...within(imageCellSelector),
+        ...roots.filter((root) => root.matches(imageCellSelector)),
+    ];
     imageCells.forEach((cell) => {
         SetupImagesInContainer(cell);
         // A picture cell made after the page loaded also needs the drawing
@@ -334,8 +340,10 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
                 ),
         );
     });
-    observeImageCells(root);
-    wireVideoContainersOfNewCells(root);
+    roots.forEach((root) => {
+        observeImageCells(root);
+        wireVideoContainersOfNewCells(root);
+    });
 }
 
 // The video containers this has already wired. SetupVideoEditing adds a click
@@ -392,18 +400,13 @@ function onTableCellContentChanged(e: Event): void {
     cellsAwaitingWiring.add(custom.detail.cell);
 }
 
-// Wire the cells onTableCellContentChanged collected, together, as one root per table.
+// Wire the cells onTableCellContentChanged collected, together.
 function wireCellsAwaitingWiring(): void {
     const cells = Array.from(cellsAwaitingWiring).filter(
         (cell) => cell.isConnected,
     );
     cellsAwaitingWiring.clear();
-    const tables = new Set(
-        cells.map((cell) =>
-            outermostTable(cell.closest<HTMLElement>(".bloom-table")!),
-        ),
-    );
-    tables.forEach((table) => wireBloomContentOfNewCells(table));
+    wireBloomContentOfNewCells(cells);
 }
 
 /** Handle the library finishing a table operation. Attached via SetupTableEditing. */
@@ -422,7 +425,7 @@ function onTableHistoryUpdated(e: Event): void {
         cellsAwaitingWiring.forEach((cell) => {
             if (outermost.contains(cell)) cellsAwaitingWiring.delete(cell);
         });
-        wireBloomContentOfNewCells(outermost);
+        wireBloomContentOfNewCells([outermost]);
     }
     // After the wiring, not before: wiring attaches CKEditor to the cells the operation built,
     // and an attach can be reported as a CKEditor change. Recording the table's change last
