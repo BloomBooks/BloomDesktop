@@ -9,14 +9,15 @@ export const kCanvasElementClass = "bloom-canvas-element";
 export const kCanvasElementSelector = `.${kCanvasElementClass}`;
 
 /**
- * Whether `element` is in a canvas element's own content. A table cell is not: it holds an ordinary
- * text box of fixed size, even when the table is on a Canvas page and so inside a canvas element.
+ * Whether `element` is in a canvas element's own content. A table cell's text is not: it is an
+ * ordinary text box of fixed size, even when the table is on a Canvas page and so inside a canvas
+ * element. But a canvas element inside a cell (a text overlay on an image cell's picture) is, so
+ * the nearer of the two boundaries decides.
  */
 export function isInCanvasElementOutsideTableCell(element: Element): boolean {
-    return (
-        !element.closest(".bloom-cell") &&
-        !!element.closest(kCanvasElementSelector)
-    );
+    return !!element
+        .closest(`.bloom-cell, ${kCanvasElementSelector}`)
+        ?.matches(kCanvasElementSelector);
 }
 
 export const kHasCanvasElementClass = "bloom-has-canvas-element";

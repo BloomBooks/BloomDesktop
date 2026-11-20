@@ -42,8 +42,13 @@ vi.mock("bloom-table", async (importOriginal) => ({
     },
 }));
 
-import { AttachNewTable, SetupTableEditing } from "./tableEditing";
+import {
+    AttachNewTable,
+    kCopiedLanguagesDelayId,
+    SetupTableEditing,
+} from "./tableEditing";
 import { setUpBoxesBuiltAfterLoad } from "./translationGroupLanguages";
+import { getActiveDelayIds, whenNoActiveDelays } from "./pageContentDelays";
 
 // jsdom has no ResizeObserver, which attachSingleTable installs to keep cell pictures fitted.
 class NoopResizeObserver {
@@ -66,7 +71,7 @@ const shownLangsOf = (group: HTMLElement) =>
     ).map((box) => box.getAttribute("lang"));
 
 describe("a language setting copied into a cell", () => {
-    it("reaches the cell when the collection's languages arrive after the copy", () => {
+    it("reaches the cell when the collection's languages arrive after the copy, and saving waits for it", async () => {
         const tableDiv = document.createElement("div");
         tableDiv.classList.add("bloom-table");
         document.body.appendChild(tableDiv);
@@ -89,8 +94,12 @@ describe("a language setting copied into a cell", () => {
         ).toBeDefined();
         expect(group.getAttribute("data-default-languages")).toBe("V");
         expect(shownLangsOf(group)).toEqual(["tpi"]);
+        expect(getActiveDelayIds()).not.toContain(kCopiedLanguagesDelayId);
 
         cellSettingsHooks!.apply(cell, "V,N1");
+        // Until the cell has its setting, saving the page must wait, or it would save the old one.
+        expect(getActiveDelayIds()).toContain(kCopiedLanguagesDelayId);
+
         answerLanguages!({
             data: {
                 language1Tag: "tpi",
@@ -106,5 +115,7 @@ describe("a language setting copied into a cell", () => {
             .mocked(setUpBoxesBuiltAfterLoad)
             .mock.calls.flatMap((call) => call[0]);
         expect(added.map((box) => box.getAttribute("lang"))).toContain("en");
+        await whenNoActiveDelays();
+        expect(getActiveDelayIds()).not.toContain(kCopiedLanguagesDelayId);
     });
 });

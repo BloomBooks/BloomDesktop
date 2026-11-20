@@ -757,6 +757,28 @@ describe("inlineImageInteractions", () => {
             expect(target.kind).toBe("add");
         });
 
+        it("offers nothing in a text overlay on an image cell's picture", () => {
+            // An image cell holds a bloom-canvas, whose canvas elements can include text
+            // overlays. Such a text is a canvas element's, though it is inside a cell, so a
+            // picture pasted there belongs to the canvas, not inside the text.
+            const root = getTestRoot();
+            root.innerHTML =
+                `<div class="bloom-page"><div class="bloom-table">` +
+                `<div class="bloom-cell" data-content-type="image"><div class="bloom-canvas">` +
+                `<div class="bloom-canvas-element"><div class="bloom-translationGroup">` +
+                `<div class="bloom-editable" lang="en"><p>overlay</p></div>` +
+                `</div></div></div></div></div></div>`;
+            const paragraph = root.querySelector("p") as HTMLElement;
+            expect(
+                paragraph.closest(".bloom-cell"),
+                "The overlay should be inside a cell for this test",
+            ).not.toBeNull();
+
+            const target = getInlineImageActionTarget(paragraph);
+
+            expect(target.kind).toBe("none");
+        });
+
         it("offers nothing inside an image description", () => {
             // An image description is a translation group, inside the bloom-canvas but not
             // inside a canvas element, so the checks for those do not exclude it. It should
