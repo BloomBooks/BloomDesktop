@@ -13,6 +13,7 @@ import {
 } from "../react_components/BloomDialog/BloomDialog";
 import {
     ConfigrDialogMiddle,
+    ConfigrSearchBoxContainer,
     kConfigrDialogSizeCss,
     kConfigrPaneClassName,
     kConfigrThemeOverrides,
@@ -117,6 +118,10 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const paneRef = React.useRef<ConfigrPaneHandle>(null);
     // The top-level page Config-R is showing, so Help can open that page's topic.
     const [shownPageKey, setShownPageKey] = React.useState<string>();
+    // The place in the title bar where Config-R shows its search box. State, not a ref, so the
+    // pane renders again once the element exists.
+    const [searchBoxContainer, setSearchBoxContainer] =
+        React.useState<HTMLDivElement | null>(null);
 
     // Config-r can call onChange while rendering, so state updates from it are deferred; the OK
     // handler reads this ref to be sure it has the newest values.
@@ -292,7 +297,11 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             draggable={false}
             maxWidth={false}
         >
-            <DialogTitle title={dialogTitle} />
+            <DialogTitle title={dialogTitle}>
+                <ConfigrSearchBoxContainer
+                    containerRef={setSearchBoxContainer}
+                />
+            </DialogTitle>
             <ConfigrDialogMiddle>
                 {notAllowedMessage && (
                     <div
@@ -308,12 +317,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                     <ConfigrPane
                         ref={paneRef}
                         className={kConfigrPaneClassName}
-                        // Config-R shows its label only in the bar that holds the search box,
-                        // which would repeat the dialog's own title right below it.
                         label=""
-                        // The search box is in Config-R's app bar.
-                        showAppBar={true}
-                        showSearch={true}
+                        searchBoxContainer={searchBoxContainer}
                         initialValues={
                             loadedSettings.values as unknown as ConfigrValues
                         }

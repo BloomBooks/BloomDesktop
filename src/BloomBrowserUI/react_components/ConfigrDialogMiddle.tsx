@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import * as React from "react";
 import { DialogMiddle } from "./BloomDialog/BloomDialog";
-import { kBloomBlue } from "../bloomMaterialUITheme";
+import { kBloomBlue, kDialogPadding } from "../bloomMaterialUITheme";
 
 // The Book Settings and Collection Settings dialogs share this size, so they feel like one family.
 const kConfigrDialogWidthPx = 900;
@@ -18,13 +18,111 @@ export const kConfigrDialogSizeCss = css`
 // Give the ConfigrPane this class so ConfigrDialogMiddle can make it fill the middle.
 export const kConfigrPaneClassName = "configr-dialog-pane";
 
-// Pass as the ConfigrPane's themeOverrides.
+// The text colors of Bloom's settings forms: near-black for headings and labels, grey for the
+// descriptions under them.
+const kConfigrTextColor = "#1f1f1f";
+const kConfigrDescriptionColor = "#5f6368";
+
+// Pass as the ConfigrPane's themeOverrides. Config-R merges this over its own theme, so these
+// typography roles set the type scale of every settings form: h2 is the page heading, h3 a group
+// heading, h4 a setting's label, and caption the description under a group or a setting.
 export const kConfigrThemeOverrides = {
     // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
     palette: {
         primary: { main: kBloomBlue },
     },
+    typography: {
+        h2: { fontSize: "20px", fontWeight: 600, color: kConfigrTextColor },
+        h3: { fontSize: "16px", fontWeight: 600, color: kConfigrTextColor },
+        h4: {
+            fontSize: "14px",
+            fontWeight: 500,
+            color: kConfigrTextColor,
+            lineHeight: 1.25,
+        },
+        caption: {
+            fontSize: "12px",
+            fontWeight: 400,
+            color: kConfigrDescriptionColor,
+            lineHeight: 1.5,
+        },
+    },
+    components: {
+        // The list of pages on the left.
+        MuiTab: {
+            styleOverrides: {
+                root: {
+                    fontSize: "14px",
+                    fontWeight: 400,
+                    "&.Mui-selected": { fontWeight: 600 },
+                },
+            },
+        },
+        // The value shown in a dropdown, the same size as the label beside it.
+        MuiSelect: {
+            styleOverrides: {
+                select: { fontSize: "14px" },
+            },
+        },
+        // Buttons inside the form, such as Change… and Remove.
+        MuiButton: {
+            styleOverrides: {
+                root: { fontSize: "12px", fontWeight: 500 },
+            },
+        },
+    },
 };
+
+// Config-R wraps each search match in a <mark> with this class. ConfigrDialogMiddle applies this
+// rule; a settings dialog that has a plain DialogMiddle puts it in that DialogMiddle's css.
+export const kConfigrSearchMatchCss = css`
+    mark.configr-search-match {
+        background-color: #feeb5a;
+    }
+`;
+
+/**
+ * The place in a settings dialog's title bar where Config-R shows its search box. Put it in the
+ * DialogTitle's children and pass a state setter as containerRef; give the ConfigrPane that state
+ * as its searchBoxContainer. (State, not a ref, so the pane renders again once the element exists.)
+ */
+export const ConfigrSearchBoxContainer: React.FunctionComponent<{
+    containerRef: React.RefCallback<HTMLDivElement>;
+}> = (props) => (
+    <div
+        ref={props.containerRef}
+        css={css`
+            // Grow to take the free space, so the box sits against the close
+            // button rather than splitting the space with it.
+            flex-grow: 1;
+            margin-right: ${kDialogPadding};
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            // Config-R's search box, made small enough for the title bar. The
+            // title bar makes everything in it 16px bold, so the font is stated
+            // outright. Config-R's own rules use two classes; these use three.
+            .configr-search-box .configr-search-icon {
+                padding: 0 6px;
+                svg {
+                    font-size: 20px;
+                }
+            }
+            .configr-search-box .configr-search-input {
+                width: 13ch;
+                font-size: 13px;
+                font-weight: normal;
+                padding: 3px 24px 3px 28px;
+            }
+            .configr-search-box .configr-search-clear {
+                padding: 0 2px;
+                button {
+                    padding: 2px;
+                }
+            }
+        `}
+    />
+);
 
 /**
  * The DialogMiddle of a settings dialog whose content is a Config-R form: only the form scrolls,
@@ -63,6 +161,8 @@ export const ConfigrDialogMiddle: React.FunctionComponent<{
             a {
                 color: ${kBloomBlue};
             }
+
+            ${kConfigrSearchMatchCss}
 
             // In a disabled config-r checkbox row, the label and checkbox colors are already
             // faded; MUI also fades the whole row (opacity 0.38), so it was applied twice and the

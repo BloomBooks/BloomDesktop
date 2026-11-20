@@ -21,6 +21,10 @@ import {
     DialogOkButton,
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../react_components/l10nHooks";
+import {
+    kConfigrSearchMatchCss,
+    kConfigrThemeOverrides,
+} from "../../react_components/ConfigrDialogMiddle";
 import BloomButton from "../../react_components/bloomButton";
 import { postDataWithConfigAsync } from "../../utils/bloomApi";
 import {
@@ -487,6 +491,8 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
                         a {
                             color: ${kBloomBlue};
                         }
+
+                        ${kConfigrSearchMatchCss}
                     `}
                 >
                     <ConfigrPane
@@ -498,11 +504,7 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
                             ...(settings as unknown as Record<string, unknown>),
                             openReadingAppBuilder: "",
                         }}
-                        themeOverrides={{
-                            palette: {
-                                primary: { main: kBloomBlue },
-                            },
-                        }}
+                        themeOverrides={kConfigrThemeOverrides}
                         onChange={(nextSettings) => {
                             setSettingsToReturnLater(nextSettings);
                         }}

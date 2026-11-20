@@ -8,7 +8,7 @@ import {
     ConfigrPane,
 } from "@sillsdev/config-r";
 import { get, postJson } from "../utils/bloomApi";
-import { kBloomBlue } from "../bloomMaterialUITheme";
+import { kConfigrThemeOverrides } from "../react_components/ConfigrDialogMiddle";
 import { tabMargins } from "./commonTabSettings";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { BloomSubscriptionIndicatorIconAndText } from "../react_components/requiresSubscription";
@@ -151,11 +151,7 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                             typeof ConfigrPane
                         >["initialValues"]
                     }
-                    themeOverrides={{
-                        palette: {
-                            primary: { main: kBloomBlue },
-                        },
-                    }}
+                    themeOverrides={kConfigrThemeOverrides}
                     onChange={(newSettings) => {
                         const normalized =
                             normalizeConfigrSettings(newSettings);
