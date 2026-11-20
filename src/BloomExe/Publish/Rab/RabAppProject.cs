@@ -1085,7 +1085,12 @@ namespace Bloom.Publish.Rab
         /// </summary>
         internal static string GetContentsImageFileName(RabBookPublishInfo book)
         {
-            return book.BookId + "-cover" + Path.GetExtension(GetThumbnailFileName(book));
+            // The id comes from the book's meta.json; keep only what a GUID has, so it can't
+            // name a path outside the images folder.
+            var safeId = new string(
+                book.BookId.Where(c => char.IsAsciiLetterOrDigit(c) || c == '-').ToArray()
+            );
+            return safeId + "-cover" + Path.GetExtension(GetThumbnailFileName(book));
         }
     }
 }

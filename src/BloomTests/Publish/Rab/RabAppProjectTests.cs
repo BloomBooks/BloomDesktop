@@ -527,6 +527,31 @@ namespace BloomTests.Publish.Rab
             );
         }
 
+        [Test]
+        public void GetContentsImageFileName_KeepsABookIdFromNamingAnotherFolder()
+        {
+            var name = RabAppProject.GetContentsImageFileName(
+                new RabBookPublishInfo
+                {
+                    BookId = @"..\..\victim/x",
+                    ThumbnailFileName = "thumbnail.jpg",
+                }
+            );
+
+            Assert.That(name, Is.EqualTo("victimx-cover.jpg"));
+            Assert.That(
+                RabAppProject.GetContentsImageFileName(
+                    new RabBookPublishInfo
+                    {
+                        BookId = "56f64b9b-1d18-4257-902e-779f20ef33a1",
+                        ThumbnailFileName = "thumbnail.png",
+                    }
+                ),
+                Is.EqualTo("56f64b9b-1d18-4257-902e-779f20ef33a1-cover.png"),
+                "a real (GUID) book id is used as it is"
+            );
+        }
+
         [TestCase("My Collection", "my-collection", "org.sil.bloom.my.collection")]
         [TestCase("123 Numbers First", "123-numbers-first", "org.sil.bloom.a123.numbers.first")]
         [TestCase("***", "bloom-app", "org.sil.bloom.bloom.app")]
