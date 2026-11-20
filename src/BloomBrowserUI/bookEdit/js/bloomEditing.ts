@@ -450,9 +450,9 @@ export function keepDataTextUpToDate(boxes: JQuery) {
     });
 }
 
-//Convert Standard Format Markers in the pasted text to html spans
-// Also (see BL-5575), if the parent div has .bloom-userCannotModifyStyles,
-// only allow plain text paste.
+// In a box whose translation group has bloom-userCannotModifyStyles (BL-5575), paste only the
+// clipboard's plain text, so a paste cannot bring in formatting. (Converting standard format
+// verse markers on paste is BloomField.convertStandardFormatVerseMarkersToSuperscript's job.)
 export function addPlainTextPasteHandler(boxes: JQuery) {
     boxes.on("paste", function (e) {
         const theEvent = e.originalEvent as ClipboardEvent;
