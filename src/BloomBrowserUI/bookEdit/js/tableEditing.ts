@@ -370,17 +370,40 @@ function wireVideoContainersOfNewCells(root: HTMLElement): void {
     post("edit/pageControls/requestVideoPlaceHolder");
 }
 
+// Cells whose content the library has (re)built during the current operation, not yet wired. An
+// operation announces each cell of a new row or column on its own; wiring them together lets the
+// page be measured once for all of them rather than once per cell.
+const cellsAwaitingWiring = new Set<HTMLElement>();
+
 /** Handle a cell's content being (re)initialised. Attached via SetupTableEditing. */
 function onTableCellContentChanged(e: Event): void {
     const custom = e as CustomEvent<{
         cell: HTMLElement;
         contentType: string;
     }>;
-    const { cell } = custom.detail;
     // The cell may now hold a text box, a picture, or a whole nested table
     // whose own cells the library filled with Bloom's default cell content, so
     // rather than switch on the content type we wire whatever is in there.
-    wireBloomContentOfNewCells(cell);
+    if (cellsAwaitingWiring.size === 0) {
+        // The operation's history update wires the whole table, these cells included; if it has
+        // not come by the end of this task, they are wired here.
+        queueMicrotask(wireCellsAwaitingWiring);
+    }
+    cellsAwaitingWiring.add(custom.detail.cell);
+}
+
+// Wire the cells onTableCellContentChanged collected, together, as one root per table.
+function wireCellsAwaitingWiring(): void {
+    const cells = Array.from(cellsAwaitingWiring).filter(
+        (cell) => cell.isConnected,
+    );
+    cellsAwaitingWiring.clear();
+    const tables = new Set(
+        cells.map((cell) =>
+            outermostTable(cell.closest<HTMLElement>(".bloom-table")!),
+        ),
+    );
+    tables.forEach((table) => wireBloomContentOfNewCells(table));
 }
 
 /** Handle the library finishing a table operation. Attached via SetupTableEditing. */
@@ -393,7 +416,14 @@ function onTableHistoryUpdated(e: Event): void {
     // wire; and an operation on a nested table hands us that table, while an
     // undo can have restored the cells of the table that holds it. Wiring from
     // the outermost table covers both.
-    if (table?.isConnected) wireBloomContentOfNewCells(outermostTable(table));
+    if (table?.isConnected) {
+        const outermost = outermostTable(table);
+        // Wiring the table covers the cells the operation announced in it.
+        cellsAwaitingWiring.forEach((cell) => {
+            if (outermost.contains(cell)) cellsAwaitingWiring.delete(cell);
+        });
+        wireBloomContentOfNewCells(outermost);
+    }
     // After the wiring, not before: wiring attaches CKEditor to the cells the operation built,
     // and an attach can be reported as a CKEditor change. Recording the table's change last
     // leaves the table as the more recent of the two, which is what it is.

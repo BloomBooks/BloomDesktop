@@ -119,3 +119,35 @@ describe("a language setting copied into a cell", () => {
         expect(getActiveDelayIds()).not.toContain(kCopiedLanguagesDelayId);
     });
 });
+
+describe("cells the library announces during one operation", () => {
+    // An Add Row announces each new cell on its own. Setting up a box measures the page, so the
+    // cells are set up together, in one pass, rather than one by one.
+    it("are set up together, in one pass", async () => {
+        const tableDiv = document.createElement("div");
+        tableDiv.classList.add("bloom-table");
+        document.body.appendChild(tableDiv);
+        SetupTableEditing(document.body);
+        AttachNewTable(tableDiv);
+        const cells = Array.from(
+            tableDiv.querySelectorAll<HTMLElement>(".bloom-cell"),
+        ).slice(0, 2);
+        // sanity check: there are two cells to announce
+        expect(cells.length).toBe(2);
+        const setUp = vi.mocked(setUpBoxesBuiltAfterLoad);
+        setUp.mockClear();
+
+        cells.forEach((cell) =>
+            cell.dispatchEvent(
+                new CustomEvent("tableCellContentChanged", {
+                    bubbles: true,
+                    detail: { cell, contentType: "text" },
+                }),
+            ),
+        );
+        expect(setUp).not.toHaveBeenCalled();
+        await Promise.resolve();
+
+        expect(setUp).toHaveBeenCalledTimes(1);
+    });
+});
