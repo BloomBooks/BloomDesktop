@@ -4512,6 +4512,8 @@ namespace Bloom.Publish.Rab
             {
                 ["settings"] = JObject.FromObject(normalizedSettings),
                 ["books"] = new JArray(orderedBooks),
+                // An app built with an older RAB needs building again after Prepare updates RAB.
+                ["rabVersion"] = kRabInstallerVersion,
             }.ToString(Formatting.None);
         }
 
@@ -4520,7 +4522,8 @@ namespace Bloom.Publish.Rab
             IEnumerable<RabBookPublishInfo> trackedBooks
         )
         {
-            // Build Needed intentionally tracks only explicit settings and tracked-book selection/order/title.
+            // Build Needed intentionally tracks only explicit settings, tracked-book selection/order/title,
+            // and the RAB version.
             // Thumbnail file names can also go stale, but we avoid special-casing that for now because other
             // book-content changes inside the BloomPUB are already outside this signature.
             return ComputeBuildInputSignature(

@@ -2563,12 +2563,60 @@ namespace BloomTests.Publish.Rab
                 Is.EqualTo(new[] { "C01-B001-cover.png", "C01-B002-cover.png" }),
                 "RAB packages contents images by name, so books whose thumbnails share a name would all show one picture"
             );
-            foreach (var name in imageNames)
+            for (var index = 0; index < imageNames.Count; index++)
+            {
+                var imagePath = Path.Combine(contentsFolder, "images", imageNames[index]);
                 Assert.That(
-                    RobustFile.Exists(Path.Combine(contentsFolder, "images", name)),
+                    RobustFile.Exists(imagePath),
                     Is.True,
-                    name + " was not copied where RAB looks for contents images"
+                    imageNames[index] + " was not copied where RAB looks for contents images"
                 );
+                Assert.That(
+                    RobustFile.ReadAllText(imagePath),
+                    Is.EqualTo("thumbnail of " + trackedBooks[index].Title),
+                    "each book's menu picture should be its own thumbnail"
+                );
+            }
+        }
+
+        [Test]
+        public void GetStatus_AppBuiltWithAnotherRabVersionNeedsBuilding()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            service.Prepare();
+            service.Build();
+            Assert.That(service.GetStatus().BuildNeeded, Is.False, "test setup: just built");
+
+            // Make the saved build look like one an older Bloom made with another RAB.
+            var state = JObject.Parse(RobustFile.ReadAllText(paths.PrepareStatePath));
+            var signature = JObject.Parse((string)state["LastBuiltInputSignature"]);
+            Assert.That(
+                signature["rabVersion"],
+                Is.Not.Null,
+                "test setup: the signature has a RAB version"
+            );
+            signature["rabVersion"] = "14-0-1";
+            state["LastBuiltInputSignature"] = signature.ToString(Formatting.None);
+            RobustFile.WriteAllText(paths.PrepareStatePath, state.ToString());
+
+            Assert.That(
+                service.GetStatus().BuildNeeded,
+                Is.True,
+                "after Prepare updates RAB, an app built with the old RAB still has its bugs"
+            );
         }
 
         [Test]
@@ -5055,7 +5103,7 @@ namespace BloomTests.Publish.Rab
                     )
                 )
                 {
-                    thumbnailWriter.Write("thumbnail");
+                    thumbnailWriter.Write("thumbnail of " + book.Title);
                 }
 
                 if (!FontsCssByFolderPath.TryGetValue(book.FolderPath, out var fontsCss))
