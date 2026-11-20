@@ -714,7 +714,7 @@ export default class OverflowChecker {
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
         // During AdjustSizeOrMarkOverflowOfAll, the canvas element whose height decides whether
-        // the box's overflow amounts that the batch read beforehand still hold.
+        // the overflow amounts that the batch read beforehand for the boxes in it still hold.
         const canvasElement = OverflowChecker.batch
             ? editable.closest<HTMLElement>(kCanvasElementSelector)
             : undefined;
@@ -730,8 +730,12 @@ export default class OverflowChecker {
             canvasElement &&
             canvasElement.style.height !== canvasElementHeight
         ) {
-            // The box has a new size, so what was read before no longer holds.
-            OverflowChecker.batch?.selfOverflowAmounts.delete(editable);
+            // Every box in the canvas element may have a new size (the boxes of its other
+            // languages share its height), so what was read before no longer holds for any of them.
+            const amounts = OverflowChecker.batch!.selfOverflowAmounts;
+            Array.from(amounts.keys())
+                .filter((box) => canvasElement.contains(box))
+                .forEach((box) => amounts.delete(box));
         }
         OverflowChecker.fixScrollBarsIfNeeded(
             editable,

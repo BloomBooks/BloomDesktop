@@ -516,3 +516,78 @@ describe("OverflowChecker.AdjustSizeAndMarkSelfOverflow", () => {
         ).not.toBe(waiting);
     });
 });
+
+describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
+    afterEach(() => {
+        vi.clearAllTimers();
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
+
+    // A canvas element holding a text box in each of two languages, both too small for their text.
+    function setUpTwoLanguageCanvasElement(): HTMLElement[] {
+        const boxStyle =
+            "height: 20px; width: 100px; font: 16px Arial; overflow: hidden";
+        const boxes = loadFixture(`
+            <div class="bloom-page">
+                <div class="marginBox" style="height: 600px">
+                    <div class="bloom-canvas" style="height: 500px">
+                        <div class="bloom-canvas-element" style="height: 40px">
+                            <div class="bloom-translationGroup">
+                                <div class="myTest bloom-editable bloom-visibility-code-on" style="${boxStyle}">${"words ".repeat(10)}</div>
+                                <div class="myTest bloom-editable bloom-visibility-code-on" style="${boxStyle}">${"words ".repeat(10)}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`);
+        vi.useFakeTimers();
+        vi.spyOn(theOneLocalizationManager, "asyncGetText").mockReturnValue({
+            done: () => {},
+        } as unknown as ReturnType<
+            typeof theOneLocalizationManager.asyncGetText
+        >);
+        initializeCanvasElementManager();
+        return boxes;
+    }
+
+    // Growing a canvas element to fit one box's text gives the boxes of its other languages
+    // more room too, so the overflow the batch read for them beforehand no longer holds.
+    it("measures a box again once another box has resized their canvas element", () => {
+        const [first, second] = setUpTwoLanguageCanvasElement();
+        const canvasElement = first.closest<HTMLElement>(
+            ".bloom-canvas-element",
+        )!;
+        expect(
+            OverflowChecker.getSelfOverflowAmounts(second)[1],
+            "The second box's text should not fit it at first, or this tests nothing.",
+        ).toBeGreaterThan(0);
+        const overflowGivenFor = new Map<HTMLElement, number>();
+        vi.spyOn(
+            theOneCanvasElementManager,
+            "adjustSizeOfContainingCanvasElementToMatchContent",
+        ).mockImplementation((element, overflowY) => {
+            overflowGivenFor.set(element, overflowY);
+            if (element === first) {
+                // What growing the canvas element does to both of its boxes.
+                canvasElement.style.height = "320px";
+                first.style.height = "150px";
+                second.style.height = "150px";
+                return 0;
+            }
+            return overflowY;
+        });
+
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll([first, second]);
+
+        expect(
+            overflowGivenFor.get(first),
+            "The first box should have been checked while its text did not fit.",
+        ).toBeGreaterThan(0);
+        expect(
+            overflowGivenFor.get(second),
+            "The second box's text fits once the canvas element has grown.",
+        ).toBeLessThanOrEqual(0);
+        expect(second.classList.contains("overflow")).toBe(false);
+    });
+});
