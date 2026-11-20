@@ -363,10 +363,16 @@ class RecordingResizeObserver {
     public disconnect(): void {
         this.observed.clear();
     }
-    /** Tell the observer's owner that `targets` changed size, as the browser would. */
-    public reportResize(targets: Element[]): void {
+    /** Tell the observer's owner that `targets` are now `height` pixels tall, as the browser would. */
+    public reportResize(targets: Element[], height: number): void {
         this.callback(
-            targets.map((target) => ({ target }) as ResizeObserverEntry),
+            targets.map(
+                (target) =>
+                    ({
+                        target,
+                        borderBoxSize: [{ inlineSize: 100, blockSize: height }],
+                    }) as unknown as ResizeObserverEntry,
+            ),
             this as unknown as ResizeObserver,
         );
     }
@@ -405,6 +411,11 @@ describe("watching the size of table cells", () => {
             observer.observed.has(cell),
         )!;
         expect(cellObserver, "no observer is watching the cells").toBeDefined();
+        // What the browser does as soon as it starts watching a cell: it reports its size.
+        cellObserver.reportResize(
+            Array.from(tableDiv.querySelectorAll(".bloom-cell")),
+            100,
+        );
     });
 
     afterEach(() => {
@@ -420,10 +431,12 @@ describe("watching the size of table cells", () => {
 
         // Three frames of a row drag: each frame's check runs, then the browser reports that
         // the row's cells changed size again.
-        cellObserver.reportResize(cells);
+        let height = 90;
+        cellObserver.reportResize(cells, height);
         for (let frame = 0; frame < 3; frame++) {
             runFrame();
-            cellObserver.reportResize(cells);
+            height -= 10;
+            cellObserver.reportResize(cells, height);
         }
         runFrame();
 
@@ -439,6 +452,29 @@ describe("watching the size of table cells", () => {
 
         expect(tableDelayChanges).toEqual(["taken", "released"]);
         expect(frames).toEqual([]);
+    });
+
+    // The page's check on loading, and the check each table operation schedules, already cover
+    // a cell that the observer has just started watching.
+    it("checks nothing when the browser first reports a cell, or reports one that kept its size", () => {
+        // beforeEach has made the browser's first report of every cell.
+        expect(
+            frames,
+            "The first report of each cell should schedule no check.",
+        ).toEqual([]);
+        const cells = Array.from(tableDiv.querySelectorAll(".bloom-cell"));
+
+        cellObserver.reportResize(cells, 100);
+        expect(
+            frames,
+            "A report of the same size should schedule no check.",
+        ).toEqual([]);
+
+        cellObserver.reportResize(cells, 80);
+        runFrame();
+        expect(
+            OverflowChecker.AdjustSizeOrMarkOverflowOfAll,
+        ).toHaveBeenCalledTimes(1);
     });
 
     it("stops watching the cells of a table that is deleted", () => {
