@@ -46,6 +46,9 @@ function getElementsThatCanOverflowOrNeedToBeResized(
     return results;
 }
 
+// BL-1260: a page with more boxes than this is not checked for overflow at all, and shows no marks.
+const kMaxBoxesToCheck = 30;
+
 // The page-wide overflow check waiting to run for each margin box (see
 // CheckPageAncestorOverflowSoon).
 const pageChecksWaiting = new WeakMap<Element, ReturnType<typeof setTimeout>>();
@@ -61,7 +64,7 @@ export default class OverflowChecker {
         );
 
         // BL-1260: disable overflow checking for pages with too many elements
-        if ($editablePageElements.length > 30) {
+        if ($editablePageElements.length > kMaxBoxesToCheck) {
             // since we're not going to check it, remove any indications from
             // previous checking.
             const cleanup = (className: string) => {
@@ -597,6 +600,9 @@ export default class OverflowChecker {
         const pageElements = marginBox
             ? getElementsThatCanOverflowOrNeedToBeResized(marginBox)
             : [];
+        // AddOverflowHandlers turns checking off for such a page and clears its marks; checking
+        // its tables would put marks back that nothing, not even typing, would clear.
+        if (pageElements.length > kMaxBoxesToCheck) return;
         // AdjustSizeAndMarkSelfOverflow changes the padding of a bloom-padForOverflow box
         // before it measures it, so a height measured beforehand would be out of date.
         const measurable = Array.from(

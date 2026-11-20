@@ -543,4 +543,44 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
         ).toBeLessThanOrEqual(0);
         expect(second.classList.contains("overflow")).toBe(false);
     });
+
+    // Puts in the document a margin box holding `count` boxes too small for their text.
+    function loadPageOfTooFullBoxes(count: number): HTMLElement[] {
+        const box =
+            `<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on" ` +
+            `style="height: 10px; width: 100px; font: 16px Arial; overflow: hidden">${"words ".repeat(10)}</div></div>`;
+        loadFixture(
+            `<div class="bloom-page"><div class="marginBox">${box.repeat(count)}</div></div>`,
+        );
+        vi.useFakeTimers();
+        initializeCanvasElementManager();
+        // The boxes are not in canvas elements, so their sizes stay as they are.
+        vi.spyOn(
+            theOneCanvasElementManager,
+            "adjustSizeOfContainingCanvasElementToMatchContent",
+        ).mockImplementation((_element, overflowY) => overflowY);
+        return Array.from(
+            document.querySelectorAll<HTMLElement>(
+                "#fixtureRoot .bloom-editable",
+            ),
+        );
+    }
+
+    // BL-1260: Bloom does not check a page with more than 30 boxes, and AddOverflowHandlers clears
+    // its marks, so marks put there by a table check would never be cleared.
+    it("marks nothing on a page with more than 30 boxes", () => {
+        const thirty = loadPageOfTooFullBoxes(30);
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(thirty);
+        expect(
+            thirty.filter((box) => box.classList.contains("overflow")).length,
+            "A page of 30 too-full boxes should be marked, or this tests nothing.",
+        ).toBe(30);
+
+        const thirtyOne = loadPageOfTooFullBoxes(31);
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(thirtyOne);
+
+        expect(
+            thirtyOne.filter((box) => box.classList.contains("overflow")),
+        ).toEqual([]);
+    });
 });
