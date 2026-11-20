@@ -3,6 +3,18 @@
 // Bloom license.
 let cleanupTimeout: any = 0;
 
+// Everything a descent measurement (MeasureText.getDescentMeasurements) depends on.
+export interface DescentMeasurementInputs {
+    text: string;
+    // Without the quotes that a computed style puts around a family name with spaces in it.
+    fontFamily: string;
+    // In pixels.
+    fontSize: number;
+    width: number;
+    // null leaves the line height at the font's default.
+    lineHeight: string | null;
+}
+
 export class MeasureText {
     // Returns an object with three measurements:
     // actualDescent: distance in pixels between the baseline and
@@ -16,13 +28,8 @@ export class MeasureText {
     // layoutDescent: the distance from the baseline of the text to the bottom
     // of an auto-sized box containing it at the specified line height.
     // (this may actually be LESS than the height needed to really draw the descenders!)
-    public static getDescentMeasurements(
-        text: string,
-        fontFamily: string,
-        fontSize: number,
-        width: number,
-        lineHeight: string | null,
-    ) {
+    public static getDescentMeasurements(inputs: DescentMeasurementInputs) {
+        const { text, fontFamily, fontSize, width, lineHeight } = inputs;
         const t0 = performance.now();
         // Get the descent that the browser uses for various purposes,
         // including painting the background of spans, and determining the
@@ -163,36 +170,18 @@ export class MeasureText {
         };
     }
 
-    // Same results as getDescentMeasurements(), but gets all the arguments
+    // Same results as getDescentMeasurements(), but gets its inputs
     // from a given element.
     public static getDescentMeasurementsOfBox(box: HTMLElement) {
-        return this.getDescentMeasurementsFromInputs(
+        return this.getDescentMeasurements(
             this.getDescentMeasurementInputsOfBox(box),
         );
     }
 
-    // getDescentMeasurements, given its arguments as getDescentMeasurementInputsOfBox returns them.
-    public static getDescentMeasurementsFromInputs(
-        inputs: ReturnType<typeof MeasureText.getDescentMeasurementInputsOfBox>,
-    ) {
-        return this.getDescentMeasurements(
-            inputs.text,
-            inputs.fontFamily,
-            inputs.fontSize,
-            inputs.width,
-            inputs.lineHeight,
-        );
-    }
-
-    // The arguments getDescentMeasurementsOfBox passes to getDescentMeasurements for `box`,
-    // which are everything its result depends on.
-    public static getDescentMeasurementInputsOfBox(box: HTMLElement): {
-        text: string;
-        fontFamily: string;
-        fontSize: number;
-        width: number;
-        lineHeight: string;
-    } {
+    // What getDescentMeasurementsOfBox passes to getDescentMeasurements for `box`.
+    public static getDescentMeasurementInputsOfBox(
+        box: HTMLElement,
+    ): DescentMeasurementInputs {
         const realStyle = window.getComputedStyle(box, null);
         return {
             text: box.textContent ? box.textContent : "",

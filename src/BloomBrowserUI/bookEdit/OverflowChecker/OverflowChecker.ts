@@ -266,9 +266,8 @@ export default class OverflowChecker {
           }
         | undefined;
 
-    // Descent measurements that AdjustSizeOrMarkOverflowOfAll has made, keyed by the inputs that
-    // MeasureText.getDescentMeasurementInputsOfBox gives, which are everything a measurement depends
-    // on. Kept from one call to the next: during a row drag every frame measures the same text at
+    // Descent measurements that AdjustSizeOrMarkOverflowOfAll has made, keyed by their
+    // DescentMeasurementInputs, which are everything a measurement depends on. Kept from one call to the next: during a row drag every frame measures the same text at
     // the same width, and a measurement lays out the page twice and paints the text on a canvas.
     private static rememberedDescentMeasurements = new Map<
         string,
@@ -287,8 +286,7 @@ export default class OverflowChecker {
         if (remembered) {
             return remembered;
         }
-        const measurements =
-            MeasureText.getDescentMeasurementsFromInputs(inputs);
+        const measurements = MeasureText.getDescentMeasurements(inputs);
         // A font that is still loading is measured as its fallback, which must not be reused
         // once the real font arrives.
         if (document.fonts.status === "loaded") {
