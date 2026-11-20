@@ -41,6 +41,8 @@ export interface IImagePlacement {
     slotWidth: number;
     /** True when the image has been cropped: it is wider or taller than the slot showing it. */
     cropped: boolean;
+    /** True when the browser has the image's picture: it loaded rather than failed. */
+    loaded: boolean;
 }
 
 /**
@@ -122,7 +124,9 @@ export async function getImagePlacement(
     return img.evaluate((element) => {
         const image = element as HTMLImageElement;
         const slot = image.closest(".bloom-canvas-element") as HTMLElement;
-        const src = image.getAttribute("src") ?? "";
+        // Without any query: Bloom adds one to some pictures, e.g. "?transparent=yes" to a PNG it
+        // shows as line art, and that is not part of the file's name.
+        const src = (image.getAttribute("src") ?? "").split("?")[0];
         return {
             fileName: decodeURIComponent(src.split("/").pop() ?? src),
             imageWidth: image.clientWidth,
@@ -130,6 +134,7 @@ export async function getImagePlacement(
             cropped:
                 image.clientWidth > slot.clientWidth + 1 ||
                 image.clientHeight > slot.clientHeight + 1,
+            loaded: image.complete && image.naturalWidth > 0,
         };
     });
 }

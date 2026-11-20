@@ -525,18 +525,9 @@ export function addLanguageTagsToBoxes(boxes: JQuery) {
 }
 
 // What the language tag of `box` should say, or undefined if it should have none.
+// The checks that need no layout come before the one that measures the box.
 function languageTagFor(box: HTMLElement): string | undefined {
     const $this = $(box);
-
-    // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
-    // with each other, leading to flashing back and forth
-    // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
-    // August 2024: for canvas elements, the language is now displayed in the context controls box, and isn't
-    // a problem for small text boxes. (So a canvas element's box is not measured at all, which
-    // spares laying out the page to measure it.)
-    if (!box.closest(kCanvasElementSelector) && $this.width()! < 100) {
-        return undefined;
-    }
 
     const key = $this.attr("lang");
     if (key !== undefined && (key === "*" || key.length < 1)) {
@@ -554,6 +545,16 @@ function languageTagFor(box: HTMLElement): string | undefined {
         $this.hasClass("bloom-hideLanguageNameDisplay") ||
         $this.parents(".bloom-hideLanguageNameDisplay").length !== 0
     ) {
+        return undefined;
+    }
+
+    // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
+    // with each other, leading to flashing back and forth
+    // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
+    // August 2024: for canvas elements, the language is now displayed in the context controls box, and isn't
+    // a problem for small text boxes. (So a canvas element's box is not measured at all, which
+    // spares laying out the page to measure it.)
+    if (!box.closest(kCanvasElementSelector) && $this.width()! < 100) {
         return undefined;
     }
 
