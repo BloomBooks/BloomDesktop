@@ -141,7 +141,6 @@ function ensureTableLibrarySetUp(): void {
 
     setDefaultCellContentTypeId("text");
     installHostHooks();
-    requestCellLanguages();
 
     // The library asks the server for the translations of every string it shows,
     // the content type names registered above among them, and holds its UI back
@@ -240,13 +239,17 @@ function storedSettingOf(group: HTMLElement): string {
     return group.getAttribute("data-default-languages") ?? kNoSetting;
 }
 
-// The collection's languages as a table cell can show them. Asked for once, when the page's first
-// table is attached; until they arrive, the menus have no Languages item.
+// The collection's languages as a table cell can show them. Asked for as the page loads, so that
+// they are there by the time a table added later opens its menus; until they arrive, the menus
+// have no Languages item.
 let cellLanguages: ICellLanguage[] | undefined;
+let cellLanguagesRequested = false;
 
-// The languages cannot change within one page load (this module lives in the page iframe), so
-// ensureTableLibrarySetUp asks for them once.
+// SetupTableEditing runs again whenever a canvas element is added; the languages cannot change
+// within one page load (this module lives in the page iframe), so they are asked for once.
 function requestCellLanguages(): void {
+    if (cellLanguagesRequested) return;
+    cellLanguagesRequested = true;
     const settings = GetSettings();
     // The languages ticked in the toolbar, the first one first.
     const toolbarTags = [
@@ -522,6 +525,7 @@ export function SetupTableEditing(container: HTMLElement): void {
     // it: until it arrives the answer is "no", which is the safe way round, since
     // it withholds chrome rather than showing chrome that then has to disappear.
     void refreshTableFeatureStatus();
+    requestCellLanguages();
     // Both listeners go on the document, not on `container`. SetupElements (and
     // so this) runs again on a subtree whenever a canvas element is added, and a
     // listener on that subtree would hear a cell's event a second time on its
