@@ -1237,6 +1237,11 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <target xml:lang="quc" state="final">Uya’ik ub’ixik</target>
         <note>ID: Common.Info</note>
       </trans-unit>
+      <trans-unit id="Common.Languages" translate="no">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="quc" state="needs-translation">Languages</target>
+        <note>ID: Common.Languages</note>
+      </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
         <target xml:lang="quc" state="translated">K'i eta'manik</target>
