@@ -2510,12 +2510,16 @@ namespace BloomTests.Publish.Rab
                     ?.Element("contents-item")
                     ?.Element("image-filename")
                     ?.Value,
-                Is.EqualTo("B001-cover.jpg"),
+                Is.EqualTo("C01-B001-cover.jpg"),
                 "the contents menu should use the book's own copy of its (now .jpg) thumbnail"
             );
             Assert.That(
                 RobustFile.Exists(
-                    Path.Combine(Path.GetDirectoryName(contentsPath), "images", "B001-cover.jpg")
+                    Path.Combine(
+                        Path.GetDirectoryName(contentsPath),
+                        "images",
+                        "C01-B001-cover.jpg"
+                    )
                 ),
                 Is.True
             );
@@ -2556,7 +2560,7 @@ namespace BloomTests.Publish.Rab
                 .ToList();
             Assert.That(
                 imageNames,
-                Is.EqualTo(new[] { "B001-cover.png", "B002-cover.png" }),
+                Is.EqualTo(new[] { "C01-B001-cover.png", "C01-B002-cover.png" }),
                 "RAB packages contents images by name, so books whose thumbnails share a name would all show one picture"
             );
             foreach (var name in imageNames)
