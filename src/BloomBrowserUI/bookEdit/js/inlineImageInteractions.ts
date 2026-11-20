@@ -1665,6 +1665,12 @@ interface IInlineImageResizeState {
     horizontalSign: number;
     // How much the block overflowed when the resize began. See continueResize.
     startOverflowLayoutPx: number;
+    // The largest width, as a percentage of the editable, that this resize has found to fit (at
+    // first the width the picture started at), and the smallest it has found not to fit
+    // (Infinity until one fails). The picture is always left at fittingPercent after a move that
+    // went too far. See continueResize.
+    fittingPercent: number;
+    tooBigPercent: number;
     started: boolean;
     // The pointer this gesture captured; see captureGesturePointer.
     pointerId: number;
@@ -2378,6 +2384,12 @@ function startResize(event: PointerEvent, handle: HTMLElement): void {
         editableWidthViewportPx,
         horizontalSign: getInlineImageHandleHorizontalSign(corner),
         startOverflowLayoutPx: measureBlockOverflowLayoutPx(editable),
+        fittingPercent: getInlineImageWidthPercent(
+            wrapper,
+            getImageBox(wrapper).width,
+            editableWidthViewportPx,
+        ),
+        tooBigPercent: Number.POSITIVE_INFINITY,
         started: false,
         pointerId: event.pointerId,
         imageTopsInContent: getImageTopsInContent(editable, undefined),
@@ -2407,37 +2419,39 @@ function continueResize(
         state.horizontalSign,
         state.editableWidthViewportPx,
     );
-    // Each move leaves the image at a width that fits, so the width it has now is the last one
-    // that fitted.
-    const lastFittingPercent = getInlineImageWidthPercent(
-        state.wrapper,
-        getImageBox(state.wrapper).width,
-        state.editableWidthViewportPx,
-    );
-    applyResizeWidth(state, percent);
     // A resize follows the rule a drag follows (shouldRevertInlineImageMove): in a block that
     // fitted its text when the resize began, a width that makes it overflow is not kept. That
     // stops the picture at the bottom of the block, which on a wide, short (landscape) block
     // comes long before the width limit (BL-17078), and before it pushes the text that follows
     // it out of the block. The picture stops at the largest width that still fits, found by
-    // halving the gap between the last width that fitted and this one, so that a fast movement
-    // of the pointer does not leave it short.
-    const fits = () =>
-        !shouldRevertInlineImageMove(
+    // halving the gap between the largest width known to fit and the smallest known not to, so
+    // that a fast movement of the pointer does not leave it short. Only the width changes during
+    // a resize, so what a width did once holds for the rest of the gesture: a pointer held past
+    // where the picture stopped costs no layout at all.
+    let applied = state.fittingPercent;
+    const tryWidth = (candidate: number): boolean => {
+        applyResizeWidth(state, candidate);
+        applied = candidate;
+        const fits = !shouldRevertInlineImageMove(
             state.startOverflowLayoutPx,
             measureBlockOverflowLayoutPx(state.editable),
         );
-    if (fits()) return;
-    let fitting = lastFittingPercent;
-    let tooBig = percent;
+        if (fits) state.fittingPercent = candidate;
+        else state.tooBigPercent = candidate;
+        return fits;
+    };
+    if (percent < state.tooBigPercent && tryWidth(percent)) return;
     for (let step = 0; step < kMaxResizeFitSteps; step++) {
-        const middle = Math.round(((fitting + tooBig) / 2) * 10) / 10;
-        if (middle === fitting || middle === tooBig) break;
-        applyResizeWidth(state, middle);
-        if (fits()) fitting = middle;
-        else tooBig = middle;
+        const middle =
+            Math.round(
+                ((state.fittingPercent + state.tooBigPercent) / 2) * 10,
+            ) / 10;
+        if (middle === state.fittingPercent || middle === state.tooBigPercent)
+            break;
+        tryWidth(middle);
     }
-    applyResizeWidth(state, fitting);
+    if (applied !== state.fittingPercent)
+        applyResizeWidth(state, state.fittingPercent);
 }
 
 // How many times continueResize may halve the gap while looking for the largest width that
