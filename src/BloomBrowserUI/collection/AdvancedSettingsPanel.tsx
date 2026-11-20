@@ -8,10 +8,12 @@ import {
     ConfigrPane,
 } from "@sillsdev/config-r";
 import { get, postJson } from "../utils/bloomApi";
-import { kConfigrThemeOverrides } from "../react_components/ConfigrDialogMiddle";
+import {
+    ConfigrSubscriptionBadge,
+    kConfigrThemeOverrides,
+} from "../react_components/ConfigrDialogMiddle";
 import { tabMargins } from "./commonTabSettings";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
-import { BloomSubscriptionIndicatorIconAndText } from "../react_components/requiresSubscription";
 import { useGetFeatureStatus } from "../react_components/featureStatus";
 import { useL10n } from "../react_components/l10nHooks";
 
@@ -214,21 +216,10 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                         !canChangeTeamCollectionOption
                                     }
                                 ></ConfigrBoolean>{" "}
-                                <div
-                                    css={css`
-                                        display: flex;
-                                        justify-content: flex-end;
-                                        .bloom-subscriptionIndicator {
-                                            font-size: 10pt;
-                                            font-weight: 700;
-                                        }
-                                    `}
-                                >
-                                    <BloomSubscriptionIndicatorIconAndText
-                                        feature="TeamCollection"
-                                        className="bloom-subscriptionIndicator"
-                                    />
-                                </div>
+                                <ConfigrSubscriptionBadge
+                                    feature="TeamCollection"
+                                    alignWithCheckbox={true}
+                                />
                             </div>
                             <div
                                 css={css`
@@ -242,21 +233,10 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                     path="allowTables"
                                     disabled={!tablesOptionEnabled}
                                 />
-                                <div
-                                    css={css`
-                                        display: flex;
-                                        justify-content: flex-end;
-                                        .bloom-subscriptionIndicator {
-                                            font-size: 10pt;
-                                            font-weight: 700;
-                                        }
-                                    `}
-                                >
-                                    <BloomSubscriptionIndicatorIconAndText
-                                        feature="Table"
-                                        className="bloom-subscriptionIndicator"
-                                    />
-                                </div>
+                                <ConfigrSubscriptionBadge
+                                    feature="Table"
+                                    alignWithCheckbox={true}
+                                />
                             </div>
                         </ConfigrGroup>
                     </ConfigrPage>

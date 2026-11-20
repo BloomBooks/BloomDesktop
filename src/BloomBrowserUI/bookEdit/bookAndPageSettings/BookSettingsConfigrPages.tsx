@@ -17,7 +17,7 @@ import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { Div, P } from "../../react_components/l10nComponents";
 import { useL10n } from "../../react_components/l10nHooks";
 import { PWithLink } from "../../react_components/pWithLink";
-import { BloomSubscriptionIndicatorIconAndText } from "../../react_components/requiresSubscription";
+import { ConfigrSubscriptionBadge } from "../../react_components/ConfigrDialogMiddle";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import {
     ColorDisplayButton,
@@ -527,21 +527,10 @@ export const useBookSettingsAreaDefinition = (
                                 !props.pageSizeSupportsFullBleed
                             }
                         />
-                        <div
-                            css={css`
-                                display: flex;
-                                padding-bottom: 5px;
-                                font-size: 12px;
-                                font-weight: bold;
-                            `}
-                        >
-                            <BloomSubscriptionIndicatorIconAndText
-                                feature="PrintshopReady"
-                                css={css`
-                                    margin-left: auto;
-                                `}
-                            />
-                        </div>
+                        <ConfigrSubscriptionBadge
+                            feature="PrintshopReady"
+                            alignWithCheckbox={true}
+                        />
                     </div>
                 </ConfigrGroup>
             </ConfigrPage>,
