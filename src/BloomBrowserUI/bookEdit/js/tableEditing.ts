@@ -39,6 +39,7 @@ import {
     cellLanguagesOfCollection,
     ICellLanguage,
     showSettingInGroup,
+    showSettingsInGroups,
     textGroupOfCell,
 } from "./tableCellLanguages";
 import { TableCellLanguagesSection } from "./TableCellLanguagesSection";
@@ -193,32 +194,36 @@ function installHostHooks(): void {
         apply: (cell, value) => {
             const group = textGroupOfCell(cell);
             // undefined: the cell copied from is not a text cell, so it has no languages to give.
-            if (!group || !cellLanguages || value === undefined) return;
+            if (!group || value === undefined) return;
             // Pasting over many cells mostly gives a cell the setting it already has.
             if (
                 (group.getAttribute("data-default-languages") ?? kNoSetting) ===
                 value
             )
                 return;
+            const setting = value === kNoSetting ? null : value;
+            if (!cellLanguages) {
+                // The collection's languages have not arrived yet; the cell gets its setting when
+                // they do (refreshCellLanguages).
+                settingsCopiedBeforeLanguages.push({ group, setting });
+                return;
+            }
             // Every operation that copies settings (a new row or column, Paste properties, Paint
-            // format) is followed by the wiring pass, which sets up the boxes this adds. That is
-            // also the only time they can be set up: a new row gets its settings before it is in
-            // the page, where a box's direction cannot be read. The pass also tags the boxes this
-            // shows again, all at once rather than once per cell.
-            boxesShownByCopiedSettings.push(
-                ...showSettingInGroup(
-                    group,
-                    value === kNoSetting ? null : value,
-                    cellLanguages,
-                ).shown,
-            );
+            // format) is followed by the wiring pass, which sets up the boxes this adds and tags
+            // the ones it shows again, all at once rather than once per cell. That is also the
+            // only time new boxes can be set up: a new row gets its settings before it is in the
+            // page, where a box's direction cannot be read.
+            showSettingInGroup(group, setting, cellLanguages);
         },
     });
 }
 
-// Boxes that copying a cell's settings showed again, waiting for the wiring pass that follows
-// every such copy (wireBloomContentOfNewCells) to give them their language tags.
-let boxesShownByCopiedSettings: HTMLElement[] = [];
+// Language settings copied into cells before the collection's languages arrived, which the cells
+// get once they do.
+let settingsCopiedBeforeLanguages: {
+    group: HTMLElement;
+    setting: string | null;
+}[] = [];
 
 // What setHostCellSettings carries for a text cell with no data-default-languages. The library
 // uses undefined for a cell with nothing to copy, so "no setting" needs a value of its own.
@@ -242,9 +247,20 @@ function refreshCellLanguages(): void {
         settings.currentCollectionLanguage3,
     ].filter((tag) => !!tag);
     get("settings/languageNames", (result) => {
-        cellLanguages = cellLanguagesOfCollection(
+        const languages = cellLanguagesOfCollection(
             result.data as ILanguageNameValues,
             toolbarTags,
+        );
+        cellLanguages = languages;
+        // Cells that an undo has since replaced are no longer in the page.
+        const waiting = settingsCopiedBeforeLanguages.filter(
+            (copied) => copied.group.isConnected,
+        );
+        settingsCopiedBeforeLanguages = [];
+        showSettingsInGroups(
+            waiting.map((copied) => copied.group),
+            waiting.map((copied) => copied.setting),
+            languages,
         );
     });
 }
@@ -268,8 +284,6 @@ function refreshCellLanguages(): void {
  * ones that still need the treatment.
  */
 function wireBloomContentOfNewCells(root: HTMLElement): void {
-    const shownBoxes = boxesShownByCopiedSettings;
-    boxesShownByCopiedSettings = [];
     // A table made in Change Layout mode is not editable there, like the
     // mode's text boxes, which origami makes not contenteditable. Leaving the
     // mode rebuilds the page, and the page-load pass wires these cells then.
@@ -282,8 +296,13 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
         ),
     );
     // Each new box gets what page load gives every box: editing, CKEditor, its language tag, its
-    // group's inline pictures and its direction.
-    setUpBoxesBuiltAfterLoad(newEditables, shownBoxes);
+    // group's inline pictures and its direction. Every other box in `root` gets its language tag
+    // again, in the same pass: an operation can change a cell's width, which decides whether its
+    // box has a tag, and a copied setting can show a box that was hidden.
+    const oldEditables = Array.from(
+        root.querySelectorAll<HTMLElement>(".bloom-editable"),
+    ).filter((editable) => !newEditables.includes(editable));
+    setUpBoxesBuiltAfterLoad(newEditables, oldEditables);
     // `root` itself is one of these when a cell has just become a picture cell.
     const imageCellSelector = ".bloom-cell[data-content-type='image']";
     const imageCells = Array.from(

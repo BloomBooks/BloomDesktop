@@ -333,8 +333,9 @@ export function toggleRole(
 
 // Give each of `groups` the setting at the same index, then set up the boxes that adds, and tag
 // the boxes it shows again, in one call for all the groups. Setting up and tagging measure the
-// boxes, so doing them group by group would lay the page out once per cell.
-function showSettingsInGroups(
+// boxes, so doing them group by group would lay the page out once per cell. The groups' boxes must
+// be in the page, where a box's direction can be read.
+export function showSettingsInGroups(
     groups: HTMLElement[],
     settings: (string | null)[],
     languages: ICellLanguage[],
