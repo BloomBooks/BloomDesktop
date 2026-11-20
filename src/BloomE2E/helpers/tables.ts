@@ -2053,6 +2053,33 @@ export async function getTableCellLanguages(
 }
 
 /**
+ * How many of the page's translation groups come before the first one in the table at
+ * `tableIndex`, in document order. The text box of a canvas element behind the table counts; one
+ * in front of it does not. A test reads this to show that a change to the page put a text box
+ * before the table's cells.
+ */
+export async function countTranslationGroupsBeforeTable(
+    page: Page,
+    tableIndex = 0,
+): Promise<number> {
+    const table = editablePageFrame(page)
+        .locator(".bloom-table")
+        .nth(tableIndex);
+    await table.waitFor({ state: "attached", timeout: kTableWaitMs });
+    return table.evaluate((element) => {
+        const groups = Array.from(
+            element.ownerDocument.querySelectorAll(".bloom-translationGroup"),
+        );
+        const first = element.querySelector(".bloom-translationGroup");
+        if (!first)
+            throw new Error(
+                "The table has no text cell, so no translation group to count up to.",
+            );
+        return groups.indexOf(first);
+    });
+}
+
+/**
  * Copy one cell's format onto another with Paint format, as a person does: choose Paint format in
  * the source cell's Cell menu, press on the target cell, and press Escape to stop painting.
  * Returns when the table has left its painting mode.

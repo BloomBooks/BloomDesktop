@@ -10,6 +10,15 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import { getShownPageId, reloadPageBeingEdited } from "../helpers/bookMaking";
+import {
+    deleteCanvasElement,
+    dragPaletteItemOntoCanvas,
+} from "../helpers/canvasElements";
+import {
+    chooseLayerCommand,
+    getStackingOrder,
+    selectStackedCanvasElement,
+} from "../helpers/canvasLayers";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
     openPublishDestination,
@@ -20,6 +29,7 @@ import {
     clickCell,
     closeAnyMenu,
     copyAndPasteTableProperties,
+    countTranslationGroupsBeforeTable,
     getCellLanguages,
     getCellLanguagesShownIn,
     getCellText,
@@ -172,6 +182,79 @@ test.describe("the languages of a table's text cells", () => {
         await undo(page);
 
         expect(await getCellLanguages(page, 0, 1)).toEqual(L1_ONLY);
+    });
+
+    // A canvas element sent behind the table puts its text box before the table's cells in the
+    // page. Undoing a language change made before that must still change the cell it was made to,
+    // and not the cell now in that cell's old place among the page's text boxes, which here has
+    // the same languages.
+    test("Undo takes back a cell's language change after a text box was sent behind the table", async ({
+        page,
+        step,
+    }) => {
+        const before = await step(
+            "Tick L2 in the second cell of the first row",
+            async () => {
+                // The column test left the first column showing L1 and L2, so the first two cells
+                // of the first row end up storing the same languages.
+                expect(await getCellLanguages(page, 0, 0)).toEqual(L1_AND_L2);
+                expect(await getCellLanguages(page, 0, 1)).toEqual(L1_ONLY);
+                await toggleCellLanguageInCellMenu(page, 0, 1, "L2");
+                expect(await getCellLanguages(page, 0, 1)).toEqual(L1_AND_L2);
+                return await getTableCellLanguages(page);
+            },
+        );
+        if (!before)
+            throw new Error(
+                "The cells' languages were never read before the change.",
+            );
+
+        await step("Add a Text Block and send it to the back", async () => {
+            expect(
+                await countTranslationGroupsBeforeTable(page),
+                "No text box should come before the table's cells yet.",
+            ).toBe(0);
+            await dragPaletteItemOntoCanvas(page, "none", {
+                xFraction: 0.3,
+                yFraction: 0.85,
+            });
+            // The new element is the front-most one.
+            const stack = await getStackingOrder(page);
+            await selectStackedCanvasElement(page, stack[stack.length - 1]);
+            await chooseLayerCommand(page, "Send to Back");
+            expect(
+                await countTranslationGroupsBeforeTable(page),
+                "Sending the Text Block to the back should put its text box before the table's " +
+                    "cells.",
+            ).toBe(1);
+        });
+
+        await step(
+            "Press Undo, and check only that cell changes back",
+            async () => {
+                await clickUndoButton(page);
+                const expected = before.map((row) => [...row]);
+                expected[0][1] = L1_ONLY;
+                await expect
+                    .poll(async () => getTableCellLanguages(page), {
+                        message:
+                            "Undo should have taken L2 out of the cell at row 0, column 1, and " +
+                            "left every other cell as it was.",
+                    })
+                    .toEqual(expected);
+            },
+        );
+
+        await step("Delete the Text Block", async () => {
+            // Leave the page as the tests after this one expect it. The Text Block is the
+            // back-most element now.
+            await selectStackedCanvasElement(
+                page,
+                (await getStackingOrder(page))[0],
+            );
+            await deleteCanvasElement(page);
+            expect(await countTranslationGroupsBeforeTable(page)).toBe(0);
+        });
     });
 
     // A cell's languages are one of its settings, so they go wherever the table carries a cell's
