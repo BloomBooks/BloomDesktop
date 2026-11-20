@@ -39,6 +39,7 @@ import {
     goToPage,
     makeBookFromTemplate,
     setContentLanguages,
+    waitForPageToSettle,
 } from "./bookMaking";
 import { kTableEditingMarkupSelectors } from "./bookHtml";
 import {
@@ -1838,42 +1839,25 @@ export async function getTableOverflowMarks(
     }, kOverflowMarks);
 }
 
-/** How long expectTableSettlesUnmarked watches: past Bloom's one-second delay before it checks. */
-const UNMARKED_WATCH_MS = 2500;
-
 /**
  * Assert that, once Bloom has caught up with the last change, nothing in the table is marked as
  * overflowing.
  *
  * Bloom checks a table's text as soon as a table operation or a drag changes its cells, but a
- * text box only a second after it is typed in, so marks can lag the layout both ways. A mark made in a moment when a cell really was too small (a row squeezed while the
- * one beside it was being dragged) stays until the next check, so this first waits for the marks
- * to clear. And a check still pending can add a mark after that, so it then watches past Bloom's
- * delay and fails as soon as one appears.
+ * text box only a second after it is typed in, so marks can lag the layout both ways. So this
+ * first lets the page settle: waitForPageToSettle waits out that second, and then for the page's
+ * pending work, which includes a table check waiting for its frame (it holds a page-content
+ * delay). The marks are then those of the last check, and should be none.
  */
 export async function expectTableSettlesUnmarked(
     page: Page,
     tableIndex = 0,
 ): Promise<void> {
-    const clearBy = Date.now() + 1000 + kTableWaitMs;
-    let marks = await getTableOverflowMarks(page, tableIndex);
-    while (marks.length > 0) {
-        if (Date.now() > clearBy)
-            throw new Error(
-                `Nothing in the table should be marked as overflowing, but Bloom still marks: ${marks.join("; ")}.`,
-            );
-        await editablePageFrame(page).waitForTimeout(100);
-        marks = await getTableOverflowMarks(page, tableIndex);
-    }
-    const watchUntil = Date.now() + UNMARKED_WATCH_MS;
-    while (Date.now() < watchUntil) {
-        await editablePageFrame(page).waitForTimeout(200);
-        marks = await getTableOverflowMarks(page, tableIndex);
-        if (marks.length > 0)
-            throw new Error(
-                `Nothing in the table should be marked as overflowing, but Bloom marked: ${marks.join("; ")}.`,
-            );
-    }
+    await waitForPageToSettle(page);
+    expect(
+        await getTableOverflowMarks(page, tableIndex),
+        "Nothing in the table should be marked as overflowing.",
+    ).toEqual([]);
 }
 
 /** One text cell: whether Bloom marks it, and how far its text boxes reach past it. */
