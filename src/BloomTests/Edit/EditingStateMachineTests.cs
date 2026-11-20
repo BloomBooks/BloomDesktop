@@ -15,6 +15,7 @@ namespace BloomTests.Edit
     public class EditingStateMachineTests
     {
         private List<string> _navigatedTo;
+        private List<string> _navigationsAndWrites; // in the order they happened
         private List<string> _updatedWith;
         private int _saveBookCount;
         private bool _saveBookSucceeds;
@@ -25,16 +26,22 @@ namespace BloomTests.Edit
         public void Setup()
         {
             _navigatedTo = new List<string>();
+            _navigationsAndWrites = new List<string>();
             _updatedWith = new List<string>();
             _saveBookCount = 0;
             _saveBookSucceeds = true;
             _reportedFailures = new List<Exception>();
             _stateMachine = new EditingStateMachine(
-                navigate: pageId => _navigatedTo.Add(pageId),
+                navigate: pageId =>
+                {
+                    _navigatedTo.Add(pageId);
+                    _navigationsAndWrites.Add("navigate " + pageId);
+                },
                 updateBookWithPageContents: (_, data) => _updatedWith.Add(data),
                 saveBook: () =>
                 {
                     _saveBookCount++;
+                    _navigationsAndWrites.Add("write");
                     return _saveBookSucceeds;
                 },
                 hidePage: () => { }
@@ -364,9 +371,10 @@ namespace BloomTests.Edit
         public void SaveThenNavigate_ActionNavigatesToTheSamePage_DoesNotNavigateTwice()
         {
             // Relocating a page raises RelocatePageEvent, and OnRelocatePage refreshes the display
-            // of the page whose HTML just changed, so the action navigates while we are still in
-            // Editing. That is allowed while an action runs: the browser's content is already in
-            // the book DOM, so there is nothing left to lose.
+            // of the page whose HTML just changed, so the action asks to navigate while we are
+            // still in Editing. That is allowed while an action runs (the browser's content is
+            // already in the book DOM, so there is nothing left to lose), but the navigation is
+            // prevented because the book is being written; we go to the page the action returns.
             GoToEditing("page1");
             _navigatedTo.Clear();
 
@@ -385,8 +393,60 @@ namespace BloomTests.Edit
             Assert.That(
                 _navigatedTo,
                 Is.EqualTo(new[] { "theMovedPage" }),
-                "the action's navigation and ours are to the same page, so it should happen once"
+                "the action's navigation is prevented while the book is written, and we then go to the page it returned, once"
             );
+        }
+
+        [Test]
+        public void SaveThenNavigate_ActionNavigates_PageIsShownOnlyAfterTheBookIsWritten()
+        {
+            // Writing the book can rename its folder: the first full save after a new book gets a
+            // title. The page's URL is in that folder, so a page shown before the write is asked
+            // for under the old folder and is gone by the time the browser asks (BL-17055). Closing
+            // a picture's Copyright and License dialog does this: its action refreshes the page.
+            GoToEditing("cover");
+            _navigationsAndWrites.Clear();
+
+            var result = SaveThenDoAndGoTo(
+                "content",
+                () =>
+                {
+                    _stateMachine.ToNavigating("cover"); // as RefreshDisplayOfCurrentPage does
+                    return "cover";
+                }
+            );
+
+            Assert.That(result, Is.EqualTo(SaveOutcome.Saved));
+            Assert.That(_reportedFailures, Is.Empty);
+            Assert.That(
+                _navigationsAndWrites,
+                Is.EqualTo(new[] { "write", "navigate cover" }),
+                "the page must be shown after the book is written, and only once"
+            );
+        }
+
+        [Test]
+        public void SaveThenNavigate_ActionBlanksTheEditorAndShowsThePageAgain_ShowsItOnceAfterTheWrite()
+        {
+            // Changing the page's orientation does this inside its save's action
+            // (EditingModel.SetLayout hides and re-shows the Edit tab).
+            GoToEditing("page1");
+            _navigationsAndWrites.Clear();
+
+            var result = SaveThenDoAndGoTo(
+                "content",
+                () =>
+                {
+                    _stateMachine.ToNoPage();
+                    _stateMachine.ToNavigating("page1");
+                    return "page1";
+                }
+            );
+
+            Assert.That(result, Is.EqualTo(SaveOutcome.Saved));
+            Assert.That(_reportedFailures, Is.Empty);
+            Assert.That(_navigationsAndWrites, Is.EqualTo(new[] { "write", "navigate page1" }));
+            Assert.That(_stateMachine.Navigating, Is.True);
         }
 
         [Test]
@@ -407,8 +467,8 @@ namespace BloomTests.Edit
             Assert.That(result, Is.EqualTo(SaveOutcome.Saved));
             Assert.That(
                 _navigatedTo,
-                Is.EqualTo(new[] { "somewhereTheActionWanted", "whereWeSaidToGo" }),
-                "the page the action named is where we must end up"
+                Is.EqualTo(new[] { "whereWeSaidToGo" }),
+                "the page the action returned is where we must end up, and the navigation it asked for along the way is replaced by that one"
             );
         }
 

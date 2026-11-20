@@ -43,8 +43,7 @@ public enum SaveOutcome
 ///     since those arrive asynchronously and can be late.
 ///   - a save arriving while a page is still loading is declined: there is no settled page to save.
 ///   - a save requested from inside another save's own action is declined rather than re-entered.
-///     Reordering a page does exactly this, by changing the page selection (see
-///     _runningSaveThenNavigateAction).
+///     Reordering a page does exactly this, by changing the page selection (see _saveInProgress).
 /// </summary>
 public class EditingStateMachine
 {
@@ -56,12 +55,13 @@ public class EditingStateMachine
     private Action<string, string> _updateBookWithPageContents; // args are (pageId, pageContent)
     private Func<bool> _saveBook; // returns whether whatever needed writing reached disk
 
-    // Set only while SaveThenNavigate is running its changeBookBeforeWriting. In that window the
-    // browser's content is already in the book DOM, so the "cannot navigate or blank while
-    // editing" guards do not apply -- there are no unsaved changes left to lose. Some actions do
-    // navigate: relocating a page raises RelocatePageEvent, and EditingModel.OnRelocatePage
-    // refreshes the display of the page whose HTML (side, page number) just changed.
-    private bool _runningSaveThenNavigateAction;
+    // Set while SaveThenNavigate runs its changeBookBeforeWriting and writes the book. The browser's
+    // content is already in the book DOM, so there are no unsaved changes left to lose; a request
+    // for another save is declined rather than re-entered. Navigation is prevented because the book
+    // is being written: the write can rename the book's folder, which the page's URL is in
+    // (BL-17055). A navigation asked for meanwhile is not kept for later; once the book is written
+    // we go to the page the action named.
+    private bool _saveInProgress;
     private Action _hidePage;
 
     /// <summary>
@@ -121,10 +121,10 @@ public class EditingStateMachine
                 _currentState = State.NoPage;
                 return true;
             case State.Editing:
-                if (_runningSaveThenNavigateAction)
+                if (_saveInProgress)
                 {
-                    // We have just saved (see _runningSaveThenNavigateAction). This is the
-                    // "action returned null, leave the editor blank" case.
+                    // A save's action blanking the editor (changing the page's orientation hides
+                    // and re-shows it). Its content is already merged (see _saveInProgress).
                     LogTransition("empty page", null);
                     _hidePage();
                     _currentState = State.NoPage;
@@ -168,6 +168,13 @@ public class EditingStateMachine
     /// </summary>
     public bool ToNavigating(string pageId)
     {
+        if (_saveInProgress)
+        {
+            Log(
+                $"Not navigating to {pageId} because the book is being written; we will go to the page the save's action names"
+            );
+            return true;
+        }
         switch (_currentState)
         {
             case State.NoPage:
@@ -185,12 +192,6 @@ public class EditingStateMachine
                     return true;
                 }
             case State.Editing:
-                if (_runningSaveThenNavigateAction)
-                {
-                    // We have just saved (see _runningSaveThenNavigateAction).
-                    StartNavigating(pageId);
-                    return true;
-                }
                 LogError("navigate");
                 throw new InvalidOperationException("Cannot navigate while editing");
             default:
@@ -245,8 +246,9 @@ public class EditingStateMachine
     /// changeBookBeforeWriting runs after the browser's content has been merged into the book DOM
     /// and before the book is written (so a page it duplicates or deletes already reflects the
     /// user's latest edits). It returns the id of the page to show afterwards, or null to leave the
-    /// editor blank. It is allowed to navigate (see _runningSaveThenNavigateAction); if it does,
-    /// our navigation to its returned page supersedes it, or is ignored if it is the same page.
+    /// editor blank. It may ask to navigate (relocating a page refreshes it, and so does closing a
+    /// picture's Copyright and License dialog), but that is prevented because the book is being
+    /// written; we go to the page it returns instead (see _saveInProgress).
     ///
     /// If something throws we report it and do NOT navigate: that would throw away the edits we
     /// failed to save, and the browser still has the page intact and editable.
@@ -262,7 +264,7 @@ public class EditingStateMachine
             switch (_currentState)
             {
                 case State.Editing:
-                    if (_runningSaveThenNavigateAction)
+                    if (_saveInProgress)
                     {
                         // We are inside a save's own action, which may do things that normally
                         // start a save (changing the page selection does, via
@@ -323,35 +325,42 @@ public class EditingStateMachine
     /// <summary>
     /// The part of SaveThenNavigate after the browser's content is in the book DOM: run the
     /// caller's action, write the book, and go to the page the action named. Returns whether the
-    /// write reached disk. Separate so that _runningSaveThenNavigateAction is clearly scoped to
-    /// the action and cleared even if it throws.
+    /// write reached disk. Separate so that _saveInProgress is clearly scoped to the action and
+    /// the write, and cleared even if one of them throws.
     /// </summary>
     private bool RunActionThenSaveAndNavigate(Func<string> changeBookBeforeWriting)
     {
-        _runningSaveThenNavigateAction = true;
+        string pageIdToGoTo;
+        bool written;
+        _saveInProgress = true;
         try
         {
-            var pageIdToGoTo = changeBookBeforeWriting();
+            pageIdToGoTo = changeBookBeforeWriting();
             // If the write fails we still navigate, but return false. The action has already
             // changed the book in memory and the page list shows the result; the write reported
             // the failure, and EditingModel.SaveBookToDisk keeps the book marked as needing a full
             // write, so the next save retries it. Staying put would leave the editor showing a
             // page the list no longer agrees with.
-            var written = _saveBook();
-            if (pageIdToGoTo == null)
-            {
-                ToNoPage();
-                return written;
-            }
-            // Via ToNavigating rather than StartNavigating so that an action which already
-            // navigated to this very page (as relocating one does) is not made to do it twice.
-            ToNavigating(pageIdToGoTo);
-            return written;
+            written = _saveBook();
         }
         finally
         {
-            _runningSaveThenNavigateAction = false;
+            _saveInProgress = false;
         }
+        // Cleared before we navigate, so that if loading the page fails, the fallback to the first
+        // page (EditingModel.StartNavigationToEditPage) is not prevented.
+        if (pageIdToGoTo == null)
+        {
+            if (_currentState != State.NoPage)
+            {
+                LogTransition("empty page", null);
+                _hidePage();
+                _currentState = State.NoPage;
+            }
+            return written;
+        }
+        StartNavigating(pageIdToGoTo);
+        return written;
     }
 
     private void Log(string message)
