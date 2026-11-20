@@ -12,12 +12,7 @@ namespace Bloom.Registration
         private static readonly Registration defaultInstance = new Registration();
         public static Registration Default => defaultInstance;
 
-        string _settingsFile = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "SIL",
-            "Bloom",
-            "Registration.json"
-        );
+        string _settingsFile = Path.Combine(ProjectContext.AppDataPath, "Registration.json");
 
         private dynamic _settings;
 
