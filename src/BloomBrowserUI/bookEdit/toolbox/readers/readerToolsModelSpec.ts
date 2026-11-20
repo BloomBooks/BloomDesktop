@@ -264,3 +264,61 @@ describe("ReaderToolsModel.canUndo", () => {
         expect(model.canUndo()).toBe(false);
     });
 });
+
+// The reader tools' undo restores a snapshot of one text block's HTML. Every language's block has
+// its own copy of each inline image, and the image's menus and toolbar hold the live wrapper.
+describe("ReaderToolsModel undo with an inline image in the block", () => {
+    function makeBoxWithInlineImage(): HTMLDivElement {
+        const box = document.createElement("div");
+        box.innerHTML =
+            '<div class="bloom-inlineImage" contenteditable="false" ' +
+            'data-bloom-inline-image-id="pic1"><img src="old.png"></div>' +
+            "<p>before</p>";
+        document.body.appendChild(box);
+        return box;
+    }
+
+    it("puts the text back but keeps the picture as it is now", () => {
+        const box = makeBoxWithInlineImage();
+        const model = new ReaderToolsModel();
+        model.noteFocus(box);
+        const liveWrapper = box.querySelector(".bloom-inlineImage")!;
+        box.querySelector("img")!.setAttribute("src", "new.png");
+        box.querySelector("p")!.textContent = "after typing";
+        // Sanity check: there is typing to undo.
+        expect(model.canUndo()).toBe(true);
+
+        model.undo();
+
+        expect(box.querySelector("p")!.textContent).toBe("before");
+        expect(box.querySelector("img")!.getAttribute("src")).toBe("new.png");
+        expect(
+            box.querySelector(".bloom-inlineImage"),
+            "The wrapper that the picture's menu holds should still be the one on the page.",
+        ).toBe(liveWrapper);
+        box.remove();
+    });
+
+    it("starts the history again when asked for a container that holds the block", () => {
+        const group = document.createElement("div");
+        const box = makeBoxWithInlineImage();
+        group.appendChild(box);
+        document.body.appendChild(group);
+        const elsewhere = document.createElement("div");
+        const model = new ReaderToolsModel();
+        model.noteFocus(box);
+        box.querySelector("p")!.textContent = "after typing";
+        // Sanity check: there is typing to undo.
+        expect(model.canUndo()).toBe(true);
+
+        model.restartHistoryIn(elsewhere);
+        expect(
+            model.canUndo(),
+            "A container that does not hold the block should leave its history alone.",
+        ).toBe(true);
+
+        model.restartHistoryIn(group);
+        expect(model.canUndo()).toBe(false);
+        group.remove();
+    });
+});
