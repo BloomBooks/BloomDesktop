@@ -760,6 +760,22 @@ export async function getBlockScrollOverflowPx(
 }
 
 /**
+ * How much wider the block's content is than the block, in layout pixels. Zero when nothing
+ * reaches past its side. Bloom marks a block whose content is wider than the block as overflowing,
+ * as it does one whose content is taller.
+ */
+export async function getBlockSidewaysOverflowPx(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<number> {
+    return editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
+        .first()
+        .evaluate((block) => block.scrollWidth - block.clientWidth);
+}
+
+/**
  * Whether Bloom has marked this block as holding more text than it can show, which is what gives
  * the person the red marking and the warning. getBlockScrollOverflowPx measures the overflow;
  * this reads Bloom's verdict. OverflowChecker adds the "overflow" class, and it checks every
@@ -1325,7 +1341,7 @@ export async function getBlockLineHeightPx(
  * (see computeInlineImageWidthPercent).
  *
  * `pixels` is how far the corner moves outward, which grows the picture; pass a negative number
- * to shrink it. Bloom keeps the width between 10% and 95% of the block.
+ * to shrink it. Bloom keeps the width between 10% and 100% of the block.
  */
 export async function resizeInlineImage(
     page: Page,
@@ -1371,6 +1387,45 @@ export async function resizeInlineImage(
         .not.toBe(before.widthPercent);
     return (await getInlineImage(page, groupSelector, languageTag, id))
         .widthPercent;
+}
+
+/**
+ * Make an inline image as big as Bloom allows, the way a person does who drags a corner handle
+ * outward until the pointer is past the far side of the text block. Returns the width the picture
+ * ends at, as a percentage of the block.
+ *
+ * Use a right-hand corner for a picture docked left or in the middle, and a left-hand corner for
+ * one docked right, so that outward is toward the far side of the block. The pointer goes 30
+ * pixels past that side, which asks for more than the full width of the text. Bloom decides where
+ * the picture stops: at the full width, or sooner when a bigger picture would push text out of
+ * the block (continueResize in bookEdit/js/inlineImageInteractions.ts).
+ */
+export async function resizeInlineImagePastBlockEdge(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+    corner: InlineImageCorner,
+): Promise<number> {
+    const picture = await pictureRectInView(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+    );
+    const block = await blockRect(page, groupSelector, languageTag);
+    const eastward = corner === "ne" || corner === "se";
+    const toFarSide = eastward
+        ? block.x + block.width - (picture.x + picture.width)
+        : picture.x - block.x;
+    return resizeInlineImage(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+        corner,
+        toFarSide + 30,
+    );
 }
 
 /**
@@ -2122,58 +2177,75 @@ async function clearTextPoint(
     // elementFromPoint, below, finds nothing outside the window, and in a small window, like the
     // nightly runner's, the page can be scrolled so that the block is out of sight.
     await block.scrollIntoViewIfNeeded();
-    const onScreen = await blockRect(page, groupSelector, languageTag);
     const found = await block.evaluate(
         (element, markup) => {
-            // A Range over a text node reports one rectangle for each line of it. The paragraph's
-            // box would not do, because it spans the block's full width whether the text wraps or
-            // not, so its middle can be over the picture.
-            const lines: DOMRect[] = [];
-            const walker = document.createTreeWalker(
-                element,
-                NodeFilter.SHOW_TEXT,
-            );
-            while (walker.nextNode()) {
-                const node = walker.currentNode;
-                if (
-                    (node.parentElement as HTMLElement | null)?.closest(
-                        "." + markup.wrapperClass,
-                    )
-                )
-                    continue;
-                if (!node.textContent?.trim()) continue;
-                const range = document.createRange();
-                range.selectNodeContents(node);
-                lines.push(...Array.from(range.getClientRects()));
-            }
-            // Try several points along each line, starting from its middle and moving outward,
-            // because a line beside a docked picture is partly over it.
-            const candidates = lines
-                .filter((line) => line.width > 2 && line.height > 2)
-                .flatMap((line) =>
-                    [0.5, 0.25, 0.75, 0.1, 0.9].map((along) => ({
-                        x: line.left + line.width * along,
-                        y: line.top + line.height / 2,
-                    })),
+            const findClearPoint = () => {
+                // A Range over a text node reports one rectangle for each line of it. The
+                // paragraph's box would not do, because it spans the block's full width whether
+                // the text wraps or not, so its middle can be over the picture.
+                const lines: DOMRect[] = [];
+                const walker = document.createTreeWalker(
+                    element,
+                    NodeFilter.SHOW_TEXT,
                 );
-            const clear = candidates.find((point) => {
-                // This is the same check Bloom's right-click handler makes. The element under the
-                // pointer has to be inside this text block, outside the picture, and outside the
-                // bloom-ui editing controls. The format gear, for instance, sits at the bottom
-                // left corner of the focused block and would otherwise get the right-click.
-                const under = document.elementFromPoint(
-                    point.x,
-                    point.y,
-                ) as HTMLElement | null;
-                if (!under || !element.contains(under)) return false;
-                if (under.closest("." + markup.wrapperClass)) return false;
-                if (under.closest(".bloom-ui")) return false;
-                return true;
-            });
+                while (walker.nextNode()) {
+                    const node = walker.currentNode;
+                    if (
+                        (node.parentElement as HTMLElement | null)?.closest(
+                            "." + markup.wrapperClass,
+                        )
+                    )
+                        continue;
+                    if (!node.textContent?.trim()) continue;
+                    const range = document.createRange();
+                    range.selectNodeContents(node);
+                    lines.push(...Array.from(range.getClientRects()));
+                }
+                // Try several points along each line, starting from its middle and moving
+                // outward, because a line beside a docked picture is partly over it.
+                const point = lines
+                    .filter((line) => line.width > 2 && line.height > 2)
+                    .flatMap((line) =>
+                        [0.5, 0.25, 0.75, 0.1, 0.9].map((along) => ({
+                            x: line.left + line.width * along,
+                            y: line.top + line.height / 2,
+                        })),
+                    )
+                    .find((candidate) => {
+                        // This is the same check Bloom's right-click handler makes. The element
+                        // under the pointer has to be inside this text block, outside the
+                        // picture, and outside the bloom-ui editing controls. The format gear,
+                        // for instance, sits at the bottom left corner of the focused block and
+                        // would otherwise get the right-click.
+                        const under = document.elementFromPoint(
+                            candidate.x,
+                            candidate.y,
+                        ) as HTMLElement | null;
+                        if (!under || !element.contains(under)) return false;
+                        if (under.closest("." + markup.wrapperClass))
+                            return false;
+                        if (under.closest(".bloom-ui")) return false;
+                        return true;
+                    });
+                return { point, lines };
+            };
+            let search = findClearPoint();
+            // Scrolled into view, a block taller than the window has its top at the top of the
+            // window, where an element of the editing page's own UI covers the first line (seen
+            // at the nightly runner's window size). A block of one line then has nowhere clear,
+            // so bring the first line to the middle of the window and look again.
+            if (!search.point && search.lines.length) {
+                const first = search.lines[0];
+                window.scrollBy(
+                    0,
+                    first.top + first.height / 2 - window.innerHeight / 2,
+                );
+                search = findClearPoint();
+            }
             const rect = element.getBoundingClientRect();
             return {
-                point: clear,
-                lineCount: lines.length,
+                point: search.point,
+                lineCount: search.lines.length,
                 blockLeft: rect.left,
                 blockTop: rect.top,
             };
@@ -2186,6 +2258,7 @@ async function clearTextPoint(
                 `its inline images and of the editing furniture, over ${found.lineCount} lines of ` +
                 `text. A block with no text has nowhere to point at, so type something first.`,
         );
+    const onScreen = await blockRect(page, groupSelector, languageTag);
     // Coordinates inside the page are measured from the top left of its frame, and mouse
     // coordinates from the top left of Bloom's window. The difference is where the frame sits,
     // which comparing the block's position in both gives.
