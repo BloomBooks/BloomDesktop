@@ -182,6 +182,9 @@ namespace Bloom.Api
         private bool _useCache;
 
         private const string SimulatedFileUrlMarker = "-memsim-";
+
+        // How the name of the page being edited starts (UrlForCurrentBookPage); its name ends ".htm".
+        private const string CurrentBookPageFileNamePrefix = "page" + SimulatedFileUrlMarker;
         private const string FixedSimulatedPathPrefix = "fixed-simulated/";
         static Dictionary<string, string> _urlToSimulatedPageContent =
             new Dictionary<string, string>(); // see comment on MakeInMemoryHtmlFileInBookFolder
@@ -565,9 +568,8 @@ namespace Bloom.Api
             }
         }
 
-        // IsBookDocumentOutsideFolder recognises the page being edited by this prefix.
         private static string UrlPrefixForCurrentBookPage(string bookFolderPath) =>
-            bookFolderPath.Replace("\\", "/") + "/page" + SimulatedFileUrlMarker;
+            bookFolderPath.Replace("\\", "/") + "/" + CurrentBookPageFileNamePrefix;
 
         /// <summary>
         /// How the name of an in-memory file that MakeInMemoryHtmlFileInBookFolder makes for
@@ -607,7 +609,7 @@ namespace Bloom.Api
                 StringComparison.Ordinal
             );
             var isPageBeingEdited =
-                fileName.StartsWith("page" + SimulatedFileUrlMarker, StringComparison.Ordinal)
+                fileName.StartsWith(CurrentBookPageFileNamePrefix, StringComparison.Ordinal)
                 && fileName.EndsWith(".htm", StringComparison.Ordinal);
             if (!isPageList && !isPageBeingEdited)
                 return false;
@@ -2398,7 +2400,7 @@ namespace Bloom.Api
             // replaced by one from the new folder (the page list by EditingView.HandleBookRenamed,
             // the page by EditingModel.ShowPageAgainIfFromAnotherFolderSoon), so its misses are not
             // the user's problem. Saying so would show a "Cannot Find Image File" notice (BL-17055).
-            var bookFolder = currentBookFolderPath ?? CurrentBook?.FolderPath;
+            var bookFolder = CurrentBook?.FolderPath;
             if (bookFolder != null && IsBookDocumentOutsideFolder(info.Referer, bookFolder))
                 return false;
 

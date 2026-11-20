@@ -319,9 +319,10 @@ namespace Bloom.web
             }
             dynamic answer = new ExpandoObject();
             // A page list still showing after the book's folder was renamed would ask for this
-            // page's pictures in the old folder, and Bloom would report each one missing. Give it
-            // nothing to draw: it is about to be replaced by one from the new folder, which asks
-            // again (BL-17055; see EditingView.HandleBookRenamed).
+            // page's pictures in the old folder, where they no longer are. Give it nothing to draw:
+            // it is about to be replaced by one from the new folder, which asks again (BL-17055;
+            // see EditingView.HandleBookRenamed). A request that got here just before the rename
+            // still fails; BloomServer.ShouldReportFailedRequest keeps that from being reported.
             if (BloomServer.IsBookDocumentOutsideFolder(request.Referer, book.FolderPath))
             {
                 answer.content = string.Empty;
