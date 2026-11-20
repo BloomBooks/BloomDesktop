@@ -2168,8 +2168,6 @@ export function attachToCkEditor(element) {
             .parentsUntil(".marginBox")
             .hasClass("bloom-userCannotModifyStyles");
 
-    if ($(element).css("cursor") === "not-allowed") return;
-
     // see bl-12448. Here we add a rule blocking visibility of the toolbar
     $("body").addClass("hideAllCKEditors");
     const ckedit = CKEDITOR.inline(element);
