@@ -62,7 +62,7 @@ namespace Bloom.Publish.Rab
         // RAB that is already installed is left alone, not downgraded: Bloom channels installed side
         // by side share one RAB install, and an exact match would make them reinstall over each
         // other. Before changing this, upload the matching installer (see kRabSetupDownloadUrl).
-        private const string kRabInstallerVersion = "14-0-1";
+        private const string kRabInstallerVersion = "14-8";
         internal static readonly Version kRabInstallerVersionNumber = new Version(
             kRabInstallerVersion.Replace('-', '.')
         );
