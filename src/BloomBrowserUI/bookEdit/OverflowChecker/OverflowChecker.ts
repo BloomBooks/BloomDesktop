@@ -484,18 +484,21 @@ export default class OverflowChecker {
                 break; // Don't check anything outside of marginBox
             }
             if (currentAncestor.hasClass("bloom-cell")) {
-                // Go on from the box above the table's last box.
                 i = parents.index(
-                    OverflowChecker.lastBoxOfTableHolding(currentAncestor[0]),
+                    OverflowChecker.outermostAncestorRowsMayRunPast(
+                        currentAncestor[0],
+                    ),
                 );
             }
         }
         return null;
     }
 
-    // The outermost box that the table holding `cell` fills: the canvas element holding the table
-    // when there is one, else the table itself.
-    private static lastBoxOfTableHolding(cell: HTMLElement): HTMLElement {
+    // The canvas element holding the table that holds `cell`, or the table itself when it is not
+    // in one.
+    private static outermostAncestorRowsMayRunPast(
+        cell: HTMLElement,
+    ): HTMLElement {
         const table = cell.closest<HTMLElement>(".bloom-table")!;
         const parent = table.parentElement!;
         return parent.classList.contains("bloom-canvas-element")
