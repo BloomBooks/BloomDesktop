@@ -10,6 +10,7 @@ import {
     someGroupHasOneLanguage,
     toggleRole,
 } from "./tableCellLanguages";
+import { tableHistoryManager } from "bloom-table";
 import { theOneUndoStack } from "../undo/UndoStack";
 
 // Setting up a box needs the whole editing page (CKEditor, the toolbox); these tests are about
@@ -17,6 +18,18 @@ import { theOneUndoStack } from "../undo/UndoStack";
 vi.mock("./translationGroupLanguages", async (importOriginal) => ({
     ...(await importOriginal<typeof import("./translationGroupLanguages")>()),
     setUpBoxesBuiltAfterLoad: vi.fn(),
+}));
+// A toggle is one of the table library's operations. The library's history is not what these tests
+// are about, so its recording of an operation just performs it.
+vi.mock("bloom-table", () => ({
+    tableHistoryManager: {
+        addHistoryEntry: vi.fn(
+            (_table: HTMLElement, _label: string, perform: () => void) => {
+                perform();
+                return true;
+            },
+        ),
+    },
 }));
 
 const kLanguages: ICellLanguage[] = cellLanguagesOfCollection(
@@ -245,54 +258,34 @@ describe("toggleRole", () => {
         expect(rolesOfGroup(groups[0], kLanguages)).toEqual(["V"]);
     });
 
-    it("is one undo step, which puts back the setting exactly as it was, and can be redone", () => {
+    // Undo then puts the whole table back as it was, as for every table operation, so it finds the
+    // right cells whatever has been added to the page since.
+    it("is one operation of the table library, on the cells' table", () => {
+        const table = document.createElement("div");
+        table.className = "bloom-table";
+        document.body.appendChild(table);
         const groups = [makeGroup(null, ["tpi"]), makeGroup("V", ["tpi"])];
+        groups.forEach((group) => table.appendChild(group));
+        const record = vi.mocked(tableHistoryManager.addHistoryEntry);
+        record.mockClear();
 
         toggleRole(groups, "N2", kLanguages);
+
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toBe(table);
         expect(
             groups.map((group) => group.getAttribute("data-default-languages")),
         ).toEqual(["V,N2", "V,N2"]);
-        expect(theOneUndoStack.getEntryCount()).toBe(1);
-
-        theOneUndoStack.undo();
-
-        // The first cell had no setting at all, and gets none back.
-        expect(groups[0].hasAttribute("data-default-languages")).toBe(false);
-        expect(groups[1].getAttribute("data-default-languages")).toBe("V");
-        expect(groups.map(visibleTagsOf)).toEqual([["tpi"], ["tpi"]]);
-
-        theOneUndoStack.redo();
-
-        expect(groups.map(visibleTagsOf)).toEqual([
-            ["tpi", "es"],
-            ["tpi", "es"],
-        ]);
     });
 
-    it("undoes and redoes after the cells were rebuilt, as a table Undo rebuilds them", () => {
-        makeGroup(null, ["tpi"]);
-        toggleRole([makeGroup("V", ["tpi"])], "N1", kLanguages);
+    it("records nothing when no cell would change", () => {
+        const record = vi.mocked(tableHistoryManager.addHistoryEntry);
+        record.mockClear();
 
-        // Rebuilding from the markup, as the table library does when it undoes an operation,
-        // leaves equal groups that are new elements.
-        const before = document.body.innerHTML;
-        document.body.innerHTML = before;
-        const rebuilt = Array.from(
-            document.querySelectorAll<HTMLElement>(".bloom-translationGroup"),
-        );
-        expect(rebuilt[1].getAttribute("data-default-languages")).toBe("V,N1");
+        // L1 is the only language of this cell, so it cannot be unticked.
+        toggleRole([makeGroup("V", ["tpi"])], "V", kLanguages);
 
-        theOneUndoStack.undo();
-
-        expect(rebuilt[1].getAttribute("data-default-languages")).toBe("V");
-        expect(visibleTagsOf(rebuilt[1])).toEqual(["tpi"]);
-        // The other group, before it on the page, is left alone.
-        expect(rebuilt[0].hasAttribute("data-default-languages")).toBe(false);
-
-        theOneUndoStack.redo();
-
-        expect(rebuilt[1].getAttribute("data-default-languages")).toBe("V,N1");
-        expect(visibleTagsOf(rebuilt[1])).toEqual(["tpi", "en"]);
+        expect(record).not.toHaveBeenCalled();
     });
 });
 

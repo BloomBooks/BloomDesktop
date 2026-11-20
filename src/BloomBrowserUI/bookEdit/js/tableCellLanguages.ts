@@ -9,9 +9,8 @@
 // ticked in the toolbar, as any translation group does. C# applies these rules when a page loads,
 // and this module applies them at once when the user changes a cell.
 
+import { tableHistoryManager } from "bloom-table";
 import { ILanguageNameValues } from "../toolbox/canvas/canvasControlTypes";
-import { theOneUndoStack } from "../undo/UndoStack";
-import { isInChangeLayoutMode } from "../undo/redoKeyBinding";
 import {
     setUpBoxesBuiltAfterLoad,
     showLanguagesInTranslationGroup,
@@ -249,85 +248,62 @@ export function showSettingInGroup(
 }
 
 /**
- * Tick or untick `role` across the text cells of `groups`, as one undoable step. Ticking adds it
- * to every group that does not show its language; unticking takes every role naming that language
- * out of every group where it is not the only language.
+ * The settings that ticking or unticking `role` across the text cells of `groups` gives them, one
+ * for each group the toggle changes. Ticking adds the role to every group that does not show its
+ * language; unticking takes every role naming that language out of every group where it is not
+ * the only language.
  */
-export function toggleRole(
+export function settingsForToggle(
     groups: HTMLElement[],
     role: LanguageRole,
     languages: ICellLanguage[],
-): void {
+): { group: HTMLElement; setting: string }[] {
     const tick = roleState(groups, role, languages) !== "all";
     const tag = tagOfRole(role, languages);
     // Every role that names this language: V and N1 often name the same one.
     const rolesNamingTag = languages
         .filter((language) => language.tag === tag)
         .map((language) => language.role);
-    const changing = groups.filter((group) => {
-        const tags = tagsOfGroup(group, languages);
-        if (tick) return !tags.includes(tag);
-        return tags.includes(tag) && tags.length > 1;
-    });
-    if (changing.length === 0) return;
-
-    // The entry finds its groups by their place among the page's translation groups, and holds
-    // none of them: undoing a table operation rebuilds the table's cells, so after an Add Row and
-    // its Undo, the groups this change was made to are gone, and new ones stand in their places.
-    // The stack's order means the page is back to how this change left it when its undo runs.
-    const pageDocument = changing[0].ownerDocument;
-    const places = placesOnPage(changing);
-    const changes = changing.map((group, index) => {
-        const before = rolesOfGroup(group, languages);
-        const after = tick
-            ? [...before, role]
-            : before.filter((other) => !rolesNamingTag.includes(other));
-        return {
-            place: places[index],
-            // Undo puts back the attribute exactly as it was, including no attribute at all.
-            beforeSetting: group.getAttribute("data-default-languages"),
-            afterSetting: settingOfRoles(after),
-        };
-    });
-    // Make each changed group store its setting from `from` again; check first that every one
-    // stores its setting from the other side of the change.
-    const show = (from: "beforeSetting" | "afterSetting") => {
-        const expected =
-            from === "beforeSetting" ? "afterSetting" : "beforeSetting";
-        const all = translationGroupsOf(pageDocument);
-        const groups = changes.map((change) => {
-            const group = all[change.place];
-            if (
-                !group ||
-                group.getAttribute("data-default-languages") !==
-                    change[expected]
-            ) {
-                throw new Error(
-                    "A table cell's languages changed after the change being undone or redone",
-                );
-            }
-            return group;
+    return groups
+        .filter((group) => {
+            const tags = tagsOfGroup(group, languages);
+            if (tick) return !tags.includes(tag);
+            return tags.includes(tag) && tags.length > 1;
+        })
+        .map((group) => {
+            const before = rolesOfGroup(group, languages);
+            const after = tick
+                ? [...before, role]
+                : before.filter((other) => !rolesNamingTag.includes(other));
+            return { group, setting: settingOfRoles(after) };
         });
-        showSettingsInGroups(
-            groups,
-            changes.map((change) => change[from]),
-            languages,
-        );
-    };
-    showSettingsInGroups(
-        changing,
-        changes.map((change) => change.afterSetting),
-        languages,
+}
+
+/**
+ * Tick or untick `role` across the text cells of `groups`, which are all in one table (see
+ * settingsForToggle), as one undoable step.
+ *
+ * The step is one of the table library's operations, so it is undone as every table operation is:
+ * by putting the table back as it was, whatever has happened to the page around it since. Like the
+ * library's other operations it announces itself when done, and that announcement both puts it on
+ * Bloom's undo stack (noteTableHistoryUpdate) and sets up the boxes the change added and tags the
+ * ones it showed again (wireBloomContentOfNewCells), all in one pass.
+ */
+export function toggleRole(
+    groups: HTMLElement[],
+    role: LanguageRole,
+    languages: ICellLanguage[],
+): void {
+    const changes = settingsForToggle(groups, role, languages);
+    if (changes.length === 0) return;
+    tableHistoryManager.addHistoryEntry(
+        changes[0].group.closest<HTMLElement>(".bloom-table")!,
+        "Change the languages of table cells",
+        () =>
+            changes.forEach((change) =>
+                showSettingInGroup(change.group, change.setting, languages),
+            ),
     );
-    theOneUndoStack.push({
-        label: "Change the languages of table cells",
-        kind: "custom",
-        // In Change Layout mode the table is faded and cannot be edited, as with table operations.
-        isAvailable: () => !isInChangeLayoutMode(pageDocument),
-        // Hiding languages never adds an editable, so undo sets nothing up.
-        undo: () => show("beforeSetting"),
-        redo: () => show("afterSetting"),
-    });
 }
 
 // Give each of `groups` the setting at the same index, then set up the boxes that adds, and tag
@@ -346,17 +322,4 @@ export function showSettingsInGroups(
         results.flatMap((result) => result.added),
         results.flatMap((result) => result.shown),
     );
-}
-
-function translationGroupsOf(pageDocument: Document): HTMLElement[] {
-    return Array.from(
-        pageDocument.querySelectorAll<HTMLElement>(".bloom-translationGroup"),
-    );
-}
-
-// The place of each group among the page's translation groups. A function of its own, so that
-// the list of every group on the page is not kept alive by the undo entry's closures.
-function placesOnPage(groups: HTMLElement[]): number[] {
-    const all = translationGroupsOf(groups[0].ownerDocument);
-    return groups.map((group) => all.indexOf(group));
 }

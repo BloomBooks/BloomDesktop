@@ -28,7 +28,9 @@ Languages
   language, empty when none does, and shows a dash when only some do. Clicking a dash ticks that
   language for all of them.
 - The item is hidden when the cell, or every cell the menu covers, is an image or video cell.
-- A change is one step on Bloom's undo stack.
+- A change is one of the table library's operations, so it is one step on Bloom's undo stack, and
+  Undo puts the table back as it was, as for any other table operation. Like those, it has no
+  Redo until typing joins the undo stack.
 
 ## What is stored
 
