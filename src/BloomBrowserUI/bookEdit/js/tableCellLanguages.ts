@@ -253,7 +253,7 @@ export function showSettingInGroup(
  * language; unticking takes every role naming that language out of every group where it is not
  * the only language.
  */
-export function settingsForToggle(
+function settingsForToggle(
     groups: HTMLElement[],
     role: LanguageRole,
     languages: ICellLanguage[],

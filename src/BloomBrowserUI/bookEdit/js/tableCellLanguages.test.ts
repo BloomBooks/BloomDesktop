@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
     cellLanguagesOfCollection,
     ICellLanguage,
@@ -11,7 +11,6 @@ import {
     toggleRole,
 } from "./tableCellLanguages";
 import { tableHistoryManager } from "bloom-table";
-import { theOneUndoStack } from "../undo/UndoStack";
 
 // Setting up a box needs the whole editing page (CKEditor, the toolbox); these tests are about
 // which boxes are shown.
@@ -73,9 +72,7 @@ function visibleTagsOf(group: HTMLElement): string[] {
 
 beforeEach(() => {
     document.body.innerHTML = "";
-    theOneUndoStack.clear();
 });
-afterEach(() => theOneUndoStack.clear());
 
 describe("cellLanguagesOfCollection", () => {
     it("lists L1, L2 and L3 in role order", () => {

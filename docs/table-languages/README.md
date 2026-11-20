@@ -93,8 +93,8 @@ let Bloom add what the library knows nothing about:
 
 ## Where the code is
 
-- `src/BloomBrowserUI/bookEdit/js/tableCellLanguages.ts`: reading, applying and undoing a cell's
-  languages.
+- `src/BloomBrowserUI/bookEdit/js/tableCellLanguages.ts`: reading and applying a cell's languages;
+  a change is recorded as a table operation, which the table library undoes.
 - `src/BloomBrowserUI/bookEdit/js/TableCellLanguagesSection.tsx`: the menu item and its submenu.
 - `src/BloomBrowserUI/bookEdit/js/tableEditing.ts`: installs both hooks; new text cells start
   with `data-default-languages="V"`.
