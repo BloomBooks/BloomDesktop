@@ -5,11 +5,11 @@ using NUnit.Framework;
 namespace BloomTests.web
 {
     /// <summary>
-    /// Tests for BloomServer.IsPageListDocumentOutsideFolder, which lets the page list's content
-    /// requests tell a page list left over from before the book's folder was renamed (BL-17055).
+    /// Tests for BloomServer.IsBookDocumentOutsideFolder, which tells a page list or page being
+    /// edited that was loaded from the book's folder before it was renamed (BL-17055).
     /// </summary>
     [TestFixture]
-    public class PageListDocumentFolderTests
+    public class BookDocumentFolderTests
     {
         private const string kOldFolder =
             @"C:\Users\someone\Documents\Bloom\Odia Books\Book-bbc9bb4d";
@@ -44,7 +44,7 @@ namespace BloomTests.web
         public void PageListFromTheOldFolder_IsOutsideTheNewFolder()
         {
             Assert.That(
-                BloomServer.IsPageListDocumentOutsideFolder(
+                BloomServer.IsBookDocumentOutsideFolder(
                     PageListAddressIn(kOldFolder),
                     kNewFolder
                 ),
@@ -57,7 +57,7 @@ namespace BloomTests.web
         {
             // A folder name with spaces and non-Latin letters, which the address carries escaped.
             Assert.That(
-                BloomServer.IsPageListDocumentOutsideFolder(
+                BloomServer.IsBookDocumentOutsideFolder(
                     PageListAddressIn(kNewFolder),
                     kNewFolder
                 ),
@@ -70,7 +70,7 @@ namespace BloomTests.web
         {
             // The server matches book paths exactly, so the old-case address no longer works.
             Assert.That(
-                BloomServer.IsPageListDocumentOutsideFolder(
+                BloomServer.IsBookDocumentOutsideFolder(
                     PageListAddressIn(kOldFolder),
                     kOldFolder.Replace("Book-bbc9bb4d", "BOOK-bbc9bb4d")
                 ),
@@ -82,7 +82,7 @@ namespace BloomTests.web
         public void AddressWithAQuery_IsJudgedByItsPath()
         {
             Assert.That(
-                BloomServer.IsPageListDocumentOutsideFolder(
+                BloomServer.IsBookDocumentOutsideFolder(
                     PageListAddressIn(kNewFolder) + "?x=1",
                     kNewFolder
                 ),
@@ -90,12 +90,43 @@ namespace BloomTests.web
             );
         }
 
+        /// <summary>
+        /// The address of the page being edited in <paramref name="folder"/>, as
+        /// BloomServer.UrlForCurrentBookPage makes it.
+        /// </summary>
+        private static string PageBeingEditedAddressIn(string folder) =>
+            BloomServer.UrlForCurrentBookPage(folder, "57db084a-94b0-4694-a33e-fbdacb9fc56f");
+
         [Test]
-        public void SomethingOtherThanAPageList_IsNeverOutside()
+        public void PageBeingEditedFromTheOldFolder_IsOutsideTheNewFolder()
         {
-            // The page being edited, or any other document, is not what this is about.
             Assert.That(
-                BloomServer.IsPageListDocumentOutsideFolder(
+                BloomServer.IsBookDocumentOutsideFolder(
+                    PageBeingEditedAddressIn(kOldFolder),
+                    kNewFolder
+                ),
+                Is.True
+            );
+        }
+
+        [Test]
+        public void PageBeingEditedFromTheCurrentFolder_IsNotOutsideIt()
+        {
+            Assert.That(
+                BloomServer.IsBookDocumentOutsideFolder(
+                    PageBeingEditedAddressIn(kNewFolder),
+                    kNewFolder
+                ),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void SomeOtherInMemoryDocument_IsNeverOutside()
+        {
+            // Only the page list and the page being edited are what this is about.
+            Assert.That(
+                BloomServer.IsBookDocumentOutsideFolder(
                     PageListAddressIn(kOldFolder, InMemoryHtmlFileSource.Normal),
                     kNewFolder
                 ),
@@ -106,10 +137,10 @@ namespace BloomTests.web
         [Test]
         public void NoOrForeignReferer_IsNeverOutside()
         {
-            Assert.That(BloomServer.IsPageListDocumentOutsideFolder(null, kNewFolder), Is.False);
-            Assert.That(BloomServer.IsPageListDocumentOutsideFolder("", kNewFolder), Is.False);
+            Assert.That(BloomServer.IsBookDocumentOutsideFolder(null, kNewFolder), Is.False);
+            Assert.That(BloomServer.IsBookDocumentOutsideFolder("", kNewFolder), Is.False);
             Assert.That(
-                BloomServer.IsPageListDocumentOutsideFolder(
+                BloomServer.IsBookDocumentOutsideFolder(
                     "https://example.com/Book-bbc9bb4d/x-memsim-Pagelist.html",
                     kNewFolder
                 ),

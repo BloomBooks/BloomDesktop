@@ -565,6 +565,7 @@ namespace Bloom.Api
             }
         }
 
+        // IsBookDocumentOutsideFolder recognises the page being edited by this prefix.
         private static string UrlPrefixForCurrentBookPage(string bookFolderPath) =>
             bookFolderPath.Replace("\\", "/") + "/page" + SimulatedFileUrlMarker;
 
@@ -576,19 +577,20 @@ namespace Bloom.Api
             SimulatedFileUrlMarker + source + ".html";
 
         /// <summary>
-        /// True when <paramref name="referer"/> is a page list document (the in-memory file
-        /// MakeInMemoryHtmlFileInBookFolder makes for InMemoryHtmlFileSource.Pagelist) that was
-        /// loaded from a folder other than <paramref name="bookFolderPath"/>. Its pictures are
-        /// relative to its own address, so after the book's folder is renamed such a document can
-        /// only ask for them where they no longer are, until Bloom has replaced it with one from the
-        /// new folder (BL-17055). Anything else, including a request whose document we cannot tell,
-        /// is false.
+        /// True when <paramref name="referer"/> is one of the documents the Edit tab shows from
+        /// inside the book's folder -- the page list (the in-memory file
+        /// MakeInMemoryHtmlFileInBookFolder makes for InMemoryHtmlFileSource.Pagelist) or the page
+        /// being edited (UrlForCurrentBookPage) -- and it was loaded from a folder other than
+        /// <paramref name="bookFolderPath"/>. Its pictures and scripts are relative to its own
+        /// address, so after the book's folder is renamed such a document can only ask for them
+        /// where they no longer are, until Bloom has replaced it with one from the new folder
+        /// (BL-17055). Anything else, including a request whose document we cannot tell, is false.
         ///
-        /// This only works for requests the document itself makes, such as the page list's
-        /// requests for page content. A picture or font that a stylesheet loads names the
-        /// stylesheet as its referer, not the document, so it cannot be judged this way.
+        /// This only works for requests the document itself makes. A picture or font that a
+        /// stylesheet loads names the stylesheet as its referer, not the document, so it cannot be
+        /// judged this way.
         /// </summary>
-        public static bool IsPageListDocumentOutsideFolder(string referer, string bookFolderPath)
+        public static bool IsBookDocumentOutsideFolder(string referer, string bookFolderPath)
         {
             if (
                 string.IsNullOrEmpty(referer)
@@ -599,12 +601,15 @@ namespace Bloom.Api
             )
                 return false;
             var path = referer.Split('?', '#')[0].FromLocalhost();
-            if (
-                !path.EndsWith(
-                    InMemoryHtmlFileNameEnding(InMemoryHtmlFileSource.Pagelist),
-                    StringComparison.Ordinal
-                )
-            )
+            var fileName = path.Substring(path.LastIndexOf('/') + 1);
+            var isPageList = fileName.EndsWith(
+                InMemoryHtmlFileNameEnding(InMemoryHtmlFileSource.Pagelist),
+                StringComparison.Ordinal
+            );
+            var isPageBeingEdited =
+                fileName.StartsWith("page" + SimulatedFileUrlMarker, StringComparison.Ordinal)
+                && fileName.EndsWith(".htm", StringComparison.Ordinal);
+            if (!isPageList && !isPageBeingEdited)
                 return false;
             var documentFolder = path.Substring(0, Math.Max(0, path.LastIndexOf('/')));
             return !string.Equals(
@@ -2386,6 +2391,15 @@ namespace Bloom.Api
             // images that are intentionally optional.
             var hasOptionalQueryParam = info.GetQueryParameters().Get("optional") == "true";
             if (hasOptionalQueryParam)
+                return false;
+
+            // A page list or page being edited that was loaded from the book's folder before it was
+            // renamed asks for its pictures and scripts where they no longer are. It is about to be
+            // replaced by one from the new folder (the page list by EditingView.HandleBookRenamed,
+            // the page by EditingModel.ShowPageAgainIfFromAnotherFolderSoon), so its misses are not
+            // the user's problem. Saying so would show a "Cannot Find Image File" notice (BL-17055).
+            var bookFolder = currentBookFolderPath ?? CurrentBook?.FolderPath;
+            if (bookFolder != null && IsBookDocumentOutsideFolder(info.Referer, bookFolder))
                 return false;
 
             // If we are requesting another book, and that book is not there,

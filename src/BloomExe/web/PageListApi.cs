@@ -322,7 +322,7 @@ namespace Bloom.web
             // page's pictures in the old folder, and Bloom would report each one missing. Give it
             // nothing to draw: it is about to be replaced by one from the new folder, which asks
             // again (BL-17055; see EditingView.HandleBookRenamed).
-            if (BloomServer.IsPageListDocumentOutsideFolder(request.Referer, book.FolderPath))
+            if (BloomServer.IsBookDocumentOutsideFolder(request.Referer, book.FolderPath))
             {
                 answer.content = string.Empty;
                 request.ReplyWithJson(answer);
