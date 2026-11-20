@@ -31,7 +31,6 @@ import {
     inlineImageUndo,
     insertInlineImage,
     kInlineImageBottomClass,
-    kInlineImageClass,
     kInlineImageRightClass,
     kInlineImageWidthVar,
     kInlineImageSelectedClass,
@@ -43,7 +42,9 @@ import {
     removeInlineImage,
     setInlineImageDock,
     syncInlineImagesFromEditable,
+    removeCkEditorAttributesFromInlineImages,
 } from "./inlineImages";
+import { kInlineImageClass } from "./inlineImageConstants";
 import { nextChangeOrder, resetChangeOrderForTests } from "../undo/changeOrder";
 import { theOneUndoStack } from "../undo/UndoStack";
 
@@ -1316,5 +1317,31 @@ describe("inlineImages", () => {
                 false,
             );
         });
+    });
+});
+
+describe("removeCkEditorAttributesFromInlineImages", () => {
+    it("removes CKEditor's attributes from inline images and leaves other elements alone", () => {
+        document.body.innerHTML =
+            '<div class="bloom-editable">' +
+            '<div class="bloom-inlineImage" data-cke-filter="off"><img src="new.png" data-cke-saved-src="old.png"></div>' +
+            '<p><img src="other.png" data-cke-saved-src="other.png"></p>' +
+            "</div>";
+        const editable = document.querySelector(
+            ".bloom-editable",
+        ) as HTMLElement;
+        const inlineImg = editable.querySelector(".bloom-inlineImage img")!;
+        const otherImg = editable.querySelector("p img")!;
+        // sanity check the setup
+        expect(inlineImg.getAttribute("data-cke-saved-src")).toBe("old.png");
+
+        removeCkEditorAttributesFromInlineImages(editable);
+
+        expect(
+            editable.querySelector(".bloom-inlineImage")!.outerHTML,
+            "The wrapper and its img should keep no data-cke-* attribute",
+        ).not.toContain("data-cke-");
+        expect(inlineImg.getAttribute("src")).toBe("new.png");
+        expect(otherImg.getAttribute("data-cke-saved-src")).toBe("other.png");
     });
 });

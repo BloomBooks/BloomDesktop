@@ -63,6 +63,7 @@ export default class BloomField {
         BloomField.PreventBackspaceAtStartFromRemovingParagraph(
             bloomEditableDiv,
         );
+        BloomField.PreventUnwantedDeletions(bloomEditableDiv);
         BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
         BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(
             bloomEditableDiv,
@@ -1066,7 +1067,10 @@ export default class BloomField {
     private static PreventBackspaceAtStartFromRemovingParagraph(
         field: HTMLElement,
     ) {
-        field.addEventListener("keydown", (e: KeyboardEvent) => {
+        // This listens in the capture phase, so that it runs before CKEditor's own keydown
+        // listener on the field. Next to an inline image, CKEditor's Backspace selects the image
+        // (a "fake selection"), and the next Backspace then empties the whole field.
+        const listener = (e: KeyboardEvent) => {
             if (e.key === "Backspace") {
                 // We want to prevent backspace if we're at the very start of the 1st paragraph...
                 // But we need to make sure we properly handle the cases where there are child elements in it.
@@ -1089,9 +1093,16 @@ export default class BloomField {
                 const closestP = $(sel.anchorNode).closest(
                     kBlockElementSelector,
                 );
-                const previousElement = closestP.prev();
-
-                if (previousElement.length !== 0) {
+                // Embedded images (inline images, and the pictures some custom templates put
+                // in a field) come before the first paragraph, and the browser deletes such an
+                // image when Backspace is pressed at the start of the paragraph after it. So a
+                // paragraph with only those before it counts as the first one. This is worked
+                // out at each keystroke, because an inline image can be inserted, moved or
+                // replaced by undo long after the field was set up.
+                if (
+                    closestP.length > 0 &&
+                    !BloomField.hasOnlyEmbeddedImagesBefore(closestP[0])
+                ) {
                     // not in the 1st paragraph. Nothing to worry about. Return.
                     return;
                 }
@@ -1111,11 +1122,107 @@ export default class BloomField {
 
                 //At this point, looks like it is something to worry about.
                 //Need to prevent the backspace from happening.
-                e.stopPropagation();
+                e.stopImmediatePropagation();
                 e.preventDefault();
                 console.log("Prevented Backspace");
             }
-        });
+        };
+        field.addEventListener("keydown", listener, true);
+    }
+
+    /**
+     * Whether every element before this block in its field is an embedded image that the field
+     * protects (bloom-preventRemoval). That includes having nothing before it at all.
+     */
+    private static hasOnlyEmbeddedImagesBefore(block: Element): boolean {
+        for (
+            let previous = block.previousElementSibling;
+            previous;
+            previous = previous.previousElementSibling
+        ) {
+            if (!previous.classList.contains("bloom-preventRemoval"))
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * Whether every element after this block in its field is an embedded image that the field
+     * protects (bloom-preventRemoval), with at least one of them. An inline image docked at the
+     * bottom sits after the last paragraph like this.
+     */
+    private static isFollowedOnlyByEmbeddedImages(block: Element): boolean {
+        let next = block.nextElementSibling;
+        if (!next) return false;
+        for (; next; next = next.nextElementSibling) {
+            if (!next.classList.contains("bloom-preventRemoval")) return false;
+        }
+        return true;
+    }
+
+    // Stops two deletions that the user does not mean, both of which remove a protected embedded
+    // image (bloom-preventRemoval). Like the Backspace guard, this listens in the capture phase so
+    // that it runs before CKEditor.
+    //
+    // First, Backspace and Delete while CKEditor has an inline image selected as a whole (its
+    // "fake selection", which it marks with a hidden data-cke-hidden-sel element in the field).
+    // Pressing either key then empties the whole field, text included, and a picture is deleted
+    // only from its own menu.
+    //
+    // Second, Delete at the very end of the last paragraph when only protected images follow it,
+    // as an inline image docked at the bottom does. With nothing left in the paragraph for Delete
+    // to remove, the browser deletes the image instead.
+    private static PreventUnwantedDeletions(field: HTMLElement) {
+        const listener = (e: KeyboardEvent) => {
+            if (e.key !== "Delete" && e.key !== "Backspace") return;
+            if (
+                field.querySelector("[data-cke-hidden-sel]") &&
+                field.querySelector(".bloom-preventRemoval")
+            ) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                return;
+            }
+            if (e.key !== "Delete") return;
+            const sel = window.getSelection();
+            if (!sel || !sel.anchorNode || !sel.isCollapsed) return;
+            const block = $(sel.anchorNode).closest(kBlockElementSelector)[0];
+            if (!block || !field.contains(block)) return;
+            if (!BloomField.isFollowedOnlyByEmbeddedImages(block)) return;
+            if (
+                BloomField.hasSomethingToDeleteAfterCaret(
+                    block,
+                    sel.anchorNode,
+                    sel.anchorOffset,
+                )
+            )
+                return;
+            e.stopImmediatePropagation();
+            e.preventDefault();
+        };
+        field.addEventListener("keydown", listener, true);
+    }
+
+    /**
+     * Whether the block holds something after the caret that Delete would remove, so that Delete
+     * there does not reach whatever follows the block. That is any text, or an element with no
+     * text, such as the empty span that a Shift+Enter line break is. A <br> does not count: it
+     * only marks the end of the paragraph. Nor do the elements that hold the caret, which a range
+     * starting at the caret also touches.
+     */
+    private static hasSomethingToDeleteAfterCaret(
+        block: Element,
+        caretNode: Node,
+        caretOffset: number,
+    ): boolean {
+        const rest = document.createRange();
+        rest.setStart(caretNode, caretOffset);
+        rest.setEnd(block, block.childNodes.length);
+        if (rest.toString().length > 0) return true;
+        return Array.from(block.querySelectorAll(":not(br)")).some(
+            (element) =>
+                !element.contains(caretNode) && rest.intersectsNode(element),
+        );
     }
 
     // Checks if targetElement is on the path to the 1st leaf node of rootElement.

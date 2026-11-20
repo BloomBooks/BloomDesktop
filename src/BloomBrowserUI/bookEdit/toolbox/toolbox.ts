@@ -93,7 +93,9 @@ export interface ITool {
     // tool starts running, so it also serves to make the tool's state track the
     // current book. The returned promise must resolve when the tool is ready to be shown.
     beginRestoreSettings(settings: IToolboxSettings): Promise<void>;
-    configureElements(container: HTMLElement);
+    // Sets up the page's text boxes (.bloom-editable elements) for this tool, e.g. by binding
+    // its key and focus handlers on them.
+    configureElements(boxes: JQuery);
     // Called when the tool starts running -- it has become the expanded tool of a showing
     // toolbox, or it was already expanded and a new page arrived. Expanding this tool's own
     // accordion section is not by itself what triggers it; starting to run is.
@@ -235,11 +237,14 @@ export class ToolBox {
         };
         doAdjustment();
     }
-    public configureElementsForTools(container: HTMLElement) {
+    // Has every tool set up these text boxes (.bloom-editable elements).
+    public configureElementsForTools(textBoxes: HTMLElement[]) {
+        // This frame's jQuery, whose bookkeeping releaseElementsForTools undoes.
+        const boxes = $(textBoxes);
         for (let i = 0; i < masterToolList.length; i++) {
-            masterToolList[i].configureElements(container);
+            masterToolList[i].configureElements(boxes);
         }
-        configurePageEditingHandlers(container, this);
+        configurePageEditingHandlers(boxes, this);
     }
 
     /// Undoes the jQuery bookkeeping that configureElementsForTools (and the
