@@ -39,7 +39,7 @@ ticket. Where the code's account of a ticket looks wrong, the row says so.
 | A2 | Toolbar offers bold, italic, underline, superscript, text colour, remove-formatting, hyperlink — and **not** cut/copy/paste/undo/redo/anchor/strike/subscript/background-colour | `config.js` `removeButtons` | | manual |
 | A3 | Toolbar is positioned above the text box, moved down if it would go off-screen | `attachToCkEditor` `selectionCheck` | | manual |
 | A4 | Toolbar never appears for a field with `bloom-userCannotModifyStyles` (on the field or an ancestor up to `.marginBox`), but such a field is still editable and pasteable | `attachToCkEditor` `alwaysHideToolbar` | BL-14947 | live |
-| A5 | No toolbar for a field whose computed `cursor` is `not-allowed` | `attachToCkEditor` early return, `bloomEditing.ts:1952` | | live |
+| A5 | ~~No toolbar for a field whose computed `cursor` is `not-allowed`~~ Not a behaviour any more: no stylesheet gave a field that cursor, and the rule was removed (BL-17105). Nothing to preserve. | — | | — |
 | A6 | No flash of the toolbar during page load, nor when moving between two fields that both have selections | `hideAllCKEditors` body class | BL-12448 | manual |
 | A7 | Colour-picker panel does not re-open by itself on every subsequent selection | `attachToCkEditor` hides `.cke_panel` | | manual |
 | A8 | Toolbar button tooltips are localized | `localizeCkeditorTooltips` | | manual |
@@ -232,7 +232,7 @@ clobbering the highlight class — is **already gone**, because the highlight mo
 | # | Behaviour | Today | Verify |
 |---|---|---|---|
 | J1 | Only fields matching `ckeditableSelector` get an editor: `bloom-content1/2/3`, `bloom-contentNational1/2`, and **`Equation-style`** — all requiring `contenteditable="true"` | `utils/shared.ts:16-19` | unit |
-| J2 | A field whose computed cursor is `not-allowed` gets no editor | `attachToCkEditor` early return | live |
+| J2 | ~~A field whose computed cursor is `not-allowed` gets no editor~~ Removed (BL-17105), like A5. Nothing to preserve. | — | — |
 
 **✗ Do not port:** `bootstrap()`'s BL-3125 guard skipping fields containing a `.bloom-canvas`
 (`bloomEditing.ts:1216`) is **dead code** — `this` is `undefined` in a strict-mode module function,

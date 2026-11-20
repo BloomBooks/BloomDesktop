@@ -146,6 +146,8 @@ export interface IPageFrameExports {
     ): JQuery;
     SetupElements(container: HTMLElement): void;
     attachToCkEditor(element: any): void;
+    showLanguagesInTranslationGroup: typeof showLanguagesInTranslationGroup;
+    setUpBoxesBuiltAfterLoad: typeof setUpBoxesBuiltAfterLoad;
 
     origamiCanUndo(): boolean;
     origamiUndo(): void;
@@ -222,6 +224,10 @@ import {
     imageOperationUndo,
 } from "./js/bloomEditing";
 import {
+    showLanguagesInTranslationGroup,
+    setUpBoxesBuiltAfterLoad,
+} from "./js/translationGroupLanguages";
+import {
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
 } from "./js/pageContentDelays";
@@ -250,6 +256,8 @@ export {
     makeElement,
     SetupElements,
     attachToCkEditor,
+    showLanguagesInTranslationGroup,
+    setUpBoxesBuiltAfterLoad,
     removeImageId,
     changeImage,
     changeImageByElement,
@@ -568,6 +576,8 @@ interface EditablePageBundleApi {
     makeElement: typeof makeElement;
     SetupElements: typeof SetupElements;
     attachToCkEditor: typeof attachToCkEditor;
+    showLanguagesInTranslationGroup: typeof showLanguagesInTranslationGroup;
+    setUpBoxesBuiltAfterLoad: typeof setUpBoxesBuiltAfterLoad;
     removeImageId: typeof removeImageId;
     changeImage: typeof changeImage;
     changeImageByElement: typeof changeImageByElement;
@@ -657,6 +667,8 @@ window.editablePageBundle = {
     makeElement,
     SetupElements,
     attachToCkEditor,
+    showLanguagesInTranslationGroup,
+    setUpBoxesBuiltAfterLoad,
     removeImageId,
     changeImage,
     changeImageByElement,

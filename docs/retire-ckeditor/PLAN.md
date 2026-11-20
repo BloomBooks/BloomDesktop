@@ -106,8 +106,8 @@ asynchronously after `CKEDITOR.inline()` returns:
   get no editor "because the logic that invokes WireToCKEditor is looking for classes like
   bloom-content1". Not so: `utils/shared.ts:16-19` explicitly includes
   `.Equation-style[contenteditable='true']` in `ckeditableSelector`, added for that very
-  template. The **real** "no editor" case is `attachToCkEditor`'s early return for elements
-  with `cursor: not-allowed` (`bloomEditing.ts:1952`). Preserve that; don't preserve a
+  template. The only "no editor" case is a field that does not match `ckeditableSelector`
+  (a computed `cursor: not-allowed` no longer marks a field as locked, BL-17105). Don't preserve a
   behaviour that doesn't exist.
 
 ## 3. Current Undo: five mechanisms
@@ -1055,8 +1055,8 @@ valuable subset, not an arbitrary one.
   BL-12357, BL-12381, BL-12391, BL-12448, BL-13779, BL-14004, BL-14051, BL-14947, BL-16065,
   BL-16330, BL-16490. Each row becomes a vitest case or a manual test idea. Include the
   easily-missed ones: the BL-13779 `data-user-deleted` hook, the BL-11745 qtip z-order juggling,
-  `EnsureCaretNotInsideLineBreakSpan` on selection change, the SetupLink hyperlink command, the
-  `cursor: not-allowed` no-editor case, and `PreventRemovalOfSomeElements`.
+  `EnsureCaretNotInsideLineBreakSpan` on selection change, the SetupLink hyperlink command, and
+  `PreventRemovalOfSomeElements`.
 - **The paste/drop sanitizing rows are the most important ones in the inventory** (§4.8), because
   losing that protection is invisible rather than obviously broken. Write them as adversarial
   cases with expected outcomes — table, nested `div`, `iframe`, `<script>`, `<img>`, real-web-page
