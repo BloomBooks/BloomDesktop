@@ -1,5 +1,9 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 import OverflowChecker from "./OverflowChecker";
+import {
+    initializeCanvasElementManager,
+    theOneCanvasElementManager,
+} from "../js/canvasElementManager/CanvasElementManager";
 import OverflowAncestorFixture from "./OverflowAncestorFixture.html?raw";
 import OverflowFixture from "./OverflowFixture.html?raw";
 import OverflowMarginFixture from "./OverflowMarginFixture.html?raw";
@@ -262,5 +266,281 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowSoon", () => {
         OverflowChecker.AdjustSizeOrMarkOverflowSoon(box);
         vi.advanceTimersByTime(1000);
         expect(selfChecks).toHaveBeenCalledTimes(2);
+    });
+});
+
+// A text box in a table cell has to fit its cell, not the table's own box or the canvas element
+// the table fills, which can be shorter than its rows once a row has been made taller by dragging
+// its boundary. It still has to fit the marginBox.
+describe("OverflowChecker.overflowingAncestor in a table cell", () => {
+    // A table filling a 40px canvas element, whose single 120px row runs well past it, holding a
+    // cell with a text box.
+    function loadCellTextBox(
+        textBoxStyle: string,
+        marginBoxHeight = 600,
+    ): HTMLElement {
+        const [element] = loadFixture(`
+            <div class="bloom-page">
+                <div class="marginBox" style="height: ${marginBoxHeight}px">
+                    <div class="bloom-canvas-element" style="height: 40px">
+                        <div class="bloom-table" style="display: grid; height: 100%; grid-template-rows: 120px">
+                            <div class="bloom-cell" style="overflow: clip">
+                                <div class="bloom-translationGroup">
+                                    <div class="myTest bloom-editable" style="${textBoxStyle}">text</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`);
+        return element;
+    }
+
+    it("does not report text that fits its cell but not the table's box", () => {
+        const element = loadCellTextBox("height: 80px");
+        const canvasElement = element.closest<HTMLElement>(
+            ".bloom-canvas-element",
+        )!;
+        expect(
+            element.getBoundingClientRect().bottom,
+            "The text box should reach past the table's box and its canvas element, or this tests nothing.",
+        ).toBeGreaterThan(canvasElement.getBoundingClientRect().bottom + 10);
+        expect(OverflowChecker.overflowingAncestor(element)).toBe(null);
+    });
+
+    it("reports text that does not fit its cell", () => {
+        const element = loadCellTextBox("height: 200px");
+        expect(OverflowChecker.overflowingAncestor(element)).toBe(
+            element.closest(".bloom-cell"),
+        );
+    });
+
+    it("reports text that fits its cell but runs past the marginBox", () => {
+        const element = loadCellTextBox("height: 110px", 100);
+        const cell = element.closest<HTMLElement>(".bloom-cell")!;
+        expect(
+            element.getBoundingClientRect().bottom,
+            "The text box should fit its cell, or this tests the cell instead.",
+        ).toBeLessThanOrEqual(cell.getBoundingClientRect().bottom);
+        expect(OverflowChecker.overflowingAncestor(element)).toBe(
+            element.closest(".marginBox"),
+        );
+    });
+
+    it("reports text in a nested table that fits its cell but not the outer table's cell", () => {
+        // An outer table whose 100px row holds a nested table, whose own 160px row runs past
+        // the outer cell.
+        const [element] = loadFixture(`
+            <div class="bloom-page">
+                <div class="marginBox" style="height: 600px">
+                    <div class="bloom-canvas-element" style="height: 300px">
+                        <div class="bloom-table" style="display: grid; height: 100%; grid-template-rows: 100px 100px">
+                            <div class="bloom-cell" data-content-type="table">
+                                <div class="bloom-table" style="display: grid; height: 100%; grid-template-rows: 160px">
+                                    <div class="bloom-cell" style="overflow: clip">
+                                        <div class="bloom-translationGroup">
+                                            <div class="myTest bloom-editable" style="height: 140px">text</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bloom-cell"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>`);
+        const innerCell = element.closest<HTMLElement>(".bloom-cell")!;
+        const outerCell =
+            innerCell.parentElement!.closest<HTMLElement>(".bloom-cell")!;
+        expect(
+            element.getBoundingClientRect().bottom,
+            "The text should fit its own cell, or this tests the inner cell instead.",
+        ).toBeLessThanOrEqual(innerCell.getBoundingClientRect().bottom);
+        expect(OverflowChecker.overflowingAncestor(element)).toBe(outerCell);
+    });
+});
+
+describe("OverflowChecker.AdjustSizeAndMarkSelfOverflow", () => {
+    afterEach(() => {
+        vi.clearAllTimers();
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
+
+    // The rebuild of the page's scroll bars that is waiting, if any. MeasureText keeps a timer
+    // of its own, so counting timers would not tell the two apart.
+    const checker = OverflowChecker as unknown as {
+        fixScrollBarsTimeout: number;
+    };
+
+    // Puts in the document a box whose text does not fit it, with the given extra classes, and
+    // sets up what its check needs.
+    function setUpOverflowingBox(classes: string): HTMLElement {
+        const [editable] = loadFixture(`
+            <div class="bloom-page">
+                <div class="marginBox" style="height: 600px">
+                    <div class="myTest bloom-editable bloom-visibility-code-on ${classes}"
+                        style="height: 20px; width: 100px; font: 16px Arial; overflow: hidden">${"words ".repeat(40)}</div>
+                </div>
+            </div>`);
+        vi.useFakeTimers();
+        initializeCanvasElementManager();
+        // The box is not in a canvas element, so its size stays as it is.
+        vi.spyOn(
+            theOneCanvasElementManager,
+            "adjustSizeOfContainingCanvasElementToMatchContent",
+        ).mockImplementation((_element, overflowY) => overflowY);
+        clearTimeout(checker.fixScrollBarsTimeout);
+        checker.fixScrollBarsTimeout = 0;
+        return editable;
+    }
+
+    // Checks the box with no rebuild waiting, and says whether the check asked for one.
+    function rebuildIsWaitingAfterCheck(editable: HTMLElement): boolean {
+        clearTimeout(checker.fixScrollBarsTimeout);
+        checker.fixScrollBarsTimeout = 0;
+        OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable);
+        return checker.fixScrollBarsTimeout !== 0;
+    }
+
+    // A row drag checks a table's text on every frame, and rebuilding the scroll bars of a page
+    // with a big table takes seconds on a slow computer, so a check that changes nothing must not
+    // ask for a rebuild.
+    it("asks for the scroll bars to be rebuilt only when a box's text starts or stops fitting", () => {
+        const editable = setUpOverflowingBox("");
+
+        expect(
+            rebuildIsWaitingAfterCheck(editable),
+            "The text does not fit, so the first check should ask for a rebuild.",
+        ).toBe(true);
+        expect(
+            editable.classList.contains("overflow"),
+            "The box should be marked, or this tests nothing.",
+        ).toBe(true);
+        expect(
+            rebuildIsWaitingAfterCheck(editable),
+            "A check of text that still does not fit should not ask for a rebuild.",
+        ).toBe(false);
+        editable.textContent = "words";
+        expect(
+            rebuildIsWaitingAfterCheck(editable),
+            "A check of text that now fits should ask for a rebuild.",
+        ).toBe(true);
+        expect(editable.classList.contains("overflow")).toBe(false);
+        expect(
+            rebuildIsWaitingAfterCheck(editable),
+            "A check of text that still fits should not ask for a rebuild.",
+        ).toBe(false);
+    });
+
+    // A title box is never marked, but the page gives it a scroll bar when its text does not fit.
+    it("asks for a rebuild when the text of a box that is never marked stops fitting", () => {
+        const editable = setUpOverflowingBox("bloom-padForOverflow");
+
+        expect(
+            rebuildIsWaitingAfterCheck(editable),
+            "The text does not fit, so the first check should ask for a rebuild.",
+        ).toBe(true);
+        expect(
+            editable.classList.contains("overflow"),
+            "A bloom-padForOverflow box should not be marked, or this tests the mark instead.",
+        ).toBe(false);
+        editable.textContent = "words";
+        expect(
+            rebuildIsWaitingAfterCheck(editable),
+            "A check of text that now fits should ask for a rebuild.",
+        ).toBe(true);
+    });
+
+    // While a drag goes on, a rebuild that a cell asked for waits until the checks stop.
+    it("postpones a rebuild that is waiting when a check changes nothing", () => {
+        const editable = setUpOverflowingBox("");
+        OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable);
+        const waiting = checker.fixScrollBarsTimeout;
+        expect(
+            waiting,
+            "The first check should have asked for a rebuild, or this tests nothing.",
+        ).not.toBe(0);
+
+        OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable);
+
+        expect(
+            checker.fixScrollBarsTimeout,
+            "The rebuild should still be waiting.",
+        ).not.toBe(0);
+        expect(
+            checker.fixScrollBarsTimeout,
+            "The rebuild should wait again from the start.",
+        ).not.toBe(waiting);
+    });
+});
+
+describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
+    afterEach(() => {
+        vi.clearAllTimers();
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
+
+    // A canvas element holding a text box in each of two languages, both too small for their text.
+    function setUpTwoLanguageCanvasElement(): HTMLElement[] {
+        const boxStyle =
+            "height: 20px; width: 100px; font: 16px Arial; overflow: hidden";
+        const boxes = loadFixture(`
+            <div class="bloom-page">
+                <div class="marginBox" style="height: 600px">
+                    <div class="bloom-canvas" style="height: 500px">
+                        <div class="bloom-canvas-element" style="height: 40px">
+                            <div class="bloom-translationGroup">
+                                <div class="myTest bloom-editable bloom-visibility-code-on" style="${boxStyle}">${"words ".repeat(10)}</div>
+                                <div class="myTest bloom-editable bloom-visibility-code-on" style="${boxStyle}">${"words ".repeat(10)}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`);
+        vi.useFakeTimers();
+        initializeCanvasElementManager();
+        return boxes;
+    }
+
+    // Growing a canvas element to fit one box's text gives the boxes of its other languages
+    // more room too, so the overflow the batch read for them beforehand no longer holds.
+    it("measures a box again once another box has resized their canvas element", () => {
+        const [first, second] = setUpTwoLanguageCanvasElement();
+        const canvasElement = first.closest<HTMLElement>(
+            ".bloom-canvas-element",
+        )!;
+        expect(
+            OverflowChecker.getSelfOverflowAmounts(second)[1],
+            "The second box's text should not fit it at first, or this tests nothing.",
+        ).toBeGreaterThan(0);
+        const overflowGivenFor = new Map<HTMLElement, number>();
+        vi.spyOn(
+            theOneCanvasElementManager,
+            "adjustSizeOfContainingCanvasElementToMatchContent",
+        ).mockImplementation((element, overflowY) => {
+            overflowGivenFor.set(element, overflowY);
+            if (element === first) {
+                // What growing the canvas element does to both of its boxes.
+                canvasElement.style.height = "320px";
+                first.style.height = "150px";
+                second.style.height = "150px";
+                return 0;
+            }
+            return overflowY;
+        });
+
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll([first, second]);
+
+        expect(
+            overflowGivenFor.get(first),
+            "The first box should have been checked while its text did not fit.",
+        ).toBeGreaterThan(0);
+        expect(
+            overflowGivenFor.get(second),
+            "The second box's text fits once the canvas element has grown.",
+        ).toBeLessThanOrEqual(0);
+        expect(second.classList.contains("overflow")).toBe(false);
     });
 });

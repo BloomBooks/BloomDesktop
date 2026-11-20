@@ -39,6 +39,7 @@ import {
     goToPage,
     makeBookFromTemplate,
     setContentLanguages,
+    waitForPageToSettle,
 } from "./bookMaking";
 import { kTableEditingMarkupSelectors } from "./bookHtml";
 import {
@@ -1525,6 +1526,32 @@ async function performBoundaryDrag(
     tableIndex: number,
 ): Promise<ITableShape> {
     const before = await getTableShape(page, tableIndex);
+    const drag = await beginBoundaryDrag(page, what, index, tableIndex);
+    await moveBoundaryDragTo(page, drag, distance);
+    await endBoundaryDrag(page);
+    return before;
+}
+
+/** A boundary drag that is under way: the mouse button is down on a row or column boundary. */
+export interface IBoundaryDrag {
+    what: "column" | "row";
+    /** Where the button went down, in Playwright's mouse coordinates. */
+    from: { x: number; y: number };
+}
+
+/**
+ * Press the mouse button on the right-hand boundary of one column, or the bottom boundary of one
+ * row, and hold it. Follow with moveBoundaryDragTo, and finish with endBoundaryDrag. For a test
+ * that looks at the table while the button is still down; dragBoundary does the whole gesture.
+ *
+ * The press is aimed two pixels inside the cell's edge, for the reason dragBoundary gives.
+ */
+export async function beginBoundaryDrag(
+    page: Page,
+    what: "column" | "row",
+    index: number,
+    tableIndex = 0,
+): Promise<IBoundaryDrag> {
     const target =
         what === "column"
             ? await cell(page, 0, index, tableIndex)
@@ -1537,17 +1564,33 @@ async function performBoundaryDrag(
         what === "column"
             ? { x: right(box) - 2, y: box.y + box.height / 2 }
             : { x: box.x + box.width / 2, y: bottom(box) - 2 };
-    const to =
-        what === "column"
-            ? { x: from.x + distance, y: from.y }
-            : { x: from.x, y: from.y + distance };
     await page.mouse.move(from.x, from.y);
     await page.mouse.down();
-    // In steps, and past the destination before settling on it: the library follows pointermove
-    // events, and a single jump gives it one, which some of its own snapping treats as no drag.
+    return { what, from };
+}
+
+/**
+ * With the button still down, move the mouse to `distance` pixels from where the drag began:
+ * right or down when positive, left or up when negative. Waits for nothing: the caller says what
+ * the table should show at that point of the drag.
+ */
+export async function moveBoundaryDragTo(
+    page: Page,
+    drag: IBoundaryDrag,
+    distance: number,
+): Promise<void> {
+    const to =
+        drag.what === "column"
+            ? { x: drag.from.x + distance, y: drag.from.y }
+            : { x: drag.from.x, y: drag.from.y + distance };
+    // In steps: the library follows pointermove events, and a single jump gives it one, which
+    // some of its own snapping treats as no drag.
     await page.mouse.move(to.x, to.y, { steps: 12 });
+}
+
+/** Let go of the mouse button, which ends a drag that beginBoundaryDrag began. */
+export async function endBoundaryDrag(page: Page): Promise<void> {
     await page.mouse.up();
-    return before;
 }
 
 // ── Internals ───────────────────────────────────────────────────────────
@@ -1742,6 +1785,13 @@ export async function countDrawingSurfacesInCells(
     return frame.locator(".bloom-cell canvas.comical-generated").count();
 }
 
+/** The classes OverflowChecker.ts puts on a box to mark it as overflowing, or overflowed. */
+const kOverflowMarks = [
+    "overflow",
+    "childOverflowingThis",
+    "thisOverflowingParent",
+];
+
 /**
  * Whether Bloom is marking the text in a cell as too big for the space it has, and which of its
  * three ways of saying so it used: `overflow` (the box overflows itself), `childOverflowingThis`
@@ -1753,21 +1803,376 @@ export async function getCellOverflowMarks(
     row: number,
     column: number,
     tableIndex = 0,
+    /** How long to wait for the cell to be on the page; the configured action timeout if absent. */
+    timeoutMs?: number,
 ): Promise<string[]> {
     const target = await cell(page, row, column, tableIndex);
-    return target.evaluate((element) => {
-        const marks = [
-            "overflow",
-            "childOverflowingThis",
-            "thisOverflowingParent",
-        ];
-        const found = new Set<string>();
-        for (const mark of marks) {
-            if (element.classList.contains(mark)) found.add(mark);
-            if (element.querySelector(`.${mark}`)) found.add(mark);
+    return target.evaluate(
+        (element, marks) => {
+            const found = new Set<string>();
+            for (const mark of marks) {
+                if (element.classList.contains(mark)) found.add(mark);
+                if (element.querySelector(`.${mark}`)) found.add(mark);
+            }
+            return [...found];
+        },
+        kOverflowMarks,
+        { timeout: timeoutMs },
+    );
+}
+
+/**
+ * Every overflow mark on the table or anything in it, as "<what is marked>: <mark>", in document
+ * order. The same three marks as getCellOverflowMarks, but also on the table itself and on
+ * anything between it and its cells, which is where a mark lands when Bloom judges text against
+ * the table's own box instead of the cell's.
+ */
+export async function getTableOverflowMarks(
+    page: Page,
+    tableIndex = 0,
+): Promise<string[]> {
+    return table(page, tableIndex).evaluate((element, marks) => {
+        const describe = (e: Element) =>
+            e.classList.contains("bloom-table")
+                ? "the table"
+                : `${e.className.split(" ")[0]}${e.getAttribute("lang") ? ` (${e.getAttribute("lang")})` : ""}`;
+        const found: string[] = [];
+        for (const e of [element, ...element.querySelectorAll("*")])
+            for (const mark of marks)
+                if (e.classList.contains(mark))
+                    found.push(`${describe(e)}: ${mark}`);
+        return found;
+    }, kOverflowMarks);
+}
+
+/**
+ * Assert that, once Bloom has caught up with the last change, nothing in the table is marked as
+ * overflowing.
+ *
+ * Bloom checks a table's text as soon as a table operation or a drag changes its cells, but a
+ * text box only a second after it is typed in, so marks can lag the layout both ways. So this
+ * first lets the page settle: waitForPageToSettle waits out that second, and then for the page's
+ * pending work, which includes a table check waiting for its frame (it holds a page-content
+ * delay). The marks are then those of the last check, and should be none.
+ */
+export async function expectTableSettlesUnmarked(
+    page: Page,
+    tableIndex = 0,
+): Promise<void> {
+    await waitForPageToSettle(page);
+    expect(
+        await getTableOverflowMarks(page, tableIndex),
+        "Nothing in the table should be marked as overflowing.",
+    ).toEqual([]);
+}
+
+/** One text cell: whether Bloom marks it, and how far its text boxes reach past it. */
+interface ICellMarkAndFit {
+    row: number;
+    column: number;
+    marked: boolean;
+    /** How far the lowest text box reaches below the cell's content area; negative when it fits. */
+    pastContentBy: number;
+    /** The same, measured from the cell's outer edge. */
+    pastCellBy: number;
+}
+
+/**
+ * Wait until Bloom's overflow marks agree, for every text cell of the table, with whether the
+ * cell's text boxes fit it, and return the cells that are marked. This is how a test asks whether
+ * the marks are right after an operation that moves or resizes many cells at once (adding or
+ * deleting a row), without saying which cells that operation should have squeezed.
+ *
+ * A cell is judged only when the answer is not in doubt: Bloom allows a text box to reach into
+ * the cell's padding and border, and two pixels more, so a box that ends there is right either
+ * way. The judgement is against the cell alone, so use this only for a table that is wholly
+ * inside the page's margins, where the cell is the only thing its text can overflow.
+ */
+export async function expectOverflowMarksMatchWhatFits(
+    page: Page,
+    tableIndex = 0,
+): Promise<{ row: number; column: number }[]> {
+    // Room on top of the two pixels Bloom allows, for the rounding of a zoomed page.
+    const kPixelsOfDoubt = 4;
+    const read = async (): Promise<ICellMarkAndFit[]> =>
+        table(page, tableIndex).evaluate((element, marks) => {
+            const columns = (
+                element.getAttribute("data-column-widths") ?? ""
+            ).split(",").length;
+            const found: ICellMarkAndFit[] = [];
+            element
+                .querySelectorAll<HTMLElement>(":scope > .bloom-cell")
+                .forEach((cellElement, index) => {
+                    const boxes = Array.from(
+                        cellElement.querySelectorAll<HTMLElement>(
+                            ":scope > .bloom-translationGroup > .bloom-editable.bloom-visibility-code-on",
+                        ),
+                    );
+                    if (boxes.length === 0) return;
+                    const style = getComputedStyle(cellElement);
+                    const cellBottom =
+                        cellElement.getBoundingClientRect().bottom;
+                    const contentBottom =
+                        cellBottom -
+                        parseFloat(style.borderBottomWidth) -
+                        parseFloat(style.paddingBottom);
+                    const lowest = Math.max(
+                        ...boxes.map(
+                            (box) => box.getBoundingClientRect().bottom,
+                        ),
+                    );
+                    found.push({
+                        row: Math.floor(index / columns),
+                        column: index % columns,
+                        marked: marks.some(
+                            (mark) =>
+                                cellElement.classList.contains(mark) ||
+                                !!cellElement.querySelector(`.${mark}`),
+                        ),
+                        pastContentBy: lowest - contentBottom,
+                        pastCellBy: lowest - cellBottom,
+                    });
+                });
+            return found;
+        }, kOverflowMarks);
+    const wrong = (cells: ICellMarkAndFit[]) =>
+        cells
+            .filter(
+                (c) =>
+                    (c.marked && c.pastContentBy < -kPixelsOfDoubt) ||
+                    (!c.marked && c.pastCellBy > kPixelsOfDoubt),
+            )
+            .map(
+                (c) =>
+                    `the cell at row ${c.row}, column ${c.column} is ` +
+                    (c.marked
+                        ? `marked, and its text ends ${Math.round(-c.pastContentBy)}px inside it`
+                        : `not marked, and its text reaches ${Math.round(c.pastCellBy)}px past it`),
+            );
+    let cells: ICellMarkAndFit[] = [];
+    await expect
+        .poll(
+            async () => {
+                cells = await read();
+                return wrong(cells);
+            },
+            {
+                // Bloom's one-second delay, plus room for the check itself.
+                timeout: 1000 + kTableWaitMs,
+                message:
+                    "Bloom's overflow marks should agree with which cells' text fits.",
+            },
+        )
+        .toEqual([]);
+    return cells
+        .filter((c) => c.marked)
+        .map((c) => ({ row: c.row, column: c.column }));
+}
+
+/** Whether a cell's text reaches past the cell, and whether the cell cuts that part off. */
+export interface ICellTextCutOff {
+    /** Whether any of the cell's text boxes reaches below the cell's content area. */
+    reachesPastCell: boolean;
+    /** Whether the cell's style cuts off what reaches past its content area. */
+    cellCutsItOff: boolean;
+}
+
+/**
+ * In any frame, whether the text of one cell reaches below the cell, and whether the cell is
+ * styled to cut that part off. Written for the BloomPUB preview, to ask whether the rule that
+ * cuts text off at a cell's edge went out with the book.
+ *
+ * By the cell's computed style rather than by pixels, which is how getCellTextClipping judges the
+ * page being edited: the preview draws only the page it is showing, and the page with the table
+ * need not be that one. That a cell so styled really hides the text is what getCellTextClipping
+ * shows.
+ */
+export async function getCellTextCutOffIn(
+    frame: Frame,
+    row: number,
+    column: number,
+    tableSelector = ".bloom-table",
+): Promise<ICellTextCutOff> {
+    const target = frame.locator(tableSelector).first();
+    await target.waitFor({ state: "attached", timeout: kTableWaitMs });
+    return target.evaluate(
+        (element, at) => {
+            const columns = (
+                element.getAttribute("data-column-widths") ?? ""
+            ).split(",").length;
+            const cellElement = element.querySelectorAll<HTMLElement>(
+                ":scope > .bloom-cell",
+            )[at.row * columns + at.column];
+            if (!cellElement)
+                throw new Error(
+                    `The table has no cell at row ${at.row}, column ${at.column}.`,
+                );
+            const style = getComputedStyle(cellElement);
+            const contentBottom =
+                cellElement.getBoundingClientRect().bottom -
+                parseFloat(style.borderBottomWidth) -
+                parseFloat(style.paddingBottom);
+            const boxes = Array.from(
+                cellElement.querySelectorAll<HTMLElement>(".bloom-editable"),
+            ).filter((box) => box.getBoundingClientRect().height > 0);
+            return {
+                reachesPastCell: boxes.some(
+                    (box) =>
+                        box.getBoundingClientRect().bottom > contentBottom + 1,
+                ),
+                cellCutsItOff:
+                    style.overflowY === "clip" || style.overflowY === "hidden",
+            };
+        },
+        { row, column },
+    );
+}
+
+/**
+ * Wait until Bloom's overflow marks on a cell say what `marked` says: some mark when true, none
+ * when false. Bloom checks a text box for overflow a second after it is typed in, and a table's
+ * text at the next frame after its cells change, so the answer has to be waited for rather than
+ * read once.
+ *
+ * Each reading is given a second of its own, so that a cell that cannot be read (the table not on
+ * the page, say) is reported as that, rather than as a wait that simply ran out.
+ */
+export async function waitForCellOverflowMarks(
+    page: Page,
+    row: number,
+    column: number,
+    marked: boolean,
+    tableIndex = 0,
+): Promise<void> {
+    // Bloom's one-second delay, plus room for the check itself.
+    const deadline = Date.now() + 1000 + kTableWaitMs;
+    let lastReading = "";
+    for (;;) {
+        try {
+            const marks = await getCellOverflowMarks(
+                page,
+                row,
+                column,
+                tableIndex,
+                1000,
+            );
+            if (marks.length > 0 === marked) return;
+            lastReading = `its marks were: ${marks.join(", ") || "none"}`;
+        } catch (error) {
+            lastReading = `the cell could not be read: ${String(error).split("\n")[0]}`;
         }
-        return [...found];
-    });
+        if (Date.now() > deadline)
+            throw new Error(
+                `The cell at row ${row}, column ${column} should ${marked ? "" : "not "}be marked ` +
+                    `as overflowing; at the last reading ${lastReading}.`,
+            );
+        await editablePageFrame(page).waitForTimeout(100);
+    }
+}
+
+/** How the part of a cell's text box that is past the cell's content edge is drawn. */
+export interface ICellTextClipping {
+    /** Whether the box reaches past the bottom of the cell's content area at all. */
+    reachesPastCell: boolean;
+    /**
+     * Whether anything of the box is drawn past the cell's content area. False when the box does
+     * not reach past it.
+     */
+    partPastCellShows: boolean;
+}
+
+/**
+ * Whether one language's text box in a cell reaches below the cell's content area, and if it
+ * does, whether that part is drawn. A text cell cuts its text off at the edge of its content area,
+ * the way a split-pane text box does. The box needs some text in it for the answer to mean
+ * anything: an empty box draws nothing wherever it is.
+ *
+ * Drawn is judged by pixels, not by asking the page what is under a point: what overflows a cell
+ * lies under the next row's own text box, which answers any such question, whether or not the
+ * overflowing text can be seen through it. So this takes a picture of the part past the cell,
+ * hides the box, takes it again, and puts the box back. A part that is cut off looks the same
+ * both times.
+ */
+export async function getCellTextClipping(
+    page: Page,
+    row: number,
+    column: number,
+    languageTag: string,
+    tableIndex = 0,
+): Promise<ICellTextClipping> {
+    const target = await cell(page, row, column, tableIndex);
+    const pastCell = await target.evaluate((element, tag) => {
+        const box = element.querySelector<HTMLElement>(
+            `.bloom-editable[lang="${tag}"]`,
+        );
+        if (!box) throw new Error(`The cell has no text box in "${tag}".`);
+        const style = getComputedStyle(element);
+        const contentBottom =
+            element.getBoundingClientRect().bottom -
+            parseFloat(style.borderBottomWidth) -
+            parseFloat(style.paddingBottom);
+        const boxRect = box.getBoundingClientRect();
+        if (boxRect.bottom <= contentBottom + 1) return null;
+        const top = Math.max(contentBottom, boxRect.top);
+        return {
+            x: boxRect.left,
+            y: top,
+            width: boxRect.width,
+            height: boxRect.bottom - top,
+        };
+    }, languageTag);
+    if (!pastCell) return { reachesPastCell: false, partPastCellShows: false };
+
+    const offset = await pageFrameOffset(page);
+    const clip = {
+        x: offset.x + pastCell.x,
+        y: offset.y + pastCell.y,
+        width: pastCell.width,
+        height: pastCell.height,
+    };
+    const textBox = target.locator(`.bloom-editable[lang="${languageTag}"]`);
+    const withBox = await page.screenshot({ clip });
+    await textBox.evaluate((box) => (box.style.visibility = "hidden"));
+    try {
+        const withoutBox = await page.screenshot({ clip });
+        return {
+            reachesPastCell: true,
+            partPastCellShows: !withBox.equals(withoutBox),
+        };
+    } finally {
+        await textBox.evaluate((box) => box.style.removeProperty("visibility"));
+    }
+}
+
+/** The Size choices in a row's menu, by the aria-label the library gives each. */
+export type RowSize = "Grow" | "Hug";
+
+/**
+ * Choose Grow or Hug in a row's menu, as a person does, wait until the table records it, and close
+ * the menu. Grow is "fill" in the table's own record, Hug is "hug".
+ */
+export async function setRowSize(
+    page: Page,
+    row: number,
+    size: RowSize,
+    tableIndex = 0,
+): Promise<void> {
+    await openTableMenu(page, "row", row, tableIndex);
+    const choice = editablePageFrame(page).locator(
+        `[data-btable-menu="row"] button[aria-label="${size}"]`,
+    );
+    await clickChrome(choice, `the row menu's ${size} choice`);
+    const recorded = size === "Grow" ? "fill" : "hug";
+    await expect
+        .poll(
+            async () => (await getTableShape(page, tableIndex)).rowHeights[row],
+            {
+                timeout: kTableWaitMs,
+                message: `Choosing ${size} for row ${row} did not make the table record "${recorded}".`,
+            },
+        )
+        .toBe(recorded);
+    await closeAnyMenu(page);
 }
 
 /**
