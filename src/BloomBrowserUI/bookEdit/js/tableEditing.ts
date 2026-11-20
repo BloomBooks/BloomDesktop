@@ -28,7 +28,10 @@ import { SetupImagesInContainer } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
 import { setUpBoxesBuiltAfterLoad } from "./translationGroupLanguages";
 import { get, post } from "../../utils/bloomApi";
-import { wrapWithRequestPageContentDelay } from "./pageContentDelays";
+import {
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
+} from "./pageContentDelays";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
 import {
     refreshTableFeatureStatus,
@@ -203,12 +206,8 @@ function installHostHooks(): void {
             if (!cellLanguages) {
                 // The collection's languages have not arrived yet; the cell gets its setting when
                 // they do (requestCellLanguages), and saving the page waits for that.
-                if (settingsCopiedBeforeLanguages.length === 0) {
-                    void wrapWithRequestPageContentDelay(
-                        () => cellLanguagesApplied!,
-                        kCopiedLanguagesDelayId,
-                    );
-                }
+                if (settingsCopiedBeforeLanguages.length === 0)
+                    addRequestPageContentDelay(kCopiedLanguagesDelayId);
                 settingsCopiedBeforeLanguages.push({ group, setting });
                 return;
             }
@@ -228,10 +227,6 @@ let settingsCopiedBeforeLanguages: {
     group: HTMLElement;
     setting: string | null;
 }[] = [];
-
-// Resolves once the collection's languages have arrived and the settings copied before then have
-// been given to their cells.
-let cellLanguagesApplied: Promise<void> | undefined;
 
 // The page-content delay held while settingsCopiedBeforeLanguages has settings in it.
 export const kCopiedLanguagesDelayId = "tableCellLanguagesCopiedEarly";
@@ -259,25 +254,23 @@ function requestCellLanguages(): void {
         settings.currentCollectionLanguage2,
         settings.currentCollectionLanguage3,
     ].filter((tag) => !!tag);
-    cellLanguagesApplied = new Promise((resolve) => {
-        get("settings/languageNames", (result) => {
-            const languages = cellLanguagesOfCollection(
-                result.data as ILanguageNameValues,
-                toolbarTags,
-            );
-            cellLanguages = languages;
-            // Cells that an undo has since replaced are no longer in the page.
-            const waiting = settingsCopiedBeforeLanguages.filter(
-                (copied) => copied.group.isConnected,
-            );
-            settingsCopiedBeforeLanguages = [];
-            showSettingsInGroups(
-                waiting.map((copied) => copied.group),
-                waiting.map((copied) => copied.setting),
-                languages,
-            );
-            resolve();
-        });
+    get("settings/languageNames", (result) => {
+        const languages = cellLanguagesOfCollection(
+            result.data as ILanguageNameValues,
+            toolbarTags,
+        );
+        cellLanguages = languages;
+        const copied = settingsCopiedBeforeLanguages;
+        if (copied.length === 0) return;
+        settingsCopiedBeforeLanguages = [];
+        // Cells that an undo has since replaced are no longer in the page.
+        const waiting = copied.filter((entry) => entry.group.isConnected);
+        showSettingsInGroups(
+            waiting.map((entry) => entry.group),
+            waiting.map((entry) => entry.setting),
+            languages,
+        );
+        removeRequestPageContentDelay(kCopiedLanguagesDelayId);
     });
 }
 
