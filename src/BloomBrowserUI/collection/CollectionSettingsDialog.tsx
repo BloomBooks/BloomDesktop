@@ -308,9 +308,12 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                     <ConfigrPane
                         ref={paneRef}
                         className={kConfigrPaneClassName}
-                        label={dialogTitle}
-                        showAppBar={false}
-                        showSearch={false}
+                        // Config-R shows its label only in the bar that holds the search box,
+                        // which would repeat the dialog's own title right below it.
+                        label=""
+                        // The search box is in Config-R's app bar.
+                        showAppBar={true}
+                        showSearch={true}
                         initialValues={
                             loadedSettings.values as unknown as ConfigrValues
                         }
