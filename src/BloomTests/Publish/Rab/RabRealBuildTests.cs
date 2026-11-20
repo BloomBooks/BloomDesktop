@@ -162,8 +162,9 @@ namespace BloomTests.Publish.Rab
                     Is.True,
                     "The generated APK should contain AndroidManifest.xml."
                 );
-                AssertEmbeddedFontsReachedTheApp(status.AppDefPath, archive);
-                AssertContentsPictureReachedTheApp(project, prepareState.Books[0], archive);
+                var appFileHashes = HashAppOwnFiles(archive);
+                AssertEmbeddedFontsReachedTheApp(status.AppDefPath, appFileHashes);
+                AssertContentsPictureReachedTheApp(project, prepareState.Books[0], appFileHashes);
             }
         }
 
@@ -174,7 +175,7 @@ namespace BloomTests.Publish.Rab
         private static void AssertContentsPictureReachedTheApp(
             RabAppProject project,
             RabBookPublishInfo book,
-            ZipArchive apk
+            HashSet<string> appFileHashes
         )
         {
             var pictureName = RabAppProject.GetContentsImageFileName(book);
@@ -184,22 +185,34 @@ namespace BloomTests.Publish.Rab
                 Is.True,
                 $"{pictureName} should be in the project's contents images folder, where RAB looks for it"
             );
+            var pictureHash = Hash(RobustFile.ReadAllBytes(picturePath));
             using (var bloomPub = ZipFile.OpenRead(book.BloomPubPath))
             using (
                 var thumbnail = bloomPub.GetEntry(RabAppProject.GetThumbnailFileName(book)).Open()
             )
             {
                 Assert.That(
-                    RobustFile.ReadAllBytes(picturePath),
-                    Is.EqualTo(ReadAll(thumbnail)),
+                    pictureHash,
+                    Is.EqualTo(Hash(thumbnail)),
                     "the contents picture should be the book's own thumbnail"
                 );
             }
 
-            var pictureHash = Convert.ToBase64String(
-                SHA256.HashData(RobustFile.ReadAllBytes(picturePath))
+            Assert.That(
+                appFileHashes,
+                Does.Contain(pictureHash),
+                "The APK should contain the book's thumbnail as its contents-menu picture"
             );
-            var appPictureHashes = apk
+        }
+
+        /// <summary>
+        /// Hashes each file the APK carries for the app itself. The book's own copy of each font
+        /// and of its thumbnail also goes into the APK, under assets/books/; leave those out, or
+        /// the checks that use this would pass in exactly the case they are meant to catch.
+        /// </summary>
+        private static HashSet<string> HashAppOwnFiles(ZipArchive apk)
+        {
+            return apk
                 .Entries.Where(entry =>
                     entry.Length > 0
                     && !entry.FullName.StartsWith("assets/books/", StringComparison.Ordinal)
@@ -207,28 +220,24 @@ namespace BloomTests.Publish.Rab
                 .Select(entry =>
                 {
                     using var stream = entry.Open();
-                    return Convert.ToBase64String(SHA256.HashData(stream));
+                    return Hash(stream);
                 })
                 .ToHashSet();
-            Assert.That(
-                appPictureHashes,
-                Does.Contain(pictureHash),
-                "The APK should contain the book's thumbnail as its contents-menu picture"
-            );
         }
 
-        private static byte[] ReadAll(Stream stream)
-        {
-            using var memory = new MemoryStream();
-            stream.CopyTo(memory);
-            return memory.ToArray();
-        }
+        private static string Hash(byte[] bytes) => Convert.ToBase64String(SHA256.HashData(bytes));
+
+        private static string Hash(Stream stream) =>
+            Convert.ToBase64String(SHA256.HashData(stream));
 
         // BL-16959: Bloom lists each font embedded in the book in the .appDef, and RAB takes the
         // font files from the project's fonts folder. RAB 14.0-14.4 silently leaves out a font whose
         // file isn't there (14.5+ fails the build), so check both that each file got there and that
         // the APK contains it. RAB may obfuscate font file names in the APK, so match by content.
-        private static void AssertEmbeddedFontsReachedTheApp(string appDefPath, ZipArchive apk)
+        private static void AssertEmbeddedFontsReachedTheApp(
+            string appDefPath,
+            HashSet<string> appFileHashes
+        )
         {
             var fontFileNames = XDocument
                 .Load(appDefPath)
@@ -247,19 +256,6 @@ namespace BloomTests.Publish.Rab
                 Path.GetFileNameWithoutExtension(appDefPath) + "_data",
                 "fonts"
             );
-            // The book's own copy of each font also goes into the APK, under assets/books/; leave
-            // those out, or this check would pass in exactly the case it is meant to catch.
-            var apkEntryHashes = apk
-                .Entries.Where(entry =>
-                    entry.Length > 0
-                    && !entry.FullName.StartsWith("assets/books/", StringComparison.Ordinal)
-                )
-                .Select(entry =>
-                {
-                    using var stream = entry.Open();
-                    return Convert.ToBase64String(SHA256.HashData(stream));
-                })
-                .ToHashSet();
             foreach (var fileName in fontFileNames)
             {
                 var fontPath = Path.Combine(fontsFolder, fileName);
@@ -268,11 +264,9 @@ namespace BloomTests.Publish.Rab
                     Is.True,
                     $"{fileName} should be in the project's fonts folder, where RAB looks for it"
                 );
-                var fontHash = Convert.ToBase64String(
-                    SHA256.HashData(RobustFile.ReadAllBytes(fontPath))
-                );
+                var fontHash = Hash(RobustFile.ReadAllBytes(fontPath));
                 Assert.That(
-                    apkEntryHashes,
+                    appFileHashes,
                     Does.Contain(fontHash),
                     $"The APK should contain {fileName} as one of the app's fonts"
                 );
