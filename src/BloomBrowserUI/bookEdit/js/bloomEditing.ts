@@ -496,23 +496,6 @@ export function addPlaceholdersFromLabels(labels: JQuery) {
     });
 }
 
-// Bloom needs to make some fields readonly. E.g., the original license when the user is translating a shellbook
-// Normally, we'd control this is a style in editTranslationMode.css/editOriginalMode.css. However, "readonly" isn't a style, just
-// an attribute, so it can't be included in css.
-// The solution here is to add the readonly attribute when we detect that the css has set the cursor to "not-allowed".
-export function makeReadOnlyWhenCursorIsNotAllowed(elements: JQuery) {
-    elements.focus(function () {
-        //        if ($(this).css('border-bottom-color') == 'transparent') {
-        if ($(this).css("cursor") === "not-allowed") {
-            $(this).attr("readonly", "true");
-            $(this).removeAttr("contentEditable");
-        } else {
-            $(this).removeAttr("readonly");
-            //review: do we need to add contentEditable... that could lead to making things editable that shouldn't be
-        }
-    });
-}
-
 // Add little language tags. (At one point we limited this to visible .bloom-editable divs,
 // probably as an optimization since there can be other-language divs present but hidden.
 // But there may be yet others that are not visible when we run this but which soon will be,
@@ -969,8 +952,6 @@ export function SetupElements(
         .each(function () {
             $(this).attr("contentEditable", "true");
         });
-
-    makeReadOnlyWhenCursorIsNotAllowed($(container).find("textarea, div"));
 
     AddLanguageTags(container);
 
