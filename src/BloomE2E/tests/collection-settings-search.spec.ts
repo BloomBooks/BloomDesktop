@@ -10,12 +10,17 @@ import {
     cancelCollectionSettings,
     clearCollectionSettingsSearch,
     closeCollectionSettingsLanguageMore,
+    getCollectionSettingsCheckbox,
     getCollectionSettingsSearchResults,
     getShowingCollectionSettingsPage,
     openCollectionSettings,
     openCollectionSettingsLanguageMore,
+    saveCollectionSettings,
     searchCollectionSettings,
+    setCollectionSettingsCheckbox,
+    showCollectionSettingsPage,
 } from "../helpers/collectionSettings";
+import { readSavedUserSetting } from "../helpers/userSettings";
 
 test.use({
     collectionSpec: { name: "settings-search", languages: ["en", "fr"] },
@@ -194,4 +199,46 @@ test("a language's More page says which language it is for", async ({
         }),
     ).toBeVisible();
     await closeCollectionSettingsLanguageMore(page);
+});
+
+test("a setting changed in the search results keeps the change and saves it", async ({
+    page,
+    bloomApp,
+}) => {
+    // The launch gives this Bloom an empty settings folder, so the setting has its default, on.
+    expect(
+        await readSavedUserSetting(bloomApp.userSettingsDir, "AutoUpdate"),
+    ).not.toBe("False");
+
+    await searchCollectionSettings(page, "Automatically Update");
+    expect(
+        await getCollectionSettingsCheckbox(page, "Automatically Update Bloom"),
+    ).toEqual({ checked: true, enabled: true });
+    await setCollectionSettingsCheckbox(
+        page,
+        "Automatically Update Bloom",
+        false,
+    );
+
+    // The setting's own page shows the change once the search is cleared.
+    await clearCollectionSettingsSearch(page);
+    await showCollectionSettingsPage(page, "Advanced");
+    expect(
+        await getCollectionSettingsCheckbox(page, "Automatically Update Bloom"),
+    ).toEqual({ checked: false, enabled: true });
+
+    await saveCollectionSettings(page);
+    await expect
+        .poll(
+            () => readSavedUserSetting(bloomApp.userSettingsDir, "AutoUpdate"),
+            { message: "Bloom should have saved AutoUpdate as off" },
+        )
+        .toBe("False");
+
+    // Reopened, the dialog shows the saved value (and afterEach has a dialog to cancel).
+    await openCollectionSettings(page);
+    await showCollectionSettingsPage(page, "Advanced");
+    expect(
+        await getCollectionSettingsCheckbox(page, "Automatically Update Bloom"),
+    ).toEqual({ checked: false, enabled: true });
 });
