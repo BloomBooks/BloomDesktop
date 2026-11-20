@@ -74,6 +74,7 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
             >
                 <Button
                     className="above-page-control-typography"
+                    data-testid="page-layout-menu-button"
                     css={css`
                         color: ${kBloomPurple};
                         min-width: 0;
