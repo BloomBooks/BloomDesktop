@@ -371,7 +371,9 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            OpenEditorInBrowser(payload);
+            // If that save renamed the book's folder, the page is shown again from the new one
+            // first, and the editor opens once it has loaded (BL-17055).
+            model.ShowPageAgainIfFromAnotherFolderThen(() => OpenEditorInBrowser(payload));
 
             request.PostSucceeded();
         }
