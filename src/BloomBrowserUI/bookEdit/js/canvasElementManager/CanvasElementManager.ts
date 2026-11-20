@@ -334,6 +334,7 @@ export class CanvasElementManager {
                     this.adjustCanvasElementLocation.bind(this),
                 startMoving: this.startMoving.bind(this),
                 stopMoving: this.stopMoving.bind(this),
+                checkOverflowAfterMove: this.checkOverflowAfterMove.bind(this),
                 setLastMoveContainer: (container) => {
                     this.lastMoveContainer = container;
                 },
@@ -2590,6 +2591,20 @@ export class CanvasElementManager {
         );
         adjustMoveCropHandleVisibility(this.activeElement, true);
         this.alignControlFrameWithActiveElement();
+    }
+
+    // Update the overflow marks of the text in `canvasElement`, and of the page around it, after the
+    // user has moved it. Where it is decides whether its text runs past the boxes that hold it (a
+    // table's rows can reach well past its canvas element), and nothing else checks when it moves.
+    // The check of each text box clears the marks its last check left on the boxes holding it.
+    private checkOverflowAfterMove(canvasElement: HTMLElement) {
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(
+            Array.from(
+                canvasElement.querySelectorAll<HTMLElement>(
+                    ".bloom-editable.bloom-visibility-code-on",
+                ),
+            ),
+        );
     }
 
     // If we get a click (without movement) on a text canvas element, we treat subsequent mouse events on

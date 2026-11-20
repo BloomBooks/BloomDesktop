@@ -48,6 +48,7 @@ export interface ICanvasElementPointerInteractionsHost {
 
     startMoving: () => void;
     stopMoving: () => void;
+    checkOverflowAfterMove: (canvasElement: HTMLElement) => void;
 
     setLastMoveContainer: (container: HTMLElement) => void;
 
@@ -726,6 +727,9 @@ export class CanvasElementPointerInteractions {
         const pressedElement = this.bubbleToDrag?.content;
         this.bubbleToDrag = undefined;
         this.mouseDownContainer?.classList.remove("grabbing");
+        if (pressedElement && this.gotAMoveWhileMouseDown) {
+            this.host.checkOverflowAfterMove(pressedElement);
+        }
         let editable = (event.target as HTMLElement)?.closest(
             ".bloom-editable",
         ) as HTMLElement | null | undefined;
