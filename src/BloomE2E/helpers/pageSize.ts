@@ -68,6 +68,22 @@ export async function setPageSize(page: Page, layoutId: string): Promise<void> {
 }
 
 /**
+ * Ask for a page size as setPageSize() does, and return at once, without waiting for Bloom to
+ * draw the page at it. For a test of what happens while Bloom is still busy with the change.
+ */
+export async function askForPageSize(
+    page: Page,
+    layoutId: string,
+): Promise<void> {
+    await apiPost(
+        page,
+        "editView/topBar/layoutChoiceChange",
+        JSON.stringify({ layoutChoiceId: layoutId }),
+        "application/json",
+    );
+}
+
+/**
  * The layout the page being edited is drawn at, as the page div's own class records it: Bloom puts
  * the layout id, e.g. "A5Portrait", on the page element.
  */

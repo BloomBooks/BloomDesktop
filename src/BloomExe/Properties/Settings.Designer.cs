@@ -298,6 +298,19 @@ namespace Bloom.Properties {
         [global::System.Configuration.SettingsProviderAttribute(typeof(Bloom.BloomSettingsProvider))]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string EditTabPageViewSettings {
+            get {
+                return ((string)(this["EditTabPageViewSettings"]));
+            }
+            set {
+                this["EditTabPageViewSettings"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(Bloom.BloomSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string ImageGallerySource {
             get {
                 return ((string)(this["ImageGallerySource"]));

@@ -79,8 +79,8 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
         });
     }
 
-    public configureElements(_container: HTMLElement) {
-        // Leveled reader makes use of the setup in this.setupReaderKeyAndFocusHandlers(container).
+    public configureElements(_boxes: JQuery) {
+        // Leveled reader makes use of the setup in this.setupReaderKeyAndFocusHandlers(boxes).
         // This would be the place to call it, but it is called by decodableReaderTool.tsx' configureElements().
         // And configureElements gets called for every tool, whether or not that tool is expanded,
         // so it always get initialized by decodableReaderTool.tsx, and we don't want to call it twice.

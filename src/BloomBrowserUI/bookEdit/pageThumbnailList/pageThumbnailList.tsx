@@ -30,6 +30,7 @@ import {
     useApiData,
 } from "../../utils/bloomApi";
 import { PageThumbnail } from "./PageThumbnail";
+import { postPageClicked } from "./postPageClicked";
 import LazyLoad, { forceCheck } from "react-lazyload";
 import { useL10n } from "../../react_components/l10nHooks";
 import { confirmRemovePage } from "./confirmRemovePage";
@@ -1080,16 +1081,6 @@ function onDragStop(
     postJson("pageList/pageMoved", { movedPageId, newIndex });
 }
 
-// Tell C# the user picked a page. C# saves the page we are leaving from the snapshot it already
-// holds (see pageSnapshot.ts).
-function postPageClicked(
-    pageId: string,
-    detail: string,
-    onSuccess?: () => void,
-): void {
-    postJson("pageList/pageClicked", { pageId, detail }, onSuccess);
-}
-
 function ContinueAutomatedPageClicking(
     pagesRemaining: IPage[],
     count: number = 0,
@@ -1103,7 +1094,7 @@ function ContinueAutomatedPageClicking(
             "**  pageThumbnailList: user initiated Automated Page Clicking test function",
         );
     }
-    postPageClicked(pagesRemaining[0].key, pagesRemaining[0].caption, () => {
+    const clickTheNextPage = () => {
         const remaining = pagesRemaining.slice(1);
         if (remaining.length > 0)
             window.setTimeout(
@@ -1113,5 +1104,12 @@ function ContinueAutomatedPageClicking(
                 8 * 1000, // leave time for the browser to redraw
             );
         else window.alert("Done with automated page clicking");
-    });
+    };
+    // A click Bloom refused still moves on to the next page.
+    postPageClicked(
+        pagesRemaining[0].key,
+        pagesRemaining[0].caption,
+        clickTheNextPage,
+        clickTheNextPage,
+    );
 }

@@ -1975,6 +1975,11 @@
         <note>ID: EditTab.ImageMetadata.Corrupt</note>
         <note>{0} is required, and will be replaced with a file path.</note>
       </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.MoreInfo" sil:dynamic="true" translate="no">
+        <source xml:lang="en">More Information</source>
+        <note>ID: EditTab.ImageMetadata.MoreInfo</note>
+        <note>Label of a button in the message Bloom shows when it has a problem with an image's information (credits, copyright and license). The button opens a web page that explains the problem.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <note>ID: EditTab.Image.EditMetadata</note>
@@ -2107,11 +2112,22 @@
       <trans-unit id="EditTab.Overflow" sil:dynamic="true">
         <source xml:lang="en">This box has more text than will fit</source>
         <note>ID: EditTab.Overflow</note>
+        <note>Obsolete as of 6.6 — the Edit tab no longer shows this tooltip; a box with too much text has an "Overflowing" label where its text is cut off instead (EditTab.Overflow.Overflowing).</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Overflow.Overflowing" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Overflowing</source>
+        <note>ID: EditTab.Overflow.Overflowing</note>
+        <note>A small red label on a red zigzag line in a text box that has more text than fits. The line is where the text gets cut off; the text below it will be cut off when the book is printed or made into a PDF. (Bloom Reader and ePUB books scroll, so they show it.) Keep it very short.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Overflow.PageOverflowing" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Page overflowing</source>
+        <note>ID: EditTab.Overflow.PageOverflowing</note>
+        <note>A small red label on a red line at the bottom of a page whose text boxes, together, take more room than the page has, though each box fits its own text. It goes with "Overflowing" (EditTab.Overflow.Overflowing), the label on a single text box that has more text than fits. Keep it very short.</note>
       </trans-unit>
       <trans-unit id="EditTab.OverflowContainer" sil:dynamic="true">
         <source xml:lang="en">A container on this page is overflowing</source>
         <note>ID: EditTab.OverflowContainer</note>
-        <note>This shows up in pages like the cover where sizing is very flexible. No one thing is too big, but not everything on the page will fit. To see it, put a lot of text on a cover page, until a red bar appears at the bottom; then hover over the bar. </note>
+        <note>Obsolete as of 6.6 — the Edit tab no longer shows this tooltip; a container that boxes push past is marked on the page instead ("Page overflowing", EditTab.Overflow.PageOverflowing).</note>
       </trans-unit>
       <trans-unit id="EditTab.PageList.CantMoveXMatter">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
@@ -4134,6 +4150,18 @@
         <note>ID: PublishTab.PDF.Booklet.HelpHeader</note>
         <note>heading for list of setting recommendations</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Layout.Landscape" translate="no">
+        <source xml:lang="en">1. Layout: Landscape</source>
+        <note>ID: PublishTab.PDF.Booklet.Layout.Landscape</note>
+        <note>first recommendation is the page layout (landscape)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Layout.Portrait" translate="no">
+        <source xml:lang="en">1. Layout: Portrait</source>
+        <note>ID: PublishTab.PDF.Booklet.Layout.Portrait</note>
+        <note>first recommendation is the page layout (portrait)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge">
         <source xml:lang="en">2. Print on both sides: "Flip on short edge"</source>
         <note>ID: PublishTab.PDF.Booklet.Flip.ShortEdge</note>
@@ -4156,6 +4184,12 @@
         <source xml:lang="en">3. More settings &gt; Paper size: "Letter"</source>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.Letter</note>
         <note>third recommendation is paper size (Letter, the standard paper size in the U.S.)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize" translate="no">
+        <source xml:lang="en">4. More settings &gt; Scale: "Actual size"</source>
+        <note>ID: PublishTab.PDF.Booklet.Scale.ActualSize</note>
+        <note>fourth recommendation is to print at the actual size, without scaling</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack">

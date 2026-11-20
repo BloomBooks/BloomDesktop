@@ -125,6 +125,13 @@ export interface ICollectionSpec {
      * subscription whose bookshelves include it, which is what the Settings dialog offers a person.
      */
     bookshelf?: string;
+    /**
+     * The tags, among `languages`, of the languages the collection writes right to left (Arabic,
+     * Hebrew). Bloom does not work this out from the tag: it is a setting of its own in the
+     * collection, which a person ticks in the Settings dialog. When Language 1 is one of them,
+     * Bloom lays books out to be read from the other side.
+     */
+    rightToLeftLanguages?: string[];
 }
 
 /** Options for launchBloom. Give exactly one of collectionName and collectionSpec. */
@@ -147,6 +154,13 @@ export interface ILaunchBloomOptions {
      * --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
      */
     experimentalFeatures?: string[];
+    /**
+     * True to give this Bloom's browser a fake camera and microphone, so a test can record a
+     * video. Bloom then grants the camera instead of refusing it (WebView2Browser.cs), and Chromium
+     * makes up the picture and the sound. Passed as BLOOM_E2E_FAKE_CAMERA=1, which Bloom reads only
+     * under --e2e.
+     */
+    fakeCamera?: boolean;
     /** How long to wait for Bloom to start serving the collection. Default LAUNCH_DEADLINE_MS. */
     readyTimeoutMs?: number;
 }
@@ -683,6 +697,8 @@ export interface ICollectionXmlExtras {
     subscriptionCode?: string;
     /** See ICollectionSpec.bookshelf. */
     bookshelf?: string;
+    /** See ICollectionSpec.rightToLeftLanguages. */
+    rightToLeftLanguages?: string[];
 }
 
 /**
@@ -699,6 +715,7 @@ export interface ICollectionXmlExtras {
  * from SubscriptionCode alone; BrandingProjectName is written for older Blooms). See
  * kEnterpriseSubscriptionCode in helpers/collectionSettings.ts. `extras.bookshelf`, also written
  * only when given, becomes a "bookshelf:" tag in DefaultBookTags, which is how Bloom keeps it.
+ * `extras.rightToLeftLanguages` marks those of `languages` as written right to left.
  */
 export function makeCollectionXml(
     languages: string[],
@@ -715,7 +732,10 @@ export function makeCollectionXml(
                 `  <Language${index + 1}Name>${nameForTag(tag)}</Language${index + 1}Name>\n` +
                 `  <Language${index + 1}IsCustomName>false</Language${index + 1}IsCustomName>\n` +
                 `  <Language${index + 1}Iso639Code>${tag}</Language${index + 1}Iso639Code>\n` +
-                `  <DefaultLanguage${index + 1}FontName>Andika</DefaultLanguage${index + 1}FontName>`,
+                `  <DefaultLanguage${index + 1}FontName>Andika</DefaultLanguage${index + 1}FontName>` +
+                (extras.rightToLeftLanguages?.includes(tag)
+                    ? `\n  <IsLanguage${index + 1}Rtl>true</IsLanguage${index + 1}Rtl>`
+                    : ""),
         )
         .join("\n");
     return (
@@ -748,6 +768,7 @@ function nameForTag(tag: string): string {
         fr: "French",
         es: "Spanish",
         de: "German",
+        ar: "Arabic",
     };
     return names[tag] ?? tag;
 }
@@ -924,6 +945,7 @@ async function startBloomOn(
     userSettingsDir: string,
     readyTimeoutMs: number,
     experimentalFeatures?: string[],
+    fakeCamera?: boolean,
 ): Promise<IRunningBloom> {
     const exe = findBloomExe();
     // findBloomExe takes the newest build in any configuration, so say which one this run uses:
@@ -965,9 +987,12 @@ async function startBloomOn(
     // setting the developer's own Bloom shares (see ILaunchBloomOptions.experimentalFeatures).
     if (experimentalFeatures?.length)
         args.push("--experimental-features", experimentalFeatures.join(","));
-    const bloomProcess: ChildProcess = execFile(exe, args, {
-        env: environmentForBloom(),
-    });
+    // BLOOM_E2E_FAKE_CAMERA: a camera and microphone made up by Chromium, which Bloom reads only
+    // under --e2e (ILaunchBloomOptions.fakeCamera). Always set, so a value left in the shell
+    // never reaches a Bloom that did not ask for it.
+    const env = environmentForBloom();
+    env.BLOOM_E2E_FAKE_CAMERA = fakeCamera ? "1" : "";
+    const bloomProcess: ChildProcess = execFile(exe, args, { env });
     let exitStatus: { code: number | null; signal: string | null } | undefined;
     bloomProcess.stdout?.on("data", (d) => recordOutput(String(d)));
     bloomProcess.stderr?.on("data", (d) => recordOutput(String(d)));
@@ -1282,6 +1307,7 @@ export async function launchBloom(
             userSettingsDir,
             readyTimeoutMs,
             experimentalFeatures,
+            options.fakeCamera,
         );
     } catch (error) {
         process.removeListener("exit", cleanUpOnExit);
@@ -1309,6 +1335,7 @@ export async function launchBloom(
                 userSettingsDir,
                 readyTimeoutMs,
                 experimentalFeatures,
+                options.fakeCamera,
             );
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;
@@ -1337,6 +1364,7 @@ export async function launchBloom(
                 userSettingsDir,
                 readyTimeoutMs,
                 experimentalFeatures,
+                options.fakeCamera,
             );
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;

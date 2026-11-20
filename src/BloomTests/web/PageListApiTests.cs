@@ -1,5 +1,7 @@
+using Bloom.Book;
 using Bloom.SafeXml;
 using Bloom.web;
+using Moq;
 using NUnit.Framework;
 
 namespace BloomTests.web
@@ -9,7 +11,7 @@ namespace BloomTests.web
     {
         /// <summary>
         /// Builds a one-page DOM containing a single img with the given (already URL-encoded)
-        /// src, runs MarkImageNodesForThumbnail over it, and returns the resulting src.
+        /// src, runs MarkPicturesToBeServedSmall over it, and returns the resulting src.
         /// </summary>
         private static string GetThumbnailSrc(string originalSrc)
         {
@@ -26,13 +28,13 @@ namespace BloomTests.web
                 "Setup failed: the img did not start out with the src we specified."
             );
 
-            PageListApi.MarkImageNodesForThumbnail(pageElement);
+            PageListApi.MarkPicturesToBeServedSmall(pageElement);
 
             return ((SafeXmlElement)pageElement.SafeSelectNodes(".//img")[0]).GetAttribute("src");
         }
 
         [Test]
-        public void MarkImageNodesForThumbnail_SimpleName_AddsThumbnailQuery()
+        public void MarkPicturesToBeServedSmall_SimpleName_AddsThumbnailQuery()
         {
             Assert.AreEqual("picture.jpg?thumbnail=1", GetThumbnailSrc("picture.jpg"));
         }
@@ -41,7 +43,7 @@ namespace BloomTests.web
         // characters like # and ? in the file name make the browser request the wrong thing
         // (or nothing at all), and the page list shows a broken image.
         [Test]
-        public void MarkImageNodesForThumbnail_NameWithSpecialCharacters_KeepsPathEncoded()
+        public void MarkPicturesToBeServedSmall_NameWithSpecialCharacters_KeepsPathEncoded()
         {
             // This is the encoding of the real file name: This Image !@#$%^&()2.jpg
             const string encodedName = "This%20Image%20!%40%23%24%25%5e%26()2.jpg";
@@ -56,7 +58,7 @@ namespace BloomTests.web
         }
 
         [Test]
-        public void MarkImageNodesForThumbnail_ExistingQuery_AppendsThumbnailAndKeepsPathEncoded()
+        public void MarkPicturesToBeServedSmall_ExistingQuery_AppendsThumbnailAndKeepsPathEncoded()
         {
             const string encodedName = "This%20Image%20!%40%23%24%25%5e%26()2.jpg";
 
@@ -68,7 +70,7 @@ namespace BloomTests.web
         // A src that is genuinely a path, not a bare file name, must keep its separators usable.
         // "/api/" srcs are skipped earlier, but other rooted srcs (e.g. branding) are not.
         [Test]
-        public void MarkImageNodesForThumbnail_RootedPathSrc_KeepsSeparatorsUnescaped()
+        public void MarkPicturesToBeServedSmall_RootedPathSrc_KeepsSeparatorsUnescaped()
         {
             Assert.AreEqual(
                 "/bloom/branding/Some-Brand/logo.png?thumbnail=1",
@@ -78,7 +80,7 @@ namespace BloomTests.web
         }
 
         [Test]
-        public void MarkImageNodesForThumbnail_ApiUrl_LeftAlone()
+        public void MarkPicturesToBeServedSmall_ApiUrl_LeftAlone()
         {
             const string brandingUrl = "/bloom/api/branding/image?id=cover-lower-left.png";
 
@@ -86,7 +88,7 @@ namespace BloomTests.web
         }
 
         [Test]
-        public void MarkImageNodesForThumbnail_BackgroundImage_KeepsPathEncoded()
+        public void MarkPicturesToBeServedSmall_BackgroundImage_KeepsPathEncoded()
         {
             const string encodedName = "This%20Image%20!%40%23%24%25%5e%26()2.jpg";
             var dom = SafeXmlDocument.Create();
@@ -95,7 +97,7 @@ namespace BloomTests.web
             );
             var pageElement = (SafeXmlElement)dom.FirstChild;
 
-            PageListApi.MarkImageNodesForThumbnail(pageElement);
+            PageListApi.MarkPicturesToBeServedSmall(pageElement);
 
             var marginBox = (SafeXmlElement)
                 pageElement.SafeSelectNodes(".//*[contains(@style,'background-image')]")[0];
@@ -103,6 +105,94 @@ namespace BloomTests.web
                 $"background-image:url('{encodedName}?thumbnail=1')",
                 marginBox.GetAttribute("style")
             );
+        }
+
+        /// <summary>
+        /// The content GetReadOnlyPageContent makes for a one-page DOM holding an img and a
+        /// background image, both named picture.jpg.
+        /// </summary>
+        private static string GetPageContent(bool fullSizePictures)
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(
+                "<div class='bloom-page' id='page1'><div class='marginBox' style=\"background-image:url('picture.jpg')\"><img src='picture.jpg'/></div></div>"
+            );
+            var page = new Mock<IPage>();
+            page.Setup(p => p.GetDivNodeForThisPage()).Returns((SafeXmlElement)dom.FirstChild);
+            return PageListApi.GetReadOnlyPageContent(page.Object, fullSizePictures);
+        }
+
+        [Test]
+        public void GetReadOnlyPageContent_ForThePageList_MarksPicturesAsThumbnails()
+        {
+            var content = GetPageContent(false);
+
+            Assert.That(content, Does.Contain("src=\"picture.jpg?thumbnail=1\""));
+            Assert.That(content, Does.Contain("url('picture.jpg?thumbnail=1')"));
+        }
+
+        [Test]
+        public void GetReadOnlyPageContent_FullSize_LeavesPicturesAlone()
+        {
+            var content = GetPageContent(true);
+
+            Assert.That(content, Does.Contain("src=\"picture.jpg\""));
+            Assert.That(content, Does.Contain("url('picture.jpg')"));
+            Assert.That(content, Does.Not.Contain("thumbnail=1"));
+        }
+
+        /// <summary>
+        /// A state machine editing page "a", with actions that do nothing.
+        /// </summary>
+        private static EditingStateMachine MakeStateMachineEditingPageA()
+        {
+            var machine = new EditingStateMachine(_ => { }, (_, __) => { }, () => true, () => { });
+            machine.ToNavigating("a");
+            machine.ToEditing("a");
+            Assert.That(
+                machine.CurrentState,
+                Is.EqualTo(State.Editing),
+                "Setup failed: the state machine should be editing page a."
+            );
+            return machine;
+        }
+
+        [Test]
+        public void IsOnTheWayToPage_ClickTaken_True()
+        {
+            var machine = MakeStateMachineEditingPageA();
+
+            var outcome = machine.SaveThenNavigate(null, () => "b", _ => { });
+
+            Assert.That(outcome, Is.EqualTo(SaveOutcome.Saved));
+            Assert.That(PageListApi.IsOnTheWayToPage(machine, "b"), Is.True);
+        }
+
+        // A click on page c that arrives while the Edit tab is still loading page b is declined, and
+        // the reply to the click must say so: the tab is on its way to a page, but not to c.
+        [Test]
+        public void IsOnTheWayToPage_ClickArrivesWhileLoadingAnotherPage_False()
+        {
+            var machine = MakeStateMachineEditingPageA();
+            machine.SaveThenNavigate(null, () => "b", _ => { });
+            Assert.That(
+                PageListApi.IsOnTheWayToPage(machine, "b"),
+                Is.True,
+                "Setup failed: the state machine should be loading page b."
+            );
+
+            var outcome = machine.SaveThenNavigate(null, () => "c", _ => { });
+
+            Assert.That(outcome, Is.EqualTo(SaveOutcome.Declined));
+            Assert.That(PageListApi.IsOnTheWayToPage(machine, "c"), Is.False);
+        }
+
+        [Test]
+        public void IsOnTheWayToPage_PageHasLoaded_False()
+        {
+            var machine = MakeStateMachineEditingPageA();
+
+            Assert.That(PageListApi.IsOnTheWayToPage(machine, "a"), Is.False);
         }
     }
 }

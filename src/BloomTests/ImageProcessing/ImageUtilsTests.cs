@@ -14,6 +14,7 @@ using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ImageToolbox;
+using Metadata = SIL.Windows.Forms.ClearShare.Metadata;
 
 namespace BloomTests.ImageProcessing
 {
@@ -1176,6 +1177,168 @@ namespace BloomTests.ImageProcessing
             }
         }
 
+        /// <summary>
+        /// BL-17093: right after a photo is pasted, something (antivirus, a thumbnailer, another
+        /// reader) may still have the new file open for a few seconds. Saving the copyright and
+        /// license into it then must wait for the file to be free, not fail and call it corrupt.
+        /// </summary>
+        [Test]
+        public void SaveImageMetadataIfNeeded_FileBrieflyHeldOpenByAnotherReader_WaitsAndSaves()
+        {
+            AssertSaveWaitsForFileHeldOpenBriefly(
+                (imagePath, copyright) =>
+                    ImageUtils.SaveImageMetadataIfNeeded(
+                        new Metadata { CopyrightNotice = copyright },
+                        Path.GetDirectoryName(imagePath),
+                        Path.GetFileName(imagePath)
+                    )
+            );
+        }
+
+        /// <summary>
+        /// BL-17093: pasting a picture writes its metadata into the new file in the book folder
+        /// a moment after Bloom creates it, which is just when antivirus may be scanning it. That
+        /// write must also wait for the file to be free.
+        /// </summary>
+        [Test]
+        public void SaveImageMetadata_FileBrieflyHeldOpenByAnotherReader_WaitsAndSaves()
+        {
+            AssertSaveWaitsForFileHeldOpenBriefly(
+                (imagePath, copyright) =>
+                {
+                    using (var image = PalasoImage.FromFileRobustly(imagePath))
+                    {
+                        image.Metadata.CopyrightNotice = copyright;
+                        ImageUtils.SaveImageMetadata(image, imagePath);
+                    }
+                }
+            );
+        }
+
+        /// <summary>
+        /// BL-17093: cropping, rotating and trimming a picture copy its credits into a file
+        /// Bloom has just written, which antivirus may still be scanning. Rather than silently
+        /// dropping the credits, the copy must wait for the file to be free.
+        /// </summary>
+        [Test]
+        public void CopyCoreMetadata_DestinationBrieflyHeldOpenByAnotherReader_WaitsAndCopies()
+        {
+            AssertSaveWaitsForFileHeldOpenBriefly(
+                (imagePath, copyright) =>
+                {
+                    // The reader only blocks writing, so the destination can serve as the source's
+                    // starting point.
+                    var sourcePath = Path.Combine(Path.GetDirectoryName(imagePath), "source.jpg");
+                    RobustFile.Copy(imagePath, sourcePath);
+                    new Metadata { CopyrightNotice = copyright }.Write(sourcePath);
+                    ImageUtils.CopyCoreMetadata(sourcePath, imagePath);
+                }
+            );
+        }
+
+        /// <summary>
+        /// Copy a test image into a temporary folder and call save(imagePath, copyright) while
+        /// another reader holds the image open for four seconds: longer than libpalaso's own
+        /// retries (about two seconds) but only a few seconds in all, as a virus scan of a fresh
+        /// photo might. The save must succeed and leave the copyright in the file.
+        /// </summary>
+        private static void AssertSaveWaitsForFileHeldOpenBriefly(Action<string, string> save)
+        {
+            using (var folder = new TemporaryFolder("SaveImageMetadataWhileFileHeldOpen"))
+            {
+                var imagePath = CopyTestImageTo(folder, kPastedImageName);
+                const string copyright = "Copyright © 2026 BL-17093 Test";
+                Assert.That(
+                    Metadata.FromFile(imagePath).CopyrightNotice,
+                    Is.Not.EqualTo(copyright),
+                    "The test image should not start out with the copyright this test saves"
+                );
+
+                var reader = new FileStream(
+                    imagePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read
+                );
+                var releaseReader = System.Threading.Tasks.Task.Run(() =>
+                {
+                    System.Threading.Thread.Sleep(4000);
+                    reader.Dispose();
+                });
+                try
+                {
+                    save(imagePath, copyright);
+                }
+                finally
+                {
+                    releaseReader.Wait();
+                }
+
+                Assert.That(Metadata.FromFile(imagePath).CopyrightNotice, Is.EqualTo(copyright));
+            }
+        }
+
+        /// <summary>
+        /// BL-17093: when something keeps the file open for longer than Bloom waits, the save
+        /// fails, and the failure must be recognizable as the file being in use, so that the user
+        /// can be told that rather than that the file may be corrupt.
+        /// </summary>
+        [Test]
+        public void SaveImageMetadataIfNeeded_FileHeldOpenThroughout_FailsWithFileInUseError()
+        {
+            using (var folder = new TemporaryFolder("SaveImageMetadataWhileFileHeldOpenThroughout"))
+            {
+                var imagePath = CopyTestImageTo(folder, kPastedImageName);
+                var metadata = new Metadata { CopyrightNotice = "Copyright © 2026 BL-17093 Test" };
+
+                Exception error;
+                using (new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    error = Assert.Catch(
+                        () =>
+                            ImageUtils.SaveImageMetadataIfNeeded(
+                                metadata,
+                                folder.Path,
+                                kPastedImageName
+                            ),
+                        "The save should fail while the file is held open"
+                    );
+                }
+
+                Assert.That(
+                    RobustFileIO.IsFileInUseError(error),
+                    Is.True,
+                    "The failure should be recognized as the file being in use: " + error
+                );
+            }
+        }
+
+        [Test]
+        public void IsFileInUseError_OtherFailures_False()
+        {
+            Assert.That(RobustFileIO.IsFileInUseError(new IOException("disk full")), Is.False);
+            Assert.That(
+                RobustFileIO.IsFileInUseError(new InvalidOperationException("other")),
+                Is.False
+            );
+        }
+
+        private const string kPastedImageName = "pasted.jpg";
+
+        /// <summary>
+        /// Copy the man.jpg test image into folder under fileName and return its path.
+        /// </summary>
+        private static string CopyTestImageTo(TemporaryFolder folder, string fileName)
+        {
+            var source = FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "man.jpg"
+            );
+            var imagePath = Path.Combine(folder.Path, fileName);
+            RobustFile.Copy(source, imagePath);
+            return imagePath;
+        }
+
         [TestCase("myFolder", "myFile.png")]
         [TestCase("மரியாதை ராமன் கதைகள்", "テスト画像.png")]
         public void TryGetImageSize_NonAsciiFilePath_GetsSize(string folderName, string fileName)
@@ -1340,14 +1503,16 @@ namespace BloomTests.ImageProcessing
             string src,
             string ceStyle,
             string imgStyle = null,
-            bool background = false
+            bool background = false,
+            string dataBook = null
         )
         {
             var backgroundString = background ? " bloom-backgroundImage" : "";
             var imgStyleString = imgStyle == null ? "" : $"style=\"{imgStyle}\"";
+            var dataBookString = dataBook == null ? "" : $"data-book=\"{dataBook}\"";
             return $"<div class=\"bloom-canvas-element{backgroundString}\" style=\"{ceStyle}\" data-bubble=\"{{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:4,`backgroundColors`:[`transparent`],`shadowOffset`:0}}\">"
                 + $"  <div tabindex=\"0\" class=\"bloom-imageContainer bloom-leadingElement\">"
-                + $"      <img id=\"{imgId}\" src=\"{src}\" {imgStyleString} />"
+                + $"      <img id=\"{imgId}\" src=\"{src}\" {imgStyleString} {dataBookString} />"
                 + $"  </div>"
                 + $"</div>";
         }

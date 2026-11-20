@@ -657,7 +657,7 @@ namespace Bloom.Edit
             }
             catch (Exception e)
             {
-                ImageUtils.ReportImageMetadataProblem(
+                ImageUtils.ReportImageMetadataSaveProblem(
                     Path.Combine(_model.CurrentBook.FolderPath, _fileNameOfImageBeingModified),
                     e
                 );
@@ -1701,6 +1701,12 @@ namespace Bloom.Edit
             dynamic result = new DynamicJson();
             result.toolboxSrc = "/bloom/toolboxContent";
             result.toolboxIsShowing = true;
+            // The Edit tab's page view settings: which page view mode the user chose (One Page or
+            // All Pages) and the zoom the user had in each mode when they last left it. The zoom
+            // in effect is still Settings.Default.PageZoom. It is one string, the JSON the
+            // front end posted to editView/pageViewSettings (see pageViewSettings.ts), which C#
+            // keeps and hands back without reading. Empty until the front end first posts it.
+            result.pageViewSettings = Settings.Default.EditTabPageViewSettings;
 
             if (!_model.HaveCurrentEditableBook)
             {

@@ -1,5 +1,5 @@
 // Drive the page list: the strip of page thumbnails down the left of the Edit tab, and the
-// Add Page / Duplicate / Delete controls under it.
+// Add Page / Duplicate / Delete controls under it, and the dialog that confirms removing a page.
 //
 // The list lives in its own iframe (id "pageList"), so every locator here starts from that frame.
 // Its right-click menu is the one exception: the list portals the menu into the shell document so
@@ -12,6 +12,7 @@
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiPost } from "./api";
 import {
+    editablePageFrame,
     getPages,
     getShownPageId,
     waitForEditTabSettled,
@@ -117,6 +118,30 @@ export async function duplicatePageWithContextMenu(
         before,
         "choosing Duplicate Page from the menu",
     );
+}
+
+/**
+ * Right-click a page's thumbnail and choose an item from its menu, e.g. "Duplicate Page", and
+ * return at once, without waiting for Bloom to carry the command out. For a test of what a person
+ * gets by doing something else straight away; duplicatePageWithContextMenu() waits for the copy.
+ */
+export async function clickPageMenuItem(
+    page: Page,
+    pageId: string,
+    itemName: string,
+): Promise<void> {
+    await waitForEditTabSettled(page);
+    const target = thumbnail(page, pageId);
+    await target.waitFor({ state: "visible", timeout: 30000 });
+    await target.click({ button: "right" });
+    // The menu is portaled into the shell document, not the page list's own frame.
+    const item = page.getByRole("menuitem", { name: itemName, exact: true });
+    await item.waitFor({ state: "visible", timeout: 30000 });
+    await expect(
+        item,
+        `${itemName} is disabled in the page's right-click menu.`,
+    ).toBeEnabled();
+    await item.click();
 }
 
 /**
@@ -292,4 +317,132 @@ export async function cancelDuplicatePageManyTimes(
 ): Promise<void> {
     await dialog.getByTestId("dialog-cancel").click();
     await expect(dialog).toBeHidden({ timeout: 30000 });
+}
+
+/** The dialog Bloom shows to confirm removing a page, in the shell document. */
+function removePageDialog(page: Page) {
+    return page.getByRole("dialog").filter({ hasText: "Really Remove Page?" });
+}
+
+/**
+ * Click the Remove button under the page list, which asks to remove the page being edited, and
+ * wait for the dialog that asks the user to confirm. Nothing is removed until the dialog's Remove
+ * button is clicked.
+ */
+export async function openRemovePageDialog(page: Page): Promise<void> {
+    const button = pageListFrame(page).getByTestId("remove-page-button");
+    await button.waitFor({ state: "visible", timeout: 30000 });
+    await expect(
+        button,
+        "The Remove button is disabled, so this page cannot be removed.",
+    ).toBeEnabled({ timeout: 30000 });
+    await button.click();
+    await expect(
+        removePageDialog(page),
+        "Clicking the Remove button never brought up the dialog asking to confirm.",
+    ).toBeVisible({ timeout: 30000 });
+}
+
+/** Click Cancel in the dialog that confirms removing a page, and wait for the dialog to close. */
+export async function cancelRemovePageDialog(page: Page): Promise<void> {
+    const dialog = removePageDialog(page);
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(
+        dialog,
+        "The dialog asking to confirm removing a page did not close after Cancel.",
+    ).toHaveCount(0, { timeout: 30000 });
+}
+
+/**
+ * Click Remove in the dialog that confirms removing a page, and wait until the dialog has closed
+ * and the book has one page fewer.
+ */
+export async function confirmRemovePageDialog(page: Page): Promise<void> {
+    const before = (await getPages(page)).length;
+    const dialog = removePageDialog(page);
+    await dialog.getByRole("button", { name: "Remove" }).click();
+    await expect(
+        dialog,
+        "The dialog asking to confirm removing a page did not close after Remove.",
+    ).toHaveCount(0, { timeout: 30000 });
+    await expect
+        .poll(async () => (await getPages(page)).length, {
+            timeout: 60000,
+            message: "Bloom never removed the page.",
+        })
+        .toBe(before - 1);
+    await waitForEditTabSettled(page);
+}
+
+/** Press Escape in the dialog that confirms removing a page, and wait for the dialog to close. */
+export async function escapeRemovePageDialog(page: Page): Promise<void> {
+    const dialog = removePageDialog(page);
+    await dialog.press("Escape");
+    await expect(
+        dialog,
+        "The dialog asking to confirm removing a page did not close after Escape.",
+    ).toHaveCount(0, { timeout: 30000 });
+}
+
+/**
+ * Click a page's thumbnail in the page list and return at once, without waiting for Bloom to show
+ * that page. This is for a test of what a user gets by clicking pages faster than Bloom shows
+ * them; selectPage() in pageThumbnails.ts is the route for everything else.
+ */
+export async function clickPageThumbnail(
+    page: Page,
+    pageId: string,
+): Promise<void> {
+    const target = thumbnail(page, pageId);
+    await target.scrollIntoViewIfNeeded();
+    await target.click();
+}
+
+/** The red X Bloom draws across a page while it asks to confirm removing it. */
+export interface IRemovalMark {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    // Each line of the X as [x1, y1, x2, y2], relative to the mark's top left.
+    lines: number[][];
+    lineColors: string[];
+    lineWidths: number[];
+}
+
+/**
+ * The red X across the page Bloom is asking to confirm removing, in the page frame's viewport, or
+ * undefined when there is none. There is never more than one.
+ */
+export async function getRemovalMark(
+    page: Page,
+): Promise<IRemovalMark | undefined> {
+    const marks = await editablePageFrame(page).evaluate(() =>
+        Array.from(
+            document.querySelectorAll("svg.bloom-page-removal-mark"),
+        ).map((svg) => {
+            const r = svg.getBoundingClientRect();
+            const lines = Array.from(svg.querySelectorAll("line"));
+            return {
+                left: r.left,
+                top: r.top,
+                width: r.width,
+                height: r.height,
+                lines: lines.map((line) =>
+                    ["x1", "y1", "x2", "y2"].map((name) =>
+                        Number(line.getAttribute(name)),
+                    ),
+                ),
+                lineColors: lines.map((line) => line.getAttribute("stroke")!),
+                lineWidths: lines.map((line) =>
+                    Number(line.getAttribute("stroke-width")),
+                ),
+            };
+        }),
+    );
+    if (marks.length > 1)
+        throw new Error(
+            `The page frame shows ${marks.length} red X's; Bloom should draw one at most.`,
+        );
+    return marks[0];
 }

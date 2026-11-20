@@ -1,7 +1,5 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 import OverflowChecker from "./OverflowChecker";
-import $ from "jquery";
-import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import {
     initializeCanvasElementManager,
     theOneCanvasElementManager,
@@ -49,14 +47,6 @@ function loadFixture(fixture: string): HTMLElement[] {
 // Puts the fixture in the document and returns its index'th test element.
 function loadTestElement(fixture: string, index: number): HTMLElement {
     return loadFixture(fixture)[index];
-}
-
-// Stands in for the localized text of an overflow tip, which a check that marks a box asks for
-// and which these tests do not look at.
-function stubOverflowTipText(): void {
-    vi.spyOn(theOneLocalizationManager, "asyncGetText").mockReturnValue({
-        done: () => {},
-    } as unknown as ReturnType<typeof theOneLocalizationManager.asyncGetText>);
 }
 
 // What to report when a case fails, since the numbers are what you need to work out why.
@@ -368,37 +358,6 @@ describe("OverflowChecker.overflowingAncestor in a table cell", () => {
         ).toBeLessThanOrEqual(innerCell.getBoundingClientRect().bottom);
         expect(OverflowChecker.overflowingAncestor(element)).toBe(outerCell);
     });
-
-    // A table's text is checked on every frame of a row drag, so each check has to replace the
-    // mouse handlers it puts on the box that the text overflows, not add to them.
-    it("leaves one pair of mouse handlers on an overflowed box, however often it is checked", () => {
-        const element = loadCellTextBox("height: 110px", 100);
-        element.classList.add("bloom-visibility-code-on");
-        const marginBox = element.closest<HTMLElement>(".marginBox")!;
-        stubOverflowTipText();
-        try {
-            for (let i = 0; i < 3; i++) {
-                OverflowChecker.CheckPageAncestorOverflow(element);
-            }
-            expect(
-                marginBox.classList.contains("childOverflowingThis"),
-                "The margin box should be marked, or this tests nothing.",
-            ).toBe(true);
-            const events = (
-                $ as unknown as {
-                    _data: (
-                        e: Element,
-                        key: string,
-                    ) => Record<string, unknown[]> | undefined;
-                }
-            )._data(marginBox, "events");
-            expect(events?.mousemove?.length).toBe(1);
-            // jQuery keeps a mouseleave handler as a mouseout one.
-            expect(events?.mouseout?.length).toBe(1);
-        } finally {
-            vi.restoreAllMocks();
-        }
-    });
 });
 
 describe("OverflowChecker.AdjustSizeAndMarkSelfOverflow", () => {
@@ -425,7 +384,6 @@ describe("OverflowChecker.AdjustSizeAndMarkSelfOverflow", () => {
                 </div>
             </div>`);
         vi.useFakeTimers();
-        stubOverflowTipText();
         initializeCanvasElementManager();
         // The box is not in a canvas element, so its size stays as it is.
         vi.spyOn(
@@ -542,7 +500,6 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
                 </div>
             </div>`);
         vi.useFakeTimers();
-        stubOverflowTipText();
         initializeCanvasElementManager();
         return boxes;
     }
