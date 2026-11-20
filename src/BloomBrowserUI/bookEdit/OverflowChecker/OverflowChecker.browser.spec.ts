@@ -51,6 +51,14 @@ function loadTestElement(fixture: string, index: number): HTMLElement {
     return loadFixture(fixture)[index];
 }
 
+// Stands in for the localized text of an overflow tip, which a check that marks a box asks for
+// and which these tests do not look at.
+function stubOverflowTipText(): void {
+    vi.spyOn(theOneLocalizationManager, "asyncGetText").mockReturnValue({
+        done: () => {},
+    } as unknown as ReturnType<typeof theOneLocalizationManager.asyncGetText>);
+}
+
 // What to report when a case fails, since the numbers are what you need to work out why.
 function describeMeasurements(element: HTMLElement): string {
     const style = window.getComputedStyle(element);
@@ -367,11 +375,7 @@ describe("OverflowChecker.overflowingAncestor in a table cell", () => {
         const element = loadCellTextBox("height: 110px", 100);
         element.classList.add("bloom-visibility-code-on");
         const marginBox = element.closest<HTMLElement>(".marginBox")!;
-        vi.spyOn(theOneLocalizationManager, "asyncGetText").mockReturnValue({
-            done: () => {},
-        } as unknown as ReturnType<
-            typeof theOneLocalizationManager.asyncGetText
-        >);
+        stubOverflowTipText();
         try {
             for (let i = 0; i < 3; i++) {
                 OverflowChecker.CheckPageAncestorOverflow(element);
@@ -421,11 +425,7 @@ describe("OverflowChecker.AdjustSizeAndMarkSelfOverflow", () => {
                 </div>
             </div>`);
         vi.useFakeTimers();
-        vi.spyOn(theOneLocalizationManager, "asyncGetText").mockReturnValue({
-            done: () => {},
-        } as unknown as ReturnType<
-            typeof theOneLocalizationManager.asyncGetText
-        >);
+        stubOverflowTipText();
         initializeCanvasElementManager();
         // The box is not in a canvas element, so its size stays as it is.
         vi.spyOn(
@@ -542,11 +542,7 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
                 </div>
             </div>`);
         vi.useFakeTimers();
-        vi.spyOn(theOneLocalizationManager, "asyncGetText").mockReturnValue({
-            done: () => {},
-        } as unknown as ReturnType<
-            typeof theOneLocalizationManager.asyncGetText
-        >);
+        stubOverflowTipText();
         initializeCanvasElementManager();
         return boxes;
     }

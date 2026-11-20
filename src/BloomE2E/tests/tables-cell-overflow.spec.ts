@@ -92,17 +92,7 @@ test.describe("text that does not fit a table cell", () => {
         await step(
             "Make a book with a table, showing two languages",
             async () => {
-                await makeBookWithTableOnCanvasPage(page, ["en"]);
-                // Every text cell shows each of the book's content languages.
-                await setContentLanguages(page, ["en", "fr"]);
-                await waitForTableAttached(page);
-                expect(await getCellLanguages(page, ROW, COLUMN)).toEqual([
-                    "en",
-                    "fr",
-                ]);
-                // Text to see: an empty box draws nothing, cut off or not.
-                await typeInCell(page, ROW, COLUMN, "en", "English");
-                await typeInCell(page, ROW, COLUMN, "fr", "Français");
+                await makeBookWithTwoLanguageTable(page, "English");
             },
         );
 

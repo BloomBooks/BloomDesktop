@@ -419,7 +419,9 @@ function checkTableTextAtNextFrame(tables: HTMLElement[]): void {
             OverflowChecker.AdjustSizeOrMarkOverflowOfAll(
                 waiting.flatMap((table) =>
                     Array.from(
-                        table.querySelectorAll<HTMLElement>(".bloom-editable"),
+                        table.querySelectorAll<HTMLElement>(
+                            ".bloom-editable.bloom-visibility-code-on",
+                        ),
                     ),
                 ),
             );

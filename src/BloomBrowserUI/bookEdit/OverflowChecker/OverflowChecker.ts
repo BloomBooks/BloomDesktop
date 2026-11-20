@@ -11,7 +11,10 @@ import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
 import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
-import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
+import {
+    kCanvasElementClass,
+    kCanvasElementSelector,
+} from "../toolbox/canvas/canvasElementConstants";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 
 interface qtipInterface extends JQuery {
@@ -380,8 +383,6 @@ export default class OverflowChecker {
     // The height of the content of `elementClone`, a clone from makeContentHeightClone that is
     // in the page.
     private static readContentHeight(elementClone: HTMLElement): number {
-        let result = 0;
-        let maxContentBottom = 0;
         // scrollHeight is a reliable way to get the information if it is greater than the clientHeight,
         // and means we don't have to worry about scroll position.  (scrollHeight is never less than
         // clientHeight.  See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight.)
@@ -395,23 +396,23 @@ export default class OverflowChecker {
         // but there may be a better way to handle things. I think part of the problem may be that if there
         // is no actual text, the browser can't really pick a font to display it, so some measurements
         // can't be precisely made.)
-        result = elementClone.scrollHeight;
-        if (elementClone.scrollHeight <= elementClone.clientHeight) {
-            // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
-            elementClone.childNodes.forEach((x: HTMLElement) => {
-                if (!(x instanceof HTMLElement)) return; // not an element; I think this is redundant
-                if (window.getComputedStyle(x).position === "absolute") return; // special element like format button
-                // Not sure if offsetTop can ever be negative, now that I prevented flexShrink.
-                // But in case it is, we don't want to shrink the content height. And often there is only one
-                // child so we'll get an accurate figure this way even if there is some scrolling.
-                const xbottom = Math.max(x.offsetTop, 0) + x.offsetHeight;
-                if (xbottom > maxContentBottom) {
-                    maxContentBottom = xbottom;
-                }
-            });
-            result = maxContentBottom;
+        if (elementClone.scrollHeight > elementClone.clientHeight) {
+            return elementClone.scrollHeight;
         }
-        return result;
+        // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
+        let maxContentBottom = 0;
+        elementClone.childNodes.forEach((x: HTMLElement) => {
+            if (!(x instanceof HTMLElement)) return; // not an element; I think this is redundant
+            if (window.getComputedStyle(x).position === "absolute") return; // special element like format button
+            // Not sure if offsetTop can ever be negative, now that I prevented flexShrink.
+            // But in case it is, we don't want to shrink the content height. And often there is only one
+            // child so we'll get an accurate figure this way even if there is some scrolling.
+            const xbottom = Math.max(x.offsetTop, 0) + x.offsetHeight;
+            if (xbottom > maxContentBottom) {
+                maxContentBottom = xbottom;
+            }
+        });
+        return maxContentBottom;
     }
 
     // Actual testable determination of Type II overflow or not
@@ -499,9 +500,7 @@ export default class OverflowChecker {
     ): HTMLElement {
         const table = cell.closest<HTMLElement>(".bloom-table")!;
         const parent = table.parentElement!;
-        return parent.classList.contains("bloom-canvas-element")
-            ? parent
-            : table;
+        return parent.classList.contains(kCanvasElementClass) ? parent : table;
     }
 
     // We want to check for overflow, but we can't afford the delay right now.
