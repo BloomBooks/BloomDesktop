@@ -177,7 +177,7 @@ describe("cells the library builds after the page has loaded", () => {
         TeardownTableEditing(document.body);
     });
 
-    it("include the cells of a nested table, which the library attaches itself", () => {
+    it("include the cells of a nested table, which the library attaches itself", async () => {
         document.body.innerHTML = "";
         const tableDiv = document.createElement("div");
         tableDiv.classList.add("bloom-table");
@@ -199,6 +199,8 @@ describe("cells the library builds after the page has loaded", () => {
                 detail: { cell: hostCell, contentType: "table" },
             }),
         );
+        // The cells an operation announces are wired together at the end of the task.
+        await Promise.resolve();
 
         expect(
             nested.querySelectorAll(".bloom-editable[contenteditable='true']")
@@ -215,7 +217,7 @@ describe("cells the library builds after the page has loaded", () => {
 });
 
 describe("video cells", () => {
-    it("hold Bloom's own video container, wired for editing", () => {
+    it("hold Bloom's own video container, wired for editing", async () => {
         document.body.innerHTML = "";
         postMock.mockClear();
         const tableDiv = document.createElement("div");
@@ -231,6 +233,8 @@ describe("video cells", () => {
 
         // What picking Video in the cell menu does.
         setupContentsOfCell(cell, "video");
+        // The cells an operation announces are wired together at the end of the task.
+        await Promise.resolve();
 
         expect(cell.dataset.contentType).toBe("video");
         // The library's own template would put a bare <video> here, which none
