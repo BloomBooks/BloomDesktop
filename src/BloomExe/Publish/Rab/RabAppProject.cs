@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Xml.Linq;
 using Newtonsoft.Json;
@@ -395,11 +396,7 @@ namespace Bloom.Publish.Rab
                 );
             }
 
-            SetContentsEntries(
-                bookEntries.Select(book =>
-                    (book.BookElementId, book.Book.Title, GetThumbnailFileName(book.Book))
-                )
-            );
+            SetContentsEntries(bookEntries);
         }
 
         /// <summary>
@@ -420,11 +417,7 @@ namespace Bloom.Publish.Rab
         /// </summary>
         public void SetTrackedContentsEntries(IEnumerable<RabBookPublishInfo> books)
         {
-            SetContentsEntries(
-                books.Select(
-                    (book, index) => ($"B{index + 1:000}", book.Title, GetThumbnailFileName(book))
-                )
-            );
+            SetContentsEntries(books.Select((book, index) => ($"B{index + 1:000}", book)));
         }
 
         /// <summary>
@@ -949,7 +942,7 @@ namespace Bloom.Publish.Rab
         }
 
         private void SetContentsEntries(
-            IEnumerable<(string BookElementId, string Title, string ThumbnailFileName)> books
+            IEnumerable<(string BookElementId, RabBookPublishInfo Book)> books
         )
         {
             var bookEntries = books.ToList();
@@ -971,17 +964,17 @@ namespace Bloom.Publish.Rab
 
             for (var index = 0; index < bookEntries.Count; index++)
             {
-                var book = bookEntries[index];
+                var (bookElementId, book) = bookEntries[index];
                 contentsItemsElement.Add(
                     new XElement(
                         "contents-item",
                         new XAttribute("id", (index + 1).ToString()),
                         new XElement("title", new XAttribute("lang", "default"), book.Title),
-                        new XElement("image-filename", book.ThumbnailFileName),
+                        new XElement("image-filename", CopyContentsImage(bookElementId, book)),
                         new XElement(
                             "link",
                             new XAttribute("type", "reference"),
-                            new XAttribute("target", book.BookElementId)
+                            new XAttribute("target", bookElementId)
                         ),
                         new XElement(
                             "features",
@@ -1074,6 +1067,34 @@ namespace Bloom.Publish.Rab
             return !string.IsNullOrWhiteSpace(book?.ThumbnailFileName)
                 ? book.ThumbnailFileName
                 : "thumbnail.jpg";
+        }
+
+        /// <summary>
+        /// Copies the book's thumbnail out of its BloomPUB into the folder where RAB looks for
+        /// contents images, under a name unique to the book, and returns that name. Every
+        /// BloomPUB's thumbnail has the same name, and RAB packages contents images by name, so
+        /// without this every book in the contents menu shows the same picture. Returns the
+        /// thumbnail's own name when the BloomPUB isn't there to copy from.
+        /// </summary>
+        private string CopyContentsImage(string bookElementId, RabBookPublishInfo book)
+        {
+            var thumbnailFileName = GetThumbnailFileName(book);
+            if (
+                string.IsNullOrWhiteSpace(book.BloomPubPath)
+                || !RobustFile.Exists(book.BloomPubPath)
+            )
+                return thumbnailFileName;
+
+            using var archive = ZipFile.OpenRead(book.BloomPubPath);
+            var entry = archive.GetEntry(thumbnailFileName);
+            if (entry == null)
+                return thumbnailFileName;
+
+            var imageFileName = bookElementId + "-cover" + Path.GetExtension(thumbnailFileName);
+            var imagesFolderPath = Path.Combine(ProjectDataFolderPath, "contents", "images");
+            Directory.CreateDirectory(imagesFolderPath);
+            entry.ExtractToFile(Path.Combine(imagesFolderPath, imageFileName), true);
+            return imageFileName;
         }
     }
 }

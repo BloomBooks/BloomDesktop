@@ -2510,8 +2510,61 @@ namespace BloomTests.Publish.Rab
                     ?.Element("contents-item")
                     ?.Element("image-filename")
                     ?.Value,
-                Is.EqualTo("thumbnail.jpg")
+                Is.EqualTo("B001-cover.jpg"),
+                "the contents menu should use the book's own copy of its (now .jpg) thumbnail"
             );
+            Assert.That(
+                RobustFile.Exists(
+                    Path.Combine(Path.GetDirectoryName(contentsPath), "images", "B001-cover.jpg")
+                ),
+                Is.True
+            );
+        }
+
+        [Test]
+        public void Build_GivesEachBookItsOwnContentsImage()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new[] { "Flower", "Tree" }
+                .Select(title => new RabBookPublishInfo
+                {
+                    BookId = title.ToLowerInvariant(),
+                    FolderPath = Path.Combine(tempFolder.Path, title),
+                    Title = title,
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, title + ".bloompub"),
+                    ThumbnailFileName = "thumbnail.png",
+                })
+                .ToList();
+            trackedBooks.ForEach(book => Directory.CreateDirectory(book.FolderPath));
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+
+            service.Prepare();
+            service.Build();
+
+            var appDefPath = service.GetStatus().AppDefPath;
+            var contentsFolder = Path.Combine(
+                Path.GetDirectoryName(appDefPath),
+                Path.GetFileNameWithoutExtension(appDefPath) + "_data",
+                "contents"
+            );
+            var imageNames = XDocument
+                .Load(Path.Combine(contentsFolder, "contents.xml"))
+                .Root.Element("contents-items")
+                .Elements("contents-item")
+                .Select(item => item.Element("image-filename").Value)
+                .ToList();
+            Assert.That(
+                imageNames,
+                Is.EqualTo(new[] { "B001-cover.png", "B002-cover.png" }),
+                "RAB packages contents images by name, so books whose thumbnails share a name would all show one picture"
+            );
+            foreach (var name in imageNames)
+                Assert.That(
+                    RobustFile.Exists(Path.Combine(contentsFolder, "images", name)),
+                    Is.True,
+                    name + " was not copied where RAB looks for contents images"
+                );
         }
 
         [Test]
