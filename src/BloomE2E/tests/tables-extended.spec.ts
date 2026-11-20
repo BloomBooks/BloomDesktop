@@ -1050,8 +1050,8 @@ test.describe("more ways to use a table", () => {
         step,
     }) => {
         await step("Tick L2 in the cell's menu", async () => {
-            // A new text cell shows L1 only; its other languages are chosen in the table's own
-            // menus (tables-cell-languages.spec.ts).
+            // A table cell does not follow the toolbar's language choice; its languages are
+            // chosen in the table's own menus (tables-cell-languages.spec.ts).
             await toggleCellLanguageInCellMenu(page, 0, 0, "L2");
             expect(
                 await getCellLanguages(page, 0, 0),

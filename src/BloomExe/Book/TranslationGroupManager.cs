@@ -54,6 +54,20 @@ namespace Bloom.Book
             foreach (var code in bookData.GetAllBookLanguageCodes(includeMetaData2: true))
                 PrepareElementsOnPageOneLanguage(pageOrDocumentNode, code);
 
+            // Those are the toolbar's languages, which need not include the ones a table's text
+            // cell shows (an older Bloom made the table while the toolbar showed only L2, say),
+            // and a cell with no box for its language would show nothing.
+            foreach (var group in GetTranslationGroups(pageOrDocumentNode).Where(IsTableTextCell))
+            {
+                foreach (
+                    var tag in LanguagesOfTableTextCell(
+                        group.GetAttribute("data-default-languages"),
+                        bookData
+                    )
+                )
+                    MakeElementWithLanguageForOneGroup(group, tag);
+            }
+
             FixGroupStyleSettings(pageOrDocumentNode);
         }
 
@@ -264,6 +278,10 @@ namespace Bloom.Book
                 );
             }
 
+            // A table's text cell does not follow the toolbar, so its languages take their order
+            // (bloom-content1, 2, 3) from the collection instead. Made when a page has a table.
+            Dictionary<string, string> tableCellContentLanguages = null;
+
             //Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
             foreach (
                 SafeXmlElement pageDiv in elementOrDom.SafeSelectNodes(
@@ -283,7 +301,22 @@ namespace Bloom.Book
                 // This controls visibility for fields not yet controlled by the Appearance system
                 // (or in legacy mode).
                 var defLangsAttr = group.GetAttribute("data-default-languages");
-                var dataDefaultLanguages = ProcessLanguageList(defLangsAttr, bookData);
+                string[] dataDefaultLanguages;
+                Dictionary<string, string> orderClasses;
+                if (IsTableTextCell(group))
+                {
+                    dataDefaultLanguages = LanguagesOfTableTextCell(defLangsAttr, bookData);
+                    tableCellContentLanguages ??= bookData
+                        .CollectionSettings.GetAllLanguageTags()
+                        .Select((tag, index) => (tag, index))
+                        .ToDictionary(pair => pair.tag, pair => "bloom-content" + (pair.index + 1));
+                    orderClasses = tableCellContentLanguages;
+                }
+                else
+                {
+                    dataDefaultLanguages = ProcessLanguageList(defLangsAttr, bookData);
+                    orderClasses = contentLanguages;
+                }
 
                 //nb: we don't necessarily care that a div is editable or not
                 UpdateGeneratedClassesOnChildren(
@@ -292,7 +325,7 @@ namespace Bloom.Book
                     settings,
                     language2Tag,
                     language3Tag,
-                    contentLanguages,
+                    orderClasses,
                     dataDefaultLanguages
                 );
             }
@@ -365,11 +398,56 @@ namespace Bloom.Book
             );
         }
 
+        /// <summary>
+        /// True when the translation group is the content of a table's text cell. Such a cell
+        /// chooses its languages in the table's own menus, and the book's language choice in the
+        /// toolbar does not reach it.
+        /// </summary>
+        public static bool IsTableTextCell(SafeXmlElement group)
+        {
+            return group.ParentNode is SafeXmlElement parent && parent.HasClass("bloom-cell");
+        }
+
+        /// <summary>
+        /// The tags of the languages a table's text cell shows, which ShouldNormallyShowEditable
+        /// takes as literal tags. The cell stores roles in data-default-languages: V (or L1) for
+        /// the collection's first language, N1 for its second and N2 for its third. V is read here
+        /// as the collection's first language, because elsewhere V means the first language checked
+        /// in the toolbar, and a table cell must not follow the toolbar. A cell shows the first
+        /// language only when it has no setting (every cell of a table made before cells had one),
+        /// and also when none of its roles has a language any more (it was set to L3, and the
+        /// collection has since dropped its third language). The front end reads the attribute the
+        /// same way: rolesFromSetting and tagsOfGroup in tableCellLanguages.ts.
+        /// </summary>
+        public static string[] LanguagesOfTableTextCell(string roles, BookData bookData)
+        {
+            var collection = bookData.CollectionSettings;
+            var tags = (roles ?? "")
+                .Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(role =>
+                    role switch
+                    {
+                        "V" or "L1" => collection.Language1Tag,
+                        "N1" => collection.Language2Tag,
+                        "N2" => collection.Language3Tag,
+                        _ => null,
+                    }
+                )
+                .Where(tag => !string.IsNullOrEmpty(tag))
+                .Distinct()
+                .ToArray();
+            return tags.Length > 0 ? tags : new[] { collection.Language1Tag };
+        }
+
         public static bool IsPageAffectedByLanguageMenu(SafeXmlElement page, bool legacy)
         {
             var groups = GetTranslationGroups(page);
             foreach (var g in groups)
             {
+                // A table's text cell does not follow the language menu.
+                if (IsTableTextCell(g))
+                    continue;
+
                 var defLangs = g.GetAttribute("data-default-languages");
 
                 // missing attribute or empty is treated as "auto", and this menu definitely affects those.
@@ -723,6 +801,12 @@ namespace Bloom.Book
                 || (
                     lang == bookData.MetadataLanguage1Tag
                     && bookData.MetadataLanguage1.IsRightToLeft
+                )
+                // A table's text cell can show the collection's first language when the toolbar
+                // has not turned it on (see LanguagesOfTableTextCell).
+                || (
+                    lang == bookData.CollectionSettings.Language1Tag
+                    && bookData.CollectionSettings.Language1.IsRightToLeft
                 )
             )
             {

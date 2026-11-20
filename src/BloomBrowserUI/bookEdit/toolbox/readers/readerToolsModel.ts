@@ -677,14 +677,29 @@ export class ReaderToolsModel {
         if (cover["length"] > 0) return $();
 
         // not a cover page, return elements to check
-        return (
-            $(".bloom-page", contentWindow.document)
-                .not(".bloom-frontMatter, .bloom-backMatter")
-                // don't count image descriptions
-                .find(
-                    ".bloom-translationGroup:not(.bloom-imageDescription) .bloom-content1",
-                )
+        const pages = $(".bloom-page", contentWindow.document).not(
+            ".bloom-frontMatter, .bloom-backMatter",
         );
+        // don't count image descriptions
+        const textGroups =
+            ".bloom-translationGroup:not(.bloom-imageDescription)";
+        // A table's text cell numbers its boxes by the collection's languages, not the toolbar's
+        // (TranslationGroupManager.LanguagesOfTableTextCell), so there the box in the language the
+        // reader tools analyse, the toolbar's first, is found by its language. ReadersApi's
+        // GetTextOfContentPagesAsJson does the same for the whole book.
+        const readerLanguage = (
+            contentWindow as unknown as {
+                GetSettings: () => ICollectionSettings;
+            }
+        ).GetSettings().languageForNewTextBoxes;
+        return pages
+            .find(`${textGroups} .bloom-content1`)
+            .filter((_, box) => !box.closest(".bloom-cell"))
+            .add(
+                pages.find(
+                    `.bloom-cell ${textGroups} > .bloom-editable[lang='${readerLanguage}']`,
+                ),
+            );
     }
 
     public noteFocus(element: HTMLElement): void {

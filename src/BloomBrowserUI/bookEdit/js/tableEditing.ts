@@ -94,20 +94,20 @@ function ensureTableLibrarySetUp(): void {
     // Text cells hold a bloom-translationGroup rather than the library's bare
     // contenteditable, so text in a table participates in Bloom's multilingual
     // system and its styles. The group gets one bloom-editable of its own here,
-    // in the language new text boxes use, because nothing else would give the
+    // in the collection's first language, because nothing else would give the
     // cell one until the page is next loaded: TranslationGroupManager (C#) adds
     // the editables for the book's other languages then. Without that first
     // editable a new cell has nothing to type in, and so no format button and no
     // language name either. This is what a text canvas element does too; see
     // makeTranslationGroup in CanvasElementFactories.ts.
-    // The group shows the toolbar's first language only (data-default-languages V), which is the
-    // language new text boxes use, until the user picks others in the table's menus; see
-    // tableCellLanguages.ts.
-    const languageForNewText = GetSettings().languageForNewTextBoxes;
+    // The group shows the collection's first language only (data-default-languages V) until the
+    // user picks others in the table's menus; see tableCellLanguages.ts. A box in any other
+    // language would be hidden when the page next loads.
+    const collectionLanguage1 = GetSettings().collectionLanguage1;
     replaceCellContentType(
         "text",
         "<div class='bloom-translationGroup bloom-trailingElement normal-style' data-default-languages='V'>" +
-            `<div class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='${languageForNewText}'><p></p></div>` +
+            `<div class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='${collectionLanguage1}'><p></p></div>` +
             "</div>",
         /bloom-translationGroup/,
         true,
@@ -188,8 +188,8 @@ function installHostHooks(): void {
     // A text cell's languages travel with the cell's other settings: into a new row or column
     // from the one it was inserted beside, and by Paint format and Copy / Paste properties.
     setHostCellSettings({
-        // The setting is copied as stored, so a cell with none (it shows the toolbar's languages)
-        // gives the cell it is copied to none either.
+        // The setting is copied as stored, so a cell with none gives the cell it is copied to
+        // none either.
         snapshot: (cell) => {
             const group = textGroupOfCell(cell);
             if (!group) return undefined;
@@ -250,17 +250,9 @@ let cellLanguagesRequested = false;
 function requestCellLanguages(): void {
     if (cellLanguagesRequested) return;
     cellLanguagesRequested = true;
-    const settings = GetSettings();
-    // The languages ticked in the toolbar, the first one first.
-    const toolbarTags = [
-        settings.languageForNewTextBoxes,
-        settings.currentCollectionLanguage2,
-        settings.currentCollectionLanguage3,
-    ].filter((tag) => !!tag);
     get("settings/languageNames", (result) => {
         const languages = cellLanguagesOfCollection(
             result.data as ILanguageNameValues,
-            toolbarTags,
         );
         cellLanguages = languages;
         const copied = settingsCopiedBeforeLanguages;

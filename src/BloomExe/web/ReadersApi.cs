@@ -436,15 +436,33 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// Return a json string with the page guid and the visible bloom-content1 text of each content page
-        /// that contains bloom-content1 text and that will be printed.
+        /// Return a json string with the page guid and the visible text in the book's first language
+        /// (the language the reader tools analyse) of each content page that has some and that will
+        /// be printed.
         /// </summary>
         private string GetTextOfContentPagesAsJson()
         {
+            return GetTextOfContentPagesAsJson(
+                CurrentBook.RawDom,
+                () => CurrentBook.BookData.Language1.Tag
+            );
+        }
+
+        /// <summary>
+        /// See GetTextOfContentPagesAsJson(). Outside a table, the text in the book's first language
+        /// is the bloom-content1 box. A table's text cell numbers its boxes by the collection's
+        /// languages rather than the toolbar's (TranslationGroupManager.LanguagesOfTableTextCell),
+        /// so there the box is found by its language, which readerLanguageTag gives; it is asked
+        /// for only when a page has a table cell.
+        /// </summary>
+        internal static string GetTextOfContentPagesAsJson(
+            SafeXmlDocument dom,
+            Func<string> readerLanguageTag
+        )
+        {
             var pageTexts = new List<string>();
 
-            var pages = CurrentBook
-                .RawDom.SafeSelectNodes(
+            var pages = dom.SafeSelectNodes(
                     "//div[" + GenerateXPathClassStringSearch("bloom-page") + "]"
                 )
                 .Cast<SafeXmlElement>()
@@ -457,18 +475,42 @@ namespace Bloom.Api
                         && !cls.Contains(" bloom-nonprinting ")
                         && !cls.Contains(" bloom-ignoreForReaderStats ");
                 });
-            var xpathToTextContent =
+            var inTableCell = "ancestor::div[" + GenerateXPathClassStringSearch("bloom-cell") + "]";
+            var xpathToTextContentOutsideTables =
                 ".//div[not("
                 + GenerateXPathClassStringSearch("bloom-imageDescription")
                 + ")]/div["
                 + GenerateXPathClassStringSearch("bloom-visibility-code-on")
                 + " and "
                 + GenerateXPathClassStringSearch("bloom-content1")
-                + "]";
+                + " and not("
+                + inTableCell
+                + ")]";
+            string xpathToTextContentAnywhere = null;
             foreach (var page in pages)
             {
                 var pageWords = String.Empty;
-                var textDivs = page.SafeSelectNodes(xpathToTextContent);
+                var hasTableCell =
+                    page.SafeSelectNodes(
+                        ".//div[" + GenerateXPathClassStringSearch("bloom-cell") + "]"
+                    ).Length > 0;
+                if (hasTableCell)
+                {
+                    xpathToTextContentAnywhere ??=
+                        xpathToTextContentOutsideTables
+                        + " | .//div["
+                        + GenerateXPathClassStringSearch("bloom-cell")
+                        + "]//div["
+                        + GenerateXPathClassStringSearch("bloom-translationGroup")
+                        + "]/div["
+                        + GenerateXPathClassStringSearch("bloom-visibility-code-on")
+                        + " and @lang='"
+                        + readerLanguageTag()
+                        + "']";
+                }
+                var textDivs = page.SafeSelectNodes(
+                    hasTableCell ? xpathToTextContentAnywhere : xpathToTextContentOutsideTables
+                );
                 // Skip the page if it contains no visible vernacular text elements.  (picture only)
                 if (textDivs.Length == 0)
                     continue;
