@@ -18,7 +18,6 @@ import {
     attachToCkEditor,
     configureElementsForTools,
     keepDataTextUpToDate,
-    makeReadOnlyWhenCursorIsNotAllowed,
     matchGroupFontSizesToLanguage1,
 } from "./bloomEditing";
 import { setupInlineImages } from "./inlineImages";
@@ -126,7 +125,6 @@ export function setUpBoxesBuiltAfterLoad(
     // Must come before attachToCkEditor: CKEditor's inline mode decides whether the editor is
     // read-only from the element's contenteditable state at the moment it attaches.
     boxes.forEach((box) => box.setAttribute("contenteditable", "true"));
-    makeReadOnlyWhenCursorIsNotAllowed($boxes);
     addLanguageTagsToBoxes($([...boxes, ...boxesShownAgain]));
     boxes.forEach((box) => attachToCkEditor(box));
     // After CKEditor, which can replace the boxes' nodes, as at page load.

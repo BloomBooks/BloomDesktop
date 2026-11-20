@@ -17,7 +17,6 @@ vi.mock("./bloomEditing", () => ({
     attachToCkEditor: vi.fn(),
     configureElementsForTools: vi.fn(),
     keepDataTextUpToDate: vi.fn(),
-    makeReadOnlyWhenCursorIsNotAllowed: vi.fn(),
     matchGroupFontSizesToLanguage1: vi.fn(),
 }));
 vi.mock("../bloomField/BloomField", async (importOriginal) => {
