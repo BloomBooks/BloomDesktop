@@ -466,6 +466,19 @@ namespace BloomTests.Spreadsheet
             Assert.That(missingFileRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Missing"));
         }
 
+        /// <summary>
+        /// A picture that is in neither the book folder nor the export folder still gets the
+        /// missing-image warning, now that the export folder is checked first (BL-16990).
+        /// </summary>
+        [Test]
+        public void Export_ImageMissingFromBookFolder_WarnsAboutIt()
+        {
+            Assert.That(
+                _progressSpy.Warnings,
+                Has.Some.Contains("did not find the image").And.Contains("missing file.jpg")
+            );
+        }
+
         [TestCase("fromFile")]
         public void displayThumbnail_imageEmpty_ErrorMessage(string source)
         {
