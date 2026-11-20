@@ -163,7 +163,65 @@ namespace BloomTests.Publish.Rab
                     "The generated APK should contain AndroidManifest.xml."
                 );
                 AssertEmbeddedFontsReachedTheApp(status.AppDefPath, archive);
+                AssertContentsPictureReachedTheApp(project, prepareState.Books[0], archive);
             }
+        }
+
+        // BL-17007: Bloom names each book's contents-menu picture after the book and copies the
+        // book's thumbnail into the project under that name; RAB packages contents pictures by
+        // name. Check the picture got there and that the APK carries it as one of the app's own
+        // pictures (RAB may rename it, so match by content, leaving out the book's own copy).
+        private static void AssertContentsPictureReachedTheApp(
+            RabAppProject project,
+            RabBookPublishInfo book,
+            ZipArchive apk
+        )
+        {
+            var pictureName = RabAppProject.GetContentsImageFileName(book);
+            var picturePath = Path.Combine(project.ContentsImagesFolderPath, pictureName);
+            Assert.That(
+                RobustFile.Exists(picturePath),
+                Is.True,
+                $"{pictureName} should be in the project's contents images folder, where RAB looks for it"
+            );
+            using (var bloomPub = ZipFile.OpenRead(book.BloomPubPath))
+            using (
+                var thumbnail = bloomPub.GetEntry(RabAppProject.GetThumbnailFileName(book)).Open()
+            )
+            {
+                Assert.That(
+                    RobustFile.ReadAllBytes(picturePath),
+                    Is.EqualTo(ReadAll(thumbnail)),
+                    "the contents picture should be the book's own thumbnail"
+                );
+            }
+
+            var pictureHash = Convert.ToBase64String(
+                SHA256.HashData(RobustFile.ReadAllBytes(picturePath))
+            );
+            var appPictureHashes = apk
+                .Entries.Where(entry =>
+                    entry.Length > 0
+                    && !entry.FullName.StartsWith("assets/books/", StringComparison.Ordinal)
+                )
+                .Select(entry =>
+                {
+                    using var stream = entry.Open();
+                    return Convert.ToBase64String(SHA256.HashData(stream));
+                })
+                .ToHashSet();
+            Assert.That(
+                appPictureHashes,
+                Does.Contain(pictureHash),
+                "The APK should contain the book's thumbnail as its contents-menu picture"
+            );
+        }
+
+        private static byte[] ReadAll(Stream stream)
+        {
+            using var memory = new MemoryStream();
+            stream.CopyTo(memory);
+            return memory.ToArray();
         }
 
         // BL-16959: Bloom lists each font embedded in the book in the .appDef, and RAB takes the
@@ -389,6 +447,7 @@ namespace BloomTests.Publish.Rab
                         FolderPath = Path.GetDirectoryName(_sourceBloomPubPath),
                         Title = _bookTitle,
                         BloomPubPath = outputPath,
+                        ThumbnailFileName = GetBloomPubThumbnailFileName(outputPath),
                     },
                 };
             }
