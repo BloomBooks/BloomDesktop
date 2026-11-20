@@ -377,11 +377,15 @@ export function computeInlineImageDragScrollLayoutPx(
     return 0;
 }
 
+// How much overflow shouldRevertInlineImageMove takes for rounding in the layout.
+const kOverflowRoundingAllowanceLayoutPx = 1;
+
 /**
  * Whether a move has to be undone because it left the text with no room: the block fitted its
- * text before the drag began, and the move made it overflow.
+ * text before the drag began, to within kOverflowRoundingAllowanceLayoutPx, and the move made it
+ * overflow by more than that.
  *
- * A block that already overflowed when the drag began never has its moves undone, and that is
+ * A block that already overflowed by more than that when the drag began never has its moves undone, and that is
  * the reason this is a separate function. Moving an image anywhere changes how much room the
  * text needs, because an image higher up pushes more text below it. So in a block whose text
  * does not fit, undoing every move that added overflow would undo most moves, including every
@@ -391,15 +395,18 @@ export function computeInlineImageDragScrollLayoutPx(
  * clampInlineImageOffset is what keeps the image somewhere the user can reach, by keeping the
  * whole wrapper inside the block's content.
  *
- * The one pixel of allowance covers rounding in the layout, which would otherwise look like
- * overflow caused by the move.
+ * The allowance covers rounding in the layout, which would otherwise look like overflow caused
+ * by the move. It applies at the start of the drag too: a move or resize that used the allowance
+ * leaves a pixel of overflow, and the next gesture must not take that for a block that already
+ * overflowed, or it would have no limit at all.
  */
 export function shouldRevertInlineImageMove(
     startOverflowLayoutPx: number,
     currentOverflowLayoutPx: number,
 ): boolean {
-    if (startOverflowLayoutPx > 0) return false;
-    return currentOverflowLayoutPx > startOverflowLayoutPx + 1;
+    if (startOverflowLayoutPx > kOverflowRoundingAllowanceLayoutPx)
+        return false;
+    return currentOverflowLayoutPx > kOverflowRoundingAllowanceLayoutPx;
 }
 
 /**
@@ -2420,7 +2427,8 @@ function continueResize(
         state.editableWidthViewportPx,
     );
     // A resize follows the rule a drag follows (shouldRevertInlineImageMove): in a block that
-    // fitted its text when the resize began, a width that makes it overflow is not kept. That
+    // fitted its text when the resize began (within the rounding allowance), a width that makes
+    // it overflow is not kept. That
     // stops the picture at the bottom of the block, which on a wide, short (landscape) block
     // comes long before the width limit (BL-17078), and before it pushes the text that follows
     // it out of the block. The picture stops at the largest width that still fits, found by

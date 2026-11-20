@@ -470,6 +470,12 @@ describe("inlineImageInteractions", () => {
             expect(shouldRevertInlineImageMove(0, 1)).toBe(false);
         });
 
+        it("still guards a block left with a pixel of overflow by the last gesture", () => {
+            expect(shouldRevertInlineImageMove(1, 40)).toBe(true);
+            expect(shouldRevertInlineImageMove(1, 2)).toBe(true);
+            expect(shouldRevertInlineImageMove(1, 1)).toBe(false);
+        });
+
         it("keeps every move in a block whose text already overflowed", () => {
             // The bug this rule was rewritten for: at offset 680 in the developer's A6 block
             // the text already needed 344 layout pixels more than the block had, and dragging

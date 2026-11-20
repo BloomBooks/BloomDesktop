@@ -317,6 +317,7 @@ function expectLargestWidthThatFits(
     expect(overflow()).toBeLessThanOrEqual(1);
     wrapper.style.setProperty(kInlineImageWidthVar, `${widthPercent + 1}%`);
     expect(overflow()).toBeGreaterThan(1);
+    wrapper.style.setProperty(kInlineImageWidthVar, `${widthPercent}%`);
 }
 
 // Moves a left-docked picture into the full-width band, runs `check`, and moves it back.
@@ -496,7 +497,7 @@ describe("resizing an inline image from any corner, in any dock, quickly or slow
         { corner: "sw", dockClass: kInlineImageRightClass },
         { corner: "nw", dockClass: kInlineImageRightClass },
     ] as { corner: Corner; dockClass: string }[])(
-        "stops at the bottom of a wide, short block when the $corner corner is dragged",
+        "stops at the bottom of a wide, short block when the $corner corner is dragged, and again when it is dragged a second time",
         async ({ corner, dockClass }) => {
             const group = makeTextBlock(400, 120, [
                 "Once upon a time, there was a sweet little girl.",
@@ -538,6 +539,17 @@ describe("resizing an inline image from any corner, in any dock, quickly or slow
             expect(widthPercent).toBeGreaterThan(41);
             expect(widthPercent).toBeLessThan(43);
             expectLargestWidthThatFits(wrapper, () => overflowPx(group));
+
+            // The resize may have left a pixel of overflow, which shouldRevertInlineImageMove
+            // allows for rounding. A second resize must not take that pixel for a block that
+            // was already too full to protect.
+            await dragCornerFarOut(wrapper, corner);
+
+            expect(
+                imgOf(wrapper).getBoundingClientRect().bottom,
+                "the second resize went past the bottom of the block",
+            ).toBeLessThanOrEqual(blockBottom + 2);
+            expect(widthPercentOf(wrapper)).toBeLessThan(43);
         },
     );
 
