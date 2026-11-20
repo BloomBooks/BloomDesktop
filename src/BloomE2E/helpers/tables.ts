@@ -32,9 +32,20 @@ import {
     type Request,
 } from "@playwright/test";
 import { holdBackAnswers, type IHeldBackAnswers } from "./api";
-import { editablePageFrame } from "./bookMaking";
+import {
+    addPage,
+    editablePageFrame,
+    getContentPages,
+    goToPage,
+    makeBookFromTemplate,
+    setContentLanguages,
+} from "./bookMaking";
 import { kTableEditingMarkupSelectors } from "./bookHtml";
-import { getCanvasRect } from "./canvasElements";
+import {
+    dragPaletteItemOntoCanvas,
+    getCanvasRect,
+    openCanvasTool,
+} from "./canvasElements";
 import {
     bottom,
     describeRect,
@@ -71,6 +82,8 @@ export type TableMenuCommand =
     | "Move Left"
     | "Duplicate Column"
     | "Delete Column"
+    | "Copy properties"
+    | "Paste properties"
     | "Copy Table"
     | "Cut Table"
     | "Delete Table";
@@ -121,6 +134,31 @@ export interface IOpenMenus {
     canvasElement: boolean;
     /** Bloom's text menu, which a right-click in ordinary text raises. */
     bloomText: boolean;
+}
+
+// ── Making a table ──────────────────────────────────────────────────────
+
+/**
+ * Make a Basic Book with one Canvas page, show `contentLanguages` on the toolbar, and drag a new
+ * table onto the canvas, into its upper left so that the table and the toolbar Bloom draws under a
+ * selected element both stay on the page. Returns when Bloom has attached the table, with the
+ * Canvas page showing.
+ */
+export async function makeBookWithTableOnCanvasPage(
+    page: Page,
+    contentLanguages: string[],
+): Promise<void> {
+    await makeBookFromTemplate(page, "Basic Book");
+    await addPage(page, "Canvas");
+    const [canvasPage] = await getContentPages(page);
+    await goToPage(page, canvasPage.id);
+    await setContentLanguages(page, contentLanguages);
+    await openCanvasTool(page);
+    await dragPaletteItemOntoCanvas(page, "table", {
+        xFraction: 0.3,
+        yFraction: 0.25,
+    });
+    await waitForTableAttached(page);
 }
 
 // ── Finding tables and cells ────────────────────────────────────────────
@@ -913,6 +951,10 @@ export async function clickAddButton(
  *
  * The pills appear only while the pointer is near the row or column they belong to, so this hovers
  * the cell that identifies it first. For "table" the pill sits at the top left corner.
+ *
+ * `index` only decides where the pointer goes. The menu that opens acts on the row or column of
+ * the table's selected cell (togglePillMenu in the table library), so a caller that means a
+ * particular row or column selects a cell in it first, with clickCell.
  */
 export async function openTableMenu(
     page: Page,
@@ -1868,6 +1910,254 @@ export async function getTableEditingMarkup(page: Page): Promise<string[]> {
                 (selector) => document.querySelector(selector) !== null,
             ),
         kTableEditingMarkupSelectors,
+    );
+}
+
+/** What the menus call a language a table cell can show (BL-17105). */
+export type CellLanguageRole = "L1" | "L2" | "L3";
+
+// The role each menu entry stands for, as TableCellLanguagesSection.tsx marks its row.
+const kStoredRoleOfMenuRole: Record<CellLanguageRole, string> = {
+    L1: "V",
+    L2: "N1",
+    L3: "N2",
+};
+
+/** One entry of a table menu's Languages submenu, as the user sees it. */
+export interface IMenuCellLanguage {
+    /** The whole label, e.g. "L1 - English". */
+    label: string;
+    /** Ticked in every text cell the menu covers, in none, or in only some (a dash). */
+    state: "all" | "none" | "some";
+    /** True when unticking it would leave some cell with no language, so the box is disabled. */
+    locked: boolean;
+}
+
+// The Languages item is Bloom's own, drawn into the library's menu, and its check boxes are in a
+// submenu that opens while the pointer is on the item. These attributes are the ones
+// TableCellLanguagesSection.tsx puts on them for this purpose.
+async function openLanguagesSubmenu(page: Page): Promise<Locator> {
+    const menu = openTableMenuPanel(page);
+    const item = menu
+        .locator("[data-table-cell-languages] [role='menuitem']")
+        .first();
+    await item.waitFor({ state: "visible", timeout: kTableWaitMs });
+    await item.hover({ timeout: kTableWaitMs });
+    const submenu = menu.locator("[data-table-cell-languages-submenu]").first();
+    await submenu.waitFor({ state: "visible", timeout: kTableWaitMs });
+    return submenu;
+}
+
+/**
+ * The entries of the Languages submenu of whichever table menu is open (Cell, Row, Column or
+ * Table), in the order the submenu lists them. Opens the submenu by pointing at its item, as a
+ * person does, and leaves it open.
+ */
+export async function getMenuCellLanguages(
+    page: Page,
+): Promise<IMenuCellLanguage[]> {
+    const section = await openLanguagesSubmenu(page);
+    return section.locator("label[data-cell-language]").evaluateAll((rows) =>
+        rows.map((row) => ({
+            label: (row.textContent ?? "").trim(),
+            state: row.getAttribute("data-cell-language-state") as
+                | "all"
+                | "none"
+                | "some",
+            locked: !!row.querySelector("input:disabled"),
+        })),
+    );
+}
+
+/**
+ * Click the check box of one language in the open table menu's Languages submenu, as a person
+ * does, and wait until the submenu shows the result. The menu and the submenu stay open.
+ */
+export async function toggleMenuCellLanguage(
+    page: Page,
+    role: CellLanguageRole,
+): Promise<void> {
+    const section = await openLanguagesSubmenu(page);
+    const row = section.locator(
+        `label[data-cell-language='${kStoredRoleOfMenuRole[role]}']`,
+    );
+    if ((await row.count()) === 0) {
+        const labels = await section
+            .locator("label[data-cell-language]")
+            .allInnerTexts();
+        throw new Error(
+            `The open table menu's Languages submenu has no ${role}. It lists: ` +
+                `${labels.join(", ") || "(nothing)"}.`,
+        );
+    }
+    const before = await row.getAttribute("data-cell-language-state");
+    await clickChrome(row.locator("input"), `the ${role} check box`);
+    // Unticking takes the language out of every cell where it is not the only one, so the box
+    // can end up "some" rather than "none"; any change of state means the click took.
+    await expect
+        .poll(async () => await row.getAttribute("data-cell-language-state"), {
+            timeout: kTableWaitMs,
+            message: `Clicking the ${role} check box did not change it from "${before}".`,
+        })
+        .not.toBe(before);
+}
+
+/**
+ * Tick or untick one language in one cell's Cell menu, as a person does: right-click the cell,
+ * click the language's check box in the Languages submenu, and close the menu.
+ */
+export async function toggleCellLanguageInCellMenu(
+    page: Page,
+    row: number,
+    column: number,
+    role: CellLanguageRole,
+    tableIndex = 0,
+): Promise<void> {
+    await rightClickCell(page, row, column, tableIndex);
+    await toggleMenuCellLanguage(page, role);
+    await closeAnyMenu(page);
+}
+
+/**
+ * The languages every text cell of a table shows, row by row: for each cell, the tags of its
+ * shown boxes in the order they are drawn, as getCellLanguages gives one cell. Reads the whole
+ * table at once, for a test that checks many cells.
+ */
+export async function getTableCellLanguages(
+    page: Page,
+    tableIndex = 0,
+): Promise<string[][][]> {
+    const table = editablePageFrame(page)
+        .locator(".bloom-table")
+        .nth(tableIndex);
+    await table.waitFor({ state: "attached", timeout: kTableWaitMs });
+    return table.evaluate((element) => {
+        const widths = element.getAttribute("data-column-widths") ?? "";
+        // An empty attribute means no columns yet.
+        if (widths === "") return [];
+        const columns = widths.split(",").length;
+        const cells = Array.from(
+            element.querySelectorAll(":scope > .bloom-cell"),
+        ).map((cellElement) =>
+            Array.from(
+                cellElement.querySelectorAll(
+                    ".bloom-editable.bloom-visibility-code-on",
+                ),
+            ).map((box) => box.getAttribute("lang") ?? ""),
+        );
+        const rows: string[][][] = [];
+        for (let start = 0; start < cells.length; start += columns)
+            rows.push(cells.slice(start, start + columns));
+        return rows;
+    });
+}
+
+/**
+ * Copy one cell's format onto another with Paint format, as a person does: choose Paint format in
+ * the source cell's Cell menu, press on the target cell, and press Escape to stop painting.
+ * Returns when the table has left its painting mode.
+ *
+ * While painting, the table library marks the page's body `bloom-paint-format` and takes every
+ * press on a cell as "paint this one", so this waits for the mark before the press and for its
+ * removal afterwards.
+ */
+export async function paintFormatFromCellOntoCell(
+    page: Page,
+    from: { row: number; column: number },
+    onto: { row: number; column: number },
+    tableIndex = 0,
+): Promise<void> {
+    const menus = await rightClickCell(page, from.row, from.column, tableIndex);
+    if (!menus.cell)
+        throw new Error(
+            `Right-clicking the cell at row ${from.row}, column ${from.column} did not open the ` +
+                `Cell menu. Menus that did open: ${describeMenus(menus)}.`,
+        );
+    await startPaintFormat(page, "Paint format");
+    // A real press, for the same reason as in clickCell.
+    await realClick(await cell(page, onto.row, onto.column, tableIndex));
+    await endPaintFormat(page);
+}
+
+/**
+ * Copy the properties of the table's first cell and paste them onto every cell of the table, with
+ * Copy properties and then Paste properties in the Table menu, which is the only menu that has
+ * them. Copy takes the first cell of the table; Paste gives every cell what was copied.
+ */
+export async function copyAndPasteTableProperties(
+    page: Page,
+    tableIndex = 0,
+): Promise<void> {
+    await openTableMenu(page, "table", 0, tableIndex);
+    await clickTableMenuCommand(page, "Copy properties");
+    await openTableMenu(page, "table", 0, tableIndex);
+    await clickTableMenuCommand(page, "Paste properties");
+}
+
+/**
+ * Which way the text of one language's box in a cell runs, "ltr" or "rtl", as the browser lays it
+ * out. This is the computed direction, so it is what a person sees whichever of the attribute and
+ * the stylesheet decided it.
+ */
+export async function getCellTextDirection(
+    page: Page,
+    row: number,
+    column: number,
+    languageTag: string,
+    tableIndex = 0,
+): Promise<string> {
+    const box = await cellTextBox(page, row, column, languageTag, tableIndex);
+    return box.evaluate((element) => getComputedStyle(element).direction);
+}
+
+/**
+ * The languages whose text a reader sees in one cell of the first table of a page in `frame`, in
+ * the order they are drawn. Written for the BloomPUB preview, whose frame is bloom-player showing
+ * the book: a language counts only when its box is really drawn there, with a size, so one that
+ * the player hides is left out however the saved page marks it.
+ *
+ * `pageId` scopes it to one page, because bloom-player builds only the pages near the one it is
+ * showing. Waits until that page's table is there.
+ */
+export async function getCellLanguagesShownIn(
+    frame: Frame,
+    pageId: string,
+    row: number,
+    column: number,
+): Promise<string[]> {
+    const target = frame.locator(`[id="${pageId}"] .bloom-table`).first();
+    await target.waitFor({ state: "attached", timeout: 30000 });
+    return target.evaluate(
+        (element, where) => {
+            const widths = element.getAttribute("data-column-widths") ?? "";
+            // An empty attribute means no columns yet, not one ("".split gives one item).
+            const columns = widths === "" ? 0 : widths.split(",").length;
+            const cells = Array.from(
+                element.querySelectorAll(":scope > .bloom-cell"),
+            );
+            const cellElement =
+                columns === 0
+                    ? undefined
+                    : cells[where.row * columns + where.column];
+            if (!cellElement)
+                throw new Error(
+                    `The table has ${cells.length} cells in ${columns} columns, so there is ` +
+                        `no cell at row ${where.row}, column ${where.column}.`,
+                );
+            return Array.from(cellElement.querySelectorAll(".bloom-editable"))
+                .filter((box) => {
+                    const rect = box.getBoundingClientRect();
+                    return (
+                        (box as HTMLElement).checkVisibility({
+                            visibilityProperty: true,
+                        }) &&
+                        rect.width > 0 &&
+                        rect.height > 0
+                    );
+                })
+                .map((box) => box.getAttribute("lang") ?? "");
+        },
+        { row, column },
     );
 }
 
