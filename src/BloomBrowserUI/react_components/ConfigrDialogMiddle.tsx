@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { DialogMiddle } from "./BloomDialog/BloomDialog";
 import { kBloomBlue, kDialogPadding } from "../bloomMaterialUITheme";
+import { BloomSubscriptionIndicatorIconAndText } from "./requiresSubscription";
 
 // The Book Settings and Collection Settings dialogs share this size, so they feel like one family.
 const kConfigrDialogWidthPx = 900;
@@ -80,6 +81,37 @@ export const kConfigrSearchMatchCss = css`
         background-color: #feeb5a;
     }
 `;
+
+/**
+ * A line under a Config-R setting, showing the subscription badge for the feature that setting
+ * needs. It ends at the same right edge as the control above it. Put it and the setting in one
+ * element, which keeps Config-R from drawing a divider between them.
+ */
+export const ConfigrSubscriptionBadge: React.FunctionComponent<{
+    // The feature name features/status knows it by, e.g. "TeamCollection".
+    feature: string;
+    // True when the control above is a checkbox. Config-R's rows inset their controls by 16px, but
+    // a checkbox's drawn box ends 12px further in (MUI's 9px padding around it and the 3px inside
+    // its icon).
+    alignWithCheckbox?: boolean;
+}> = (props) => (
+    <div
+        css={css`
+            display: flex;
+            padding-bottom: 5px;
+            padding-right: ${props.alignWithCheckbox ? 28 : 16}px;
+            font-size: 12px;
+            font-weight: bold;
+        `}
+    >
+        <BloomSubscriptionIndicatorIconAndText
+            feature={props.feature}
+            css={css`
+                margin-left: auto;
+            `}
+        />
+    </div>
+);
 
 /**
  * The place in a settings dialog's title bar where Config-R shows its search box. Put it in the

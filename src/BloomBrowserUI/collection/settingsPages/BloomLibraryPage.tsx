@@ -1,4 +1,3 @@
-import { css } from "@emotion/react";
 import {
     ConfigrGroup,
     ConfigrPage,
@@ -6,7 +5,7 @@ import {
     ConfigrStatic,
 } from "@sillsdev/config-r";
 import { useL10n } from "../../react_components/l10nHooks";
-import { BloomSubscriptionIndicatorIconAndText } from "../../react_components/requiresSubscription";
+import { ConfigrSubscriptionBadge } from "../../react_components/ConfigrDialogMiddle";
 import { useGetEnterpriseBookshelves } from "../useGetEnterpriseBookshelves";
 import { ISettingsPage, ISettingsPageContext } from "./settingsPage";
 
@@ -88,21 +87,7 @@ export function useBloomLibraryPage(
                                     : bookshelfDescription
                             }
                         />
-                        <div
-                            css={css`
-                                display: flex;
-                                padding-bottom: 5px;
-                                font-size: 12px;
-                                font-weight: bold;
-                            `}
-                        >
-                            <BloomSubscriptionIndicatorIconAndText
-                                feature="Bookshelf"
-                                css={css`
-                                    margin-left: auto;
-                                `}
-                            />
-                        </div>
+                        <ConfigrSubscriptionBadge feature="Bookshelf" />
                     </div>
                 </ConfigrStatic>
             </ConfigrGroup>

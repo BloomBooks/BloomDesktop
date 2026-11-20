@@ -1,4 +1,5 @@
 import { css } from "@emotion/react";
+import { kBloomBlue } from "../bloomMaterialUITheme";
 import * as React from "react";
 import {
     ConfigrValues,
@@ -360,20 +361,24 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                             )?.helpTopic ?? kGeneralSettingsHelpTopic
                         }
                     />
-                    {needsRestart && (
-                        <div
-                            css={css`
-                                align-self: center;
-                            `}
-                        >
-                            {restartMessage}
-                        </div>
-                    )}
                 </DialogBottomLeftButtons>
                 {notAllowedMessage ? (
                     <DialogCloseButton onClick={closeDialog} />
                 ) : (
                     <React.Fragment>
+                        {needsRestart && (
+                            // Beside the Restart button, which it explains.
+                            <div
+                                css={css`
+                                    align-self: center;
+                                    color: ${kBloomBlue};
+                                    font-size: 12px;
+                                    margin-right: 12px;
+                                `}
+                            >
+                                {restartMessage}
+                            </div>
+                        )}
                         <DialogOkButton
                             default={true}
                             enabled={
