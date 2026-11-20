@@ -1237,6 +1237,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Maelezo</target>
         <note>ID: Common.Info</note>
       </trans-unit>
+      <trans-unit id="Common.Languages" translate="no">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="sw" state="needs-translation">Languages</target>
+        <note>ID: Common.Languages</note>
+      </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Learn More</source>
         <target xml:lang="sw" state="final">Jifunze zaidi</target>
