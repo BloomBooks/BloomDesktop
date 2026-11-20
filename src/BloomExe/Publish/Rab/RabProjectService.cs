@@ -814,7 +814,7 @@ namespace Bloom.Publish.Rab
             }
 
             ReconcileProjectWithImportedBooks(existingProjectPath, trackedBooks);
-            SynchronizeProjectFonts(existingProjectPath, trackedBooks);
+            SynchronizeProjectFiles(existingProjectPath, trackedBooks);
             EnsureProjectInterfaceLanguage(existingProjectPath);
             ReportProgressStage("updating-project", 85);
             SaveState(paths, state);
@@ -1161,7 +1161,7 @@ namespace Bloom.Publish.Rab
                 paths.RabRoot
             );
             ReconcileProjectWithImportedBooks(state.AppDefPath, trackedBooks);
-            SynchronizeProjectFonts(state.AppDefPath, trackedBooks);
+            SynchronizeProjectFiles(state.AppDefPath, trackedBooks);
             EnsureProjectInterfaceLanguage(state.AppDefPath);
             state.Books = trackedBooks;
             SaveState(paths, state);
@@ -1974,7 +1974,11 @@ namespace Bloom.Publish.Rab
             }
         }
 
-        private static void SynchronizeProjectFonts(
+        /// <summary>
+        /// Lists the BloomPUBs' embedded fonts in the .appDef and copies the files the project
+        /// needs out of the BloomPUBs.
+        /// </summary>
+        private static void SynchronizeProjectFiles(
             string appDefPath,
             IEnumerable<RabBookPublishInfo> trackedBooks
         )
@@ -1982,40 +1986,48 @@ namespace Bloom.Publish.Rab
             var project = RabAppProject.Load(appDefPath);
             project.SynchronizeFonts(ReadFontDefinitionsFromBloomPubs(trackedBooks));
             project.Save();
-            CopyEmbeddedFontFiles(trackedBooks, project.FontsFolderPath);
+            CopyFilesFromBloomPubs(
+                trackedBooks,
+                project.FontsFolderPath,
+                project.ContentsImagesFolderPath
+            );
         }
 
         /// <summary>
-        /// Copies the file of every font embedded in the BloomPUBs into the project's fonts folder.
-        /// SynchronizeFonts lists these fonts in the .appDef by bare file name, and at build time RAB
-        /// looks for them only in that folder; RAB itself copies font files there only when it creates
-        /// a project, so without this any embedded font (every one but Andika) fails the build with
-        /// "A required file for this app is missing" (BL-16959). Each face (Bold, Italic...) has its
-        /// own file and @font-face rule, so each is copied. We leave the files of fonts that are no
-        /// longer used: RAB packages only the fonts the .appDef lists, and some files in the folder
-        /// may have been put there by RAB.
+        /// Copies, out of each book's BloomPUB, the files RAB needs from it:
+        /// - Every embedded font file, into the project's fonts folder. SynchronizeFonts lists these
+        ///   fonts in the .appDef by bare file name, and at build time RAB looks for them only in that
+        ///   folder; RAB itself copies font files there only when it creates a project, so without
+        ///   this any embedded font (every one but Andika) fails the build with "A required file for
+        ///   this app is missing" (BL-16959). Each face (Bold, Italic...) has its own file and
+        ///   @font-face rule, so each is copied. We leave the files of fonts that are no longer used:
+        ///   RAB packages only the fonts the .appDef lists, and some files in the folder may have
+        ///   been put there by RAB.
+        /// - The book's thumbnail, into the contents images folder under the name
+        ///   RabAppProject.GetContentsImageFileName gives the book's entry in the contents menu. A
+        ///   book with no thumbnail gets no file, and RAB leaves its picture out.
         /// </summary>
-        internal static void CopyEmbeddedFontFiles(
+        internal static void CopyFilesFromBloomPubs(
             IEnumerable<RabBookPublishInfo> trackedBooks,
-            string fontsFolderPath
+            string fontsFolderPath,
+            string contentsImagesFolderPath
         )
         {
-            var copiedFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var copiedFontFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var book in trackedBooks ?? Array.Empty<RabBookPublishInfo>())
             {
                 var fonts =
                     book.EmbeddedFonts ?? ReadFontDefinitionsFromBloomPub(book.BloomPubPath);
-                var fileNames = fonts
+                var fontFileNames = fonts
                     .Select(font => font.FileName)
-                    .Where(fileName => !copiedFileNames.Contains(fileName))
+                    .Where(fileName => !copiedFontFileNames.Contains(fileName))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
-                if (fileNames.Count == 0)
-                    continue;
+                if (fontFileNames.Count > 0)
+                    Directory.CreateDirectory(fontsFolderPath);
 
-                Directory.CreateDirectory(fontsFolderPath);
                 using var archive = ZipFile.OpenRead(book.BloomPubPath);
-                foreach (var fileName in fileNames)
+                foreach (var fileName in fontFileNames)
                 {
                     var entry = archive.GetEntry(fileName);
                     if (entry == null)
@@ -2024,7 +2036,20 @@ namespace Bloom.Publish.Rab
                         );
 
                     entry.ExtractToFile(Path.Combine(fontsFolderPath, fileName), true);
-                    copiedFileNames.Add(fileName);
+                    copiedFontFileNames.Add(fileName);
+                }
+
+                var thumbnail = archive.GetEntry(RabAppProject.GetThumbnailFileName(book));
+                if (thumbnail != null)
+                {
+                    Directory.CreateDirectory(contentsImagesFolderPath);
+                    thumbnail.ExtractToFile(
+                        Path.Combine(
+                            contentsImagesFolderPath,
+                            RabAppProject.GetContentsImageFileName(book)
+                        ),
+                        true
+                    );
                 }
             }
         }

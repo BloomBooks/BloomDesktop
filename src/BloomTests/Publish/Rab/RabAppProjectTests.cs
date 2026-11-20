@@ -148,7 +148,7 @@ namespace BloomTests.Publish.Rab
             Assert.That(contentsItems[0].Element("title")?.Value, Is.EqualTo("First Book"));
             Assert.That(
                 contentsItems[0].Element("image-filename")?.Value,
-                Is.EqualTo("thumbnail.png")
+                Is.EqualTo("book-1-cover.png")
             );
             Assert.That(
                 contentsItems[0].Element("link")?.Attribute("target")?.Value,
@@ -157,7 +157,7 @@ namespace BloomTests.Publish.Rab
             Assert.That(contentsItems[1].Element("title")?.Value, Is.EqualTo("Second/Book"));
             Assert.That(
                 contentsItems[1].Element("image-filename")?.Value,
-                Is.EqualTo("thumbnail.jpg")
+                Is.EqualTo("book-2-cover.jpg")
             );
             Assert.That(
                 contentsItems[1].Element("link")?.Attribute("target")?.Value,
@@ -385,7 +385,7 @@ namespace BloomTests.Publish.Rab
             + "@font-face {font-family:'Charis SIL'; font-weight:bold; font-style:normal; src:url('CharisSIL-Bold.ttf') format('truetype');}";
 
         [Test]
-        public void CopyEmbeddedFontFiles_CopiesEachFaceOutOfTheBloomPubs()
+        public void CopyFilesFromBloomPubs_CopiesEachFontFaceOutOfTheBloomPubs()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var bookA = Path.Combine(tempFolder.Path, "a.bloompub");
@@ -405,13 +405,14 @@ namespace BloomTests.Publish.Rab
             var fontsFolder = Path.Combine(tempFolder.Path, "App_data", "fonts");
             Assert.That(Directory.Exists(fontsFolder), Is.False, "test setup: no fonts folder yet");
 
-            RabProjectService.CopyEmbeddedFontFiles(
+            RabProjectService.CopyFilesFromBloomPubs(
                 new[]
                 {
                     new RabBookPublishInfo { BloomPubPath = bookA },
                     new RabBookPublishInfo { BloomPubPath = bookB },
                 },
-                fontsFolder
+                fontsFolder,
+                Path.Combine(tempFolder.Path, "images")
             );
 
             Assert.That(
@@ -426,7 +427,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void CopyEmbeddedFontFiles_ReplacesAnOlderCopyAndKeepsOtherFiles()
+        public void CopyFilesFromBloomPubs_ReplacesAnOlderFontCopyAndKeepsOtherFiles()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var book = Path.Combine(tempFolder.Path, "a.bloompub");
@@ -443,9 +444,10 @@ namespace BloomTests.Publish.Rab
             RobustFile.WriteAllText(regularPath, "old");
             RobustFile.WriteAllText(rabFontPath, "put here by RAB");
 
-            RabProjectService.CopyEmbeddedFontFiles(
+            RabProjectService.CopyFilesFromBloomPubs(
                 new[] { new RabBookPublishInfo { BloomPubPath = book } },
-                fontsFolder
+                fontsFolder,
+                Path.Combine(tempFolder.Path, "images")
             );
 
             Assert.That(
@@ -456,20 +458,73 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void CopyEmbeddedFontFiles_ThrowsWhenTheBloomPubLacksAFontFile()
+        public void CopyFilesFromBloomPubs_ThrowsWhenTheBloomPubLacksAFontFile()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var book = Path.Combine(tempFolder.Path, "a.bloompub");
             WriteBloomPubWithFonts(book, kCharisRegularAndBoldCss, "CharisSIL-Regular.ttf");
 
             var exception = Assert.Throws<ApplicationException>(() =>
-                RabProjectService.CopyEmbeddedFontFiles(
+                RabProjectService.CopyFilesFromBloomPubs(
                     new[] { new RabBookPublishInfo { BloomPubPath = book } },
-                    Path.Combine(tempFolder.Path, "fonts")
+                    Path.Combine(tempFolder.Path, "fonts"),
+                    Path.Combine(tempFolder.Path, "images")
                 )
             );
 
             Assert.That(exception.Message, Does.Contain("CharisSIL-Bold.ttf"));
+        }
+
+        [Test]
+        public void CopyFilesFromBloomPubs_CopiesEachBooksThumbnailUnderItsOwnName()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            RabBookPublishInfo MakeBook(string bookId, string thumbnailFileName)
+            {
+                var bloomPubPath = Path.Combine(tempFolder.Path, bookId + ".bloompub");
+                using var archive = ZipFile.Open(bloomPubPath, ZipArchiveMode.Create);
+                if (thumbnailFileName != null)
+                {
+                    using var writer = new StreamWriter(
+                        archive.CreateEntry(thumbnailFileName).Open()
+                    );
+                    writer.Write("cover of " + bookId);
+                }
+                return new RabBookPublishInfo
+                {
+                    BookId = bookId,
+                    BloomPubPath = bloomPubPath,
+                    ThumbnailFileName = thumbnailFileName,
+                    EmbeddedFonts = new List<RabAppFontDefinition>(),
+                };
+            }
+            var books = new[]
+            {
+                MakeBook("png-book", "thumbnail.png"),
+                MakeBook("jpg-book", "thumbnail.jpg"),
+                MakeBook("no-cover-book", null),
+            };
+            var imagesFolder = Path.Combine(tempFolder.Path, "contents", "images");
+
+            RabProjectService.CopyFilesFromBloomPubs(
+                books,
+                Path.Combine(tempFolder.Path, "fonts"),
+                imagesFolder
+            );
+
+            Assert.That(
+                RobustFile.ReadAllText(Path.Combine(imagesFolder, "png-book-cover.png")),
+                Is.EqualTo("cover of png-book")
+            );
+            Assert.That(
+                RobustFile.ReadAllText(Path.Combine(imagesFolder, "jpg-book-cover.jpg")),
+                Is.EqualTo("cover of jpg-book")
+            );
+            Assert.That(
+                Directory.GetFiles(imagesFolder).Select(Path.GetFileName),
+                Is.EquivalentTo(new[] { "png-book-cover.png", "jpg-book-cover.jpg" }),
+                "a book without a thumbnail gets no picture, and RAB leaves its picture out"
+            );
         }
 
         [TestCase("My Collection", "my-collection", "org.sil.bloom.my.collection")]
@@ -2510,16 +2565,12 @@ namespace BloomTests.Publish.Rab
                     ?.Element("contents-item")
                     ?.Element("image-filename")
                     ?.Value,
-                Is.EqualTo("C01-B001-cover.jpg"),
+                Is.EqualTo("book-1-cover.jpg"),
                 "the contents menu should use the book's own copy of its (now .jpg) thumbnail"
             );
             Assert.That(
                 RobustFile.Exists(
-                    Path.Combine(
-                        Path.GetDirectoryName(contentsPath),
-                        "images",
-                        "C01-B001-cover.jpg"
-                    )
+                    Path.Combine(Path.GetDirectoryName(contentsPath), "images", "book-1-cover.jpg")
                 ),
                 Is.True
             );
@@ -2560,7 +2611,7 @@ namespace BloomTests.Publish.Rab
                 .ToList();
             Assert.That(
                 imageNames,
-                Is.EqualTo(new[] { "C01-B001-cover.png", "C01-B002-cover.png" }),
+                Is.EqualTo(new[] { "flower-cover.png", "tree-cover.png" }),
                 "RAB packages contents images by name, so books whose thumbnails share a name would all show one picture"
             );
             for (var index = 0; index < imageNames.Count; index++)

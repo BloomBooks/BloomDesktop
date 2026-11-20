@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Xml.Linq;
 using Newtonsoft.Json;
@@ -45,9 +44,6 @@ namespace Bloom.Publish.Rab
         public const string DefaultPrimaryColor = "#3F51B5";
         public const string DefaultColorScheme = "Indigo";
         public const string DefaultAboutFileName = "about.txt";
-
-        // The id of the one book collection Bloom puts in an app.
-        private const string kBookCollectionId = "C01";
         private static readonly (int Size, string RelativePath)[] kLauncherIconFiles =
         {
             (36, @"drawable-ldpi\ic_launcher.png"),
@@ -83,8 +79,10 @@ namespace Bloom.Publish.Rab
 
         private string ContentsFilePath => Path.Combine(ContentsFolderPath, "contents.xml");
 
-        // Where RAB looks for the pictures that contents.xml names.
-        private string ContentsImagesFolderPath => Path.Combine(ContentsFolderPath, "images");
+        /// <summary>
+        /// Where RAB looks for the pictures that contents.xml names.
+        /// </summary>
+        internal string ContentsImagesFolderPath => Path.Combine(ContentsFolderPath, "images");
 
         private string BooksRootPath => Path.Combine(ProjectDataFolderPath, "books");
 
@@ -347,8 +345,7 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Rebuilds the .appDef and contents.xml book entries using the supplied imported book ids,
-        /// copying each book's picture for the contents menu into the project.
+        /// Rebuilds the .appDef and contents.xml book entries using the supplied imported book ids.
         /// </summary>
         public void SetBookEntries(
             IEnumerable<(string BookElementId, RabBookPublishInfo Book)> books
@@ -363,12 +360,12 @@ namespace Bloom.Publish.Rab
             var booksElement = root.Element("books");
             if (booksElement == null)
             {
-                booksElement = new XElement("books", new XAttribute("id", kBookCollectionId));
+                booksElement = new XElement("books", new XAttribute("id", "C01"));
                 root.Add(booksElement);
             }
 
             if (booksElement.Attribute("id") == null)
-                booksElement.SetAttributeValue("id", kBookCollectionId);
+                booksElement.SetAttributeValue("id", "C01");
 
             if (booksElement.Element("book-collection-name") == null)
                 booksElement.AddFirst(new XElement("book-collection-name", "Main Collection"));
@@ -421,8 +418,7 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Rebuilds contents.xml entries for the tracked books without changing the .appDef book ids,
-        /// copying each book's picture for the contents menu into the project.
+        /// Rebuilds contents.xml entries for the tracked books without changing the .appDef book ids.
         /// </summary>
         public void SetTrackedContentsEntries(IEnumerable<RabBookPublishInfo> books)
         {
@@ -916,7 +912,7 @@ namespace Bloom.Publish.Rab
             var booksElement = root.Element("books");
             if (booksElement == null)
             {
-                booksElement = new XElement("books", new XAttribute("id", kBookCollectionId));
+                booksElement = new XElement("books", new XAttribute("id", "C01"));
                 root.Add(booksElement);
             }
 
@@ -974,13 +970,12 @@ namespace Bloom.Publish.Rab
             for (var index = 0; index < bookEntries.Count; index++)
             {
                 var (bookElementId, book) = bookEntries[index];
-                var imageFileName = CopyContentsImage(bookElementId, book);
                 contentsItemsElement.Add(
                     new XElement(
                         "contents-item",
                         new XAttribute("id", (index + 1).ToString()),
                         new XElement("title", new XAttribute("lang", "default"), book.Title),
-                        new XElement("image-filename", imageFileName),
+                        new XElement("image-filename", GetContentsImageFileName(book)),
                         new XElement(
                             "link",
                             new XAttribute("type", "reference"),
@@ -1072,7 +1067,10 @@ namespace Bloom.Publish.Rab
             return safeName + ".apk";
         }
 
-        private static string GetThumbnailFileName(RabBookPublishInfo book)
+        /// <summary>
+        /// The name of the book's thumbnail inside its BloomPUB.
+        /// </summary>
+        internal static string GetThumbnailFileName(RabBookPublishInfo book)
         {
             return !string.IsNullOrWhiteSpace(book?.ThumbnailFileName)
                 ? book.ThumbnailFileName
@@ -1080,32 +1078,14 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Copies the book's thumbnail out of its BloomPUB into the folder where RAB looks for
-        /// contents images, under a name unique to the book, and returns that name. Every
-        /// BloomPUB's thumbnail has the same name, and RAB packages contents images by name, so
-        /// without this every book in the contents menu shows the same picture. Returns the
-        /// thumbnail's own name when the BloomPUB isn't there to copy from.
+        /// The name, unique to the book, under which its thumbnail goes into ContentsImagesFolderPath
+        /// for the contents menu (RabProjectService.CopyFilesFromBloomPubs copies it there). Every
+        /// BloomPUB's thumbnail has the same name, and RAB packages contents pictures by name, so a
+        /// shared name would give every book in the menu the same picture.
         /// </summary>
-        private string CopyContentsImage(string bookElementId, RabBookPublishInfo book)
+        internal static string GetContentsImageFileName(RabBookPublishInfo book)
         {
-            var thumbnailFileName = GetThumbnailFileName(book);
-            if (
-                string.IsNullOrWhiteSpace(book.BloomPubPath)
-                || !RobustFile.Exists(book.BloomPubPath)
-            )
-                return thumbnailFileName;
-
-            using var archive = ZipFile.OpenRead(book.BloomPubPath);
-            var entry = archive.GetEntry(thumbnailFileName);
-            if (entry == null)
-                return thumbnailFileName;
-
-            // The same name RAB gives a cover when it builds the contents menu itself.
-            var imageFileName =
-                $"{kBookCollectionId}-{bookElementId}-cover{Path.GetExtension(thumbnailFileName)}";
-            Directory.CreateDirectory(ContentsImagesFolderPath);
-            entry.ExtractToFile(Path.Combine(ContentsImagesFolderPath, imageFileName), true);
-            return imageFileName;
+            return book.BookId + "-cover" + Path.GetExtension(GetThumbnailFileName(book));
         }
     }
 }
