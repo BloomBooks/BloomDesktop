@@ -104,6 +104,12 @@ namespace Bloom.Api
         }
 
         /// <summary>
+        /// The address of the document that made this request, as the browser reports it, or null
+        /// if it did not say.
+        /// </summary>
+        public string Referer => _requestInfo.Referer;
+
+        /// <summary>
         /// This is safe to use with axios.Post. See BL-4901. There, not returning any text at all
         /// caused some kind of problem in axios.post(), after the screen had been shut down.
         /// </summary>

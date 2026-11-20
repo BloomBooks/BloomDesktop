@@ -3,6 +3,18 @@
 // Bloom license.
 let cleanupTimeout: any = 0;
 
+// Everything a descent measurement (MeasureText.getDescentMeasurements) depends on.
+export interface DescentMeasurementInputs {
+    text: string;
+    // Without the quotes that a computed style puts around a family name with spaces in it.
+    fontFamily: string;
+    // In pixels.
+    fontSize: number;
+    width: number;
+    // null leaves the line height at the font's default.
+    lineHeight: string | null;
+}
+
 export class MeasureText {
     // Returns an object with three measurements:
     // actualDescent: distance in pixels between the baseline and
@@ -16,13 +28,8 @@ export class MeasureText {
     // layoutDescent: the distance from the baseline of the text to the bottom
     // of an auto-sized box containing it at the specified line height.
     // (this may actually be LESS than the height needed to really draw the descenders!)
-    public static getDescentMeasurements(
-        text: string,
-        fontFamily: string,
-        fontSize: number,
-        width: number,
-        lineHeight: string | null,
-    ) {
+    public static getDescentMeasurements(inputs: DescentMeasurementInputs) {
+        const { text, fontFamily, fontSize, width, lineHeight } = inputs;
         const t0 = performance.now();
         // Get the descent that the browser uses for various purposes,
         // including painting the background of spans, and determining the
@@ -163,25 +170,30 @@ export class MeasureText {
         };
     }
 
-    // Same results as getDescentMeasurements(), but gets all the arguments
+    // Same results as getDescentMeasurements(), but gets its inputs
     // from a given element.
     public static getDescentMeasurementsOfBox(box: HTMLElement) {
-        const text = box.textContent ? box.textContent : "";
-        const realStyle = window.getComputedStyle(box, null);
-        // The FontFamily we get here includes quotes if there are spaces,
-        // but we don't want them for the getDescentMeasurements routine.
-        const fontFamily = realStyle
-            .getPropertyValue("font-family")
-            .replace(/"/g, "");
-        const fontSize = realStyle.getPropertyValue("font-size");
-        const lineHeight = realStyle.lineHeight;
         return this.getDescentMeasurements(
-            text,
-            fontFamily,
-            parseInt(fontSize),
-            box.clientWidth,
-            lineHeight,
+            this.getDescentMeasurementInputsOfBox(box),
         );
+    }
+
+    // What getDescentMeasurementsOfBox passes to getDescentMeasurements for `box`.
+    public static getDescentMeasurementInputsOfBox(
+        box: HTMLElement,
+    ): DescentMeasurementInputs {
+        const realStyle = window.getComputedStyle(box, null);
+        return {
+            text: box.textContent ? box.textContent : "",
+            // The FontFamily we get here includes quotes if there are spaces,
+            // but we don't want them for the getDescentMeasurements routine.
+            fontFamily: realStyle
+                .getPropertyValue("font-family")
+                .replace(/"/g, ""),
+            fontSize: parseInt(realStyle.getPropertyValue("font-size")),
+            width: box.clientWidth,
+            lineHeight: realStyle.lineHeight,
+        };
     }
 
     private static createCanvas(
