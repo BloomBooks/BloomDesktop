@@ -592,5 +592,14 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
             all.filter((box) => box.classList.contains("overflow")),
             "No box on a page of 31 should be marked.",
         ).toEqual([]);
+
+        // Back under the limit (a row deleted), a check of one box, as a table's check asks,
+        // marks the whole page again: nothing else would restore the marks just cleared.
+        thirtyFirst.remove();
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll([boxes[0]]);
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")).length,
+            "Every box on the page, not only the one checked, should be marked again.",
+        ).toBe(30);
     });
 });

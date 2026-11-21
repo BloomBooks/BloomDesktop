@@ -49,6 +49,10 @@ function getElementsThatCanOverflowOrNeedToBeResized(
 // BL-1260: a page with more boxes than this is not checked for overflow at all, and shows no marks.
 const kMaxBoxesToCheck = 30;
 
+// The pages AdjustSizeOrMarkOverflowOfAll cleared because they had grown past kMaxBoxesToCheck, so
+// that, once one is back under the limit, all of its boxes are checked again.
+const pagesClearedForTheLimit = new WeakSet<Element>();
+
 // Remove every overflow mark from `container` and everything in it, and redraw the indicators to
 // match: what a page over kMaxBoxesToCheck shows, since it is not checked.
 function clearOverflowMarks(container: HTMLElement): void {
@@ -611,14 +615,22 @@ export default class OverflowChecker {
         // its tables would put marks back that nothing, not even typing, would clear. A page can
         // also grow past the limit while it is open (a row added to a table), so its marks are
         // cleared here too, or the ones from before would stay however the text changes.
+        const page = marginBox?.closest<HTMLElement>(".bloom-page");
         if (pageElements.length > kMaxBoxesToCheck) {
-            clearOverflowMarks(marginBox!.closest<HTMLElement>(".bloom-page")!);
+            clearOverflowMarks(page!);
+            pagesClearedForTheLimit.add(page!);
             return;
         }
+        // A page back under the limit (a row deleted) has had every mark cleared, so all its
+        // boxes are checked this once, not only the ones asked for.
+        const toCheck =
+            page && pagesClearedForTheLimit.delete(page)
+                ? Array.from(new Set([...editables, ...pageElements]))
+                : editables;
         // AdjustSizeAndMarkSelfOverflow changes the padding of a bloom-padForOverflow box
         // before it measures it, so a height measured beforehand would be out of date.
         const measurable = Array.from(
-            new Set([...editables, ...pageElements]),
+            new Set([...toCheck, ...pageElements]),
         ).filter(
             (element) => !element.classList.contains("bloom-padForOverflow"),
         );
@@ -630,16 +642,16 @@ export default class OverflowChecker {
         OverflowChecker.batch = batch;
         try {
             // The rest of the page is read by CheckPageAncestorOverflow, before it marks anything.
-            editables.forEach((editable) =>
+            toCheck.forEach((editable) =>
                 batch.selfOverflowAmounts.set(
                     editable,
                     OverflowChecker.getSelfOverflowAmounts(editable),
                 ),
             );
-            editables.forEach((editable) =>
+            toCheck.forEach((editable) =>
                 OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable),
             );
-            OverflowChecker.CheckPageAncestorOverflow(editables[0]);
+            OverflowChecker.CheckPageAncestorOverflow(toCheck[0]);
         } finally {
             OverflowChecker.batch = undefined;
         }
