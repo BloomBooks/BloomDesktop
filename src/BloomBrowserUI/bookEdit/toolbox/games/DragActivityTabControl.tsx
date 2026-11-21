@@ -9,7 +9,8 @@ import {
 import { getToolboxBundleExports } from "../../js/workspaceFrames";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { default as PencilIcon } from "@mui/icons-material/Edit";
-import { showGamePromptDialog } from "../games/GameTool";
+import { playTabIndex, showGamePromptDialog } from "../games/GameTool";
+import { areImageDescriptionsShowing } from "../imageDescription/imageDescriptionUtils";
 import BloomButton from "../../../react_components/bloomButton";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 
@@ -96,6 +97,14 @@ export const DragActivityTabControl: React.FunctionComponent<{
                     value={props.activeTab}
                     onChange={changeHandler}
                     labels={[startLabel, correctLabel, wrongLabel, playLabel]}
+                    // Play is not available while image descriptions are showing (see
+                    // the note above GameTool's isGamePageInPlay). This renders in the page
+                    // iframe, so document.body is the page's body.
+                    disabledTabs={
+                        areImageDescriptionsShowing(document.body)
+                            ? [playTabIndex]
+                            : []
+                    }
                 />
             </div>
         </ThemeProvider>
@@ -130,6 +139,8 @@ export const Tabs: React.FunctionComponent<{
     value: number;
     onChange: (newValue: number) => void;
     labels: string[];
+    // indexes of tabs shown but not available to choose
+    disabledTabs?: number[];
     className?: string;
 }> = (props) => {
     const changeHandler = (index: number) => {
@@ -161,7 +172,7 @@ export const Tabs: React.FunctionComponent<{
                                 margin-left: 4px;
                             `,
                         ]}
-                        enabled={true}
+                        enabled={!props.disabledTabs?.includes(index)}
                         l10nKey=""
                         alreadyLocalized={true}
                     >

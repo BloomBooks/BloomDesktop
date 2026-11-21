@@ -1549,10 +1549,12 @@ export function SetupResizableElement(element) {
             containment: "parent",
             alsoResize: bloomCanvas,
             start(e, ui) {
-                canvasElementManager?.suspendComicEditing("forJqueryResize");
+                canvasElementManager?.suspendCanvasElementEditing(
+                    "forJqueryResize",
+                );
             },
             stop(e, ui) {
-                canvasElementManager?.resumeComicEditing();
+                canvasElementManager?.resumeCanvasElementEditing();
             },
         });
     }
