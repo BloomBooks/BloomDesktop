@@ -313,6 +313,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         className={kConfigrPaneClassName}
                         label=""
                         searchBoxContainer={searchBoxContainer}
+                        searchBoxSize="small"
                         initialValues={
                             loadedSettings.values as unknown as ConfigrValues
                         }

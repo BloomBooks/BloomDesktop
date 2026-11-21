@@ -460,6 +460,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                         showAppBar={false}
                         showJson={false}
                         searchBoxContainer={searchBoxContainer}
+                        searchBoxSize="small"
                         onChange={(s) => {
                             const parsedPageSettings =
                                 parsePageSettingsFromConfigrValue(s);

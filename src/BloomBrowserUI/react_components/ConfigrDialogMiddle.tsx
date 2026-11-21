@@ -31,6 +31,8 @@ export const kConfigrThemeOverrides = {
     // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
     palette: {
         primary: { main: kBloomBlue },
+        // Behind each search match.
+        searchMatch: "#feeb5a",
     },
     typography: {
         h2: { fontSize: "20px", fontWeight: 600, color: kConfigrTextColor },
@@ -74,14 +76,6 @@ export const kConfigrThemeOverrides = {
     },
 };
 
-// Config-R wraps each search match in a <mark> with this class. ConfigrDialogMiddle applies this
-// rule; a settings dialog that has a plain DialogMiddle puts it in that DialogMiddle's css.
-export const kConfigrSearchMatchCss = css`
-    mark.configr-search-match {
-        background-color: #feeb5a;
-    }
-`;
-
 /**
  * A line under a Config-R setting, showing the subscription badge for the feature that setting
  * needs. It ends at the same right edge as the control above it. Put it and the setting in one
@@ -115,7 +109,8 @@ export const ConfigrSubscriptionBadge: React.FunctionComponent<{
 
 /**
  * Puts Config-R's search box in a settings dialog's title bar. Put `searchBox` in the
- * DialogTitle's children and pass `searchBoxContainer` as the ConfigrPane's searchBoxContainer.
+ * DialogTitle's children and pass `searchBoxContainer` as the ConfigrPane's searchBoxContainer,
+ * with searchBoxSize="small".
  */
 export function useConfigrSearchBox(): {
     searchBox: React.ReactElement;
@@ -146,27 +141,6 @@ const ConfigrSearchBoxContainer: React.FunctionComponent<{
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            // Config-R's search box, made small enough for the title bar. The
-            // title bar makes everything in it 16px bold, so the font is stated
-            // outright. Config-R's own rules use two classes; these use three.
-            .configr-search-box .configr-search-icon {
-                padding: 0 6px;
-                svg {
-                    font-size: 20px;
-                }
-            }
-            .configr-search-box .configr-search-input {
-                width: 13ch;
-                font-size: 13px;
-                font-weight: normal;
-                padding: 3px 24px 3px 28px;
-            }
-            .configr-search-box .configr-search-clear {
-                padding: 0 2px;
-                button {
-                    padding: 2px;
-                }
-            }
         `}
     />
 );
@@ -206,13 +180,6 @@ export const ConfigrDialogMiddle: React.FunctionComponent<{
             }
 
             a {
-                color: ${kBloomBlue};
-            }
-
-            ${kConfigrSearchMatchCss}
-
-            // The arrow of the button that goes back from a sub-page.
-            .configr-subpage-back .configr-subpage-back-icon {
                 color: ${kBloomBlue};
             }
 

@@ -21,10 +21,7 @@ import {
     DialogOkButton,
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../react_components/l10nHooks";
-import {
-    kConfigrSearchMatchCss,
-    kConfigrThemeOverrides,
-} from "../../react_components/ConfigrDialogMiddle";
+import { kConfigrThemeOverrides } from "../../react_components/ConfigrDialogMiddle";
 import BloomButton from "../../react_components/bloomButton";
 import { postDataWithConfigAsync } from "../../utils/bloomApi";
 import {
@@ -491,8 +488,6 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
                         a {
                             color: ${kBloomBlue};
                         }
-
-                        ${kConfigrSearchMatchCss}
                     `}
                 >
                     <ConfigrPane
