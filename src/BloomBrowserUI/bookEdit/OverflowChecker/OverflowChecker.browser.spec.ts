@@ -602,4 +602,27 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
             "Every box on the page, not only the one checked, should be marked again.",
         ).toBe(30);
     });
+
+    // A page that is over the limit when it loads is never checked; once a row is deleted and it is
+    // under the limit, nothing but this check would ever mark its text.
+    it("checks every box of a page that loaded over 30 boxes, once it is back under", () => {
+        const boxes = loadPageOfTooFullBoxes(31);
+        new OverflowChecker().AddOverflowHandlers(
+            document.querySelector<HTMLElement>("#fixtureRoot .bloom-page")!,
+        );
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")),
+            "A page of 31 should not have been checked when it loaded, or this tests nothing.",
+        ).toEqual([]);
+
+        boxes[30].parentElement!.remove();
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll([boxes[0]]);
+
+        expect(
+            boxes
+                .slice(0, 30)
+                .filter((box) => box.classList.contains("overflow")).length,
+            "Every box on the page, not only the one checked, should be marked.",
+        ).toBe(30);
+    });
 });

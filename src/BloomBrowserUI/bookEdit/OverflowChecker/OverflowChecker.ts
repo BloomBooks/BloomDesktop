@@ -49,13 +49,15 @@ function getElementsThatCanOverflowOrNeedToBeResized(
 // BL-1260: a page with more boxes than this is not checked for overflow at all, and shows no marks.
 const kMaxBoxesToCheck = 30;
 
-// The pages AdjustSizeOrMarkOverflowOfAll cleared because they had grown past kMaxBoxesToCheck, so
-// that, once one is back under the limit, all of its boxes are checked again.
+// The pages cleared because they had more than kMaxBoxesToCheck boxes, when they loaded or since,
+// so that, once one is back under the limit, all of its boxes are checked again.
 const pagesClearedForTheLimit = new WeakSet<Element>();
 
 // Remove every overflow mark from `container` and everything in it, and redraw the indicators to
-// match: what a page over kMaxBoxesToCheck shows, since it is not checked.
+// match: what a page over kMaxBoxesToCheck shows, since it is not checked. Remembers the page in
+// pagesClearedForTheLimit.
 function clearOverflowMarks(container: HTMLElement): void {
+    pagesClearedForTheLimit.add(container.closest(".bloom-page") ?? container);
     [
         "overflow",
         "thisOverflowingParent",
@@ -618,7 +620,6 @@ export default class OverflowChecker {
         const page = marginBox?.closest<HTMLElement>(".bloom-page");
         if (pageElements.length > kMaxBoxesToCheck) {
             clearOverflowMarks(page!);
-            pagesClearedForTheLimit.add(page!);
             return;
         }
         // A page back under the limit (a row deleted) has had every mark cleared, so all its
