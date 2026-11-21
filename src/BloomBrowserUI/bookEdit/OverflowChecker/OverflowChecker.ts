@@ -113,6 +113,15 @@ export default class OverflowChecker {
             // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
             //        At first I was concerned that this might slow typing, but it doesn't seem to.
             setTimeout(() => {
+                // The page may have grown past the limit since it loaded (a row added to a
+                // table): then it is no longer checked, here or anywhere else.
+                if (
+                    getElementsThatCanOverflowOrNeedToBeResized(container)
+                        .length > kMaxBoxesToCheck
+                ) {
+                    clearOverflowMarks(container);
+                    return;
+                }
                 if (e.type === "paste") {
                     // If we're pasting, show as much of the text as possible even it can't all be shown.
                     // See BL-14632.

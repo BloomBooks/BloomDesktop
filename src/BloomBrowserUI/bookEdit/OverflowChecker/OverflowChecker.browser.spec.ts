@@ -1,4 +1,5 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
+import $ from "jquery";
 import OverflowChecker from "./OverflowChecker";
 import {
     initializeCanvasElementManager,
@@ -601,6 +602,50 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
             boxes.filter((box) => box.classList.contains("overflow")).length,
             "Every box on the page, not only the one checked, should be marked again.",
         ).toBe(30);
+    });
+
+    // Typing in a box of a page that has grown past the limit since it loaded (a row added to a
+    // table) must not mark it: the page is no longer checked anywhere else either.
+    it("marks nothing when typing on a page that grew past 30 boxes after it loaded", () => {
+        const boxes = loadPageOfTooFullBoxes(30);
+        // The typing check repositions the language tips, which the qtip plugin does; it is not
+        // loaded here.
+        const jqueryPlugins = $.fn as unknown as { qtip?: () => void };
+        const qtipWas = jqueryPlugins.qtip;
+        jqueryPlugins.qtip = () => {};
+        try {
+            new OverflowChecker().AddOverflowHandlers(
+                document.getElementById("fixtureRoot")!,
+            );
+            // Typing checks a box a tenth of a second after the key comes up; the page's own
+            // first check waits a second, which this test never reaches.
+            const typeIn = (box: HTMLElement) => {
+                box.dispatchEvent(
+                    new KeyboardEvent("keyup", { bubbles: true }),
+                );
+                vi.advanceTimersByTime(150);
+            };
+            typeIn(boxes[0]);
+            expect(
+                boxes[0].classList.contains("overflow"),
+                "Typing on a page of 30 should mark the box, or this tests nothing.",
+            ).toBe(true);
+
+            const group = boxes[0].parentElement!;
+            group.after(group.cloneNode(true));
+            typeIn(boxes[1]);
+
+            expect(
+                Array.from(
+                    document.querySelectorAll<HTMLElement>(
+                        "#fixtureRoot .bloom-editable",
+                    ),
+                ).filter((box) => box.classList.contains("overflow")),
+                "Typing on a page grown to 31 should mark nothing, and clear what was marked.",
+            ).toEqual([]);
+        } finally {
+            jqueryPlugins.qtip = qtipWas;
+        }
     });
 
     // A page that is over the limit when it loads is never checked; once a row is deleted and it is
