@@ -17,6 +17,7 @@ import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import { IFormatDimensionsResponseEntry } from "./IFormatDimensionsResponseEntry";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { kBloomDisabledOpacity } from "../../utils/colorUtils";
+import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 // The things that define each item in the Format menu
 interface IFormatItem {
@@ -437,7 +438,10 @@ const SecondsSlider: React.FunctionComponent<{
                     margin-bottom: 2px;
                 `}
                 l10nKey="Common.Seconds"
-                l10nParam0={props.value.toString()}
+                // e.g. 1,5 where the UI language uses a decimal comma
+                l10nParam0={props.value.toLocaleString(
+                    theOneLocalizationManager.getCurrentUILocale(),
+                )}
                 l10nComment="%0 is a number of seconds"
             >
                 %0 seconds
