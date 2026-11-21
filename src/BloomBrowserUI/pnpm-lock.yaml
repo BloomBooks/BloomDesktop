@@ -71,8 +71,8 @@ importers:
         specifier: 0.80.0
         version: 0.80.0(@nivo/core@0.80.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sillsdev/config-r':
-        specifier: 1.0.0-alpha.38
-        version: 1.0.0-alpha.38(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tiny-warning@1.0.3)
+        specifier: 1.0.0-alpha.40
+        version: 1.0.0-alpha.40(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tiny-warning@1.0.3)
       '@types/filesize':
         specifier: 5.0.0
         version: 5.0.0
@@ -2059,8 +2059,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@sillsdev/config-r@1.0.0-alpha.38':
-    resolution: {integrity: sha512-l4S0TpzWUufOqTVWulbcHh7maNJilBG6c/4Rlyp+6G02yF7OLIv8DPEWSeRV1QEF8Ofshxu2BAU3ST3Rz3Vu/w==}
+  '@sillsdev/config-r@1.0.0-alpha.40':
+    resolution: {integrity: sha512-5I/Bzgez7j3solhTxJiXpYMO+L0EvMtQgOiF82vAUD/27AiF3Z01alp7AI6+w0vIuYoc21tjV471v69DmjOGoQ==}
     peerDependencies:
       '@emotion/react': '>= 11.8.2 < 12'
       '@emotion/styled': '>= 11.8.1 < 12'
@@ -8587,7 +8587,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.62.2':
     optional: true
 
-  '@sillsdev/config-r@1.0.0-alpha.38(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tiny-warning@1.0.3)':
+  '@sillsdev/config-r@1.0.0-alpha.40(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tiny-warning@1.0.3)':
     dependencies:
       '@emotion/react': 11.14.0(@types/react@18.3.31)(react@18.3.1)
       '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)

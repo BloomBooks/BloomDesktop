@@ -9,6 +9,7 @@ import { expect, test } from "../fixtures/bloomTest";
 import {
     cancelCollectionSettings,
     clearCollectionSettingsSearch,
+    clickCollectionSettingsSubscriptionBadge,
     closeCollectionSettingsLanguageMore,
     getCollectionSettingsCheckbox,
     getCollectionSettingsSearchResults,
@@ -241,4 +242,23 @@ test("a setting changed in the search results keeps the change and saves it", as
     expect(
         await getCollectionSettingsCheckbox(page, "Automatically Update Bloom"),
     ).toEqual({ checked: false, enabled: true });
+});
+
+test("a subscription badge clicked in the search results ends the search and shows the Subscription page", async ({
+    page,
+}) => {
+    await searchCollectionSettings(page, "Bookshelf");
+    expect((await getCollectionSettingsSearchResults(page)).settings).toContain(
+        "Bookshelf",
+    );
+
+    await clickCollectionSettingsSubscriptionBadge(page);
+
+    // While a search is on, no page is selected, so a selected Subscription page means it ended.
+    await expect
+        .poll(() => getShowingCollectionSettingsPage(page), {
+            message:
+                "the badge should have ended the search and shown the Subscription page",
+        })
+        .toBe("Subscription");
 });
