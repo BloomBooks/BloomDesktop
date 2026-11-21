@@ -55,9 +55,13 @@ const pagesClearedForTheLimit = new WeakSet<Element>();
 
 // Remove every overflow mark from `container` and everything in it, and redraw the indicators to
 // match: what a page over kMaxBoxesToCheck shows, since it is not checked. Remembers the page in
-// pagesClearedForTheLimit.
+// pagesClearedForTheLimit: the page that holds `container`, or the pages it holds, since page
+// setup passes the whole body.
 function clearOverflowMarks(container: HTMLElement): void {
-    pagesClearedForTheLimit.add(container.closest(".bloom-page") ?? container);
+    const holder = container.closest(".bloom-page");
+    (holder ? [holder] : container.querySelectorAll(".bloom-page")).forEach(
+        (page) => pagesClearedForTheLimit.add(page),
+    );
     [
         "overflow",
         "thisOverflowingParent",

@@ -607,8 +607,9 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
     // under the limit, nothing but this check would ever mark its text.
     it("checks every box of a page that loaded over 30 boxes, once it is back under", () => {
         const boxes = loadPageOfTooFullBoxes(31);
+        // What page setup passes is the body that holds the page, not the page itself.
         new OverflowChecker().AddOverflowHandlers(
-            document.querySelector<HTMLElement>("#fixtureRoot .bloom-page")!,
+            document.getElementById("fixtureRoot")!,
         );
         expect(
             boxes.filter((box) => box.classList.contains("overflow")),
