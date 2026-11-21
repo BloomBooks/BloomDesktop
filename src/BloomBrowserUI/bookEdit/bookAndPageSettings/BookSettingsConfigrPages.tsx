@@ -17,14 +17,18 @@ import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { Div, P } from "../../react_components/l10nComponents";
 import { useL10n } from "../../react_components/l10nHooks";
 import { PWithLink } from "../../react_components/pWithLink";
-import { BloomSubscriptionIndicatorIconAndText } from "../../react_components/requiresSubscription";
+import { ConfigrSubscriptionBadge } from "../../react_components/ConfigrDialogMiddle";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import {
     ColorDisplayButton,
     DialogResult,
 } from "../../react_components/color-picking/colorPickerDialog";
 import { isLegacyThemeName } from "./appearanceThemeUtils";
-import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
+import {
+    FieldVisibilityGroup,
+    IFieldVisibilityLabels,
+    useFieldVisibilityLabels,
+} from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
 import { splitAtLinkText } from "../../utils/textUtils";
 
@@ -66,6 +70,13 @@ type BookSettingsAreaProps = {
     unusedLanguageDataExists?: boolean;
 };
 
+// The labels of a FieldVisibilityGroup's checkboxes, as Config-R's searchTerms for the group.
+function fieldVisibilitySearchTerms(labels: IFieldVisibilityLabels): string {
+    // A collection with two languages has no third label to find.
+    const third = labels.languageNames.language3Name ? labels.L3 : "";
+    return [labels.L1, labels.L2, third].join(" ");
+}
+
 export type IConfigrAreaDefinition = {
     label: string;
     pageKey: string;
@@ -84,6 +95,14 @@ export const useBookSettingsAreaDefinition = (
     );
 
     const coverLabel = useL10n("Cover", "BookSettings.CoverGroupLabel");
+    const coverTitleLabels = useFieldVisibilityLabels(
+        "Show Title in {0}",
+        "BookSettings.ShowWrittenLanguageTitle",
+    );
+    const textBoxLanguageLabels = useFieldVisibilityLabels(
+        "Show {0}",
+        "BookSettings.ShowContentLanguage",
+    );
     const themeAndLayoutLabel = useL10n(
         "Theme & Layout",
         "BookSettings.ThemeAndLayoutGroupLabel",
@@ -452,8 +471,10 @@ export const useBookSettingsAreaDefinition = (
                 <ConfigrGroup label={whatToShowOnCoverLabel}>
                     <FieldVisibilityGroup
                         field="cover-title"
-                        labelFrame="Show Title in {0}"
-                        labelFrameL10nKey="BookSettings.ShowWrittenLanguageTitle"
+                        labels={coverTitleLabels}
+                        searchTerms={fieldVisibilitySearchTerms(
+                            coverTitleLabels,
+                        )}
                         settings={props.settings}
                         settingsToReturnLater={props.settingsToReturnLater}
                         disabled={props.appearanceDisabled}
@@ -502,8 +523,10 @@ export const useBookSettingsAreaDefinition = (
                 <ConfigrGroup label={normalTextBoxLanguagesLabel}>
                     <FieldVisibilityGroup
                         field="autoTextBox"
-                        labelFrame="Show {0}"
-                        labelFrameL10nKey="BookSettings.ShowContentLanguage"
+                        labels={textBoxLanguageLabels}
+                        searchTerms={fieldVisibilitySearchTerms(
+                            textBoxLanguageLabels,
+                        )}
                         settings={props.settings}
                         settingsToReturnLater={props.settingsToReturnLater}
                         disabled={false}
@@ -527,21 +550,10 @@ export const useBookSettingsAreaDefinition = (
                                 !props.pageSizeSupportsFullBleed
                             }
                         />
-                        <div
-                            css={css`
-                                display: flex;
-                                padding-bottom: 5px;
-                                font-size: 12px;
-                                font-weight: bold;
-                            `}
-                        >
-                            <BloomSubscriptionIndicatorIconAndText
-                                feature="PrintshopReady"
-                                css={css`
-                                    margin-left: auto;
-                                `}
-                            />
-                        </div>
+                        <ConfigrSubscriptionBadge
+                            feature="PrintshopReady"
+                            alignWithCheckbox={true}
+                        />
                     </div>
                 </ConfigrGroup>
             </ConfigrPage>,

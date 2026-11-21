@@ -11,6 +11,7 @@ import {
     kConfigrDialogSizeCss,
     kConfigrPaneClassName,
     kConfigrThemeOverrides,
+    useConfigrSearchBox,
 } from "../../react_components/ConfigrDialogMiddle";
 import { useSetupBloomDialog } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import {
@@ -194,6 +195,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         undefined,
     );
     const dialogRef = React.useRef<HTMLDivElement>(null);
+    const { searchBox, searchBoxProps } = useConfigrSearchBox();
 
     const setDialogVisibleWhileColorPickerOpen = React.useCallback(
         (open: boolean) => {
@@ -446,7 +448,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             draggable={false}
             maxWidth={false}
         >
-            <DialogTitle title={bookSettingsTitle} />
+            <DialogTitle title={bookSettingsTitle}>{searchBox}</DialogTitle>
             <ConfigrDialogMiddle>
                 {configrInitialValues && (
                     <ConfigrPane
@@ -457,6 +459,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                         themeOverrides={kConfigrThemeOverrides}
                         showAppBar={false}
                         showJson={false}
+                        {...searchBoxProps}
                         onChange={(s) => {
                             const parsedPageSettings =
                                 parsePageSettingsFromConfigrValue(s);

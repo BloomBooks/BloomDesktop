@@ -246,9 +246,7 @@ export async function showCollectionSettingsPage(
 export async function getShowingCollectionSettingsPage(
     page: Page,
 ): Promise<string | undefined> {
-    const selected = collectionSettingsDialog(page).locator(
-        '[role="tab"][aria-selected="true"]',
-    );
+    const selected = selectedCollectionSettingsTab(page);
     if ((await selected.count()) !== 1) return undefined;
     return (await selected.innerText()).trim();
 }
@@ -901,9 +899,10 @@ function languageMoreRow(page: Page, heading: string): Locator {
 /** The heading a sub-page of the dialog shows above its settings, which takes the user back. */
 function subPageBackLink(page: Page): Locator {
     // A button named after the sub-page, like the row that opened it; the row, unlike this,
-    // holds its name in a heading.
+    // holds its name in a heading. The button's name starts with the group the sub-page belongs
+    // to, e.g. "Written Language 1 · English › More".
     return collectionSettingsDialog(page)
-        .getByRole("button", { name: "More", exact: true })
+        .getByRole("button", { name: /(^| › )More$/ })
         .filter({ hasNot: page.locator("h4") });
 }
 
@@ -971,4 +970,94 @@ export function readSavedLanguageSetting(
     return new RegExp(`<${elementName}>([^<]*)</${elementName}>`).exec(
         language,
     )?.[1];
+}
+
+/** The search box at the top of the Collection Settings dialog. */
+function collectionSettingsSearchBox(page: Page): Locator {
+    // Config-R labels its search box "search" for screen readers.
+    return collectionSettingsDialog(page).getByRole("textbox", {
+        name: "search",
+    });
+}
+
+/** The tab of the page the dialog is showing; while a search is on, there is none. */
+function selectedCollectionSettingsTab(page: Page): Locator {
+    return collectionSettingsDialog(page).locator(
+        '[role="tab"][aria-selected="true"]',
+    );
+}
+
+/**
+ * Type `text` into the search box of the open Collection Settings dialog, replacing what it held,
+ * as a person does looking for a setting. Returns once the dialog shows search results rather than
+ * one page: Config-R then has no page selected in the list on the left. Read what it found with
+ * getCollectionSettingsSearchResults.
+ */
+export async function searchCollectionSettings(
+    page: Page,
+    text: string,
+): Promise<void> {
+    const box = collectionSettingsSearchBox(page);
+    await expect(
+        box,
+        "the Collection Settings dialog has no search box",
+    ).toHaveCount(1);
+    await box.fill(text);
+    await expect(box).toHaveValue(text);
+    await expect(
+        selectedCollectionSettingsTab(page),
+        "a search should leave no page selected in the list on the left",
+    ).toHaveCount(0);
+}
+
+/**
+ * Clear the search of the open Collection Settings dialog by clicking the X in its search box, as a
+ * person does. Returns once the box is empty and the dialog shows one page again.
+ */
+export async function clearCollectionSettingsSearch(page: Page): Promise<void> {
+    await realClick(
+        collectionSettingsDialog(page).getByRole("button", {
+            name: "clear search",
+        }),
+    );
+    await expect(collectionSettingsSearchBox(page)).toHaveValue("");
+    await expect(
+        selectedCollectionSettingsTab(page),
+        "clearing the search should show one page again",
+    ).toHaveCount(1);
+}
+
+/** What the Collection Settings dialog shows below its search box. */
+export interface ICollectionSettingsSearchResults {
+    /** The titles of the pages shown, e.g. "Front & Back Matter", in order. */
+    pages: string[];
+    /** The headings of the groups shown, e.g. "Places", in order. */
+    groups: string[];
+    /** The labels of the settings shown, e.g. "Country", in order. */
+    settings: string[];
+    /** All the text the settings area shows, for text that is not a Config-R setting. */
+    text: string;
+}
+
+/**
+ * Read what the open Collection Settings dialog shows in its settings area: the page titles, group
+ * headings and setting labels, in the order they appear. After searchCollectionSettings this is the
+ * search's results. Config-R draws a page title as an h2, a group heading as an h3, and a setting's
+ * label as an h4.
+ */
+export async function getCollectionSettingsSearchResults(
+    page: Page,
+): Promise<ICollectionSettingsSearchResults> {
+    const area = collectionSettingsDialog(page).locator("form");
+    const texts = async (selector: string) =>
+        (await area.locator(selector).allInnerTexts())
+            .map((text) => text.trim())
+            .filter((text) => text !== "");
+    const [pages, groups, settings, text] = await Promise.all([
+        texts("h2"),
+        texts("h3"),
+        texts("h4"),
+        area.innerText(),
+    ]);
+    return { pages, groups, settings, text };
 }

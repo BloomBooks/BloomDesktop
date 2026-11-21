@@ -14,14 +14,63 @@ export interface ILanguageNameValues {
     language3Tag?: string;
 }
 
+/** The written languages' names, and the label of each language's checkbox in a FieldVisibilityGroup. */
+export interface IFieldVisibilityLabels {
+    languageNames: ILanguageNameValues;
+    L1: string;
+    L2: string;
+    L3: string;
+}
+
+/**
+ * The labels of the checkboxes a FieldVisibilityGroup shows, made from a frame such as
+ * "Show Title in {0}" and each written language's name. Its caller passes them to the group, and
+ * to Config-R as the group's searchTerms, since Config-R's search cannot see what the group renders.
+ */
+export function useFieldVisibilityLabels(
+    labelFrame: string,
+    labelFrameL10nKey: string,
+): IFieldVisibilityLabels {
+    // Enhance: we may decide to let the dialog retrieve these and pass them in, to reduce API calls,
+    // if we actually start having more than one field configured with this component.
+    const languageNames: ILanguageNameValues =
+        useApiObject<ILanguageNameValues>("settings/languageNames", {
+            language1Name: "",
+            language1Tag: "",
+            language2Name: "",
+            language2Tag: "",
+        });
+    const L1 = useL10n(
+        labelFrame,
+        labelFrameL10nKey,
+        "",
+        languageNames.language1Name,
+    );
+    const L2 = useL10n(
+        labelFrame,
+        labelFrameL10nKey,
+        "",
+        languageNames.language2Name,
+    );
+    const L3 = useL10n(
+        labelFrame,
+        labelFrameL10nKey,
+        undefined,
+        languageNames.language3Name,
+    );
+    return { languageNames, L1, L2, L3 };
+}
+
 // This is used in BookSettingsDialog to provide a group of Config-R booleans that control
 // which languages to show for a specified field.
 // It is currently used for the cover title languages.
 // It controls values for three Config-R booleans, called <field>-L1-show, <field>-L2-show, and <field>-L3-show.
 export const FieldVisibilityGroup: React.FunctionComponent<{
     field: string; // the field we're configuring, e.g. "cover-title", without the "-LN-show" suffix
-    labelFrame: string;
-    labelFrameL10nKey: string;
+    // From useFieldVisibilityLabels.
+    labels: IFieldVisibilityLabels;
+    // Read by Config-R's search, not here: the labels, so a search for one finds this group.
+    searchTerms: string;
     settings: object | undefined;
     settingsToReturnLater: object | undefined;
     disabled: boolean;
@@ -38,33 +87,7 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
         overrideDescription?: string;
     };
 }> = (props) => {
-    // Enhance: we may decide to let the dialog retrieve these and pass them in, to reduce API calls,
-    // if we actually start having more than one field configured with this component.
-    const languageNameValues: ILanguageNameValues =
-        useApiObject<ILanguageNameValues>("settings/languageNames", {
-            language1Name: "",
-            language1Tag: "",
-            language2Name: "",
-            language2Tag: "",
-        });
-    const showWrittenLanguage1TitleLabel = useL10n(
-        props.labelFrame,
-        props.labelFrameL10nKey,
-        "",
-        languageNameValues.language1Name,
-    );
-    const showWrittenLanguage2TitleLabel = useL10n(
-        props.labelFrame,
-        props.labelFrameL10nKey,
-        "",
-        languageNameValues.language2Name,
-    );
-    const showWrittenLanguage3TitleLabel = useL10n(
-        props.labelFrame,
-        props.labelFrameL10nKey,
-        undefined,
-        languageNameValues.language3Name,
-    );
+    const languageNameValues = props.labels.languageNames;
 
     const L1Field = `${props.field}-L1-show`;
     const L2Field = `${props.field}-L2-show`;
@@ -118,7 +141,7 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
     return (
         <div>
             <ConfigrBoolean
-                label={showWrittenLanguage1TitleLabel}
+                label={props.labels.L1}
                 disabled={props.disabled}
                 // 'locked' will leave the label readable while making the checkbox disabled
                 // 'locked' currently beats disabled, so it should not be locked if we want
@@ -133,7 +156,7 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
                 // Only makes sense to show a control for L2 if it is different from L1
                 showL2Control && (
                     <ConfigrBoolean
-                        label={showWrittenLanguage2TitleLabel}
+                        label={props.labels.L2}
                         disabled={props.disabled}
                         // The second expression should never be false if L1 must be turned on;
                         // but we need it when that is false, and it's harmless when L1 must be on
@@ -148,7 +171,7 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
                 // Only show this one if it exists and is different from the others
                 showL3Control && (
                     <ConfigrBoolean
-                        label={showWrittenLanguage3TitleLabel}
+                        label={props.labels.L3}
                         disabled={props.disabled}
                         locked={!props.disabled && numberShowing <= 1 && showL3}
                         {...props.getAdditionalProps(L3Field)}
