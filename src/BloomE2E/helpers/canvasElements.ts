@@ -1242,3 +1242,13 @@ function shownTextBoxOfActiveElement(page: Page): Locator {
         ".bloom-translationGroup > .bloom-editable.bloom-visibility-code-on",
     );
 }
+
+/**
+ * Whether Bloom marks the canvas of the page being edited as having something in it that runs past
+ * it (the `childOverflowingThis` class OverflowChecker.ts puts on the box overflowed).
+ */
+export async function isCanvasMarkedAsOverflowed(page: Page): Promise<boolean> {
+    return canvas(page).evaluate((element) =>
+        element.classList.contains("childOverflowingThis"),
+    );
+}

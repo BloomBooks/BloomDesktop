@@ -11,8 +11,16 @@
 
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
-import { setContentLanguages } from "../helpers/bookMaking";
+import {
+    setContentLanguages,
+    waitForPageToSettle,
+} from "../helpers/bookMaking";
+import {
+    getCanvasRect,
+    isCanvasMarkedAsOverflowed,
+} from "../helpers/canvasElements";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
+import { bottom } from "../helpers/geometry";
 import {
     openPublishDestination,
     showBloomPubPreview,
@@ -22,10 +30,13 @@ import {
     clickCell,
     clickTableMenuCommand,
     dragBoundary,
+    dragTableBy,
     endBoundaryDrag,
     expectOverflowMarksMatchWhatFits,
     expectTableSettlesUnmarked,
     getCellLanguages,
+    getCellOverflowMarks,
+    getCellTextBottom,
     getCellTextClipping,
     getCellTextCutOffIn,
     getTableShape,
@@ -39,7 +50,7 @@ import {
     waitForTableAttached,
 } from "../helpers/tables";
 import { undo } from "../helpers/undo";
-import { switchTab } from "../helpers/workspace";
+import { getZoom, setZoom, switchTab } from "../helpers/workspace";
 
 test.use({
     collectionSpec: {
@@ -71,8 +82,10 @@ async function makeBookWithTwoLanguageTable(
     page: Page,
     english: string,
 ): Promise<void> {
+    // The table has to be made while only English shows: a table made while two languages show
+    // gets cells that show only the first. Showing French afterwards gives every text cell a box
+    // for each of the book's content languages.
     await makeBookWithTableOnCanvasPage(page, ["en"]);
-    // Every text cell shows each of the book's content languages.
     await setContentLanguages(page, ["en", "fr"]);
     await waitForTableAttached(page);
     expect(await getCellLanguages(page, ROW, COLUMN)).toEqual(["en", "fr"]);
@@ -392,5 +405,129 @@ test.describe("overflow marks follow a table as it changes", () => {
         await step("Go back to the Collection tab", async () => {
             await switchTab(page, "collection");
         });
+    });
+});
+
+// Where a canvas element is decides whether its text runs past the picture it is on, so Bloom checks
+// the text again when the element is moved with the mouse, as soon as the button is let go.
+test.describe("moving a canvas element checks its text again", () => {
+    // The table's last row, whose text is taken past the bottom of the picture.
+    const LAST_ROW = 1;
+    // How far past the picture's bottom edge the last row's text is taken.
+    const PAST_THE_PICTURE_BY = 40;
+    // A zoom at which the whole of a Canvas page's picture fits the nightly window.
+    const ZOOM_TO_SEE_THE_WHOLE_PICTURE = 60;
+
+    test("a table moved back inside the picture loses the marks of the rows that ran past it", async ({
+        page,
+        step,
+    }) => {
+        // This test also pays for making a third book.
+        test.setTimeout(300000);
+        await step(
+            "Make a book with a table, showing two languages",
+            async () => {
+                await makeBookWithTwoLanguageTable(page, "English");
+                await typeInCell(page, LAST_ROW, COLUMN, "fr", "Français");
+            },
+        );
+        // At the nightly window size the bottom of the picture is below the window at 100%, and a
+        // drag cannot take the table past what the window shows. Zoomed out, the whole picture shows.
+        const zoomWas = (await getZoom(page)).zoom;
+        await step("Zoom out until the whole picture shows", async () => {
+            await setZoom(page, ZOOM_TO_SEE_THE_WHOLE_PICTURE);
+        });
+        try {
+            await moveTableBackInsideThePicture();
+        } finally {
+            await setZoom(page, zoomWas);
+        }
+
+        async function moveTableBackInsideThePicture(): Promise<void> {
+            await step(
+                "Move the table down until its last row's text runs past the bottom of the picture",
+                async () => {
+                    // Moving the table, not dragging the row: with two languages showing, a
+                    // cell's text boxes keep their own height, so a taller row does not take the
+                    // text any lower.
+                    const canvasBottom = bottom(await getCanvasRect(page));
+                    const textBottom = await getCellTextBottom(
+                        page,
+                        LAST_ROW,
+                        COLUMN,
+                    );
+                    await dragTableBy(
+                        page,
+                        0,
+                        0,
+                        canvasBottom - textBottom + PAST_THE_PICTURE_BY,
+                    );
+                    expect(
+                        await getCellTextBottom(page, LAST_ROW, COLUMN),
+                        "The last row's text should now reach past the picture, or this tests nothing.",
+                    ).toBeGreaterThan(bottom(await getCanvasRect(page)));
+                },
+            );
+            await step(
+                "Check the text past the picture is marked, and the picture too",
+                async () => {
+                    await waitForCellOverflowMarks(
+                        page,
+                        LAST_ROW,
+                        COLUMN,
+                        true,
+                    );
+                    expect(
+                        await getCellOverflowMarks(page, LAST_ROW, COLUMN),
+                    ).toContain("thisOverflowingParent");
+                    expect(await isCanvasMarkedAsOverflowed(page)).toBe(true);
+                    // Nothing else is going to clear them: only the move below should.
+                    await waitForPageToSettle(page);
+                    expect(
+                        await getCellOverflowMarks(page, LAST_ROW, COLUMN),
+                        "The marks should stay until the table is moved.",
+                    ).toContain("thisOverflowingParent");
+                },
+            );
+            await step(
+                "Move the table up until all of it is inside the picture",
+                async () => {
+                    const measured = await measureTable(page);
+                    const lowestCell = Math.max(
+                        ...measured.cells.map((c) => bottom(c.rect)),
+                    );
+                    const canvasRect = await getCanvasRect(page);
+                    const upBy =
+                        lowestCell - bottom(canvasRect) + PAST_THE_PICTURE_BY;
+                    expect(
+                        measured.rect.y - upBy,
+                        "There should be room above the table to move it up that far, or this tests nothing.",
+                    ).toBeGreaterThan(canvasRect.y);
+                    await dragTableBy(page, 0, 0, -upBy);
+                    const after = await measureTable(page);
+                    expect(
+                        Math.max(...after.cells.map((c) => bottom(c.rect))),
+                        "Every row should now be inside the picture.",
+                    ).toBeLessThan(bottom(await getCanvasRect(page)));
+                },
+            );
+            await step(
+                "Check the marks went when the mouse was let go",
+                async () => {
+                    await waitForCellOverflowMarks(
+                        page,
+                        LAST_ROW,
+                        COLUMN,
+                        false,
+                    );
+                    await expect
+                        .poll(() => isCanvasMarkedAsOverflowed(page), {
+                            message:
+                                "The picture should no longer be marked as overflowed.",
+                        })
+                        .toBe(false);
+                },
+            );
+        }
     });
 });

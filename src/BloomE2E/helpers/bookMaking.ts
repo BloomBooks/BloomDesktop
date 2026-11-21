@@ -789,6 +789,24 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
 }
 
 /**
+ * One language's box of one translation group on the page being shown. `groupSelector` picks the
+ * group, e.g. ".bookTitle" for the cover title; when the page has several groups that match,
+ * `groupIndex` says which one, in document order. Waits for nothing.
+ */
+export function groupTextBox(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    groupIndex = 0,
+): Locator {
+    return editablePageFrame(page)
+        .locator(groupSelector)
+        .nth(groupIndex)
+        .locator(`.bloom-editable[lang="${languageTag}"]`)
+        .first();
+}
+
+/**
  * Click in one language's box of one translation group on the page being shown, so that it has the
  * focus, the way a person starts editing it. `groupSelector` picks the group, e.g. ".bookTitle" for
  * the cover title; when the page has several groups that match, `groupIndex` says which one, in
@@ -802,11 +820,7 @@ export async function clickInGroup(
     languageTag: string,
     groupIndex = 0,
 ): Promise<Locator> {
-    const box = editablePageFrame(page)
-        .locator(groupSelector)
-        .nth(groupIndex)
-        .locator(`.bloom-editable[lang="${languageTag}"]`)
-        .first();
+    const box = groupTextBox(page, groupSelector, languageTag, groupIndex);
     await box.waitFor({ state: "visible", timeout: 30000 });
     await box.click();
     await expect(

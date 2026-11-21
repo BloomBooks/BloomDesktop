@@ -237,7 +237,16 @@ export async function getTableShape(
     page: Page,
     tableIndex = 0,
 ): Promise<ITableShape> {
-    const target = table(page, tableIndex);
+    return getTableShapeIn(editablePageFrame(page), tableIndex);
+}
+
+/** The shape of a table in any frame, read from the attributes the table itself carries. */
+async function getTableShapeIn(
+    frame: Frame,
+    tableIndex = 0,
+    tableSelector = ".bloom-table",
+): Promise<ITableShape> {
+    const target = frame.locator(tableSelector).nth(tableIndex);
     await target.waitFor({ state: "attached", timeout: kTableWaitMs });
     return target.evaluate((element) => {
         // An empty attribute means no columns yet, and "".split(",") would wrongly say one.
@@ -267,13 +276,30 @@ export async function cell(
     column: number,
     tableIndex = 0,
 ): Promise<Locator> {
-    const shape = await getTableShape(page, tableIndex);
+    return cellIn(editablePageFrame(page), row, column, tableIndex);
+}
+
+/**
+ * One cell of a table in any frame, as `cell` finds one on the page being edited. A cell covered by
+ * a merge (`bloom-skip`) keeps its place among the table's children, so the arithmetic holds for a
+ * table with merged cells too; such a cell is just not drawn.
+ */
+async function cellIn(
+    frame: Frame,
+    row: number,
+    column: number,
+    tableIndex = 0,
+    tableSelector = ".bloom-table",
+): Promise<Locator> {
+    const shape = await getTableShapeIn(frame, tableIndex, tableSelector);
     if (row >= shape.rows || column >= shape.columns || row < 0 || column < 0)
         throw new Error(
             `Table ${tableIndex} has ${shape.rows} rows and ${shape.columns} columns, so there is ` +
                 `no cell at row ${row}, column ${column}.`,
         );
-    return table(page, tableIndex)
+    return frame
+        .locator(tableSelector)
+        .nth(tableIndex)
         .locator("> .bloom-cell")
         .nth(row * shape.columns + column);
 }
@@ -330,21 +356,7 @@ export async function measureTableIn(
     tableSelector = ".bloom-table",
 ): Promise<ITableMeasurement> {
     const target = frame.locator(tableSelector).nth(tableIndex);
-    await target.waitFor({ state: "attached", timeout: kTableWaitMs });
-    const shape = await target.evaluate((element) => {
-        const list = (name: string) => {
-            const value = element.getAttribute(name) ?? "";
-            return value === "" ? [] : value.split(",");
-        };
-        const columnWidths = list("data-column-widths");
-        const rowHeights = list("data-row-heights");
-        return {
-            rows: rowHeights.length,
-            columns: columnWidths.length,
-            columnWidths,
-            rowHeights,
-        };
-    });
+    const shape = await getTableShapeIn(frame, tableIndex, tableSelector);
     const measured = await target.evaluate((element, columns: number) => {
         const asRect = (box: DOMRect) => ({
             x: box.x,
@@ -1866,6 +1878,71 @@ export async function expectTableSettlesUnmarked(
     ).toEqual([]);
 }
 
+/** One text box of a cell, as measureCellTextFit reports it. */
+interface ICellTextBox {
+    lang: string;
+    /** Whether the cell is showing this box (it carries `bloom-visibility-code-on`). */
+    shown: boolean;
+    /** Where the box is drawn, in its frame's own coordinates. */
+    rect: IRect;
+}
+
+/** A cell's text boxes and the edges they have to fit inside, measured in one round trip. */
+interface ICellTextFit {
+    /** The bottom of the cell's border box. */
+    cellBottom: number;
+    /** The bottom of the cell's content area: the border box less its bottom border and padding. */
+    contentBottom: number;
+    /** Whether the cell's style cuts off what reaches past its content area. */
+    cutsOff: boolean;
+    /** Whether Bloom has put one of its overflow marks on the cell or anything in it. */
+    marked: boolean;
+    /** The boxes of the cell's own text, in document order. */
+    boxes: ICellTextBox[];
+}
+
+/**
+ * Measure a cell's text boxes against the cell's own edges, in the cell's frame. The one place the
+ * cell's content bottom is worked out, for every helper that asks whether a cell's text fits it.
+ */
+async function measureCellTextFit(target: Locator): Promise<ICellTextFit> {
+    return target.evaluate((cellElement, marks) => {
+        const style = getComputedStyle(cellElement);
+        const cellBottom = cellElement.getBoundingClientRect().bottom;
+        return {
+            cellBottom,
+            contentBottom:
+                cellBottom -
+                parseFloat(style.borderBottomWidth) -
+                parseFloat(style.paddingBottom),
+            cutsOff: style.overflowY === "clip" || style.overflowY === "hidden",
+            marked: marks.some(
+                (mark) =>
+                    cellElement.classList.contains(mark) ||
+                    !!cellElement.querySelector(`.${mark}`),
+            ),
+            boxes: Array.from(
+                cellElement.querySelectorAll<HTMLElement>(
+                    ":scope > .bloom-translationGroup > .bloom-editable",
+                ),
+            ).map((box) => {
+                const r = box.getBoundingClientRect();
+                return {
+                    lang: box.getAttribute("lang") ?? "",
+                    shown: box.classList.contains("bloom-visibility-code-on"),
+                    rect: { x: r.x, y: r.y, width: r.width, height: r.height },
+                };
+            }),
+        };
+    }, kOverflowMarks);
+}
+
+/**
+ * How far a box may reach below a cell's content area and still be taken to fit it, for the
+ * helpers that ask whether text reaches past a cell: room for the rounding of a zoomed page.
+ */
+const kPastContentTolerance = 1;
+
 /** One text cell: whether Bloom marks it, and how far its text boxes reach past it. */
 interface ICellMarkAndFit {
     row: number;
@@ -1892,49 +1969,33 @@ export async function expectOverflowMarksMatchWhatFits(
     page: Page,
     tableIndex = 0,
 ): Promise<{ row: number; column: number }[]> {
-    // Room on top of the two pixels Bloom allows, for the rounding of a zoomed page.
+    // Room on top of the two pixels Bloom allows, for the rounding of a zoomed page. More than
+    // kPastContentTolerance, because here a box between the content area and the cell's edge is
+    // right whether it is marked or not.
     const kPixelsOfDoubt = 4;
-    const read = async (): Promise<ICellMarkAndFit[]> =>
-        table(page, tableIndex).evaluate((element, marks) => {
-            const columns = (
-                element.getAttribute("data-column-widths") ?? ""
-            ).split(",").length;
-            const found: ICellMarkAndFit[] = [];
-            element
-                .querySelectorAll<HTMLElement>(":scope > .bloom-cell")
-                .forEach((cellElement, index) => {
-                    const boxes = Array.from(
-                        cellElement.querySelectorAll<HTMLElement>(
-                            ":scope > .bloom-translationGroup > .bloom-editable.bloom-visibility-code-on",
-                        ),
-                    );
-                    if (boxes.length === 0) return;
-                    const style = getComputedStyle(cellElement);
-                    const cellBottom =
-                        cellElement.getBoundingClientRect().bottom;
-                    const contentBottom =
-                        cellBottom -
-                        parseFloat(style.borderBottomWidth) -
-                        parseFloat(style.paddingBottom);
-                    const lowest = Math.max(
-                        ...boxes.map(
-                            (box) => box.getBoundingClientRect().bottom,
-                        ),
-                    );
-                    found.push({
-                        row: Math.floor(index / columns),
-                        column: index % columns,
-                        marked: marks.some(
-                            (mark) =>
-                                cellElement.classList.contains(mark) ||
-                                !!cellElement.querySelector(`.${mark}`),
-                        ),
-                        pastContentBy: lowest - contentBottom,
-                        pastCellBy: lowest - cellBottom,
-                    });
-                });
-            return found;
-        }, kOverflowMarks);
+    const read = async (): Promise<ICellMarkAndFit[]> => {
+        const found: ICellMarkAndFit[] = [];
+        const { cells } = await measureTableIn(
+            editablePageFrame(page),
+            tableIndex,
+        );
+        for (const { row, column } of cells) {
+            const fit = await measureCellTextFit(
+                await cell(page, row, column, tableIndex),
+            );
+            const shown = fit.boxes.filter((box) => box.shown);
+            if (shown.length === 0) continue;
+            const lowest = Math.max(...shown.map((box) => bottom(box.rect)));
+            found.push({
+                row,
+                column,
+                marked: fit.marked,
+                pastContentBy: lowest - fit.contentBottom,
+                pastCellBy: lowest - fit.cellBottom,
+            });
+        }
+        return found;
+    };
     const wrong = (cells: ICellMarkAndFit[]) =>
         cells
             .filter(
@@ -1993,39 +2054,18 @@ export async function getCellTextCutOffIn(
     column: number,
     tableSelector = ".bloom-table",
 ): Promise<ICellTextCutOff> {
-    const target = frame.locator(tableSelector).first();
-    await target.waitFor({ state: "attached", timeout: kTableWaitMs });
-    return target.evaluate(
-        (element, at) => {
-            const columns = (
-                element.getAttribute("data-column-widths") ?? ""
-            ).split(",").length;
-            const cellElement = element.querySelectorAll<HTMLElement>(
-                ":scope > .bloom-cell",
-            )[at.row * columns + at.column];
-            if (!cellElement)
-                throw new Error(
-                    `The table has no cell at row ${at.row}, column ${at.column}.`,
-                );
-            const style = getComputedStyle(cellElement);
-            const contentBottom =
-                cellElement.getBoundingClientRect().bottom -
-                parseFloat(style.borderBottomWidth) -
-                parseFloat(style.paddingBottom);
-            const boxes = Array.from(
-                cellElement.querySelectorAll<HTMLElement>(".bloom-editable"),
-            ).filter((box) => box.getBoundingClientRect().height > 0);
-            return {
-                reachesPastCell: boxes.some(
-                    (box) =>
-                        box.getBoundingClientRect().bottom > contentBottom + 1,
-                ),
-                cellCutsItOff:
-                    style.overflowY === "clip" || style.overflowY === "hidden",
-            };
-        },
-        { row, column },
+    const fit = await measureCellTextFit(
+        await cellIn(frame, row, column, 0, tableSelector),
     );
+    return {
+        // Every box that is drawn, whatever the player has done with the visibility classes.
+        reachesPastCell: fit.boxes.some(
+            (box) =>
+                box.rect.height > 0 &&
+                bottom(box.rect) > fit.contentBottom + kPastContentTolerance,
+        ),
+        cellCutsItOff: fit.cutsOff,
+    };
 }
 
 /**
@@ -2101,34 +2141,22 @@ export async function getCellTextClipping(
     tableIndex = 0,
 ): Promise<ICellTextClipping> {
     const target = await cell(page, row, column, tableIndex);
-    const pastCell = await target.evaluate((element, tag) => {
-        const box = element.querySelector<HTMLElement>(
-            `.bloom-editable[lang="${tag}"]`,
+    const fit = await measureCellTextFit(target);
+    const box = fit.boxes.find((b) => b.lang === languageTag);
+    if (!box)
+        throw new Error(
+            `The cell at row ${row}, column ${column} has no text box in "${languageTag}".`,
         );
-        if (!box) throw new Error(`The cell has no text box in "${tag}".`);
-        const style = getComputedStyle(element);
-        const contentBottom =
-            element.getBoundingClientRect().bottom -
-            parseFloat(style.borderBottomWidth) -
-            parseFloat(style.paddingBottom);
-        const boxRect = box.getBoundingClientRect();
-        if (boxRect.bottom <= contentBottom + 1) return null;
-        const top = Math.max(contentBottom, boxRect.top);
-        return {
-            x: boxRect.left,
-            y: top,
-            width: boxRect.width,
-            height: boxRect.bottom - top,
-        };
-    }, languageTag);
-    if (!pastCell) return { reachesPastCell: false, partPastCellShows: false };
+    if (bottom(box.rect) <= fit.contentBottom + kPastContentTolerance)
+        return { reachesPastCell: false, partPastCellShows: false };
 
     const offset = await pageFrameOffset(page);
+    const top = Math.max(fit.contentBottom, box.rect.y);
     const clip = {
-        x: offset.x + pastCell.x,
-        y: offset.y + pastCell.y,
-        width: pastCell.width,
-        height: pastCell.height,
+        x: offset.x + box.rect.x,
+        y: offset.y + top,
+        width: box.rect.width,
+        height: bottom(box.rect) - top,
     };
     const textBox = target.locator(`.bloom-editable[lang="${languageTag}"]`);
     const withBox = await page.screenshot({ clip });
@@ -2142,6 +2170,28 @@ export async function getCellTextClipping(
     } finally {
         await textBox.evaluate((box) => box.style.removeProperty("visibility"));
     }
+}
+
+/**
+ * The bottom of the lowest text box a cell shows, in Playwright's mouse coordinates, so that it can
+ * be compared with the rect of anything else on the page (getCanvasRect, say).
+ */
+export async function getCellTextBottom(
+    page: Page,
+    row: number,
+    column: number,
+    tableIndex = 0,
+): Promise<number> {
+    const fit = await measureCellTextFit(
+        await cell(page, row, column, tableIndex),
+    );
+    const shown = fit.boxes.filter((box) => box.shown);
+    if (shown.length === 0)
+        throw new Error(
+            `The cell at row ${row}, column ${column} shows no text box.`,
+        );
+    const offset = await pageFrameOffset(page);
+    return offset.y + Math.max(...shown.map((box) => bottom(box.rect)));
 }
 
 /** The Size choices in a row's menu, by the aria-label the library gives each. */
