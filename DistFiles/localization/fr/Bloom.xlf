@@ -472,9 +472,9 @@
         <target xml:lang="fr" state="final">Appareil</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device.Description" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This is automatically applied when publishing to Bloom Reader (Android). It moves front matter pages (other than the cover) to the back.</source>
-        <target xml:lang="fr" state="translated">Ceci s'applique automatiquement lors de la publication sur Bloom Reader (Android). On déplace les pages liminaires (autres que la couverture) vers l'arrière.</target>
+        <target xml:lang="fr" state="final">Ceci s'applique automatiquement lors de la publication sur Bloom Reader (Android). On déplace les pages liminaires (autres que la couverture) vers l'arrière.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true" approved="yes">
@@ -492,9 +492,9 @@
         <target xml:lang="fr" state="final">SIL-PNG</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL PNG.Description" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL PNG.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Has SIL Papua New Guinea customizations, including hiding some fields and changing instructions in others.</source>
-        <target xml:lang="fr" state="translated">Comprend des éléments personnalisés pour SIL Papouasie-Nouvelle-Guinée, y compris le fait de cacher certains champs et des modifications de consignes dans d'autres.</target>
+        <target xml:lang="fr" state="final">Comprend des éléments personnalisés pour SIL Papouasie-Nouvelle-Guinée, y compris le fait de cacher certains champs et des modifications de consignes dans d'autres.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL PNG.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true" approved="yes">
@@ -512,9 +512,9 @@
         <target xml:lang="fr" state="final">Traditionnel</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Like a printed book, this puts the credits on the back side of the title page.</source>
-        <target xml:lang="fr" state="translated">Crédits sur la page de copyright</target>
+        <target xml:lang="fr" state="final">Comme pour un livre imprimé, ceci met les crédits au verso de la page de titre.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true" approved="yes">
