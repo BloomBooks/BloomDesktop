@@ -119,7 +119,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const paneRef = React.useRef<ConfigrPaneHandle>(null);
     // The top-level page Config-R is showing, so Help can open that page's topic.
     const [shownPageKey, setShownPageKey] = React.useState<string>();
-    const { searchBox, searchBoxContainer } = useConfigrSearchBox();
+    const { searchBox, searchBoxProps } = useConfigrSearchBox();
 
     // Config-r can call onChange while rendering, so state updates from it are deferred; the OK
     // handler reads this ref to be sure it has the newest values.
@@ -312,8 +312,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         ref={paneRef}
                         className={kConfigrPaneClassName}
                         label=""
-                        searchBoxContainer={searchBoxContainer}
-                        searchBoxSize="small"
+                        {...searchBoxProps}
                         initialValues={
                             loadedSettings.values as unknown as ConfigrValues
                         }

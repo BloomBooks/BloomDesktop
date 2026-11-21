@@ -215,7 +215,7 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                         !teamCollectionOptionEnabled ||
                                         !canChangeTeamCollectionOption
                                     }
-                                ></ConfigrBoolean>{" "}
+                                />
                                 <ConfigrSubscriptionBadge
                                     feature="TeamCollection"
                                     alignWithCheckbox={true}

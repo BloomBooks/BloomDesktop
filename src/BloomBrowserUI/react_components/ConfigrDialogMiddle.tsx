@@ -109,12 +109,14 @@ export const ConfigrSubscriptionBadge: React.FunctionComponent<{
 
 /**
  * Puts Config-R's search box in a settings dialog's title bar. Put `searchBox` in the
- * DialogTitle's children and pass `searchBoxContainer` as the ConfigrPane's searchBoxContainer,
- * with searchBoxSize="small".
+ * DialogTitle's children and spread `searchBoxProps` on the ConfigrPane.
  */
 export function useConfigrSearchBox(): {
     searchBox: React.ReactElement;
-    searchBoxContainer: HTMLDivElement | null;
+    searchBoxProps: {
+        searchBoxContainer: HTMLDivElement | null;
+        searchBoxSize: "small";
+    };
 } {
     // State, not a ref, so the pane renders again once the element exists.
     const [searchBoxContainer, setSearchBoxContainer] =
@@ -123,7 +125,7 @@ export function useConfigrSearchBox(): {
         searchBox: (
             <ConfigrSearchBoxContainer containerRef={setSearchBoxContainer} />
         ),
-        searchBoxContainer,
+        searchBoxProps: { searchBoxContainer, searchBoxSize: "small" },
     };
 }
 

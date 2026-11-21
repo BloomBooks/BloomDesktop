@@ -195,7 +195,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         undefined,
     );
     const dialogRef = React.useRef<HTMLDivElement>(null);
-    const { searchBox, searchBoxContainer } = useConfigrSearchBox();
+    const { searchBox, searchBoxProps } = useConfigrSearchBox();
 
     const setDialogVisibleWhileColorPickerOpen = React.useCallback(
         (open: boolean) => {
@@ -459,8 +459,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                         themeOverrides={kConfigrThemeOverrides}
                         showAppBar={false}
                         showJson={false}
-                        searchBoxContainer={searchBoxContainer}
-                        searchBoxSize="small"
+                        {...searchBoxProps}
                         onChange={(s) => {
                             const parsedPageSettings =
                                 parsePageSettingsFromConfigrValue(s);
