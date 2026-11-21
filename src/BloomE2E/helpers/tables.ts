@@ -243,7 +243,7 @@ export async function getTableShape(
 /** The shape of a table in any frame, read from the attributes the table itself carries. */
 async function getTableShapeIn(
     frame: Frame,
-    tableIndex = 0,
+    tableIndex: number,
     tableSelector = ".bloom-table",
 ): Promise<ITableShape> {
     const target = frame.locator(tableSelector).nth(tableIndex);
@@ -288,7 +288,7 @@ async function cellIn(
     frame: Frame,
     row: number,
     column: number,
-    tableIndex = 0,
+    tableIndex: number,
     tableSelector = ".bloom-table",
 ): Promise<Locator> {
     const shape = await getTableShapeIn(frame, tableIndex, tableSelector);
@@ -1878,7 +1878,7 @@ export async function expectTableSettlesUnmarked(
     ).toEqual([]);
 }
 
-/** One text box of a cell, as measureCellTextFit reports it. */
+/** One text box of a cell, as measureCellsTextFit reports it. */
 interface ICellTextBox {
     lang: string;
     /** Whether the cell is showing this box (it carries `bloom-visibility-code-on`). */
@@ -1887,8 +1887,10 @@ interface ICellTextBox {
     rect: IRect;
 }
 
-/** A cell's text boxes and the edges they have to fit inside, measured in one round trip. */
+/** A cell's text boxes and the edges they have to fit inside. */
 interface ICellTextFit {
+    /** Whether a merge covers the cell (`bloom-skip`), so that it is not drawn. */
+    covered: boolean;
     /** The bottom of the cell's border box. */
     cellBottom: number;
     /** The bottom of the cell's content area: the border box less its bottom border and padding. */
@@ -1902,39 +1904,62 @@ interface ICellTextFit {
 }
 
 /**
- * Measure a cell's text boxes against the cell's own edges, in the cell's frame. The one place the
- * cell's content bottom is worked out, for every helper that asks whether a cell's text fits it.
+ * Measure the text boxes of each cell `cells` matches against that cell's own edges, in the cells'
+ * frame, all in one round trip so that the readings are of one moment. The one place a cell's
+ * content bottom is worked out, for every helper that asks whether a cell's text fits it.
  */
-async function measureCellTextFit(target: Locator): Promise<ICellTextFit> {
-    return target.evaluate((cellElement, marks) => {
-        const style = getComputedStyle(cellElement);
-        const cellBottom = cellElement.getBoundingClientRect().bottom;
-        return {
-            cellBottom,
-            contentBottom:
-                cellBottom -
-                parseFloat(style.borderBottomWidth) -
-                parseFloat(style.paddingBottom),
-            cutsOff: style.overflowY === "clip" || style.overflowY === "hidden",
-            marked: marks.some(
-                (mark) =>
-                    cellElement.classList.contains(mark) ||
-                    !!cellElement.querySelector(`.${mark}`),
-            ),
-            boxes: Array.from(
-                cellElement.querySelectorAll<HTMLElement>(
-                    ":scope > .bloom-translationGroup > .bloom-editable",
-                ),
-            ).map((box) => {
-                const r = box.getBoundingClientRect();
+async function measureCellsTextFit(cells: Locator): Promise<ICellTextFit[]> {
+    return cells.evaluateAll(
+        (cellElements, marks) =>
+            cellElements.map((cellElement) => {
+                const style = getComputedStyle(cellElement);
+                const cellBottom = cellElement.getBoundingClientRect().bottom;
                 return {
-                    lang: box.getAttribute("lang") ?? "",
-                    shown: box.classList.contains("bloom-visibility-code-on"),
-                    rect: { x: r.x, y: r.y, width: r.width, height: r.height },
+                    covered: cellElement.classList.contains("bloom-skip"),
+                    cellBottom,
+                    contentBottom:
+                        cellBottom -
+                        parseFloat(style.borderBottomWidth) -
+                        parseFloat(style.paddingBottom),
+                    cutsOff:
+                        style.overflowY === "clip" ||
+                        style.overflowY === "hidden",
+                    marked: marks.some(
+                        (mark) =>
+                            cellElement.classList.contains(mark) ||
+                            !!cellElement.querySelector(`.${mark}`),
+                    ),
+                    boxes: Array.from(
+                        cellElement.querySelectorAll<HTMLElement>(
+                            ":scope > .bloom-translationGroup > .bloom-editable",
+                        ),
+                    ).map((box) => {
+                        const r = box.getBoundingClientRect();
+                        return {
+                            lang: box.getAttribute("lang") ?? "",
+                            shown: box.classList.contains(
+                                "bloom-visibility-code-on",
+                            ),
+                            rect: {
+                                x: r.x,
+                                y: r.y,
+                                width: r.width,
+                                height: r.height,
+                            },
+                        };
+                    }),
                 };
             }),
-        };
-    }, kOverflowMarks);
+        kOverflowMarks,
+    );
+}
+
+/** The bottom of the lowest text box the cell shows, or undefined when it shows none. */
+function lowestShownBottom(fit: ICellTextFit): number | undefined {
+    const shown = fit.boxes.filter((box) => box.shown);
+    return shown.length === 0
+        ? undefined
+        : Math.max(...shown.map((box) => bottom(box.rect)));
 }
 
 /**
@@ -1973,27 +1998,25 @@ export async function expectOverflowMarksMatchWhatFits(
     // kPastContentTolerance, because here a box between the content area and the cell's edge is
     // right whether it is marked or not.
     const kPixelsOfDoubt = 4;
+    // Read once: the operation this follows is over, and only the marks are still settling.
+    const { columns } = await getTableShape(page, tableIndex);
     const read = async (): Promise<ICellMarkAndFit[]> => {
-        const found: ICellMarkAndFit[] = [];
-        const { cells } = await measureTableIn(
-            editablePageFrame(page),
-            tableIndex,
+        // Every cell in one reading, so that none is measured after Bloom has re-marked the others.
+        const fits = await measureCellsTextFit(
+            table(page, tableIndex).locator("> .bloom-cell"),
         );
-        for (const { row, column } of cells) {
-            const fit = await measureCellTextFit(
-                await cell(page, row, column, tableIndex),
-            );
-            const shown = fit.boxes.filter((box) => box.shown);
-            if (shown.length === 0) continue;
-            const lowest = Math.max(...shown.map((box) => bottom(box.rect)));
+        const found: ICellMarkAndFit[] = [];
+        fits.forEach((fit, index) => {
+            const lowest = lowestShownBottom(fit);
+            if (fit.covered || lowest === undefined) return;
             found.push({
-                row,
-                column,
+                row: Math.floor(index / columns),
+                column: index % columns,
                 marked: fit.marked,
                 pastContentBy: lowest - fit.contentBottom,
                 pastCellBy: lowest - fit.cellBottom,
             });
-        }
+        });
         return found;
     };
     const wrong = (cells: ICellMarkAndFit[]) =>
@@ -2054,7 +2077,7 @@ export async function getCellTextCutOffIn(
     column: number,
     tableSelector = ".bloom-table",
 ): Promise<ICellTextCutOff> {
-    const fit = await measureCellTextFit(
+    const [fit] = await measureCellsTextFit(
         await cellIn(frame, row, column, 0, tableSelector),
     );
     return {
@@ -2141,7 +2164,7 @@ export async function getCellTextClipping(
     tableIndex = 0,
 ): Promise<ICellTextClipping> {
     const target = await cell(page, row, column, tableIndex);
-    const fit = await measureCellTextFit(target);
+    const [fit] = await measureCellsTextFit(target);
     const box = fit.boxes.find((b) => b.lang === languageTag);
     if (!box)
         throw new Error(
@@ -2182,16 +2205,15 @@ export async function getCellTextBottom(
     column: number,
     tableIndex = 0,
 ): Promise<number> {
-    const fit = await measureCellTextFit(
+    const [fit] = await measureCellsTextFit(
         await cell(page, row, column, tableIndex),
     );
-    const shown = fit.boxes.filter((box) => box.shown);
-    if (shown.length === 0)
+    const lowest = lowestShownBottom(fit);
+    if (lowest === undefined)
         throw new Error(
             `The cell at row ${row}, column ${column} shows no text box.`,
         );
-    const offset = await pageFrameOffset(page);
-    return offset.y + Math.max(...shown.map((box) => bottom(box.rect)));
+    return (await pageFrameOffset(page)).y + lowest;
 }
 
 /** The Size choices in a row's menu, by the aria-label the library gives each. */

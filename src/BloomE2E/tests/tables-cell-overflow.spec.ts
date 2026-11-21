@@ -11,10 +11,7 @@
 
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
-import {
-    setContentLanguages,
-    waitForPageToSettle,
-} from "../helpers/bookMaking";
+import { waitForPageToSettle } from "../helpers/bookMaking";
 import {
     getCanvasRect,
     isCanvasMarkedAsOverflowed,
@@ -29,6 +26,7 @@ import {
     beginBoundaryDrag,
     clickCell,
     clickTableMenuCommand,
+    closeAnyMenu,
     dragBoundary,
     dragTableBy,
     endBoundaryDrag,
@@ -45,12 +43,12 @@ import {
     moveBoundaryDragTo,
     openTableMenu,
     setRowSize,
+    toggleMenuCellLanguage,
     typeInCell,
     waitForCellOverflowMarks,
-    waitForTableAttached,
 } from "../helpers/tables";
 import { undo } from "../helpers/undo";
-import { getZoom, setZoom, switchTab } from "../helpers/workspace";
+import { switchTab, withZoom } from "../helpers/workspace";
 
 test.use({
     collectionSpec: {
@@ -82,12 +80,12 @@ async function makeBookWithTwoLanguageTable(
     page: Page,
     english: string,
 ): Promise<void> {
-    // The table has to be made while only English shows: a table made while two languages show
-    // gets cells that show only the first. Showing French afterwards gives every text cell a box
-    // for each of the book's content languages.
+    // A new table's cells show only L1 (BL-17105), whatever the toolbar shows, so French is
+    // ticked for the whole table in its Languages menu, as a person does.
     await makeBookWithTableOnCanvasPage(page, ["en"]);
-    await setContentLanguages(page, ["en", "fr"]);
-    await waitForTableAttached(page);
+    await openTableMenu(page, "table");
+    await toggleMenuCellLanguage(page, "L2");
+    await closeAnyMenu(page);
     expect(await getCellLanguages(page, ROW, COLUMN)).toEqual(["en", "fr"]);
     // Text to see: an empty box draws nothing, cut off or not. French first: English that takes
     // several lines can push the French box out of the cell, where a click cannot reach it.
@@ -433,17 +431,7 @@ test.describe("moving a canvas element checks its text again", () => {
         );
         // At the nightly window size the bottom of the picture is below the window at 100%, and a
         // drag cannot take the table past what the window shows. Zoomed out, the whole picture shows.
-        const zoomWas = (await getZoom(page)).zoom;
-        await step("Zoom out until the whole picture shows", async () => {
-            await setZoom(page, ZOOM_TO_SEE_THE_WHOLE_PICTURE);
-        });
-        try {
-            await moveTableBackInsideThePicture();
-        } finally {
-            await setZoom(page, zoomWas);
-        }
-
-        async function moveTableBackInsideThePicture(): Promise<void> {
+        await withZoom(page, ZOOM_TO_SEE_THE_WHOLE_PICTURE, async () => {
             await step(
                 "Move the table down until its last row's text runs past the bottom of the picture",
                 async () => {
@@ -528,6 +516,6 @@ test.describe("moving a canvas element checks its text again", () => {
                         .toBe(false);
                 },
             );
-        }
+        });
     });
 });

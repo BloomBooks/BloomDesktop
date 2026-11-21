@@ -170,3 +170,21 @@ export async function setZoom(page: Page, percent: number): Promise<void> {
         )
         .toBe(percent);
 }
+
+/**
+ * Run `body` with the Edit tab zoomed to `percent`, and put the zoom back as it was afterwards,
+ * whether `body` succeeds or fails, since Bloom saves the zoom as a user setting.
+ */
+export async function withZoom<T>(
+    page: Page,
+    percent: number,
+    body: () => Promise<T>,
+): Promise<T> {
+    const zoomWas = (await getZoom(page)).zoom;
+    await setZoom(page, percent);
+    try {
+        return await body();
+    } finally {
+        await setZoom(page, zoomWas);
+    }
+}

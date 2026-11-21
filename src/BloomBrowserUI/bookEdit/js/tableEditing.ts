@@ -626,9 +626,10 @@ function observeCellSizes(root: HTMLElement): void {
     }
     const observer = cellSizeObserver;
     stopObservingCellsNotInPage();
-    // Observing a cell that is already observed does nothing.
+    // Observing a cell that is already observed does nothing. The border box, because that is
+    // the size onCellsResized compares.
     root.querySelectorAll<HTMLElement>(".bloom-cell").forEach((cell) => {
-        observer.observe(cell);
+        observer.observe(cell, { box: "border-box" });
         cellsWhoseSizeIsObserved.add(cell);
     });
 }
