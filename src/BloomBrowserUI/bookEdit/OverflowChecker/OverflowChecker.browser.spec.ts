@@ -567,20 +567,30 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
     }
 
     // BL-1260: Bloom does not check a page with more than 30 boxes, and AddOverflowHandlers clears
-    // its marks, so marks put there by a table check would never be cleared.
-    it("marks nothing on a page with more than 30 boxes", () => {
-        const thirty = loadPageOfTooFullBoxes(30);
-        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(thirty);
+    // its marks, so marks put there by a table check would never be cleared. A page can also grow
+    // past 30 while it is open (a row added to a table): its earlier marks go then.
+    it("marks nothing on a page with more than 30 boxes, and clears a page that grows past 30", () => {
+        const boxes = loadPageOfTooFullBoxes(30);
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(boxes);
         expect(
-            thirty.filter((box) => box.classList.contains("overflow")).length,
+            boxes.filter((box) => box.classList.contains("overflow")).length,
             "A page of 30 too-full boxes should be marked, or this tests nothing.",
         ).toBe(30);
 
-        const thirtyOne = loadPageOfTooFullBoxes(31);
-        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(thirtyOne);
+        const group = boxes[0].parentElement!;
+        const thirtyFirst = group.cloneNode(true) as HTMLElement;
+        group.after(thirtyFirst);
+        const all = Array.from(
+            document.querySelectorAll<HTMLElement>(
+                "#fixtureRoot .bloom-editable",
+            ),
+        );
+        expect(all.length).toBe(31);
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(all);
 
         expect(
-            thirtyOne.filter((box) => box.classList.contains("overflow")),
+            all.filter((box) => box.classList.contains("overflow")),
+            "No box on a page of 31 should be marked.",
         ).toEqual([]);
     });
 });

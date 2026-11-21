@@ -181,8 +181,9 @@ export async function withZoom<T>(
     body: () => Promise<T>,
 ): Promise<T> {
     const zoomWas = (await getZoom(page)).zoom;
-    await setZoom(page, percent);
     try {
+        // Inside the try: setZoom can fail after Bloom has saved the new zoom.
+        await setZoom(page, percent);
         return await body();
     } finally {
         await setZoom(page, zoomWas);

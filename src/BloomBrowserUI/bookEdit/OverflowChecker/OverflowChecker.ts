@@ -49,6 +49,24 @@ function getElementsThatCanOverflowOrNeedToBeResized(
 // BL-1260: a page with more boxes than this is not checked for overflow at all, and shows no marks.
 const kMaxBoxesToCheck = 30;
 
+// Remove every overflow mark from `container` and everything in it, and redraw the indicators to
+// match: what a page over kMaxBoxesToCheck shows, since it is not checked.
+function clearOverflowMarks(container: HTMLElement): void {
+    [
+        "overflow",
+        "thisOverflowingParent",
+        "childOverflowingThis",
+        "Layout-Problem-Detected",
+        "pageOverflows",
+    ].forEach((className) => {
+        container.classList.remove(className);
+        Array.from(container.getElementsByClassName(className)).forEach((x) =>
+            x.classList.remove(className),
+        );
+    });
+    refreshOverflowIndicatorsSoon();
+}
+
 // The page-wide overflow check waiting to run for each margin box (see
 // CheckPageAncestorOverflowSoon).
 const pageChecksWaiting = new WeakMap<Element, ReturnType<typeof setTimeout>>();
@@ -67,18 +85,7 @@ export default class OverflowChecker {
         if ($editablePageElements.length > kMaxBoxesToCheck) {
             // since we're not going to check it, remove any indications from
             // previous checking.
-            const cleanup = (className: string) => {
-                Array.from(container.getElementsByClassName(className)).forEach(
-                    (x) => x.classList.remove(className),
-                );
-            };
-            cleanup("overflow");
-            cleanup("thisOverflowingParent");
-            cleanup("childOverflowingThis");
-            cleanup("Layout-Problem-Detected");
-            cleanup("pageOverflows");
-            refreshOverflowIndicatorsSoon();
-
+            clearOverflowMarks(container);
             return;
         }
 
@@ -601,8 +608,13 @@ export default class OverflowChecker {
             ? getElementsThatCanOverflowOrNeedToBeResized(marginBox)
             : [];
         // AddOverflowHandlers turns checking off for such a page and clears its marks; checking
-        // its tables would put marks back that nothing, not even typing, would clear.
-        if (pageElements.length > kMaxBoxesToCheck) return;
+        // its tables would put marks back that nothing, not even typing, would clear. A page can
+        // also grow past the limit while it is open (a row added to a table), so its marks are
+        // cleared here too, or the ones from before would stay however the text changes.
+        if (pageElements.length > kMaxBoxesToCheck) {
+            clearOverflowMarks(marginBox!.closest<HTMLElement>(".bloom-page")!);
+            return;
+        }
         // AdjustSizeAndMarkSelfOverflow changes the padding of a bloom-padForOverflow box
         // before it measures it, so a height measured beforehand would be out of date.
         const measurable = Array.from(
