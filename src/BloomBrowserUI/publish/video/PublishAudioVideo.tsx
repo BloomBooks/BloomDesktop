@@ -226,8 +226,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         false,
     );
 
-    // The preview URL that was playing when the user last pressed Play (see `playing`).
-    const [playingUrl, setPlayingUrl] = useState<string>();
+    const [playing, setPlaying] = useState(false);
     const [havePreviewForOrientation, setHavePreviewForOrientation] =
         useState(false);
     useSubscribeToWebSocketForStringMessage(
@@ -251,16 +250,16 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     };
     const play = () => {
         sendMessageToPlayer({ play: true });
-        setPlayingUrl(previewUrl);
+        setPlaying(true);
     };
     const pause = () => {
         sendMessageToPlayer({ pause: true });
-        setPlayingUrl(undefined);
+        setPlaying(false);
     };
     const reset = () => {
         sendMessageToPlayer({ pause: true });
         sendMessageToPlayer({ reset: true });
-        setPlayingUrl(undefined);
+        setPlaying(false);
     };
     const gamesSkipped = useL10n(
         "Games will be skipped",
@@ -344,8 +343,13 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
           videoSettingsParam +
           pageRangeSetting
         : "";
-    // So the preview is playing only while the one the user started is still the one shown.
-    const playing = playingUrl !== undefined && playingUrl === previewUrl;
+    // So whenever it changes, the preview is no longer playing. (Adjusting state during render,
+    // rather than in an effect, avoids a render that still shows it playing.)
+    const [shownPreviewUrl, setShownPreviewUrl] = useState(previewUrl);
+    if (previewUrl !== shownPreviewUrl) {
+        setShownPreviewUrl(previewUrl);
+        setPlaying(false);
+    }
     const isPauseButtonDisabled = !playing;
     const recordingVideo = avSettings.format != "mp3";
     const circleHeight = "0.88rem";
