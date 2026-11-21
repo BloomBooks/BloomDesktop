@@ -16,7 +16,7 @@ import { ToolBox } from "./toolbox";
 import TalkingBookTool from "./talkingBook/talkingBookTool";
 import "errorHandler";
 import {
-    leavePlayBeforeShowingImageDescriptions,
+    isGamePageInPlay,
     redrawGameTabs,
     setActiveDragActivityTab,
 } from "./games/GameTool";
@@ -91,7 +91,7 @@ export interface IToolboxFrameExports {
     removeToolboxMarkup(): void;
     removeToolMarkupFromPageClone(pageClone: HTMLElement): void;
     setActiveDragActivityTab(tab: number): void;
-    leavePlayBeforeShowingImageDescriptions(): void;
+    isGamePageInPlay(): boolean;
     redrawGameTabs(): void;
     getTheOneAudioRecorderForExportOnly(): IAudioRecorder;
     simulateBlurOnPageFrameMouseDown(): void;
@@ -102,7 +102,7 @@ export {
     removeToolboxMarkup,
     removeToolMarkupFromPageClone,
     setActiveDragActivityTab,
-    leavePlayBeforeShowingImageDescriptions,
+    isGamePageInPlay,
     redrawGameTabs,
 };
 export {
@@ -213,7 +213,7 @@ const toolboxBundle: ToolboxBundleApi = {
     undo,
     readerToolsHandleUndoKeys,
     setActiveDragActivityTab,
-    leavePlayBeforeShowingImageDescriptions,
+    isGamePageInPlay,
     redrawGameTabs,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,

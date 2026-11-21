@@ -29,7 +29,7 @@ declare global {
         canUndo: unknown;
         undo: unknown;
         setActiveDragActivityTab: unknown;
-        leavePlayBeforeShowingImageDescriptions: unknown;
+        isGamePageInPlay: unknown;
         redrawGameTabs: unknown;
         getTheOneAudioRecorderForExportOnly: unknown;
         copyLeveledReaderStatsToClipboard: unknown;

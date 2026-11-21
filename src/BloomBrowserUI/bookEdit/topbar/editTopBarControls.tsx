@@ -19,9 +19,9 @@ import { LocalizableMenuItem } from "../../react_components/localizableMenuItem"
 import { callOnBlur } from "../../utils/menuCloseOnBlur";
 import { LayoutChoicesDropdown } from "./layoutChoicesDropdown";
 import {
-    disabledWhilePlayingCss,
-    disabledWhilePlayingProps,
-    useEditingDisabledForPlay,
+    editingDisabledCss,
+    editingDisabledProps,
+    useEditingDisabled,
 } from "../workspaceRoot";
 
 interface IDropdownData {
@@ -174,7 +174,7 @@ export const EditTopBarControls: React.FunctionComponent = () => {
 
     // Every control in here edits the book, so all of them are disabled while a game page is
     // being played, including any added later.
-    const editingDisabledForPlay = useEditingDisabledForPlay();
+    const editingDisabled = useEditingDisabled();
 
     return (
         <div
@@ -184,9 +184,9 @@ export const EditTopBarControls: React.FunctionComponent = () => {
                     justify-content: space-between;
                     width: 100%;
                 `,
-                disabledWhilePlayingCss(editingDisabledForPlay),
+                editingDisabledCss(editingDisabled),
             ]}
-            {...disabledWhilePlayingProps(editingDisabledForPlay)}
+            {...editingDisabledProps(editingDisabled)}
         >
             <div
                 css={css`

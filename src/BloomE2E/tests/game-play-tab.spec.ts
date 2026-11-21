@@ -25,6 +25,8 @@ import {
     enableToolForBook,
     expectExpandedTool,
     getExpandedTool,
+    isToolboxShowing,
+    pressToolboxToggle,
     pressToolHeader,
 } from "../helpers/toolbox";
 
@@ -100,6 +102,12 @@ test("Play disables the toolbox, the top bar's editing controls and editing keys
         await getExpandedTool(page),
         "In Play, clicking a tool's header should not expand it",
     ).toBe(toolBefore);
+    // Showing a hidden toolbox would restart its tool, which might show image descriptions.
+    await pressToolboxToggle(page);
+    expect(
+        await isToolboxShowing(page),
+        "In Play, the toolbox toggle should not hide the toolbox",
+    ).toBe(true);
     await pressKeyOnDraggableItem(page, itemId, "Delete");
 
     await clickGameTab(page, "Start");
@@ -134,4 +142,9 @@ test("Play disables the toolbox, the top bar's editing controls and editing keys
         false,
         "In Start, Delete should remove the selected item",
     );
+    await pressToolboxToggle(page);
+    expect(
+        await isToolboxShowing(page),
+        "In Start, the toolbox toggle should have hidden the toolbox by the time it returns",
+    ).toBe(false);
 });

@@ -1856,7 +1856,10 @@ export class GameTool extends ToolboxToolReactAdaptor {
         }
     }
 
-    // No removeToolMarkup override: play mode is the game tabs', not this tool's (gamePlayMode.ts).
+    // No removeToolMarkup override. The only thing on a game page that changes the DOM in a way a
+    // save must undo is Play mode, and that is controlled by the game tabs, not this tool: Play
+    // works whatever tool is open, so every save cleans it off its copy of the page through
+    // gamePlayMode.ts, whether or not this tool is open.
 }
 export function playSound(
     newSoundId: string,
@@ -1991,8 +1994,8 @@ export function setActiveDragActivityTab(tab: number) {
     // Non-drag games can still pass through this API during page setup. Force Start mode there
     // so drag-only positioning logic (for Correct/Wrong/Play) cannot mutate their canvas elements.
     let effectiveTab = isDragActivityPage ? tab : startTabIndex;
-    // Play is not available while image descriptions are showing (see
-    // leavePlayBeforeShowingImageDescriptions); this catches a page load that would restore it.
+    // Play is not available while image descriptions are showing (see the note above isGamePageInPlay); this
+    // catches a page load that would restore it.
     if (
         effectiveTab === playTabIndex &&
         areImageDescriptionsShowing(page.ownerDocument.body)
@@ -2002,7 +2005,7 @@ export function setActiveDragActivityTab(tab: number) {
     window.top!["dragActivityPage"] = effectiveTab;
     // Play is for seeing how the game behaves when published, not for editing it.
     // (Off-screen, e.g. process-book, there is no workspace.)
-    tryGetWorkspaceBundleExports()?.setEditingDisabledForPlay(
+    tryGetWorkspaceBundleExports()?.setEditingDisabled(
         effectiveTab === playTabIndex,
     );
 
@@ -2021,7 +2024,7 @@ export function setActiveDragActivityTab(tab: number) {
 
     const canvasElementManager = getCanvasElementManager();
     if (effectiveTab === playTabIndex) {
-        canvasElementManager!.suspendComicEditing("forGamePlayMode");
+        canvasElementManager!.suspendCanvasElementEditing("forGamePlayMode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
         if (preparePageForPlay(page)) {
@@ -2058,21 +2061,20 @@ export function setActiveDragActivityTab(tab: number) {
 
 // A game's Play tab and image descriptions (shown by the Image Description tool, or by the Talking
 // Book tool when asked) don't go together. Nobody who needs image descriptions is likely to play a
-// dragging game, and both take over the page's canvas elements, so we don't let them overlap.
-// Like setActiveDragActivityTab, both of these must be called through getToolboxBundleExports().
+// dragging game, and both take over the page's canvas elements, so we don't let them overlap: Play
+// is disabled while they show, and they never show during Play. Like setActiveDragActivityTab, both
+// of these must be called through getToolboxBundleExports().
 
-// Call just before showing image descriptions: takes a game page that is in Play back to Start.
-// (The toolbox is disabled in Play, but its toggle isn't: showing a hidden toolbox restarts its tool,
-// which shows them if, say, Talking Book was left set to.)
-export function leavePlayBeforeShowingImageDescriptions(): void {
+// True while the page being edited is a game page in Play, when image descriptions must not show.
+// (In Play the whole toolbox, its show/hide toggle included, is disabled, so no tool should ask
+// for them then; showImageDescriptions checks this so that they still can't.)
+export function isGamePageInPlay(): boolean {
     const page = getBloomPageElement();
-    if (
-        page &&
+    return (
+        !!page &&
         isPageBloomGame(page) &&
         getActiveDragActivityTab() === playTabIndex
-    ) {
-        setActiveDragActivityTab(startTabIndex);
-    }
+    );
 }
 
 // Call just after image descriptions are shown or hidden: redraws a game page's tabs, so that its

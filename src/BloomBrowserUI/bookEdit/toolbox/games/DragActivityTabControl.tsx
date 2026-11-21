@@ -98,7 +98,7 @@ export const DragActivityTabControl: React.FunctionComponent<{
                     onChange={changeHandler}
                     labels={[startLabel, correctLabel, wrongLabel, playLabel]}
                     // Play is not available while image descriptions are showing (see
-                    // leavePlayBeforeShowingImageDescriptions). This renders in the page
+                    // the note above GameTool's isGamePageInPlay). This renders in the page
                     // iframe, so document.body is the page's body.
                     disabledTabs={
                         areImageDescriptionsShowing(document.body)

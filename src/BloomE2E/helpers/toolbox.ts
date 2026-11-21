@@ -90,6 +90,16 @@ export async function hideToolbox(page: Page): Promise<void> {
 }
 
 /**
+ * Click the toolbox toggle with a real mouse click and wait only for the click to settle, not for
+ * the toolbox to open or shut. For a test of whether the toggle responds at all, such as while a
+ * game is being played and it is disabled.
+ */
+export async function pressToolboxToggle(page: Page): Promise<void> {
+    await realClick(page.locator(TOOLBOX_LABEL));
+    await waitForClickToSettle(page);
+}
+
+/**
  * The iframe the toolbox's tools are drawn in. The frame exists whether or not the drawer is expanded,
  * so a caller that wants a control in it should showToolbox first.
  */

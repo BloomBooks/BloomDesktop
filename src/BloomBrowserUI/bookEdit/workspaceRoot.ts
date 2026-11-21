@@ -35,7 +35,7 @@ export interface IWorkspaceExports {
     noteAllPagesShown(): void;
     listenForAllPagesShown(listener: () => void): () => void;
     setToolboxEnabled(enabled: boolean): void;
-    setEditingDisabledForPlay(disabled: boolean): void;
+    setEditingDisabled(disabled: boolean): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
         task: (toolboxFrameExports: IToolboxFrameExports) => unknown,
@@ -293,42 +293,44 @@ export function setToolboxEnabled(enabled: boolean): void {
     toolboxEnabledHandler?.(enabled);
 }
 
-// While a game page is in its Play tab, the user is trying out how the game will behave when
-// published, not editing it, so the toolbox and the editing controls in the top bar are disabled.
-// GameTool's setActiveDragActivityTab sets this; leaving the page clears it.
-let editingDisabledForPlay = false;
-const editingDisabledForPlayListeners = new Set<() => void>();
+// While editing is disabled, the toolbox and the editing controls in the top bar are disabled and
+// dimmed. Today the one reason is a game page in its Play tab, where the user is trying out how the
+// game will behave when published, not editing it: GameTool's setActiveDragActivityTab sets this,
+// and leaving the page clears it.
+let editingDisabled = false;
+const editingDisabledListeners = new Set<() => void>();
 
-export function setEditingDisabledForPlay(disabled: boolean): void {
-    if (disabled === editingDisabledForPlay) {
+export function setEditingDisabled(disabled: boolean): void {
+    if (disabled === editingDisabled) {
         return;
     }
-    editingDisabledForPlay = disabled;
-    editingDisabledForPlayListeners.forEach((listener) => listener());
+    editingDisabled = disabled;
+    editingDisabledListeners.forEach((listener) => listener());
 }
 
-// True while a game page is in Play, for the components that disable editing controls then.
-export function useEditingDisabledForPlay(): boolean {
+// True while editing is disabled (see setEditingDisabled), for the components that disable their
+// editing controls then.
+export function useEditingDisabled(): boolean {
     return React.useSyncExternalStore(
         (listener) => {
-            editingDisabledForPlayListeners.add(listener);
-            return () => editingDisabledForPlayListeners.delete(listener);
+            editingDisabledListeners.add(listener);
+            return () => editingDisabledListeners.delete(listener);
         },
-        () => editingDisabledForPlay,
+        () => editingDisabled,
     );
 }
 
 // Props for an element whose whole content is disabled while editing is: `inert` makes everything
 // inside it unclickable and unfocusable, including controls added there later. Use it with
-// disabledWhilePlayingCss, whose dimming shows why. (React 18 doesn't know `inert`, but passes it
+// editingDisabledCss, whose dimming shows why. (React 18 doesn't know `inert`, but passes it
 // through to the element.)
-export function disabledWhilePlayingProps(
+export function editingDisabledProps(
     disabled: boolean,
 ): React.HTMLAttributes<HTMLElement> {
     return disabled ? ({ inert: "" } as React.HTMLAttributes<HTMLElement>) : {};
 }
 
-export function disabledWhilePlayingCss(disabled: boolean): SerializedStyles {
+export function editingDisabledCss(disabled: boolean): SerializedStyles {
     return css`
         opacity: ${disabled ? kBloomDisabledOpacity : 1};
     `;
@@ -537,7 +539,7 @@ interface WorkspaceBundleApi {
     showDialog: typeof showDialog;
     closeDialog: typeof closeDialog;
     setToolboxEnabled: typeof setToolboxEnabled;
-    setEditingDisabledForPlay: typeof setEditingDisabledForPlay;
+    setEditingDisabled: typeof setEditingDisabled;
     toolboxIsShowing: typeof toolboxIsShowing;
     doWhenToolboxLoaded: typeof doWhenToolboxLoaded;
     canUndo: typeof canUndo;
@@ -601,7 +603,7 @@ window.workspaceBundle = {
     showDialog,
     closeDialog,
     setToolboxEnabled,
-    setEditingDisabledForPlay,
+    setEditingDisabled,
     toolboxIsShowing,
     doWhenToolboxLoaded,
     canUndo,

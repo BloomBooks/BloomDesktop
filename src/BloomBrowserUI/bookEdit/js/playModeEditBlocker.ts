@@ -1,6 +1,6 @@
 // While a game page is in its Play tab, the page is being tried out to see how it will behave when
 // published, not edited. The toolbox and the top bar's editing controls are disabled then (see
-// workspaceRoot's setEditingDisabledForPlay); this does the same for the keyboard and the
+// workspaceRoot's setEditingDisabled); this does the same for the keyboard and the
 // clipboard. The page has many separate editing handlers (CKEditor and the browser's own editing in
 // text boxes, canvas-element keys, picture and page undo, paste), so rather than teach each of them
 // about Play, this stops the events first: a capture listener on the window runs before any

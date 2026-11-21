@@ -169,10 +169,10 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
             audioRecorder.removeRecordingSetup();
         }
         // bloom-showImageDescriptions is on the body, outside the page div that removeToolMarkup()
-        // gets. Comic editing must not resume until super has removed the wrappers.
+        // gets. Canvas element editing must not resume until super has removed the wrappers.
         getPageIframeBody()?.classList.remove(kShowImageDescriptionsClass);
         super.detachFromPage();
-        getCanvasElementManager()?.resumeComicEditing();
+        getCanvasElementManager()?.resumeCanvasElementEditing();
         // With the image descriptions gone, a game page's Play tab is available again.
         getToolboxBundleExports()?.redrawGameTabs();
     }

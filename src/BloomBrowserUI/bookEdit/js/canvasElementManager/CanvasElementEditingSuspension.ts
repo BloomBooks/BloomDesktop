@@ -27,20 +27,20 @@ export interface ICanvasElementEditingSuspensionHost {
 export class CanvasElementEditingSuspension {
     private host: ICanvasElementEditingSuspensionHost;
 
-    // Notes that comic editing either has not been suspended...isComicEditingOn might be true or false...
-    // or that it was suspended because of a drag in progress that might affect page layout
-    // (current example: mouse is down over an origami splitter), or because some longer running
-    // process that affects layout is happening (current example: origami layout tool is active),
-    // or because we're testing a bloom game.
-    // When in one of the latter states, it may be inferred that isComicEditingOn was true when
-    // suspendComicEditing was called, that it is now false, and that resuming should turn it on
-    // again: resumeComicEditing for every state but forGamePlayMode, which only
-    // endGamePlayModeSuspension ends.
+    // Notes that canvas element editing either has not been suspended (getIsCanvasElementEditingOn()
+    // might be true or false), or that it was suspended because of a drag in progress that might
+    // affect page layout (current example: mouse is down over an origami splitter), or because some
+    // longer running process that affects layout is happening (current example: origami layout tool
+    // is active), or because we're testing a bloom game.
+    // When in one of the latter states, it may be inferred that getIsCanvasElementEditingOn() was
+    // true when suspendCanvasElementEditing was called, that it is now false, and that resuming
+    // should turn it on again: resumeCanvasElementEditing for every state but forGamePlayMode, which
+    // only endGamePlayModeSuspension ends.
     // Only one reason is remembered, so two must never overlap. A game's Play tab is the one that
     // could: the game page's tabs stay usable whatever tool is open. Image descriptions, the only
-    // tool suspension a game page can have, disable Play while they are showing, and end it if they
-    // come on during it (GameTool's leavePlayBeforeShowingImageDescriptions); drags of origami
-    // splitters and jQuery resizes don't happen on game pages.
+    // tool suspension a game page can have, disable Play while they are showing, and never show
+    // during it (GameTool's isGamePageInPlay); drags of origami splitters and jQuery resizes don't
+    // happen on game pages.
     private suspendedState: ComicEditingSuspendedState = "none";
 
     // The page's text boxes that Play made uneditable, to make editable again when it ends.
@@ -115,7 +115,7 @@ export class CanvasElementEditingSuspension {
         });
     };
 
-    public suspendComicEditing = (
+    public suspendCanvasElementEditing = (
         forWhat: "forDrag" | "forTool" | "forGamePlayMode" | "forJqueryResize",
     ): void => {
         if (!this.host.getIsCanvasElementEditingOn()) {
@@ -133,21 +133,21 @@ export class CanvasElementEditingSuspension {
         this.suspendedState = forWhat;
     };
 
-    // Resume comic editing after a suspension for anything but a game's Play mode, which only the
-    // game's tab control may end (endGamePlayModeSuspension). Hiding the toolbox during Play (its
-    // toggle stays usable) closes the open tool, and some tools call this as they close whether or
-    // not they suspended anything (the Talking Book tool does); that must not make the game's text
-    // editable mid-Play.
-    public resumeComicEditing = (): void => {
+    // Resume canvas element editing after a suspension for anything but a game's Play mode, which
+    // only the game's tab control may end (endGamePlayModeSuspension). Some tools call this as they
+    // close whether or not they suspended anything (the Talking Book tool does). In Play no tool
+    // should close, since the toolbox and its show/hide toggle are disabled, but if one did, that
+    // must not make the game's text editable mid-Play.
+    public resumeCanvasElementEditing = (): void => {
         if (this.suspendedState === "forGamePlayMode") {
             return;
         }
         this.resume();
     };
 
-    // End the suspension of comic editing for a game's Play mode, and no other. (Choosing a game tab
-    // other than Play calls this, and must not end, say, the suspension for showing image
-    // descriptions.)
+    // End the suspension of canvas element editing for a game's Play mode, and no other. (Choosing
+    // a game tab other than Play calls this, and must not end, say, the suspension for showing
+    // image descriptions.)
     public endGamePlayModeSuspension = (): void => {
         if (this.suspendedState !== "forGamePlayMode") {
             return;
@@ -204,13 +204,13 @@ export class CanvasElementEditingSuspension {
         if (this.suspendedState === "forTool") {
             // We're in change layout mode. We want to get the usual behavior of any
             // existing images while dragging the splitter, but we don't need to turn
-            // off comic editing since it already is.
+            // off canvas element editing since it already is.
             this.draggingSplitter = true;
             this.startDraggingSplitter();
         } else {
             // Unless we're suspended for some other reason, this will call startDraggingSplitter
             // after turning stuff off.
-            this.suspendComicEditing("forDrag");
+            this.suspendCanvasElementEditing("forDrag");
         }
     };
 
@@ -226,7 +226,7 @@ export class CanvasElementEditingSuspension {
                 // in timeout to be sure that another mouseup handler will have removed
                 // the origami-drag class from the body, so we can get the right
                 // resize behavior when turning back on.
-                this.resumeComicEditing();
+                this.resumeCanvasElementEditing();
             }, 0);
         } else if (this.draggingSplitter) {
             // dragging the splitter while in origami mode. We need to clean up

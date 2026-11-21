@@ -6,7 +6,7 @@ import {
 import { kCanvasElementClass } from "../../toolbox/canvas/canvasElementConstants";
 
 // A game page's tabs work whatever tool is open, so a game's Play mode must survive tools that
-// resume comic editing when they close, and the game tabs must end only Play's suspension.
+// resume canvas element editing when they close, and the game tabs must end only Play's suspension.
 
 let editingOn: boolean;
 let suspension: CanvasElementEditingSuspension;
@@ -60,11 +60,11 @@ describe("CanvasElementEditingSuspension with a game's Play mode", () => {
     });
 
     it("only the game's tab control ends Play mode", () => {
-        suspension.suspendComicEditing("forGamePlayMode");
+        suspension.suspendCanvasElementEditing("forGamePlayMode");
         expect(canvasTextIsEditable(), "test setup").toBe(false);
 
         // e.g. the Talking Book tool closing while the page is in Play
-        suspension.resumeComicEditing();
+        suspension.resumeCanvasElementEditing();
         expect(editingOn).toBe(false);
         expect(canvasTextIsEditable()).toBe(false);
 
@@ -83,14 +83,14 @@ describe("CanvasElementEditingSuspension with a game's Play mode", () => {
             /contenteditable="true" data-languagetipcontent/,
         );
 
-        suspension.suspendComicEditing("forGamePlayMode");
+        suspension.suspendCanvasElementEditing("forGamePlayMode");
         suspension.endGamePlayModeSuspension();
 
         expect(canvasText.outerHTML).toBe(before);
     });
 
     it("Play makes all the page's text uneditable, and only what was editable editable again", () => {
-        suspension.suspendComicEditing("forGamePlayMode");
+        suspension.suspendCanvasElementEditing("forGamePlayMode");
         expect(otherText.getAttribute("contenteditable")).toBe("false");
         expect(
             readOnlyText.hasAttribute("contenteditable"),
@@ -106,12 +106,12 @@ describe("CanvasElementEditingSuspension with a game's Play mode", () => {
     });
 
     it("choosing a game tab other than Play does not end a tool's suspension", () => {
-        suspension.suspendComicEditing("forTool"); // e.g. image descriptions shown
+        suspension.suspendCanvasElementEditing("forTool"); // e.g. image descriptions shown
         suspension.endGamePlayModeSuspension(); // e.g. the Start tab chosen
         expect(editingOn).toBe(false);
         expect(suspension.isSuspended()).toBe(true);
 
-        suspension.resumeComicEditing(); // the tool is done
+        suspension.resumeCanvasElementEditing(); // the tool is done
         expect(editingOn).toBe(true);
     });
 });

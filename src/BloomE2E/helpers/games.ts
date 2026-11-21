@@ -133,14 +133,21 @@ export async function makeBookWithGamePage(
  * wait until the page shows its game tabs and the tool has set it up. A page fresh from the Games
  * template has its targets not yet assigned to items; the Game tool assigns them when it sets the
  * page up, so until then no item has a target to be dragged onto.
+ *
+ * A game page can open in Play: Bloom keeps the last game tab chosen, and with the Game tool shut
+ * nothing takes a newly opened page back to Start. In Play the whole toolbox is disabled, so the
+ * tool can't be opened; as a person would, this chooses Start first.
  */
 export async function goToGamePage(page: Page, pageId: string): Promise<void> {
     await goToPage(page, pageId);
-    await expandToolByHeader(page, "game");
     await expect(
         gameTab(page, "Play"),
         "The page being edited never showed its game tabs (Start, Correct, Wrong, Play).",
     ).toBeVisible({ timeout: 30000 });
+    if ((await getGameTabShowing(page)) === "Play") {
+        await clickGameTab(page, "Start");
+    }
+    await expandToolByHeader(page, "game");
     await expect(
         editablePageFrame(page).locator('[data-target-of=""]'),
         "The Game tool never assigned the page's targets to its items.",

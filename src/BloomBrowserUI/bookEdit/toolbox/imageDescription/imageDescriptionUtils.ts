@@ -17,11 +17,12 @@ export function areImageDescriptionsShowing(
 }
 
 export function showImageDescriptions(bodyOfPageIframe: HTMLElement) {
-    // A game page can't be in Play with image descriptions showing; this must come first, so that
-    // leaving Play doesn't turn comic editing back on after we turn it off below.
-    getToolboxBundleExports()?.leavePlayBeforeShowingImageDescriptions();
+    // Image descriptions never show while a game page is in Play (see isGamePageInPlay).
+    if (getToolboxBundleExports()?.isGamePageInPlay()) {
+        return;
+    }
     const canvasElementManager = getCanvasElementManager();
-    canvasElementManager?.suspendComicEditing("forTool");
+    canvasElementManager?.suspendCanvasElementEditing("forTool");
     // turn on special layout to make image descriptions visible (might already be on, so check first)
     if (!areImageDescriptionsShowing(bodyOfPageIframe)) {
         bodyOfPageIframe.classList.add(kShowImageDescriptionsClass);
@@ -49,7 +50,7 @@ export function hideImageDescriptions(bodyOfPageIframe: HTMLElement) {
     // right while the extra wrapper is present.
     bodyOfPageIframe.classList.remove(kShowImageDescriptionsClass);
     unwrapDescribedImages(bodyOfPageIframe);
-    canvasElementManager?.resumeComicEditing();
+    canvasElementManager?.resumeCanvasElementEditing();
     getToolboxBundleExports()?.redrawGameTabs(); // Play is available again
 }
 
