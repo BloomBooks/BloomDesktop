@@ -178,6 +178,12 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         avSettings.pauseAfterNarration,
         1000,
     );
+    // The page timings, as the preview's URL parameters for bloom-player.
+    const timingParams =
+        "&defaultDuration=" +
+        debouncedPageTurnDelay +
+        "&pauseAfterNarration=" +
+        debouncedPauseAfterNarration;
 
     const [progressState, setProgressState] = useState(ProgressState.Working);
     const [activeStep, setActiveStep] = useState(0);
@@ -289,10 +295,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     // any variable element that contributes to the preview URL, we will re-run the query
     // any time it changes. (The actual content of the param is ignored in the backend.)
     const videoSettings = useApiString(
-        "publish/av/videoSettings?regen=" +
-            avSettings.pageTurnDelay +
-            "_" +
-            avSettings.pauseAfterNarration,
+        "publish/av/videoSettings?regen=" + encodeURIComponent(timingParams),
         "",
     );
     const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
@@ -374,10 +377,8 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     // (and again after orientation changes, until it is pressed again)
                                     url={
                                         havePreviewForOrientation
-                                            ? "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
-                                              debouncedPageTurnDelay +
-                                              "&pauseAfterNarration=" +
-                                              debouncedPauseAfterNarration +
+                                            ? "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true" +
+                                              timingParams +
                                               "&url=" +
                                               encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
                                               `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +

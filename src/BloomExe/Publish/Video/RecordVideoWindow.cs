@@ -63,8 +63,8 @@ namespace Bloom.Publish.Video
         private int _videoHeight = 720; // default, facebook
         private int _videoWidth = 1280;
         private Codec _codec = Codec.H264;
-        private string _pageReadTime = "3.0"; // default for pages without narration
-        private string _pauseAfterNarration = "0"; // seconds to stay on a page after its narration ends
+        private double _pageReadTime = 3.0; // seconds to stay on a page without narration
+        private double _pauseAfterNarration = 0; // seconds to stay on a page after its narration ends
         private string _videoSettingsFromPreview;
         private bool _shouldRotateBook = false;
         private bool _shouldUseOriginalPageSize = false;
@@ -198,7 +198,7 @@ namespace Bloom.Publish.Video
             // really important is happening in the 'background music' stream. If that becomes
             // a problem, we may have to somehow encourage, but not enforce, zero pageReadTime
             // for audio-only output.
-            var pageReadTime = (_codec == Codec.MP3 ? "0" : _pageReadTime);
+            var pageReadTime = (_codec == Codec.MP3 ? 0 : _pageReadTime);
             string pageRangeParams =
                 _pageRange.Length == 2
                     ? $"&start-page={_pageRange[0]}&autoplay-count={_pageRange[1] - _pageRange[0] + 1}"
@@ -1887,19 +1887,16 @@ namespace Bloom.Publish.Video
             _videoHeight = videoResolution.Height;
         }
 
-        public void SetPageReadTime(string pageReadTime)
-        {
-            _pageReadTime = pageReadTime;
-        }
-
         /// <summary>
-        /// Set how many seconds (as a string, to pass to BloomPlayer) to stay on a page after
-        /// its narration ends, before turning the page. Unlike the page read time, this applies
-        /// to MP3 recordings too.
+        /// Take the page timings to pass to BloomPlayer from the book's Audio/Video settings: how
+        /// long to stay on a page without narration, and how long to wait after a page's
+        /// narration ends before turning the page. Unlike the first, the pause applies to MP3
+        /// recordings too.
         /// </summary>
-        public void SetPauseAfterNarration(string pauseAfterNarration)
+        public void SetPageTimings(AudioVideoSettings settings)
         {
-            _pauseAfterNarration = pauseAfterNarration;
+            _pageReadTime = settings.PageTurnDelayDouble;
+            _pauseAfterNarration = settings.PauseAfterNarrationDouble;
         }
 
         public void SetVideoSettingsFromPreview(string videoSettings)

@@ -129,12 +129,7 @@ namespace Bloom.Publish.Video
 
                         request.CurrentBook.BookInfo.SavePublishSettings();
 
-                        _recordVideoWindow?.SetPageReadTime(
-                            settings.PageTurnDelayDouble.ToString()
-                        );
-                        _recordVideoWindow?.SetPauseAfterNarration(
-                            settings.PauseAfterNarrationDouble.ToString()
-                        );
+                        _recordVideoWindow?.SetPageTimings(settings);
 
                         string format = request
                             .CurrentBook
@@ -574,11 +569,8 @@ namespace Bloom.Publish.Video
                 ShouldRecordAsLandscape(request.CurrentBook, format),
                 request.CurrentBook.GetLayout()
             );
-            _recordVideoWindow.SetPageReadTime(
-                request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble.ToString()
-            );
-            _recordVideoWindow.SetPauseAfterNarration(
-                request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PauseAfterNarrationDouble.ToString()
+            _recordVideoWindow.SetPageTimings(
+                request.CurrentBook.BookInfo.PublishSettings.AudioVideo
             );
             _recordVideoWindow.SetVideoSettingsFromPreview(
                 request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings
