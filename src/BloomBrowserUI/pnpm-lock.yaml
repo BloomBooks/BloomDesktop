@@ -93,7 +93,7 @@ importers:
         version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/65eb99a2faeb1196b026ddb7abb9355380676c0c(@types/react@18.3.31)(supports-color@5.5.0)
       bloom-player:
         specifier: alpha
-        version: 2.22.0-alpha.2
+        version: 2.23.0-alpha.3
       bloom-table:
         specifier: github:BloomBooks/bloom-table#dist-v0.1.5
         version: https://codeload.github.com/BloomBooks/bloom-table/tar.gz/dea04e38e992fcef107a42faf2d8e0402100de9d(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1055,6 +1055,10 @@ packages:
 
   '@babel/runtime-corejs3@7.29.7':
     resolution: {integrity: sha512-ppj9ouYku+RX0ljtgZd+KMO5mkM2bCqg8H2PYAFWnLsHEIKIdRojqbJ2i3eVHrisuxy7nOFCmngTDdWtUCdXUQ==}
+    engines: {node: '>=6.9.0'}
+
+  '@babel/runtime@7.29.14':
+    resolution: {integrity: sha512-Y5tqevQaUAZhhj82BpYMNC1ssvLQTVAfwKdm8iy8qwmhvC2/CpcAu8OC+QEtjM7pMk7knx83u1Qj8gzkicyelw==}
     engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.29.7':
@@ -2865,8 +2869,8 @@ packages:
     resolution: {gitHosted: true, integrity: sha512-mJ4f62BuYVlDozTd1O9lhBvW2SRm8BxY6AHP6b/r31vc8MPjADZvqhgeDbcjA/margsCo1ONQE9P2WeBuSEUdw==, tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/65eb99a2faeb1196b026ddb7abb9355380676c0c}
     version: 0.0.6
 
-  bloom-player@2.22.0-alpha.2:
-    resolution: {integrity: sha512-d289mWGKMCXo2+RbfzI9GskqMU+N9Nq9Z0PmGv19pSq/0LNlrFeAPC1RcfCQkPE3Ys3XnhGcFMw9VNXhQcC3LA==}
+  bloom-player@2.23.0-alpha.3:
+    resolution: {integrity: sha512-SUK4PCyNZQE6mrToLAoPuGdwcGMGyycYa34XDI38TipWZC/D+b5SfDjEoGDyqOqPXAB4fef9A6jbOFAIPsoxLw==}
 
   bloom-table@https://codeload.github.com/BloomBooks/bloom-table/tar.gz/dea04e38e992fcef107a42faf2d8e0402100de9d:
     resolution: {gitHosted: true, integrity: sha512-cF7/FD8ft2BTurGvl/iYSGqMnz3RPveN25yh9MEMVa0A9YyKZmeQuI5ohl2aZpWgiVojzaS1UT1EQXcMqvvCyA==, tarball: https://codeload.github.com/BloomBooks/bloom-table/tar.gz/dea04e38e992fcef107a42faf2d8e0402100de9d}
@@ -7705,6 +7709,8 @@ snapshots:
     dependencies:
       core-js-pure: 3.49.0
 
+  '@babel/runtime@7.29.14': {}
+
   '@babel/runtime@7.29.7': {}
 
   '@babel/template@7.29.7':
@@ -8704,7 +8710,7 @@ snapshots:
   '@testing-library/dom@10.4.1':
     dependencies:
       '@babel/code-frame': 7.29.7
-      '@babel/runtime': 7.29.7
+      '@babel/runtime': 7.29.14
       '@types/aria-query': 5.0.4
       aria-query: 5.3.0
       dom-accessibility-api: 0.5.16
@@ -9550,7 +9556,7 @@ snapshots:
       - debug
       - supports-color
 
-  bloom-player@2.22.0-alpha.2: {}
+  bloom-player@2.23.0-alpha.3: {}
 
   bloom-table@https://codeload.github.com/BloomBooks/bloom-table/tar.gz/dea04e38e992fcef107a42faf2d8e0402100de9d(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
