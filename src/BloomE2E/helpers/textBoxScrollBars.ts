@@ -17,26 +17,14 @@
 // at the bottom, so while a box has a scroll bar Bloom moves that alignment aside, and puts it
 // back when the scroll bar goes. getVerticalAlignment reads which alignment is in force.
 
-import { expect, type Locator, type Page } from "@playwright/test";
-import { clickInGroup, editablePageFrame } from "./bookMaking";
+import { expect, type Page } from "@playwright/test";
+import { editablePageFrame, groupTextBox } from "./bookMaking";
+import { moveCaretToEnd, typeWithKeys } from "./keys";
+import { emptyTextBox } from "./overflowMarks";
 
 // How long to wait for a scroll bar to come or go: Bloom checks a box a second after a key is
 // released, and rebuilds the page's scroll bars a fifth of a second after that.
 const kScrollBarWaitMs = 10000;
-
-/** One language's box of one translation group on the page being edited. */
-function textBox(
-    page: Page,
-    groupSelector: string,
-    languageTag: string,
-    groupIndex: number,
-): Locator {
-    return editablePageFrame(page)
-        .locator(groupSelector)
-        .nth(groupIndex)
-        .locator(`.bloom-editable[lang="${languageTag}"]`)
-        .first();
-}
 
 /**
  * Add text at the end of what a text box holds, the way a person carries on typing there. The
@@ -51,15 +39,10 @@ export async function typeAtEndOfGroup(
     finalWord: string,
     groupIndex = 0,
 ): Promise<void> {
-    const box = await clickInGroup(
-        page,
-        groupSelector,
-        languageTag,
-        groupIndex,
-    );
-    await box.press("Control+End");
+    const box = groupTextBox(page, groupSelector, languageTag, groupIndex);
+    await moveCaretToEnd(box);
     await page.keyboard.insertText(text);
-    await page.keyboard.type(finalWord);
+    await typeWithKeys(page, finalWord);
     await expect
         .poll(async () => (await box.innerText()).trimEnd(), {
             timeout: 15000,
@@ -79,15 +62,9 @@ export async function retypeGroupWithKeys(
     text: string,
     groupIndex = 0,
 ): Promise<void> {
-    const box = await clickInGroup(
-        page,
-        groupSelector,
-        languageTag,
-        groupIndex,
-    );
-    await box.press("Control+a");
-    await box.press("Delete");
-    await page.keyboard.type(text);
+    const box = groupTextBox(page, groupSelector, languageTag, groupIndex);
+    await emptyTextBox(box);
+    await typeWithKeys(page, text);
     await expect(box).toHaveText(text, { timeout: 15000, useInnerText: true });
 }
 
@@ -109,7 +86,7 @@ export async function getTextBoxScrollBar(
     languageTag: string,
     groupIndex = 0,
 ): Promise<ITextBoxScrollBar> {
-    return textBox(page, groupSelector, languageTag, groupIndex).evaluate(
+    return groupTextBox(page, groupSelector, languageTag, groupIndex).evaluate(
         (box) => {
             const boxRect = box.getBoundingClientRect();
             for (const rail of Array.from(
@@ -235,7 +212,7 @@ export async function getTextBoxScrollPosition(
     languageTag: string,
     groupIndex = 0,
 ): Promise<ITextBoxScrollPosition> {
-    return textBox(page, groupSelector, languageTag, groupIndex).evaluate(
+    return groupTextBox(page, groupSelector, languageTag, groupIndex).evaluate(
         (box) => ({
             hiddenAbove: box.scrollTop,
             hiddenBelow: box.scrollHeight - box.clientHeight - box.scrollTop,
@@ -255,7 +232,7 @@ export async function wheelTextBoxTo(
     where: "start" | "end",
     groupIndex = 0,
 ): Promise<void> {
-    const box = textBox(page, groupSelector, languageTag, groupIndex);
+    const box = groupTextBox(page, groupSelector, languageTag, groupIndex);
     const scrollTop = () => box.evaluate((element) => element.scrollTop);
     const before = await scrollTop();
     await box.hover();

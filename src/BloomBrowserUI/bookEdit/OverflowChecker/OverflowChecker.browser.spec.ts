@@ -1,4 +1,5 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
+import $ from "jquery";
 import OverflowChecker from "./OverflowChecker";
 import {
     initializeCanvasElementManager,
@@ -542,5 +543,132 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
             "The second box's text fits once the canvas element has grown.",
         ).toBeLessThanOrEqual(0);
         expect(second.classList.contains("overflow")).toBe(false);
+    });
+
+    // Puts in the document a margin box holding `count` boxes too small for their text.
+    function loadPageOfTooFullBoxes(count: number): HTMLElement[] {
+        const box =
+            `<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on" ` +
+            `style="height: 10px; width: 100px; font: 16px Arial; overflow: hidden">${"words ".repeat(10)}</div></div>`;
+        loadFixture(
+            `<div class="bloom-page"><div class="marginBox">${box.repeat(count)}</div></div>`,
+        );
+        vi.useFakeTimers();
+        initializeCanvasElementManager();
+        // The boxes are not in canvas elements, so their sizes stay as they are.
+        vi.spyOn(
+            theOneCanvasElementManager,
+            "adjustSizeOfContainingCanvasElementToMatchContent",
+        ).mockImplementation((_element, overflowY) => overflowY);
+        return Array.from(
+            document.querySelectorAll<HTMLElement>(
+                "#fixtureRoot .bloom-editable",
+            ),
+        );
+    }
+
+    // BL-1260: Bloom does not check a page with more than 30 boxes, and AddOverflowHandlers clears
+    // its marks, so marks put there by a table check would never be cleared. A page can also grow
+    // past 30 while it is open (a row added to a table): its earlier marks go then.
+    it("marks nothing on a page with more than 30 boxes, and clears a page that grows past 30", () => {
+        const boxes = loadPageOfTooFullBoxes(30);
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(boxes);
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")).length,
+            "A page of 30 too-full boxes should be marked, or this tests nothing.",
+        ).toBe(30);
+
+        const group = boxes[0].parentElement!;
+        const thirtyFirst = group.cloneNode(true) as HTMLElement;
+        group.after(thirtyFirst);
+        const all = Array.from(
+            document.querySelectorAll<HTMLElement>(
+                "#fixtureRoot .bloom-editable",
+            ),
+        );
+        expect(all.length).toBe(31);
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(all);
+
+        expect(
+            all.filter((box) => box.classList.contains("overflow")),
+            "No box on a page of 31 should be marked.",
+        ).toEqual([]);
+
+        // Back under the limit (a row deleted), a check of one box, as a table's check asks,
+        // marks the whole page again: nothing else would restore the marks just cleared.
+        thirtyFirst.remove();
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll([boxes[0]]);
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")).length,
+            "Every box on the page, not only the one checked, should be marked again.",
+        ).toBe(30);
+    });
+
+    // Typing in a box of a page that has grown past the limit since it loaded (a row added to a
+    // table) must not mark it: the page is no longer checked anywhere else either.
+    it("marks nothing when typing on a page that grew past 30 boxes after it loaded", () => {
+        const boxes = loadPageOfTooFullBoxes(30);
+        // The typing check repositions the language tips, which the qtip plugin does; it is not
+        // loaded here.
+        const jqueryPlugins = $.fn as unknown as { qtip?: () => void };
+        const qtipWas = jqueryPlugins.qtip;
+        jqueryPlugins.qtip = () => {};
+        try {
+            new OverflowChecker().AddOverflowHandlers(
+                document.getElementById("fixtureRoot")!,
+            );
+            // Typing checks a box a tenth of a second after the key comes up; the page's own
+            // first check waits a second, which this test never reaches.
+            const typeIn = (box: HTMLElement) => {
+                box.dispatchEvent(
+                    new KeyboardEvent("keyup", { bubbles: true }),
+                );
+                vi.advanceTimersByTime(150);
+            };
+            typeIn(boxes[0]);
+            expect(
+                boxes[0].classList.contains("overflow"),
+                "Typing on a page of 30 should mark the box, or this tests nothing.",
+            ).toBe(true);
+
+            const group = boxes[0].parentElement!;
+            group.after(group.cloneNode(true));
+            typeIn(boxes[1]);
+
+            expect(
+                Array.from(
+                    document.querySelectorAll<HTMLElement>(
+                        "#fixtureRoot .bloom-editable",
+                    ),
+                ).filter((box) => box.classList.contains("overflow")),
+                "Typing on a page grown to 31 should mark nothing, and clear what was marked.",
+            ).toEqual([]);
+        } finally {
+            jqueryPlugins.qtip = qtipWas;
+        }
+    });
+
+    // A page that is over the limit when it loads is never checked; once a row is deleted and it is
+    // under the limit, nothing but this check would ever mark its text.
+    it("checks every box of a page that loaded over 30 boxes, once it is back under", () => {
+        const boxes = loadPageOfTooFullBoxes(31);
+        // What page setup passes is the body that holds the page, not the page itself.
+        new OverflowChecker().AddOverflowHandlers(
+            document.getElementById("fixtureRoot")!,
+        );
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")),
+            "A page of 31 should not have been checked when it loaded, or this tests nothing.",
+        ).toEqual([]);
+
+        boxes[30].parentElement!.remove();
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll([boxes[0]]);
+
+        expect(
+            boxes
+                .slice(0, 30)
+                .filter((box) => box.classList.contains("overflow")).length,
+            "Every box on the page, not only the one checked, should be marked.",
+        ).toBe(30);
     });
 });
