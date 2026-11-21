@@ -23,7 +23,7 @@ test.use({
     collectionSpec: {
         name: "all-pages-rtl",
         languages: ["ar"],
-        rightToLeft: true,
+        rightToLeftLanguages: ["ar"],
     },
 });
 

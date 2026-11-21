@@ -52,14 +52,9 @@ function getEditorOfBox(editableDiv: HTMLElement): CKEDITOR.editor | undefined {
  * Whether this box participates in markup at all.
  *
  * Normally every editable box has a rich-text editor attached, so this is true. Boxes without one
- * are treated as not needing markup: the caller skips the whole update for them.
- *
- * (The comment this replaced claimed such boxes are the ArithmeticTemplate number boxes, "because
- * the logic that invokes WireToCKEditor is looking for classes like bloom-content1 that are not
- * present in ArithmeticTemplate". That explanation is wrong: ckeditableSelector in utils/shared.ts
- * explicitly includes .Equation-style, added for that very template. The real case of a box with no
- * editor is one whose computed cursor is `not-allowed`, which attachToCkEditor skips. Behaviour is
- * unchanged either way; only the explanation is corrected.)
+ * are treated as not needing markup: the caller skips the whole update for them. A box has no
+ * editor when page load did not attach one: it attaches one only to boxes that match
+ * ckeditableSelector (utils/shared.ts).
  */
 export function boxParticipatesInMarkup(editableDiv: HTMLElement): boolean {
     return !!getEditorOfBox(editableDiv);

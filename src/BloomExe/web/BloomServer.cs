@@ -182,6 +182,9 @@ namespace Bloom.Api
         private bool _useCache;
 
         private const string SimulatedFileUrlMarker = "-memsim-";
+
+        // How the name of the page being edited starts (UrlForCurrentBookPage); its name ends ".htm".
+        private const string CurrentBookPageFileNamePrefix = "page" + SimulatedFileUrlMarker;
         private const string FixedSimulatedPathPrefix = "fixed-simulated/";
         static Dictionary<string, string> _urlToSimulatedPageContent =
             new Dictionary<string, string>(); // see comment on MakeInMemoryHtmlFileInBookFolder
@@ -413,12 +416,9 @@ namespace Bloom.Api
             bool suppressBackgroundColors = false
         )
         {
-            var simulatedPageFileName = Path.ChangeExtension(
+            var simulatedPageFileName =
                 (isCurrentPageContent ? "currentPage" : Guid.NewGuid().ToString())
-                    + SimulatedFileUrlMarker
-                    + source,
-                ".html"
-            );
+                + InMemoryHtmlFileNameEnding(source);
             var pathToInMemoryHtmlFile = simulatedPageFileName; // a default, if there is no special folder
             if (dom.BaseForRelativePaths != null)
             {
@@ -569,7 +569,57 @@ namespace Bloom.Api
         }
 
         private static string UrlPrefixForCurrentBookPage(string bookFolderPath) =>
-            bookFolderPath.Replace("\\", "/") + "/page" + SimulatedFileUrlMarker;
+            bookFolderPath.Replace("\\", "/") + "/" + CurrentBookPageFileNamePrefix;
+
+        /// <summary>
+        /// How the name of an in-memory file that MakeInMemoryHtmlFileInBookFolder makes for
+        /// <paramref name="source"/> ends, e.g. "-memsim-Pagelist.html".
+        /// </summary>
+        internal static string InMemoryHtmlFileNameEnding(InMemoryHtmlFileSource source) =>
+            SimulatedFileUrlMarker + source + ".html";
+
+        /// <summary>
+        /// True when <paramref name="referer"/> is one of the documents the Edit tab shows from
+        /// inside the book's folder -- the page list (the in-memory file
+        /// MakeInMemoryHtmlFileInBookFolder makes for InMemoryHtmlFileSource.Pagelist) or the page
+        /// being edited (UrlForCurrentBookPage) -- and it was loaded from a folder other than
+        /// <paramref name="bookFolderPath"/>. Its pictures and scripts are relative to its own
+        /// address, so after the book's folder is renamed such a document can only ask for them
+        /// where they no longer are, until Bloom has replaced it with one from the new folder
+        /// (BL-17055). Anything else, including a request whose document we cannot tell, is false.
+        ///
+        /// This only works for requests the document itself makes. A picture or font that a
+        /// stylesheet loads names the stylesheet as its referer, not the document, so it cannot be
+        /// judged this way.
+        /// </summary>
+        public static bool IsBookDocumentOutsideFolder(string referer, string bookFolderPath)
+        {
+            if (
+                string.IsNullOrEmpty(referer)
+                || !referer.StartsWith(
+                    ServerUrlWithBloomPrefixEndingInSlash,
+                    StringComparison.Ordinal
+                )
+            )
+                return false;
+            var path = referer.Split('?', '#')[0].FromLocalhost();
+            var fileName = path.Substring(path.LastIndexOf('/') + 1);
+            var isPageList = fileName.EndsWith(
+                InMemoryHtmlFileNameEnding(InMemoryHtmlFileSource.Pagelist),
+                StringComparison.Ordinal
+            );
+            var isPageBeingEdited =
+                fileName.StartsWith(CurrentBookPageFileNamePrefix, StringComparison.Ordinal)
+                && fileName.EndsWith(".htm", StringComparison.Ordinal);
+            if (!isPageList && !isPageBeingEdited)
+                return false;
+            var documentFolder = path.Substring(0, Math.Max(0, path.LastIndexOf('/')));
+            return !string.Equals(
+                documentFolder,
+                bookFolderPath.Replace('\\', '/'),
+                StringComparison.Ordinal
+            );
+        }
 
         public static string UrlForCurrentBookPage(string bookFolderPath, string pageId)
         {
@@ -2343,6 +2393,15 @@ namespace Bloom.Api
             // images that are intentionally optional.
             var hasOptionalQueryParam = info.GetQueryParameters().Get("optional") == "true";
             if (hasOptionalQueryParam)
+                return false;
+
+            // A page list or page being edited that was loaded from the book's folder before it was
+            // renamed asks for its pictures and scripts where they no longer are. It is about to be
+            // replaced by one from the new folder (the page list by EditingView.HandleBookRenamed,
+            // the page by EditingModel.ShowPageAgainIfFromAnotherFolderSoon), so its misses are not
+            // the user's problem. Saying so would show a "Cannot Find Image File" notice (BL-17055).
+            var bookFolder = CurrentBook?.FolderPath;
+            if (bookFolder != null && IsBookDocumentOutsideFolder(info.Referer, bookFolder))
                 return false;
 
             // If we are requesting another book, and that book is not there,

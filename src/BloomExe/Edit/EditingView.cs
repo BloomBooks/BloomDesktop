@@ -258,6 +258,7 @@ namespace Bloom.Edit
                 _mainBrowser.RunJavascriptFireAndForget(
                     $"workspaceBundle.switchThumbnailPage('{url}');"
                 );
+                _model.ShowPageAgainIfFromAnotherFolderSoon();
             }
         }
 
@@ -657,7 +658,7 @@ namespace Bloom.Edit
             }
             catch (Exception e)
             {
-                ImageUtils.ReportImageMetadataProblem(
+                ImageUtils.ReportImageMetadataSaveProblem(
                     Path.Combine(_model.CurrentBook.FolderPath, _fileNameOfImageBeingModified),
                     e
                 );

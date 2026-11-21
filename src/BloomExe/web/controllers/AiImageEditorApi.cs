@@ -371,7 +371,9 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            OpenEditorInBrowser(payload);
+            // If that save renamed the book's folder, the page is shown again from the new one
+            // first, and the editor opens once it has loaded (BL-17055).
+            model.ShowPageAgainIfFromAnotherFolderThen(() => OpenEditorInBrowser(payload));
 
             request.PostSucceeded();
         }
@@ -2578,14 +2580,8 @@ namespace Bloom.web.controllers
             var newPath = Path.Combine(bookFolderPath, newFileName);
             try
             {
-                // Clear whatever the generator left in the file first: stray tags can trip up
-                // the TagLib library when we write (BL-16058). Then write just the IP fields.
-                using (var tagFile = RobustFileIO.CreateTaglibFile(newPath))
-                {
-                    tagFile.RemoveTags(TagLib.TagTypes.AllTags);
-                    RobustFileIO.SaveTaglibFile(tagFile);
-                }
-                source.WriteIntellectualPropertyOnly(newPath);
+                // Clear whatever the generator left in the file, then write just the IP fields.
+                ImageUtils.ReplaceMetadataWithIntellectualPropertyOnly(source, newPath);
             }
             catch (Exception e)
             {
