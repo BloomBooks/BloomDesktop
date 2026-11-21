@@ -226,7 +226,8 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         false,
     );
 
-    const [playing, setPlaying] = useState(false);
+    // The preview URL that was playing when the user last pressed Play (see `playing`).
+    const [playingUrl, setPlayingUrl] = useState<string>();
     const [havePreviewForOrientation, setHavePreviewForOrientation] =
         useState(false);
     useSubscribeToWebSocketForStringMessage(
@@ -250,22 +251,21 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     };
     const play = () => {
         sendMessageToPlayer({ play: true });
-        setPlaying(true);
+        setPlayingUrl(previewUrl);
     };
     const pause = () => {
         sendMessageToPlayer({ pause: true });
-        setPlaying(false);
+        setPlayingUrl(undefined);
     };
     const reset = () => {
         sendMessageToPlayer({ pause: true });
         sendMessageToPlayer({ reset: true });
-        setPlaying(false);
+        setPlayingUrl(undefined);
     };
     const gamesSkipped = useL10n(
         "Games will be skipped",
         "PublishTab.RecordVideo.GamesSkipped",
     );
-    const isPauseButtonDisabled = !playing;
     useEffect(() => {
         const listener = (data) => {
             // something sends us an empty message, which we haven't figured out, but know we can ignore
@@ -294,8 +294,13 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     // would be reset to the value we previously retrieved. With a param that includes
     // any variable element that contributes to the preview URL, we will re-run the query
     // any time it changes. (The actual content of the param is ignored in the backend.)
+    // It uses the timings as they change, not the debounced ones the URL uses, so that the
+    // query has finished by the time the preview reloads.
     const videoSettings = useApiString(
-        "publish/av/videoSettings?regen=" + encodeURIComponent(timingParams),
+        "publish/av/videoSettings?regen=" +
+            avSettings.pageTurnDelay +
+            "_" +
+            avSettings.pauseAfterNarration,
         "",
     );
     const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
@@ -328,6 +333,20 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
             avSettings.pageRange[1] - avSettings.pageRange[0] + 1
         }`;
     }
+    // The preview's bloom-player URL. Any change to it (timings, page range, page size, the
+    // player's own settings) reloads the preview, which starts paused.
+    const previewUrl = havePreviewForOrientation
+        ? "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true" +
+          timingParams +
+          "&url=" +
+          encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
+          `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +
+          videoSettingsParam +
+          pageRangeSetting
+        : "";
+    // So the preview is playing only while the one the user started is still the one shown.
+    const playing = playingUrl !== undefined && playingUrl === previewUrl;
+    const isPauseButtonDisabled = !playing;
     const recordingVideo = avSettings.format != "mp3";
     const circleHeight = "0.88rem";
     const blurbClasses = `
@@ -375,17 +394,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     canRotate={false}
                                     // The following leaves a blank screen until the Preview button is pressed
                                     // (and again after orientation changes, until it is pressed again)
-                                    url={
-                                        havePreviewForOrientation
-                                            ? "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true" +
-                                              timingParams +
-                                              "&url=" +
-                                              encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
-                                              `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +
-                                              videoSettingsParam +
-                                              pageRangeSetting
-                                            : ""
-                                    }
+                                    url={previewUrl}
                                     showPreviewButton={true}
                                     // We might want to highlight it if props.showPreview is false, or perhaps if
                                     // avSettings has changed? But we don't need to regenerate if we just changed the

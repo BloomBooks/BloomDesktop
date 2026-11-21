@@ -411,6 +411,8 @@ const SecondsSlider: React.FunctionComponent<{
     value: number;
     onChange: (seconds: number) => void;
 }> = (props) => {
+    // The label names the slider for screen readers.
+    const labelId = React.useId();
     return (
         <div
             css={css`
@@ -419,6 +421,7 @@ const SecondsSlider: React.FunctionComponent<{
             `}
         >
             <Div
+                id={labelId}
                 l10nKey={props.l10nKey}
                 css={css`
                     margin-bottom: 2px;
@@ -441,6 +444,7 @@ const SecondsSlider: React.FunctionComponent<{
             </Div>
             <div className="bgSliderWrapper">
                 <Slider
+                    aria-labelledby={labelId}
                     max={10}
                     min={props.min}
                     value={props.value}
