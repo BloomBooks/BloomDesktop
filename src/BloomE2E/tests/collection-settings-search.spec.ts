@@ -131,6 +131,12 @@ test("searching finds text on a page that is not a Config-R setting", async ({
     const results = await getCollectionSettingsSearchResults(page);
     expect(results.pages).toEqual(["Subscription"]);
     expect(results.text).toContain("we offer advanced features");
+
+    // "advanced features" is a link; a phrase that runs into it still matches.
+    await searchCollectionSettings(page, "we offer advanced features");
+    expect((await getCollectionSettingsSearchResults(page)).pages).toEqual([
+        "Subscription",
+    ]);
 });
 
 test("searching ignores upper and lower case", async ({ page }) => {
