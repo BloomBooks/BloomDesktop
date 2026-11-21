@@ -113,15 +113,6 @@ export default class OverflowChecker {
             // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
             //        At first I was concerned that this might slow typing, but it doesn't seem to.
             setTimeout(() => {
-                // The page may have grown past the limit since it loaded (a row added to a
-                // table): then it is no longer checked, here or anywhere else.
-                if (
-                    getElementsThatCanOverflowOrNeedToBeResized(container)
-                        .length > kMaxBoxesToCheck
-                ) {
-                    clearOverflowMarks(container);
-                    return;
-                }
                 if (e.type === "paste") {
                     // If we're pasting, show as much of the text as possible even it can't all be shown.
                     // See BL-14632.
@@ -824,6 +815,16 @@ export default class OverflowChecker {
         const editablePageElements = $(
             getElementsThatCanOverflowOrNeedToBeResized(container.get(0)),
         );
+        // BL-1260: a page over the limit shows no marks. Every check that can mark a box ends
+        // with this one (typing, a pane or button resize, the format dialog, a table), so this is
+        // where the limit is kept, for a page that grew past it while open as for one that loaded
+        // over it; the checks before it still size their boxes and update their scroll bars.
+        if (editablePageElements.length > kMaxBoxesToCheck) {
+            clearOverflowMarks(
+                container.closest(".bloom-page").get(0) ?? container.get(0)!,
+            );
+            return;
+        }
 
         // Type 2 Overflow - We'll check ALL of these for overflow past any ancestor.
         // Every element is measured before any is marked: a mark written between two

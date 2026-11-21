@@ -605,8 +605,9 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
     });
 
     // Typing in a box of a page that has grown past the limit since it loaded (a row added to a
-    // table) must not mark it: the page is no longer checked anywhere else either.
-    it("marks nothing when typing on a page that grew past 30 boxes after it loaded", () => {
+    // table) must not mark it, since the page is no longer marked by any other check either; but
+    // the box must still be sized to its text (a canvas text box grows as it is typed in).
+    it("marks nothing, but still sizes the box, when typing on a page that grew past 30 boxes", () => {
         const boxes = loadPageOfTooFullBoxes(30);
         // The typing check repositions the language tips, which the qtip plugin does; it is not
         // loaded here.
@@ -633,8 +634,16 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
 
             const group = boxes[0].parentElement!;
             group.after(group.cloneNode(true));
+            const sizeToText = vi.mocked(
+                theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent,
+            );
+            sizeToText.mockClear();
             typeIn(boxes[1]);
 
+            expect(
+                sizeToText.mock.calls.map((call) => call[0]),
+                "The box typed in should still be sized to its text.",
+            ).toContain(boxes[1]);
             expect(
                 Array.from(
                     document.querySelectorAll<HTMLElement>(
