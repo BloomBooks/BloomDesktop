@@ -821,6 +821,25 @@ function languageGroup(page: Page, heading: string): Locator {
     );
 }
 
+/**
+ * Press Remove beside the heading of an optional language (Written Language 3 or Sign Language),
+ * on the Languages page or in search results, as a person does to take it out of the collection.
+ */
+export async function removeCollectionSettingsLanguage(
+    page: Page,
+    heading: string,
+): Promise<void> {
+    const remove = collectionSettingsDialog(page)
+        .locator(`xpath=.//h3[normalize-space(.)="${heading}"]/..`)
+        .getByRole("button", { name: "Remove", exact: true });
+    await expect(remove, `"${heading}" has no Remove button`).toHaveCount(1);
+    await realClick(remove);
+    await expect(
+        remove,
+        `"${heading}" should have no language, so no Remove button, once removed`,
+    ).toHaveCount(0);
+}
+
 /** Fail, naming the language groups the Languages page has, when it has none with this heading. */
 async function expectLanguageGroup(page: Page, heading: string): Promise<void> {
     if ((await languageGroup(page, heading).count()) === 1) return;
