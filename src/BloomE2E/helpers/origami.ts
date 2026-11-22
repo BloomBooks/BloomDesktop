@@ -322,3 +322,107 @@ export async function addTableInChangeLayout(page: Page): Promise<void> {
     await setChangeLayoutMode(page, false);
     await waitForTableAttached(page);
 }
+
+/** What a section holds, as origami's type list names it, or "empty" for a section with no type yet. */
+export type SectionContent = SectionType | "empty";
+
+/** One section of the page being edited: what it holds and where it is drawn. */
+export interface ISectionDescription {
+    content: SectionContent;
+    /** Where the section is drawn, in the coordinates that Playwright's mouse uses. */
+    rect: { x: number; y: number; width: number; height: number };
+    /** The file name in the src of the section's picture, when it holds a picture or a canvas. */
+    imageFile?: string;
+    /** The section's text, when it holds a text box. */
+    text?: string;
+}
+
+/**
+ * Every section of the page being edited, in document order, with what each holds and where it is
+ * drawn. The content is read from the element origami put in the section (see the click handlers
+ * of createTypeSelectors in origami.ts), so it does not depend on Change Layout mode. A Canvas
+ * section is a bloom-canvas that carries the Canvas tool's id; an Image section is one that does
+ * not.
+ */
+export async function describeSections(
+    page: Page,
+): Promise<ISectionDescription[]> {
+    const all = sections(page);
+    const count = await all.count();
+    const result: ISectionDescription[] = [];
+    for (let index = 0; index < count; index++) {
+        const section = all.nth(index);
+        const found = await section.evaluate((inner) => {
+            const child = (selector: string) =>
+                inner.querySelector(`:scope > ${selector}`);
+            const canvas = child(".bloom-canvas");
+            const content = canvas
+                ? canvas.getAttribute("data-tool-id") === "canvas"
+                    ? "canvas"
+                    : "image"
+                : child(".bloom-videoContainer")
+                  ? "video"
+                  : child(".bloom-widgetContainer")
+                    ? "widget"
+                    : child(".bloom-table")
+                      ? "table"
+                      : child(".bloom-translationGroup")
+                        ? "text"
+                        : "empty";
+            const src = canvas?.querySelector("img")?.getAttribute("src");
+            const editable = child(".bloom-translationGroup")?.querySelector(
+                ".bloom-editable.bloom-visibility-code-on",
+            ) as HTMLElement | null;
+            return {
+                content,
+                imageFile: src
+                    ? decodeURIComponent(src.split("?")[0].split("/").pop()!)
+                    : undefined,
+                text: editable ? editable.innerText.trim() : undefined,
+            };
+        });
+        const rect = await section.boundingBox();
+        if (!rect)
+            throw new Error(
+                `Section ${index} of ${count} is not drawn, so there is no place to report for it.`,
+            );
+        result.push({
+            ...found,
+            content: found.content as SectionContent,
+            rect,
+        });
+    }
+    return result;
+}
+
+/**
+ * Drag the splitter of the split that `section` is one half of, by `dx` and `dy` pixels, the way a
+ * person drags it with the mouse. Origami draws that splitter as a split-pane-divider beside the
+ * section (getSplitPaneDividerHtml in origami.ts); a horizontal split's splitter moves up and down
+ * and a vertical split's left and right. Returns once the mouse is up; the caller measures what moved.
+ */
+export async function dragSplitterOf(
+    page: Page,
+    section: Locator,
+    dx: number,
+    dy: number,
+): Promise<void> {
+    const divider = section.locator(
+        "xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' split-pane-component ')][1]" +
+            "/../div[contains(concat(' ', normalize-space(@class), ' '), ' split-pane-divider ')]",
+    );
+    if ((await divider.count()) !== 1)
+        throw new Error(
+            `Expected the section to be one half of a split with one splitter, but found ` +
+                `${await divider.count()} splitters beside it.`,
+        );
+    await divider.scrollIntoViewIfNeeded({ timeout: 30000 });
+    const box = await divider.boundingBox();
+    if (!box) throw new Error("The splitter beside the section is not drawn.");
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + dx, y + dy, { steps: 12 });
+    await page.mouse.up();
+}
