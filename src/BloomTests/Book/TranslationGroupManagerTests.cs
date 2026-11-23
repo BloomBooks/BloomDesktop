@@ -1365,7 +1365,7 @@ namespace BloomTests.Book
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[@id='cl1']/div[@lang='xyz' and contains(@class, 'bloom-visibility-code-on') and @dir='rtl']",
+                    "//div[@id='cl1']/div[@lang='xyz' and contains(@class, 'bloom-visibility-code-on') and contains(@class, 'bloom-contentCL1') and @dir='rtl']",
                     1
                 );
             AssertThatXmlIn

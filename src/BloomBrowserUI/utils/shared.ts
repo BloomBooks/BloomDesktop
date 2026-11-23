@@ -16,7 +16,8 @@
 export const ckeditableSelector =
     ".bloom-content1[contenteditable='true'],.bloom-content2[contenteditable='true']," +
     ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']," +
-    ".bloom-contentNational2[contenteditable='true'],.Equation-style[contenteditable='true']";
+    ".bloom-contentNational2[contenteditable='true'],.bloom-contentCL1[contenteditable='true']," +
+    ".Equation-style[contenteditable='true']";
 
 // The iframe (in the workspace root document) that holds the page being edited.
 // We deliberately look in `parent` rather than `window.top`. Every frame that asks this

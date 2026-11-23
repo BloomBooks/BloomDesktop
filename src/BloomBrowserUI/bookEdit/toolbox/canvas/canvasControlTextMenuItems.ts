@@ -82,12 +82,12 @@ function removeClassesByPrefix(element: HTMLElement, prefix: string): void {
 }
 
 // Make the canvas element's text show `langCode` alone. A box for that language is added if the
-// group has none, set up as page load sets up every box.
+// group has none, set up as page load sets up every box, and the box gets the language classes
+// page load would give it.
 function updateTranslationGroupLanguage(
     translationGroup: HTMLElement,
     langCode: string,
     dataDefaultLang: string,
-    classes: string[],
     appearanceClasses: string[],
 ): void {
     translationGroup.setAttribute("data-default-languages", dataDefaultLang);
@@ -106,7 +106,7 @@ function updateTranslationGroupLanguage(
         `:scope > .bloom-editable[lang="${langCode}"]`,
     )!;
     removeClassesByPrefix(editableInLang, "bloom-content");
-    classes.forEach((className) => editableInLang.classList.add(className));
+    page.addLanguageClassesToBox(editableInLang);
 
     const dataBookValue = editableInLang.getAttribute("data-book");
     if (
@@ -216,7 +216,6 @@ export function makeLanguageMenuItem(
                     translationGroup,
                     languageNameValues.language1Tag,
                     "V",
-                    ["bloom-content1"],
                     ["bloom-contentFirst"],
                 );
                 getCanvasElementManager()?.setActiveElement(
@@ -245,7 +244,6 @@ export function makeLanguageMenuItem(
                     translationGroup,
                     languageNameValues.language2Tag,
                     "N1",
-                    ["bloom-contentNational1"],
                     ["bloom-contentSecond"],
                 );
                 getCanvasElementManager()?.setActiveElement(
@@ -275,7 +273,6 @@ export function makeLanguageMenuItem(
                     translationGroup,
                     languageNameValues.language3Tag!,
                     "N2",
-                    ["bloom-contentNational2"],
                     ["bloom-contentThird"],
                 );
                 getCanvasElementManager()?.setActiveElement(

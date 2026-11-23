@@ -11,6 +11,7 @@ import {
     toggleRole,
 } from "./tableCellLanguages";
 import { tableHistoryManager } from "bloom-table";
+import { ILanguageNameValues } from "../toolbox/canvas/canvasControlTypes";
 
 // Setting up a box needs the whole editing page (CKEditor, the toolbox); these tests are about
 // which boxes are shown.
@@ -31,14 +32,34 @@ vi.mock("bloom-table", () => ({
     },
 }));
 
-const kLanguages: ICellLanguage[] = cellLanguagesOfCollection({
+const kNames: ILanguageNameValues = {
     language1Name: "Tok Pisin",
     language1Tag: "tpi",
     language2Name: "English",
     language2Tag: "en",
     language3Name: "Spanish",
     language3Tag: "es",
-});
+};
+const kLanguages: ICellLanguage[] = cellLanguagesOfCollection(kNames);
+
+// Make the page's settings (GetSettings, which C# injects) describe the collection `names`, with
+// `toolbarTags` ticked in the toolbar (by default its first language only), and return its
+// languages as the menu lists them. Which boxes a cell shows comes from these settings, as at page
+// load, so they must describe the same collection as the menu.
+function useCollection(
+    names: ILanguageNameValues,
+    toolbarTags: string[] = [names.language1Tag],
+): ICellLanguage[] {
+    (globalThis as unknown as { GetSettings: unknown }).GetSettings = () => ({
+        languageForNewTextBoxes: toolbarTags[0],
+        currentCollectionLanguage2: toolbarTags[1],
+        currentCollectionLanguage3: toolbarTags[2],
+        collectionLanguage1: names.language1Tag,
+        metadataLanguage1: names.language2Tag,
+        metadataLanguage2: names.language3Tag,
+    });
+    return cellLanguagesOfCollection(names);
+}
 
 // A text cell's group the way Bloom saves it: an editable for each of the book's languages,
 // with only the ones the cell shows marked visible.
@@ -69,6 +90,7 @@ function visibleTagsOf(group: HTMLElement): string[] {
 
 beforeEach(() => {
     document.body.innerHTML = "";
+    useCollection(kNames);
 });
 
 describe("cellLanguagesOfCollection", () => {
@@ -103,7 +125,7 @@ describe("cellLanguagesOfCollection", () => {
 
     it("still shows a cell whose stored role's language repeats L1, after L1 is ticked and unticked", () => {
         // The cell was set to L2 in a collection where L2 was another language.
-        const languages = cellLanguagesOfCollection({
+        const languages = useCollection({
             language1Name: "English",
             language1Tag: "en",
             language2Name: "English",
@@ -196,6 +218,24 @@ describe("showSettingInGroup", () => {
         showSettingInGroup(group, "CL2,CL3", kLanguages);
 
         expect(visibleTagsOf(group)).toEqual(["en", "es"]);
+    });
+
+    // Such settings reach a cell when they are copied from a cell of an older table (Paste
+    // properties, Paint format, a new row beside it). The cell shows what page load will show.
+    it("shows a setting the menu does not read as page load would: V the toolbar's first language, no setting the toolbar's languages", () => {
+        // The toolbar ticks English, then Tok Pisin.
+        const languages = useCollection(kNames, ["en", "tpi"]);
+        const fromV = makeGroup("CL1", ["tpi"]);
+        const fromNoSetting = makeGroup("CL1", ["tpi"]);
+        const fromVAndN2 = makeGroup("CL1", ["tpi"]);
+
+        showSettingInGroup(fromV, "V", languages);
+        showSettingInGroup(fromNoSetting, null, languages);
+        showSettingInGroup(fromVAndN2, "V,N2", languages);
+
+        expect(visibleTagsOf(fromV)).toEqual(["en"]);
+        expect(visibleTagsOf(fromNoSetting)).toEqual(["tpi", "en"]);
+        expect(visibleTagsOf(fromVAndN2)).toEqual(["en", "es"]);
     });
 });
 
@@ -297,11 +337,14 @@ describe("toggleRole", () => {
 
 describe("a cell that stores a role the collection no longer gives a language", () => {
     // The cell was set to L1 and L3; the collection has since dropped its third language.
-    const languages = cellLanguagesOfCollection({
-        language1Name: "Tok Pisin",
-        language1Tag: "tpi",
-        language2Name: "English",
-        language2Tag: "en",
+    let languages: ICellLanguage[];
+    beforeEach(() => {
+        languages = useCollection({
+            language1Name: "Tok Pisin",
+            language1Tag: "tpi",
+            language2Name: "English",
+            language2Tag: "en",
+        });
     });
 
     it("draws the menu's boxes from the languages the cell still shows", () => {

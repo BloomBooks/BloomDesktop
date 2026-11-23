@@ -72,5 +72,9 @@ describe("a new text cell when the toolbar's first language is not the collectio
         expect(
             boxes.filter((box) => box.classList.contains("bloom-content1")),
         ).toEqual([]);
+        // It is marked as the collection's first language instead, as page load marks it.
+        expect(
+            boxes.filter((box) => !box.classList.contains("bloom-contentCL1")),
+        ).toEqual([]);
     });
 });

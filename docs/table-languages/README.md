@@ -59,7 +59,15 @@ does. Supporting it took these changes outside the menu:
 - Turning a language on or off in the toolbar does not change what a cell shows.
 - Tables have not been released, so only a few test books have cells with no setting or `V`.
   Such a cell shows what any translation group with that setting shows, its menu ticks none of
-  its boxes, and the first change gives it a setting the menu reads.
+  its boxes, and the first change gives it a setting the menu reads. A setting copied from such a
+  cell (Paste properties, Paint format, a new row beside it) shows at once what page load will
+  show for it.
+- A box added or shown after the page has loaded gets the visibility and classes page load would
+  give it (`languagesShownBySetting` and `languageClassesOf` in `translationGroupLanguages.ts`,
+  which follow `TranslationGroupManager`). The collection's first language is marked
+  `bloom-contentCL1`, as its second and third are marked `bloom-contentNational1` and `2`; among
+  other things that gives such a box the rich-text editor at page load. The order boxes read down
+  a group still follows the toolbar (`bloom-content1/2/3`), as for every text box.
 
 ## Setting a value at a higher level
 
@@ -107,4 +115,5 @@ let Bloom add what the library knows nothing about:
 - `src/BloomBrowserUI/bookEdit/js/translationGroupLanguages.ts` (from BL-17105-1of3-box-setup,
   which the canvas text box's Language submenu also uses): shows the chosen languages in a cell's
   translation group, adds a box for a language the cell has none for, and gives that box what page
-  load gives every box.
+  load gives every box, its language classes included. It also holds the front end's copy of C#'s
+  rules for which languages a setting shows, which must change when those rules do.

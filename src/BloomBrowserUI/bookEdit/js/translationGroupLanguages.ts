@@ -4,8 +4,16 @@
 // languages, and SetupElements sets each box up. A control that later changes the languages a group
 // shows (the Language submenu of a canvas text box, the Languages submenu of a table's text cell)
 // may find a box missing; showLanguagesInTranslationGroup adds it, and setUpBoxesBuiltAfterLoad
-// gives it what page load gives every box. Both are exported from the page bundle, because the
+// gives it what page load gives every box. They are exported from the page bundle, because the
 // canvas submenu runs in the toolbox frame.
+//
+// A box added or shown here should look as it will once the page is next loaded, when C#
+// (TranslationGroupManager) works out every group again: languagesShownBySetting and
+// languageClassesOf give C#'s rules for which languages a group shows and which classes a box in
+// each language gets, and they must change when those rules do. They cover the groups whose
+// languages are added to after load (text in tables and on canvases), not the ones whose
+// visibility the Appearance system controls (data-visibility-variable, on cover fields) or whose
+// setting names a branding preset ("[CoverCreditsLanguage] DEFAULT:V,N1"); C# alone handles those.
 
 import $ from "jquery";
 import BloomField from "../bloomField/BloomField";
@@ -21,6 +29,105 @@ import {
     matchGroupFontSizesToLanguage1,
 } from "./bloomEditing";
 import { setupInlineImages } from "./inlineImages";
+
+/**
+ * The roles (or language tags) a value of data-default-languages lists, in the order written, with
+ * CL2 and CL3 given as N1 and N2, the names they stand for (as ProcessLanguageList in C# does).
+ */
+export function rolesInSetting(setting: string | null): string[] {
+    return (setting ?? "")
+        .split(/[,\s]+/)
+        .filter((token) => token.length > 0)
+        .map((token) => kSynonymsOfRoles[token] ?? token);
+}
+
+// Roles that are other names for older ones: CL2 and CL3 name the collection's second and third
+// languages, as N1 and N2 do.
+const kSynonymsOfRoles: Record<string, string> = { CL2: "N1", CL3: "N2" };
+
+// The languages C# works out a page's groups by, from the settings it injects (GetSettings). (The
+// names of GetSettings's fields are older: currentCollectionLanguage2 and 3 are the toolbar's.)
+function pageLanguages(): {
+    toolbar1: string;
+    toolbar2?: string;
+    toolbar3?: string;
+    collection1: string;
+    metadata1?: string;
+    metadata2?: string;
+} {
+    const settings = GetSettings();
+    return {
+        toolbar1: settings.languageForNewTextBoxes,
+        toolbar2: settings.currentCollectionLanguage2,
+        toolbar3: settings.currentCollectionLanguage3,
+        collection1: settings.collectionLanguage1,
+        metadata1: settings.metadataLanguage1,
+        metadata2: settings.metadataLanguage2,
+    };
+}
+
+/**
+ * The languages a translation group with `setting` as its data-default-languages shows, as C#
+ * decides at page load (TranslationGroupManager.ShouldNormallyShowEditable, after
+ * ProcessLanguageList): no setting or "auto" shows the toolbar's languages; V and L1 its first,
+ * L2 and L3 its second and third; CL1 the collection's first; N1 (or CL2) and N2 (or CL3) the
+ * collection's second and third; and anything else is taken as a language tag.
+ */
+export function languagesShownBySetting(setting: string | null): string[] {
+    const languages = pageLanguages();
+    const tokens = rolesInSetting(setting);
+    if (tokens.length === 0 || tokens[0].toLowerCase() === "auto") {
+        return [
+            languages.toolbar1,
+            languages.toolbar2,
+            languages.toolbar3,
+        ].filter((tag): tag is string => !!tag);
+    }
+    const tagOfRole: Record<string, string | undefined> = {
+        V: languages.toolbar1,
+        L1: languages.toolbar1,
+        L2: languages.toolbar2,
+        L3: languages.toolbar3,
+        CL1: languages.collection1,
+        N1: languages.metadata1,
+        N2: languages.metadata2,
+    };
+    return tokens
+        .map((token) =>
+            Object.hasOwn(tagOfRole, token) ? tagOfRole[token] : token,
+        )
+        .filter((tag): tag is string => !!tag);
+}
+
+/**
+ * The classes C# gives a box in language `tag` at page load
+ * (TranslationGroupManager.UpdateContentLanguageClassesOnElement): bloom-content1, 2 or 3 for the
+ * toolbar's languages, which also set the order the boxes read down the group; and
+ * bloom-contentNational1 and 2 and bloom-contentCL1 for the collection's languages. The
+ * appearance and custom-layout classes (bloom-contentFirst and the like) are not among them.
+ */
+export function languageClassesOf(tag: string): string[] {
+    const languages = pageLanguages();
+    const classes: string[] = [];
+    if (tag === languages.toolbar1) classes.push("bloom-content1");
+    else if (tag === languages.toolbar2) classes.push("bloom-content2");
+    else if (tag === languages.toolbar3) classes.push("bloom-content3");
+    if (tag === languages.metadata1) classes.push("bloom-contentNational1");
+    if (tag === languages.toolbar3 || tag === languages.metadata2)
+        classes.push("bloom-contentNational2");
+    if (tag === languages.collection1) classes.push("bloom-contentCL1");
+    return classes;
+}
+
+/**
+ * Add to `box` the language classes C# would give it (see languageClassesOf). Its callers have
+ * already taken every bloom-content class off the box.
+ */
+export function addLanguageClassesToBox(box: HTMLElement): void {
+    languageClassesOf(box.getAttribute("lang") ?? "").forEach((name) =>
+        box.classList.add(name),
+    );
+}
 
 /**
  * Make `group` show the boxes of the languages `tags` and hide its others, adding a box for any of
@@ -70,8 +177,8 @@ export function showLanguagesInTranslationGroup(
  * Two things differ from page load. dir="rtl" is set here from the collection's stylesheet, which
  * C# makes from the same setting it uses to set dir at load; the Format dialog's alignment and the
  * paragraph marks of editMode.less go by that attribute. And CKEditor is attached to every box
- * given, without page load's ckeditableSelector, which a box added after load does not match
- * until C# gives it its bloom-content class; the canvas does the same for its new elements
+ * given, without page load's ckeditableSelector, which a box in a language that is none of the
+ * collection's or the toolbar's does not match; the canvas does the same for its new elements
  * (CanvasElementManager.addEventsToFocusableElements).
  *
  * Not done here: overflow checking. Page load gives a page's boxes overflow handlers only when the
@@ -160,6 +267,7 @@ function addBox(group: HTMLElement, tag: string, order: string[]): HTMLElement {
         .filter((name) => kClassesNotCopied.test(name))
         .forEach((name) => box.classList.remove(name));
     box.setAttribute("lang", tag);
+    addLanguageClassesToBox(box);
     box.innerHTML = "<p></p>";
     const later = order
         .slice(order.indexOf(tag) + 1)

@@ -58,10 +58,12 @@ class NoopResizeObserver {
 }
 (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver =
     NoopResizeObserver;
-// GetSettings is injected into the page by RuntimeInformationInjector (C#).
+// GetSettings is injected into the page by RuntimeInformationInjector (C#). It describes the same
+// collection as the languages the test answers with below: Tok Pisin, then English.
 (globalThis as unknown as { GetSettings: unknown }).GetSettings = () => ({
     languageForNewTextBoxes: "tpi",
     collectionLanguage1: "tpi",
+    metadataLanguage1: "en",
 });
 
 const shownLangsOf = (group: HTMLElement) =>

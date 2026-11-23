@@ -547,6 +547,7 @@ namespace Bloom.Book
             var lang = editable.GetAttribute("lang");
 
             //These bloom-content* classes are used by some stylesheet rules, primarily to boost the font-size of some languages.
+            //languageClassesOf (translationGroupLanguages.ts) gives a box added after page load the same ones; keep it in step.
             //Enhance: this is too complex; the semantics of these overlap with each other and with bloom-visibility-code-on, and with data-language-order.
             //It would be better to have non-overlapping things; 1 for order, 1 for visibility, one for the lang's role in this collection.
             string orderClass;
@@ -570,6 +571,16 @@ namespace Bloom.Book
             if (lang == bookData.Language3Tag || lang == bookData.MetadataLanguage2Tag)
             {
                 editable.AddClass("bloom-contentNational2");
+            }
+
+            // The collection's first language, which the role CL1 names, as bloom-contentNational1
+            // and 2 mark its second and third. Among other things it puts the rich-text editor on a
+            // CL1 box whose language the toolbar has not checked (ckeditableSelector).
+            // When the N1 and N2 roles are retired in favor of CL2 and CL3, bloom-contentNational1
+            // and 2 might become bloom-contentCL2 and CL3 to match.
+            if (lang == bookData.CollectionSettings.Language1Tag)
+            {
+                editable.AddClass("bloom-contentCL1");
             }
 
             // At the time of this writing (6.0) this class only affects cover page titles.
@@ -802,7 +813,9 @@ namespace Bloom.Book
                 // CL1 is the collection's first language, whatever the toolbar checks. (CL2 and CL3,
                 // its second and third, arrive here as N1 and N2; see ProcessLanguageList.)
                 // Changes here should result in consistent ones in Book.IsLanguageWanted and BookData.GatherDataItemsFromXElement
-                // and RuntimeInformationInjector.AddUIDictionaryToDom and I18ApiHandleI18nRequest
+                // and RuntimeInformationInjector.AddUIDictionaryToDom and I18ApiHandleI18nRequest,
+                // and in languagesShownBySetting (translationGroupLanguages.ts), which applies these
+                // rules to a box shown after the page has loaded.
                 return (lang == bookData.Language1.Tag && dataDefaultLanguages.Contains("V"))
                     || (lang == bookData.Language1.Tag && dataDefaultLanguages.Contains("L1"))
                     || (

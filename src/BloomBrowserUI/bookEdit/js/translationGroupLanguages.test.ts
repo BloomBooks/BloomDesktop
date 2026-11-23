@@ -1,5 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+    languageClassesOf,
+    languagesShownBySetting,
     setUpBoxesBuiltAfterLoad,
     showLanguagesInTranslationGroup,
 } from "./translationGroupLanguages";
@@ -230,6 +232,76 @@ describe("showLanguagesInTranslationGroup", () => {
         showLanguagesInTranslationGroup(group, ["fr", "es"]);
 
         expect(tag).not.toHaveBeenCalled();
+    });
+});
+
+// A collection of Tok Pisin, English and Spanish, whose toolbar ticks English, then Spanish, so
+// that the toolbar's first language is not the collection's.
+function useBilingualToolbarWithEnglishFirst(): void {
+    (globalThis as unknown as { GetSettings: unknown }).GetSettings = () => ({
+        languageForNewTextBoxes: "en",
+        currentCollectionLanguage2: "es",
+        collectionLanguage1: "tpi",
+        metadataLanguage1: "en",
+        metadataLanguage2: "es",
+    });
+}
+
+describe("the classes page load gives a box in each language", () => {
+    let savedGetSettings: unknown;
+    beforeEach(() => {
+        savedGetSettings = (globalThis as unknown as { GetSettings: unknown })
+            .GetSettings;
+        useBilingualToolbarWithEnglishFirst();
+    });
+    afterEach(() => {
+        (globalThis as unknown as { GetSettings: unknown }).GetSettings =
+            savedGetSettings;
+    });
+
+    it("numbers the toolbar's languages and marks the collection's", () => {
+        expect(languageClassesOf("en")).toEqual([
+            "bloom-content1",
+            "bloom-contentNational1",
+        ]);
+        expect(languageClassesOf("es")).toEqual([
+            "bloom-content2",
+            "bloom-contentNational2",
+        ]);
+        expect(languageClassesOf("tpi")).toEqual(["bloom-contentCL1"]);
+        expect(languageClassesOf("fr")).toEqual([]);
+    });
+
+    it("gives a box it adds the classes of its language, not those of the box it was made from", () => {
+        const group = makeGroup(kEditedEnglishBox);
+        // sanity check: the box copied from is the toolbar's first language
+        expect(
+            group
+                .querySelector("[lang='en']")!
+                .classList.contains("bloom-content1"),
+        ).toBe(true);
+
+        const { added } = showLanguagesInTranslationGroup(group, ["en", "tpi"]);
+
+        expect(added.map((box) => box.getAttribute("lang"))).toEqual(["tpi"]);
+        expect(
+            Array.from(added[0].classList).filter((name) =>
+                name.startsWith("bloom-content"),
+            ),
+        ).toEqual(["bloom-contentCL1"]);
+    });
+
+    it("shows for each setting the languages page load would", () => {
+        expect(languagesShownBySetting(null)).toEqual(["en", "es"]);
+        expect(languagesShownBySetting("auto")).toEqual(["en", "es"]);
+        expect(languagesShownBySetting("V")).toEqual(["en"]);
+        expect(languagesShownBySetting("CL1")).toEqual(["tpi"]);
+        expect(languagesShownBySetting("CL1,N1")).toEqual(["tpi", "en"]);
+        expect(languagesShownBySetting("CL2 CL3")).toEqual(["en", "es"]);
+        expect(languagesShownBySetting("L2")).toEqual(["es"]);
+        // L3 names no language here, since the toolbar ticks only two.
+        expect(languagesShownBySetting("L3")).toEqual([]);
+        expect(languagesShownBySetting("fr")).toEqual(["fr"]);
     });
 });
 
