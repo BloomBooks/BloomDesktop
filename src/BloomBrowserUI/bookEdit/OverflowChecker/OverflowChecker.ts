@@ -55,12 +55,6 @@ const kMaxBoxesToCheck = 30;
 // sees one page.
 let pageWasClearedForTheLimit = false;
 
-// The container of a page that loaded with more than kMaxBoxesToCheck boxes, which gets its resize
-// handlers (addResizeHandlers) only once the page is back under the limit and has been checked
-// whole: until then, each resize would check its boxes one at a time, and split-pane set-up
-// triggers one as the page loads.
-let containerWaitingForResizeHandlers: HTMLElement | undefined;
-
 // Remove every overflow mark from `container` and everything in it, and redraw the indicators to
 // match: what a page over kMaxBoxesToCheck shows, since it is not checked.
 function clearOverflowMarks(container: HTMLElement): void {
@@ -145,6 +139,37 @@ export default class OverflowChecker {
             e.stopPropagation();
         });
 
+        // The resize handlers check their boxes one at a time, which is the work that the limit
+        // exists to save, so neither checks a page cleared for the limit (split-pane set-up resizes
+        // as the page loads); such a page is checked whole once it is back under the limit.
+
+        // Add another handler so that when the user resizes an origami pane, we check the overflow again
+        $(container)
+            .find(".split-pane-component-inner")
+            .bind("_splitpaneparentresize", function () {
+                if (pageWasClearedForTheLimit) {
+                    return;
+                }
+                const $this = $(this);
+                $(getElementsThatCanOverflowOrNeedToBeResized($this[0])).each(
+                    function () {
+                        OverflowChecker.AdjustSizeOrMarkOverflowSoon(this);
+                    },
+                );
+            });
+
+        // Add a handler to check overflow when button canvas elements are resized
+        $(container).on("buttonCanvasElementResized", function () {
+            if (pageWasClearedForTheLimit) {
+                return;
+            }
+            $(getElementsThatCanOverflowOrNeedToBeResized(container)).each(
+                function () {
+                    OverflowChecker.AdjustSizeOrMarkOverflowSoon(this);
+                },
+            );
+        });
+
         // Turn off any overflow indicators that might have been leftover from before
         $(container)
             .find(".overflow, .thisOverflowingParent, .childOverflowingThis")
@@ -161,44 +186,17 @@ export default class OverflowChecker {
         // helpful in letting the page stabilize before we start resizing canvas text overlays.
         // BL-1260: a page with too many elements is not checked when it loads, and shows no marks.
         // Typing is still handled: it sizes the box typed in, and once the page is back under the
-        // limit (a table row deleted) the first check covers the whole page, which also adds the
-        // resize handlers (CheckPageAncestorOverflow keeps the limit for marks).
+        // limit (a table row deleted) the first check covers the whole page; resizes are checked
+        // only from then on (CheckPageAncestorOverflow keeps the limit for marks).
         if ($editablePageElements.length > kMaxBoxesToCheck) {
             // since we're not going to check it, remove any indications from
             // previous checking.
             clearOverflowMarks(container);
-            containerWaitingForResizeHandlers = container;
         } else {
-            OverflowChecker.addResizeHandlers(container);
             for (const editable of $editablePageElements.get()) {
                 OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
             }
         }
-    }
-
-    // Adds the handlers that check the boxes of `container` again when a split pane or a button
-    // canvas element in it is resized.
-    private static addResizeHandlers(container: HTMLElement) {
-        // Add another handler so that when the user resizes an origami pane, we check the overflow again
-        $(container)
-            .find(".split-pane-component-inner")
-            .bind("_splitpaneparentresize", function () {
-                const $this = $(this);
-                $(getElementsThatCanOverflowOrNeedToBeResized($this[0])).each(
-                    function () {
-                        OverflowChecker.AdjustSizeOrMarkOverflowSoon(this);
-                    },
-                );
-            });
-
-        // Add a handler to check overflow when button canvas elements are resized
-        $(container).on("buttonCanvasElementResized", function () {
-            $(getElementsThatCanOverflowOrNeedToBeResized(container)).each(
-                function () {
-                    OverflowChecker.AdjustSizeOrMarkOverflowSoon(this);
-                },
-            );
-        });
     }
 
     // Actual testable determination of Type I overflow or not
@@ -616,8 +614,8 @@ export default class OverflowChecker {
         // doesn't overflow internally (i.e. has too much stuff to fit in itself).
         // 2-We also need to check that this element and any OTHER elements on the page
         // haven't been pushed outside the margins
-        // A page cleared for the limit and back under it is checked whole first, as a table check
-        // would, however it got back under; then this box is checked as asked.
+        // A page cleared for the limit and back under it is checked whole, as a table check would,
+        // however it got back under.
         if (pageWasClearedForTheLimit) {
             const marginBox = editable.closest<HTMLElement>(".marginBox");
             if (
@@ -626,6 +624,10 @@ export default class OverflowChecker {
                     kMaxBoxesToCheck
             ) {
                 OverflowChecker.AdjustSizeOrMarkOverflowOfAll([editable]);
+                // That checked this box as an ordinary check would; a paste checks it again.
+                if (!doNotShrink && !growAsMuchAsPossible) {
+                    return;
+                }
             }
         }
         OverflowChecker.AdjustSizeAndMarkSelfOverflow(
@@ -688,12 +690,6 @@ export default class OverflowChecker {
             OverflowChecker.CheckPageAncestorOverflow(toCheck[0]);
         } finally {
             OverflowChecker.batch = undefined;
-        }
-        if (checkWholePage && containerWaitingForResizeHandlers) {
-            OverflowChecker.addResizeHandlers(
-                containerWaitingForResizeHandlers,
-            );
-            containerWaitingForResizeHandlers = undefined;
         }
     }
 
