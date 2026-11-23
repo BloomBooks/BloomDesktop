@@ -633,7 +633,8 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
             ).toBe(true);
 
             const group = boxes[0].parentElement!;
-            group.after(group.cloneNode(true));
+            const thirtyFirst = group.cloneNode(true) as HTMLElement;
+            group.after(thirtyFirst);
             const sizeToText = vi.mocked(
                 theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent,
             );
@@ -652,6 +653,16 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
                 ).filter((box) => box.classList.contains("overflow")),
                 "Typing on a page grown to 31 should mark nothing, and clear what was marked.",
             ).toEqual([]);
+
+            // Back under the limit, the next table check marks the whole page again. This also
+            // leaves the page's record of being cleared (module state) as the next test expects.
+            thirtyFirst.remove();
+            OverflowChecker.AdjustSizeOrMarkOverflowOfAll([boxes[0]]);
+            expect(
+                boxes.filter((box) => box.classList.contains("overflow"))
+                    .length,
+                "Every box on the page should be marked again once it is back under 30.",
+            ).toBe(30);
         } finally {
             jqueryPlugins.qtip = qtipWas;
         }
