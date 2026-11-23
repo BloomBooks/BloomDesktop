@@ -55,6 +55,12 @@ const kMaxBoxesToCheck = 30;
 // sees one page.
 let pageWasClearedForTheLimit = false;
 
+// The container of a page that loaded with more than kMaxBoxesToCheck boxes, which gets its resize
+// handlers (addResizeHandlers) only once the page is back under the limit and has been checked
+// whole: until then, each resize would check its boxes one at a time, and split-pane set-up
+// triggers one as the page loads.
+let containerWaitingForResizeHandlers: HTMLElement | undefined;
+
 // Remove every overflow mark from `container` and everything in it, and redraw the indicators to
 // match: what a page over kMaxBoxesToCheck shows, since it is not checked.
 function clearOverflowMarks(container: HTMLElement): void {
@@ -139,6 +145,40 @@ export default class OverflowChecker {
             e.stopPropagation();
         });
 
+        // Turn off any overflow indicators that might have been leftover from before
+        $(container)
+            .find(".overflow, .thisOverflowingParent, .childOverflowingThis")
+            .each(function () {
+                $(this).removeClass(
+                    "overflow thisOverflowingParent childOverflowingThis",
+                );
+            });
+
+        // Checking for overflow is time-consuming for complex pages, and doesn't HAVE to be done
+        // before we display and allow editing. We set up a timeout for each one, which allows
+        // other events to get in between, and also, if multiple sources request an overflow check
+        // on the same element during startup, only one of them really happens. The delay is also
+        // helpful in letting the page stabilize before we start resizing canvas text overlays.
+        // BL-1260: a page with too many elements is not checked when it loads, and shows no marks.
+        // Typing is still handled: it sizes the box typed in, and once the page is back under the
+        // limit (a table row deleted) the first check covers the whole page, which also adds the
+        // resize handlers (CheckPageAncestorOverflow keeps the limit for marks).
+        if ($editablePageElements.length > kMaxBoxesToCheck) {
+            // since we're not going to check it, remove any indications from
+            // previous checking.
+            clearOverflowMarks(container);
+            containerWaitingForResizeHandlers = container;
+        } else {
+            OverflowChecker.addResizeHandlers(container);
+            for (const editable of $editablePageElements.get()) {
+                OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
+            }
+        }
+    }
+
+    // Adds the handlers that check the boxes of `container` again when a split pane or a button
+    // canvas element in it is resized.
+    private static addResizeHandlers(container: HTMLElement) {
         // Add another handler so that when the user resizes an origami pane, we check the overflow again
         $(container)
             .find(".split-pane-component-inner")
@@ -159,34 +199,6 @@ export default class OverflowChecker {
                 },
             );
         });
-
-        // Turn off any overflow indicators that might have been leftover from before
-        $(container)
-            .find(".overflow, .thisOverflowingParent, .childOverflowingThis")
-            .each(function () {
-                $(this).removeClass(
-                    "overflow thisOverflowingParent childOverflowingThis",
-                );
-            });
-
-        // Checking for overflow is time-consuming for complex pages, and doesn't HAVE to be done
-        // before we display and allow editing. We set up a timeout for each one, which allows
-        // other events to get in between, and also, if multiple sources request an overflow check
-        // on the same element during startup, only one of them really happens. The delay is also
-        // helpful in letting the page stabilize before we start resizing canvas text overlays.
-        // BL-1260: a page with too many elements is not checked when it loads, and shows no marks.
-        // The handlers above are still added: they size the boxes, and once the page is back under
-        // the limit (a table row deleted) they mark them too (CheckPageAncestorOverflow keeps the
-        // limit).
-        if ($editablePageElements.length > kMaxBoxesToCheck) {
-            // since we're not going to check it, remove any indications from
-            // previous checking.
-            clearOverflowMarks(container);
-        } else {
-            for (const editable of $editablePageElements.get()) {
-                OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
-            }
-        }
     }
 
     // Actual testable determination of Type I overflow or not
@@ -604,6 +616,18 @@ export default class OverflowChecker {
         // doesn't overflow internally (i.e. has too much stuff to fit in itself).
         // 2-We also need to check that this element and any OTHER elements on the page
         // haven't been pushed outside the margins
+        // A page cleared for the limit and back under it is checked whole first, as a table check
+        // would, however it got back under; then this box is checked as asked.
+        if (pageWasClearedForTheLimit) {
+            const marginBox = editable.closest<HTMLElement>(".marginBox");
+            if (
+                marginBox &&
+                getElementsThatCanOverflowOrNeedToBeResized(marginBox).length <=
+                    kMaxBoxesToCheck
+            ) {
+                OverflowChecker.AdjustSizeOrMarkOverflowOfAll([editable]);
+            }
+        }
         OverflowChecker.AdjustSizeAndMarkSelfOverflow(
             editable,
             doNotShrink,
@@ -664,6 +688,12 @@ export default class OverflowChecker {
             OverflowChecker.CheckPageAncestorOverflow(toCheck[0]);
         } finally {
             OverflowChecker.batch = undefined;
+        }
+        if (checkWholePage && containerWaitingForResizeHandlers) {
+            OverflowChecker.addResizeHandlers(
+                containerWaitingForResizeHandlers,
+            );
+            containerWaitingForResizeHandlers = undefined;
         }
     }
 

@@ -74,9 +74,8 @@ export function showLanguagesInTranslationGroup(
  * until C# gives it its bloom-content class; the canvas does the same for its new elements
  * (CanvasElementManager.addEventsToFocusableElements).
  *
- * Not done here: overflow checking. Page load gives a page's boxes overflow handlers only when the
- * page has at most 30 of them (OverflowChecker.AddOverflowHandlers), and a box added later cannot
- * join that without counting again.
+ * Not done here: overflow checking. Page load gives the boxes a page has then their overflow
+ * handlers (OverflowChecker.AddOverflowHandlers); a box added later does not get them.
  *
  * `boxesToTagAgain` are boxes already set up that need only their language tags worked out again:
  * those showLanguagesInTranslationGroup has shown again (a hidden box gets no tag, since

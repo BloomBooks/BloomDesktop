@@ -678,34 +678,44 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
         ).toBe(30);
     });
 
-    // A page that is over the limit when it loads is not checked; once a row is deleted and it is
-    // under the limit, typing marks the box typed in, and the next table check marks every box.
-    it("checks typing, and then every box, on a page that loaded over 30 boxes, once it is back under", () => {
+    // A page that is over the limit when it loads is not checked, and a resize does not check its
+    // boxes one at a time (split-pane set-up resizes as the page loads). Once it is back under the
+    // limit, however it got there, typing in one box checks every box, and resizes are checked.
+    it("checks a page that loaded over 30 boxes whole, and then its resizes, once typing finds it back under", () => {
         const boxes = loadPageOfTooFullBoxes(31);
         // What page setup passes is the body that holds the page, not the page itself.
-        new OverflowChecker().AddOverflowHandlers(
-            document.getElementById("fixtureRoot")!,
-        );
+        const container = document.getElementById("fixtureRoot")!;
+        // The fixture root is shared by every test, so it still has the resize handlers that the
+        // earlier tests' page setups added.
+        $(container).off("buttonCanvasElementResized");
+        new OverflowChecker().AddOverflowHandlers(container);
         expect(
             boxes.filter((box) => box.classList.contains("overflow")),
             "A page of 31 should not have been checked when it loaded, or this tests nothing.",
         ).toEqual([]);
+        const checkSoon = vi.spyOn(
+            OverflowChecker,
+            "AdjustSizeOrMarkOverflowSoon",
+        );
+        $(container).trigger("buttonCanvasElementResized");
+        expect(
+            checkSoon,
+            "A resize on a page loaded over 30 should check no box.",
+        ).not.toHaveBeenCalled();
 
         boxes[30].parentElement!.remove();
-        // Typing is checked again once the page is back under the limit, though it loaded over it.
         typeIn(boxes[1]);
-        expect(
-            boxes[1].classList.contains("overflow"),
-            "Typing in a box of a page back under 30 should mark it.",
-        ).toBe(true);
-
-        OverflowChecker.AdjustSizeOrMarkOverflowOfAll([boxes[0]]);
-
         expect(
             boxes
                 .slice(0, 30)
                 .filter((box) => box.classList.contains("overflow")).length,
-            "Every box on the page, not only the one checked, should be marked.",
+            "Typing in one box of a page back under 30 should mark every box on it.",
         ).toBe(30);
+
+        $(container).trigger("buttonCanvasElementResized");
+        expect(
+            checkSoon,
+            "Once the page has been checked whole, a resize should check its boxes.",
+        ).toHaveBeenCalled();
     });
 });
