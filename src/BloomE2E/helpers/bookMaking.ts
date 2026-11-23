@@ -721,15 +721,11 @@ export async function reloadPageBeingEdited(page: Page): Promise<void> {
 /**
  * Show a page in the Edit tab. This is also how a test SAVES what it typed: Bloom writes the page
  * it is leaving, so text typed into a box reaches the file only once the book moves off that page.
- *
- * Bloom saves the page it is leaving from the last snapshot that page sent, which comes a moment
- * after each change (kQuietMs in pageSnapshot.ts); no person leaves a page that fast. So this first
- * waits until Bloom has the page as it is now, whatever changed it: typing, Undo, a drag. A test of
- * what happens when the page is left within that moment needs a way of leaving that does not wait,
- * not this one.
+ * It first waits until Bloom has that page as it is now (waitForBloomToHavePageAsItIs), so a test
+ * of leaving a page the moment it changes needs a way of leaving that does not wait.
  */
 export async function goToPage(page: Page, pageId: string): Promise<void> {
-    await waitForSnapshotStreamIdleIfEditing(page);
+    await waitForBloomToHavePageAsItIs(page);
     // Wait for the Edit tab first. A jump asked for while it is still loading a page is refused
     // (see waitForEditTabSettled), so ask at a moment when the tab acts on the jump at once.
     // Then ask, and ask again if the tab was busy after all. The tab answers with an error when
@@ -852,18 +848,17 @@ export async function waitForPageToSettle(page: Page): Promise<void> {
 async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
     await expect
         .poll(
-            () =>
-                readUnlessDocumentReplaced(() =>
-                    editablePageFrame(page).evaluate(() =>
-                        (
-                            window as unknown as {
-                                editablePageBundle: {
-                                    isSnapshotStreamIdle: () => boolean;
-                                };
-                            }
-                        ).editablePageBundle.isSnapshotStreamIdle(),
-                    ),
-                ),
+            async () => {
+                const idle = await readSnapshotStreamIdle(
+                    editablePageFrame(page),
+                );
+                if (idle === undefined)
+                    throw new Error(
+                        "The page being edited has no snapshot stream: it is not an editable page, " +
+                            "or it has not finished loading.",
+                    );
+                return idle;
+            },
             {
                 timeout: 15000,
                 message:
@@ -874,37 +869,50 @@ async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
 }
 
 /**
- * Like waitForSnapshotStreamIdle, but for any moment, not only on a loaded editable page: with no
- * page frame, or a page whose script has not set up its snapshot stream yet (not on the Edit tab, a
- * page still loading or reloading), the page has no unsent change, so this counts it as idle. A
- * read that a reload interrupts is asked again of the new page.
+ * Wait until Bloom has the page being edited as it is now, before a test leaves it (goToPage,
+ * selectPage, switchTab). Bloom saves the page it is leaving from the last snapshot that page sent,
+ * which comes a moment after each change (kQuietMs in pageSnapshot.ts), and no person leaves a page
+ * that fast; a test can, after typing, an Undo or a drag. Unlike waitForSnapshotStreamIdle this
+ * works at any moment: with no page frame, a page whose stream is not set up yet, or a page that a
+ * reload replaces while this asks, there is no unsent change, so it returns.
  */
-async function waitForSnapshotStreamIdleIfEditing(page: Page): Promise<void> {
+export async function waitForBloomToHavePageAsItIs(page: Page): Promise<void> {
     await expect
         .poll(
             async () => {
                 const frame = page.frame({ name: "page" });
                 if (!frame) return true;
-                return readUnlessDocumentReplaced(() =>
-                    frame.evaluate(() => {
-                        const isIdle = (
-                            window as unknown as {
-                                editablePageBundle?: {
-                                    isSnapshotStreamIdle?: () => boolean;
-                                };
-                            }
-                        ).editablePageBundle?.isSnapshotStreamIdle;
-                        return typeof isIdle === "function" ? isIdle() : true;
-                    }),
+                return (
+                    (await readUnlessDocumentReplaced(() =>
+                        readSnapshotStreamIdle(frame),
+                    )) ?? true
                 );
             },
             {
+                // The page waits only kQuietMs (25 ms) before it sends a snapshot.
+                intervals: [50],
                 timeout: 15000,
                 message:
                     "The page being left never finished sending itself to Bloom.",
             },
         )
         .toBe(true);
+}
+
+/**
+ * Whether the page in `frame` has nothing left to send Bloom (isSnapshotStreamIdle in
+ * pageSnapshot.ts); undefined when its snapshot stream is not set up: not an editable page, or one
+ * whose script has not run yet.
+ */
+function readSnapshotStreamIdle(frame: Frame): Promise<boolean | undefined> {
+    return frame.evaluate(() => {
+        const isIdle = (
+            window as unknown as {
+                editablePageBundle?: { isSnapshotStreamIdle?: () => boolean };
+            }
+        ).editablePageBundle?.isSnapshotStreamIdle;
+        return typeof isIdle === "function" ? isIdle() : undefined;
+    });
 }
 
 /**
