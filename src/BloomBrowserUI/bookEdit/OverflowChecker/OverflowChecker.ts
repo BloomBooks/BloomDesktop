@@ -49,19 +49,16 @@ function getElementsThatCanOverflowOrNeedToBeResized(
 // BL-1260: a page with more boxes than this is not checked for overflow at all, and shows no marks.
 const kMaxBoxesToCheck = 30;
 
-// The pages cleared because they had more than kMaxBoxesToCheck boxes, when they loaded or since,
-// so that, once one is back under the limit, all of its boxes are checked again.
-const pagesClearedForTheLimit = new WeakSet<Element>();
+// Whether the page was cleared because it had more than kMaxBoxesToCheck boxes, when it loaded or
+// since, so that, once it is back under the limit, all of its boxes are checked again. One flag is
+// enough: each page is loaded into a frame of its own (pageFrame.ts), so this module only ever
+// sees one page.
+let pageWasClearedForTheLimit = false;
 
 // Remove every overflow mark from `container` and everything in it, and redraw the indicators to
-// match: what a page over kMaxBoxesToCheck shows, since it is not checked. Remembers the page in
-// pagesClearedForTheLimit: the page that holds `container`, or the pages it holds, since page
-// setup passes the whole body.
+// match: what a page over kMaxBoxesToCheck shows, since it is not checked.
 function clearOverflowMarks(container: HTMLElement): void {
-    const holder = container.closest(".bloom-page");
-    (holder ? [holder] : container.querySelectorAll(".bloom-page")).forEach(
-        (page) => pagesClearedForTheLimit.add(page),
-    );
+    pageWasClearedForTheLimit = true;
     [
         "overflow",
         "thisOverflowingParent",
@@ -628,10 +625,10 @@ export default class OverflowChecker {
         }
         // A page back under the limit (a row deleted) has had every mark cleared, so all its
         // boxes are checked this once, not only the ones asked for.
-        const toCheck =
-            page && pagesClearedForTheLimit.delete(page)
-                ? Array.from(new Set([...editables, ...pageElements]))
-                : editables;
+        const toCheck = pageWasClearedForTheLimit
+            ? Array.from(new Set([...editables, ...pageElements]))
+            : editables;
+        pageWasClearedForTheLimit = false;
         // AdjustSizeAndMarkSelfOverflow changes the padding of a bloom-padForOverflow box
         // before it measures it, so a height measured beforehand would be out of date.
         const measurable = Array.from(
