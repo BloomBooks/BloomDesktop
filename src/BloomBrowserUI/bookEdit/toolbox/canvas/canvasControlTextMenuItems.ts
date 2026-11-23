@@ -209,17 +209,25 @@ export function makeLanguageMenuItem(
     // One entry for each setting the menu stores, named for the language that setting shows (V is
     // the toolbar's first language, N1 and N2 the collection's second and third), so the entry
     // shows what the box will show after the page is next loaded too. A language two settings
-    // share is listed once, under the first.
-    const subMenuItems: IControlMenuCommandRow[] = [];
-    const tagsListed: string[] = [];
-    for (const { setting, appearanceClass } of [
+    // share is listed once, under the setting that keeps it whatever the toolbar does: N1 or N2
+    // rather than V, when the toolbar puts the collection's second or third language first.
+    const entries = [
         { setting: "V", appearanceClass: "bloom-contentFirst" },
         { setting: "N1", appearanceClass: "bloom-contentSecond" },
         { setting: "N2", appearanceClass: "bloom-contentThird" },
-    ]) {
-        const tag = page.languagesShownBySetting(setting)[0];
+    ].map((entry) => ({
+        ...entry,
+        tag: page.languagesShownBySetting(entry.setting)[0],
+    }));
+    const subMenuItems: IControlMenuCommandRow[] = [];
+    const tagsListed: string[] = [];
+    for (const { setting, appearanceClass, tag } of entries) {
         const name = nameOfTag.get(tag);
         if (!tag || !name || tagsListed.includes(tag)) continue;
+        const fixedRoleHasIt = entries.some(
+            (other) => other.setting !== "V" && other.tag === tag,
+        );
+        if (setting === "V" && fixedRoleHasIt) continue;
         tagsListed.push(tag);
         subMenuItems.push({
             id: "language",
