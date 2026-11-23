@@ -61,6 +61,7 @@ class NoopResizeObserver {
 // GetSettings is injected into the page by RuntimeInformationInjector (C#).
 (globalThis as unknown as { GetSettings: unknown }).GetSettings = () => ({
     languageForNewTextBoxes: "tpi",
+    collectionLanguage1: "tpi",
 });
 
 const shownLangsOf = (group: HTMLElement) =>
@@ -92,11 +93,11 @@ describe("a language setting copied into a cell", () => {
             answerLanguages,
             "the languages were not asked for",
         ).toBeDefined();
-        expect(group.getAttribute("data-default-languages")).toBe("V");
+        expect(group.getAttribute("data-default-languages")).toBe("CL1");
         expect(shownLangsOf(group)).toEqual(["tpi"]);
         expect(getActiveDelayIds()).not.toContain(kCopiedLanguagesDelayId);
 
-        cellSettingsHooks!.apply(cell, "V,N1");
+        cellSettingsHooks!.apply(cell, "CL1,N1");
         // Until the cell has its setting, saving the page must wait, or it would save the old one.
         expect(getActiveDelayIds()).toContain(kCopiedLanguagesDelayId);
 
@@ -109,7 +110,7 @@ describe("a language setting copied into a cell", () => {
             },
         });
 
-        expect(group.getAttribute("data-default-languages")).toBe("V,N1");
+        expect(group.getAttribute("data-default-languages")).toBe("CL1,N1");
         expect(shownLangsOf(group)).toEqual(["tpi", "en"]);
         const added = vi
             .mocked(setUpBoxesBuiltAfterLoad)
