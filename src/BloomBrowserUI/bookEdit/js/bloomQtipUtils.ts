@@ -67,4 +67,40 @@ export default class bloomQtipUtils {
     public static qtipZoomContainer(): JQuery {
         return $("div#page-scaling-container");
     }
+
+    // Keep the top of every bubble in the zoom container (see qtipZoomContainer()) inside that
+    // container, so it does not reach into the space above the page. Positions are in the page's own
+    // coordinates, so a bubble still scrolls with its box. qTip fires "tooltipmove" with the position
+    // it is about to apply, after its tip plugin has raised the bubble so the arrow points at the top
+    // of the box; qTip's own viewport adjustment runs before that, so it cannot do this. Bubbles
+    // already showing are placed again.
+    public static keepBubblesInsideZoomContainer(): void {
+        $(document).on(
+            "tooltipmove",
+            (
+                _event: JQuery.TriggeredEvent,
+                api: { options: { position: { container: JQuery } } },
+                position: { top: number },
+            ) => {
+                if (
+                    api.options.position.container[0] ===
+                    bloomQtipUtils.qtipZoomContainer()[0]
+                ) {
+                    position.top = Math.max(position.top, 0);
+                }
+            },
+        );
+        bloomQtipUtils.repositionBubbles();
+    }
+
+    // Have qTip place every bubble again, as when it was shown, for when something has moved its box
+    // or changed what limits its place. Move each one in one step: by default qTip slides a visible
+    // bubble to its new place, which trails behind the box.
+    public static repositionBubbles(): void {
+        (
+            $("[data-hasqtip]") as unknown as {
+                qtip(command: string, event: undefined, effect: boolean): void;
+            }
+        ).qtip("reposition", undefined, false);
+    }
 }
