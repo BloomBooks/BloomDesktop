@@ -874,26 +874,37 @@ async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
 }
 
 /**
- * waitForSnapshotStreamIdle, when the Edit tab holds an editable page; otherwise there is no stream
- * to wait for, and this returns at once. That covers a frame still loading its page, a frame the
- * Edit tab replaces while this asks, and a test that is not on the Edit tab at all.
+ * Like waitForSnapshotStreamIdle, but for any moment, not only on a loaded editable page: with no
+ * page frame, or a page whose script has not set up its snapshot stream yet (not on the Edit tab, a
+ * page still loading or reloading), the page has no unsent change, so this counts it as idle. A
+ * read that a reload interrupts is asked again of the new page.
  */
 async function waitForSnapshotStreamIdleIfEditing(page: Page): Promise<void> {
-    const frame = page.frame({ name: "page" });
-    if (!frame) return;
-    const hasStream = await readUnlessDocumentReplaced(() =>
-        frame.evaluate(
-            () =>
-                typeof (
-                    window as unknown as {
-                        editablePageBundle?: {
-                            isSnapshotStreamIdle?: () => boolean;
-                        };
-                    }
-                ).editablePageBundle?.isSnapshotStreamIdle === "function",
-        ),
-    );
-    if (hasStream) await waitForSnapshotStreamIdle(page);
+    await expect
+        .poll(
+            async () => {
+                const frame = page.frame({ name: "page" });
+                if (!frame) return true;
+                return readUnlessDocumentReplaced(() =>
+                    frame.evaluate(() => {
+                        const isIdle = (
+                            window as unknown as {
+                                editablePageBundle?: {
+                                    isSnapshotStreamIdle?: () => boolean;
+                                };
+                            }
+                        ).editablePageBundle?.isSnapshotStreamIdle;
+                        return typeof isIdle === "function" ? isIdle() : true;
+                    }),
+                );
+            },
+            {
+                timeout: 15000,
+                message:
+                    "The page being left never finished sending itself to Bloom.",
+            },
+        )
+        .toBe(true);
 }
 
 /**
