@@ -124,6 +124,7 @@ interface IBookProps {
 interface IAudioVideoSettings {
     format: string;
     pageTurnDelay: number;
+    pauseAfterNarration: number;
     motion: boolean;
     pageRange: number[]; // two numbers! Or possibly zero, meaning the whole book
 }
@@ -156,6 +157,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         useApiStateWithStatus<IAudioVideoSettings>("publish/av/settings", {
             format: "facebook",
             pageTurnDelay: 3,
+            pauseAfterNarration: 0,
             motion: false,
             pageRange: [],
         });
@@ -172,6 +174,16 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         avSettings.pageTurnDelay,
         1000,
     );
+    const [debouncedPauseAfterNarration] = useDebounce(
+        avSettings.pauseAfterNarration,
+        1000,
+    );
+    // The page timings, as the preview's URL parameters for bloom-player.
+    const timingParams =
+        "&defaultDuration=" +
+        debouncedPageTurnDelay +
+        "&pauseAfterNarration=" +
+        debouncedPauseAfterNarration;
 
     const [progressState, setProgressState] = useState(ProgressState.Working);
     const [activeStep, setActiveStep] = useState(0);
@@ -253,7 +265,6 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         "Games will be skipped",
         "PublishTab.RecordVideo.GamesSkipped",
     );
-    const isPauseButtonDisabled = !playing;
     useEffect(() => {
         const listener = (data) => {
             // something sends us an empty message, which we haven't figured out, but know we can ignore
@@ -282,8 +293,13 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     // would be reset to the value we previously retrieved. With a param that includes
     // any variable element that contributes to the preview URL, we will re-run the query
     // any time it changes. (The actual content of the param is ignored in the backend.)
+    // It uses the timings as they change, not the debounced ones the URL uses, so that the
+    // query has finished by the time the preview reloads.
     const videoSettings = useApiString(
-        "publish/av/videoSettings?regen=" + avSettings.pageTurnDelay,
+        "publish/av/videoSettings?regen=" +
+            avSettings.pageTurnDelay +
+            "_" +
+            avSettings.pauseAfterNarration,
         "",
     );
     const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
@@ -316,6 +332,25 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
             avSettings.pageRange[1] - avSettings.pageRange[0] + 1
         }`;
     }
+    // The preview's bloom-player URL. Any change to it (timings, page range, page size, the
+    // player's own settings) reloads the preview, which starts paused.
+    const previewUrl = havePreviewForOrientation
+        ? "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true" +
+          timingParams +
+          "&url=" +
+          encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
+          `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +
+          videoSettingsParam +
+          pageRangeSetting
+        : "";
+    // So whenever it changes, the preview is no longer playing. (Adjusting state during render,
+    // rather than in an effect, avoids a render that still shows it playing.)
+    const [shownPreviewUrl, setShownPreviewUrl] = useState(previewUrl);
+    if (previewUrl !== shownPreviewUrl) {
+        setShownPreviewUrl(previewUrl);
+        setPlaying(false);
+    }
+    const isPauseButtonDisabled = !playing;
     const recordingVideo = avSettings.format != "mp3";
     const circleHeight = "0.88rem";
     const blurbClasses = `
@@ -363,17 +398,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     canRotate={false}
                                     // The following leaves a blank screen until the Preview button is pressed
                                     // (and again after orientation changes, until it is pressed again)
-                                    url={
-                                        havePreviewForOrientation
-                                            ? "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
-                                              debouncedPageTurnDelay +
-                                              "&url=" +
-                                              encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
-                                              `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +
-                                              videoSettingsParam +
-                                              pageRangeSetting
-                                            : ""
-                                    }
+                                    url={previewUrl}
                                     showPreviewButton={true}
                                     // We might want to highlight it if props.showPreview is false, or perhaps if
                                     // avSettings has changed? But we don't need to regenerate if we just changed the
@@ -604,6 +629,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                 pageTurnDelay={avSettings.pageTurnDelay}
                 onSetPageTurnDelay={(n: number) =>
                     setAvSettings({ ...avSettings, pageTurnDelay: n })
+                }
+                pauseAfterNarration={avSettings.pauseAfterNarration}
+                onSetPauseAfterNarration={(n: number) =>
+                    setAvSettings({ ...avSettings, pauseAfterNarration: n })
                 }
                 format={avSettings.format}
                 onFormatChanged={(f: string) => {

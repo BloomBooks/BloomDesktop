@@ -83,6 +83,11 @@ namespace BloomTests.Book
             Assert.That(bi.PublishSettings.AudioVideo.Format, Is.EqualTo("facebook"));
             Assert.That(bi.PublishSettings.AudioVideo.Motion, Is.False);
             Assert.That(bi.PublishSettings.AudioVideo.PageTurnDelay, Is.EqualTo(3000));
+            Assert.That(
+                bi.PublishSettings.AudioVideo.PauseAfterNarration,
+                Is.EqualTo(0),
+                "books saved before this setting existed should keep turning narrated pages at once"
+            );
             Assert.That(bi.PublishSettings.AudioVideo.PlayerSettings, Is.EqualTo(""));
             Assert.That(bi.PublishSettings.BloomPub.PublishAsMotionBookIfApplicable, Is.True);
             Assert.That(bi.PublishSettings.BloomLibrary.TextLangs, Is.Not.Null);
@@ -125,7 +130,7 @@ namespace BloomTests.Book
         public void LoadPublishSettings_AllSettings_Works()
         {
             var input =
-                @"{""audioVideo"": {""motion"":true, ""pageTurnDelay"":2500,
+                @"{""audioVideo"": {""motion"":true, ""pageTurnDelay"":2500, ""pauseAfterNarration"":4500,
 					""format"":""feature"",
 					""playerSettings"": ""{\""lang\"":\""fr\"",\""imageDescriptions\"":true}""},
 					""bloomPUB"": {""motion"": true, ""textLangs"": {""baa"":""Include"",""es"":""Exclude""},
@@ -140,6 +145,8 @@ namespace BloomTests.Book
             Assert.That(ps.AudioVideo.Format, Is.EqualTo("feature"));
             Assert.That(ps.AudioVideo.Motion, Is.True);
             Assert.That(ps.AudioVideo.PageTurnDelay, Is.EqualTo(2500));
+            Assert.That(ps.AudioVideo.PauseAfterNarration, Is.EqualTo(4500));
+            Assert.That(ps.AudioVideo.PauseAfterNarrationDouble, Is.EqualTo(4.5));
             Assert.That(
                 ps.AudioVideo.PlayerSettings,
                 Is.EqualTo("{\"lang\":\"fr\",\"imageDescriptions\":true}")

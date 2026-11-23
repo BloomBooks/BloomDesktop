@@ -63,7 +63,8 @@ namespace Bloom.Publish.Video
         private int _videoHeight = 720; // default, facebook
         private int _videoWidth = 1280;
         private Codec _codec = Codec.H264;
-        private string _pageReadTime = "3.0"; // default for pages without narration
+        private double _pageReadTime = 3.0; // seconds to stay on a page without narration
+        private double _pauseAfterNarration = 0; // seconds to stay on a page after its narration ends
         private string _videoSettingsFromPreview;
         private bool _shouldRotateBook = false;
         private bool _shouldUseOriginalPageSize = false;
@@ -197,7 +198,7 @@ namespace Bloom.Publish.Video
             // really important is happening in the 'background music' stream. If that becomes
             // a problem, we may have to somehow encourage, but not enforce, zero pageReadTime
             // for audio-only output.
-            var pageReadTime = (_codec == Codec.MP3 ? "0" : _pageReadTime);
+            var pageReadTime = (_codec == Codec.MP3 ? 0 : _pageReadTime);
             string pageRangeParams =
                 _pageRange.Length == 2
                     ? $"&start-page={_pageRange[0]}&autoplay-count={_pageRange[1] - _pageRange[0] + 1}"
@@ -211,7 +212,7 @@ namespace Bloom.Publish.Video
                 // encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
                 // See BL-11319.
                 + UrlPathString.CreateFromUnencodedString(bookUrl).UrlEncoded
-                + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&useOriginalPageSize={_shouldUseOriginalPageSize}&skipActivities=true{pageRangeParams}";
+                + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&pauseAfterNarration={_pauseAfterNarration}&useOriginalPageSize={_shouldUseOriginalPageSize}&skipActivities=true{pageRangeParams}";
             // The user can make choices in the preview instance of BloomPlayer...currently language and
             // whether to play image descriptions...that need to be communicated to the recording window.
             // If we received any, pass them on.
@@ -1886,9 +1887,16 @@ namespace Bloom.Publish.Video
             _videoHeight = videoResolution.Height;
         }
 
-        public void SetPageReadTime(string pageReadTime)
+        /// <summary>
+        /// Take the page timings to pass to BloomPlayer from the book's Audio/Video settings: how
+        /// long to stay on a page without narration, and how long to wait after a page's
+        /// narration ends before turning the page. Unlike the first, the pause applies to MP3
+        /// recordings too.
+        /// </summary>
+        public void SetPageTimings(AudioVideoSettings settings)
         {
-            _pageReadTime = pageReadTime;
+            _pageReadTime = settings.PageTurnDelayDouble;
+            _pauseAfterNarration = settings.PauseAfterNarrationDouble;
         }
 
         public void SetVideoSettingsFromPreview(string videoSettings)
