@@ -65,6 +65,11 @@ describe("a new text cell when the toolbar's first language is not the collectio
             boxes.map(() => "tpi"),
         );
         expect(
+            boxes.filter(
+                (box) => !box.classList.contains("bloom-visibility-code-on"),
+            ),
+        ).toEqual([]);
+        expect(
             boxes.filter((box) => box.classList.contains("bloom-content1")),
         ).toEqual([]);
     });
