@@ -199,6 +199,9 @@ test("closing the cover picture's Copyright and License dialog after typing a ti
             )
             .toBe("bird.png");
 
+        // The picture can show before Bloom has finished loading the page again, and a page change
+        // asked for while it is loading is refused.
+        await waitForEditTabSettled(page);
         await selectPage(page, contentPageId);
     });
 
