@@ -167,10 +167,33 @@ test("closing the cover picture's Copyright and License dialog after typing a ti
         await setCopyrightHolder(page, "Kite Society");
 
         await expectRenamed(oldFolder, title);
+        // After the rename Bloom shows the cover again from the new folder (SavePageAndReloadIt),
+        // so the picture that counts is the one on that page, not on the page the dialog closed
+        // on. A read that the reload interrupts throws "Execution context was destroyed"; that is
+        // not an answer yet, and it has to be caught here, because expect.poll fails at once on a
+        // callback that throws.
         await expect
             .poll(
                 async () => {
-                    const placement = await getImagePlacement(page);
+                    if (
+                        !decodeURI(editablePageFrame(page).url()).includes(
+                            `/${title}/`,
+                        )
+                    )
+                        return "(the page from the old folder)";
+                    let placement;
+                    try {
+                        placement = await getImagePlacement(page);
+                    } catch (error) {
+                        if (
+                            error instanceof Error &&
+                            /Execution context was destroyed|Frame was detached/.test(
+                                error.message,
+                            )
+                        )
+                            return "(the page is reloading)";
+                        throw error;
+                    }
                     return placement.loaded
                         ? placement.fileName
                         : "(not loaded)";
