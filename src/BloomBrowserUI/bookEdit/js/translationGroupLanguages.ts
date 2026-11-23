@@ -32,11 +32,12 @@ import { setupInlineImages } from "./inlineImages";
 
 /**
  * The roles (or language tags) a value of data-default-languages lists, in the order written, with
- * CL2 and CL3 given as N1 and N2, the names they stand for (as ProcessLanguageList in C# does).
+ * CL2 and CL3 given as N1 and N2, the names they stand for. As ProcessLanguageList in C# does, it
+ * splits at commas and spaces only.
  */
 export function rolesInSetting(setting: string | null): string[] {
     return (setting ?? "")
-        .split(/[,\s]+/)
+        .split(/[, ]+/)
         .filter((token) => token.length > 0)
         .map((token) => kSynonymsOfRoles[token] ?? token);
 }

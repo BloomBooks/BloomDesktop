@@ -6,6 +6,7 @@ import {
     showLanguagesInTranslationGroup,
 } from "./translationGroupLanguages";
 import { insertInlineImage } from "./inlineImages";
+import { ckeditableSelector } from "../../utils/shared";
 import { addLanguageTagsToBoxes } from "./bloomEditing";
 
 // The steps of setUpBoxesBuiltAfterLoad that need the real editing page (CKEditor, the toolbox,
@@ -270,6 +271,27 @@ describe("the classes page load gives a box in each language", () => {
         ]);
         expect(languageClassesOf("tpi")).toEqual(["bloom-contentCL1"]);
         expect(languageClassesOf("fr")).toEqual([]);
+    });
+
+    // Page load attaches the rich-text editor only to boxes that ckeditableSelector matches, which
+    // goes by these classes; a CL1 box whose language the toolbar leaves out has only
+    // bloom-contentCL1.
+    it("marks a box in the collection's first language so that page load gives it the rich-text editor", () => {
+        const box = document.createElement("div");
+        box.setAttribute("contenteditable", "true");
+        box.className = ["bloom-editable", ...languageClassesOf("tpi")].join(
+            " ",
+        );
+        // sanity check: the toolbar leaves this language out, so it has no bloom-content1/2/3
+        expect(box.className).not.toMatch(/bloom-content\d/);
+
+        expect(box.matches(ckeditableSelector)).toBe(true);
+    });
+
+    it("reads a setting split at commas and spaces only, as C# does", () => {
+        expect(languagesShownBySetting("CL1, N1")).toEqual(["tpi", "en"]);
+        // A tab is not a separator, so this is one (unknown) tag, as C# reads it.
+        expect(languagesShownBySetting("CL1\tN1")).toEqual(["CL1\tN1"]);
     });
 
     it("gives a box it adds the classes of its language, not those of the box it was made from", () => {
