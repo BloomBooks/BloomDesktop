@@ -567,6 +567,23 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
         );
     }
 
+    // Types in `box` on a page set up by AddOverflowHandlers, and lets the typing check run: it
+    // checks a box a tenth of a second after the key comes up (the page's own first check waits a
+    // second, which these tests never reach).
+    function typeIn(box: HTMLElement): void {
+        // The typing check repositions the language tips, which the qtip plugin does; it is not
+        // loaded here.
+        const jqueryPlugins = $.fn as unknown as { qtip?: () => void };
+        const qtipWas = jqueryPlugins.qtip;
+        jqueryPlugins.qtip = () => {};
+        try {
+            box.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
+            vi.advanceTimersByTime(150);
+        } finally {
+            jqueryPlugins.qtip = qtipWas;
+        }
+    }
+
     // BL-1260: Bloom does not check a page with more than 30 boxes, and AddOverflowHandlers clears
     // its marks, so marks put there by a table check would never be cleared. A page can also grow
     // past 30 while it is open (a row added to a table): its earlier marks go then. Its boxes are
@@ -620,63 +637,45 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
     // the box must still be sized to its text (a canvas text box grows as it is typed in).
     it("marks nothing, but still sizes the box, when typing on a page that grew past 30 boxes", () => {
         const boxes = loadPageOfTooFullBoxes(30);
-        // The typing check repositions the language tips, which the qtip plugin does; it is not
-        // loaded here.
-        const jqueryPlugins = $.fn as unknown as { qtip?: () => void };
-        const qtipWas = jqueryPlugins.qtip;
-        jqueryPlugins.qtip = () => {};
-        try {
-            new OverflowChecker().AddOverflowHandlers(
-                document.getElementById("fixtureRoot")!,
-            );
-            // Typing checks a box a tenth of a second after the key comes up; the page's own
-            // first check waits a second, which this test never reaches.
-            const typeIn = (box: HTMLElement) => {
-                box.dispatchEvent(
-                    new KeyboardEvent("keyup", { bubbles: true }),
-                );
-                vi.advanceTimersByTime(150);
-            };
-            typeIn(boxes[0]);
-            expect(
-                boxes[0].classList.contains("overflow"),
-                "Typing on a page of 30 should mark the box, or this tests nothing.",
-            ).toBe(true);
+        new OverflowChecker().AddOverflowHandlers(
+            document.getElementById("fixtureRoot")!,
+        );
+        typeIn(boxes[0]);
+        expect(
+            boxes[0].classList.contains("overflow"),
+            "Typing on a page of 30 should mark the box, or this tests nothing.",
+        ).toBe(true);
 
-            const group = boxes[0].parentElement!;
-            const thirtyFirst = group.cloneNode(true) as HTMLElement;
-            group.after(thirtyFirst);
-            const sizeToText = vi.mocked(
-                theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent,
-            );
-            sizeToText.mockClear();
-            typeIn(boxes[1]);
+        const group = boxes[0].parentElement!;
+        const thirtyFirst = group.cloneNode(true) as HTMLElement;
+        group.after(thirtyFirst);
+        const sizeToText = vi.mocked(
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent,
+        );
+        sizeToText.mockClear();
+        typeIn(boxes[1]);
 
-            expect(
-                sizeToText.mock.calls.map((call) => call[0]),
-                "The box typed in should still be sized to its text.",
-            ).toContain(boxes[1]);
-            expect(
-                Array.from(
-                    document.querySelectorAll<HTMLElement>(
-                        "#fixtureRoot .bloom-editable",
-                    ),
-                ).filter((box) => box.classList.contains("overflow")),
-                "Typing on a page grown to 31 should mark nothing, and clear what was marked.",
-            ).toEqual([]);
+        expect(
+            sizeToText.mock.calls.map((call) => call[0]),
+            "The box typed in should still be sized to its text.",
+        ).toContain(boxes[1]);
+        expect(
+            Array.from(
+                document.querySelectorAll<HTMLElement>(
+                    "#fixtureRoot .bloom-editable",
+                ),
+            ).filter((box) => box.classList.contains("overflow")),
+            "Typing on a page grown to 31 should mark nothing, and clear what was marked.",
+        ).toEqual([]);
 
-            // Back under the limit, the next table check marks the whole page again. This also
-            // leaves the page's record of being cleared (module state) as the next test expects.
-            thirtyFirst.remove();
-            OverflowChecker.AdjustSizeOrMarkOverflowOfAll([boxes[0]]);
-            expect(
-                boxes.filter((box) => box.classList.contains("overflow"))
-                    .length,
-                "Every box on the page should be marked again once it is back under 30.",
-            ).toBe(30);
-        } finally {
-            jqueryPlugins.qtip = qtipWas;
-        }
+        // Back under the limit, the next table check marks the whole page again. This also
+        // leaves the page's record of being cleared (module state) as the next test expects.
+        thirtyFirst.remove();
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll([boxes[0]]);
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")).length,
+            "Every box on the page should be marked again once it is back under 30.",
+        ).toBe(30);
     });
 
     // A page that is over the limit when it loads is not checked; once a row is deleted and it is
@@ -694,17 +693,7 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
 
         boxes[30].parentElement!.remove();
         // Typing is checked again once the page is back under the limit, though it loaded over it.
-        const jqueryPlugins = $.fn as unknown as { qtip?: () => void };
-        const qtipWas = jqueryPlugins.qtip;
-        jqueryPlugins.qtip = () => {};
-        try {
-            boxes[1].dispatchEvent(
-                new KeyboardEvent("keyup", { bubbles: true }),
-            );
-            vi.advanceTimersByTime(150);
-        } finally {
-            jqueryPlugins.qtip = qtipWas;
-        }
+        typeIn(boxes[1]);
         expect(
             boxes[1].classList.contains("overflow"),
             "Typing in a box of a page back under 30 should mark it.",
