@@ -2166,18 +2166,12 @@ namespace BloomTests.Book
         // A Bloom before 6.6 does not know the collection-language roles, so a book whose text boxes
         // use them, alone or in a list, must not be opened in one.
         [TestCase("CL1")]
+        [TestCase("CL2")]
         [TestCase("CL1,N1")]
         [TestCase("N1 CL3")]
         public void GetRequiredVersions_CollectionLanguageRole_Requires6_6(string roles)
         {
-            var storage = GetInitialStorageWithCustomHtml(
-                @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
-			<body><div class='bloom-page'>
-				<div class='bloom-translationGroup' data-default-languages='"
-                    + roles
-                    + @"'/>
-			</div></body></html>"
-            );
+            var storage = StorageWithOneGroupShowing(roles);
             var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
             AssertRequiredFeatures(requiredVersions, new[] { "collectionLanguageRoles" });
@@ -2189,7 +2183,15 @@ namespace BloomTests.Book
         [TestCase("XCL1")]
         public void GetRequiredVersions_NoCollectionLanguageRole_RequiresNothing(string roles)
         {
-            var storage = GetInitialStorageWithCustomHtml(
+            var storage = StorageWithOneGroupShowing(roles);
+
+            Assert.That(BookStorage.GetRequiredVersions(storage.Dom), Is.Empty);
+        }
+
+        // A book with one translation group, whose data-default-languages is `roles`.
+        private BookStorage StorageWithOneGroupShowing(string roles)
+        {
+            return GetInitialStorageWithCustomHtml(
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
 				<div class='bloom-translationGroup' data-default-languages='"
@@ -2197,8 +2199,6 @@ namespace BloomTests.Book
                     + @"'/>
 			</div></body></html>"
             );
-
-            Assert.That(BookStorage.GetRequiredVersions(storage.Dom), Is.Empty);
         }
 
         public const string MinimalDataBubbleValue =

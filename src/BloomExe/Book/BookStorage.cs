@@ -1194,11 +1194,17 @@ namespace Bloom.Book
                 // so it can still try the book.
                 BloomDesktopMinVersion = "6.6",
                 BloomPlayerMinVersion = "1.0",
+                // The cheap contains() rules out nearly every group before the exact test of each
+                // role in the list runs, since this XPath is evaluated on every save.
                 XPath =
-                    "//*[@data-default-languages and ("
-                    + "contains(concat(',', translate(@data-default-languages, ' ', ','), ','), ',CL1,')"
-                    + " or contains(concat(',', translate(@data-default-languages, ' ', ','), ','), ',CL2,')"
-                    + " or contains(concat(',', translate(@data-default-languages, ' ', ','), ','), ',CL3,'))]",
+                    "//div[contains(@data-default-languages, 'CL')]["
+                    + string.Join(
+                        " or ",
+                        new[] { "CL1", "CL2", "CL3" }.Select(role =>
+                            $"contains(concat(',', translate(@data-default-languages, ' ', ','), ','), ',{role},')"
+                        )
+                    )
+                    + "]",
             },
         };
 

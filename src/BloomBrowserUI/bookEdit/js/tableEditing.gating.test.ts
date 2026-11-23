@@ -59,9 +59,8 @@ class NoopResizeObserver {
     NoopResizeObserver;
 
 // GetSettings is injected into the page by RuntimeInformationInjector (C#). The
-// text cell template needs the language new text boxes use.
+// text cell template needs the collection's first language.
 (globalThis as unknown as { GetSettings: unknown }).GetSettings = () => ({
-    languageForNewTextBoxes: "xyz",
     collectionLanguage1: "xyz",
 });
 

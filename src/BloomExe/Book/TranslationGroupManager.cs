@@ -62,22 +62,18 @@ namespace Bloom.Book
             {
                 foreach (
                     var group in GetTranslationGroups(pageOrDocumentNode)
-                        .Where(g => HasRole(g, "CL1"))
+                        .Where(g =>
+                            ProcessLanguageList(
+                                    g.GetAttribute("data-default-languages") ?? "",
+                                    bookData
+                                )
+                                .Contains("CL1")
+                        )
                 )
                     MakeElementWithLanguageForOneGroup(group, collectionLanguage1);
             }
 
             FixGroupStyleSettings(pageOrDocumentNode);
-        }
-
-        /// <summary>
-        /// True when the group's data-default-languages lists `role` (e.g. "CL1") among its roles.
-        /// </summary>
-        private static bool HasRole(SafeXmlElement group, string role)
-        {
-            return (group.GetAttribute("data-default-languages") ?? "")
-                .Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Contains(role);
         }
 
         /// <summary>
@@ -382,10 +378,19 @@ namespace Bloom.Book
                     );
                 }
             }
-            return languagesAttributeString.Split(
-                new char[] { ',', ' ' },
-                StringSplitOptions.RemoveEmptyEntries
-            );
+            // CL2 and CL3, the collection's second and third languages, are other names for N1
+            // and N2, so the readers of this list need only know N1 and N2.
+            return languagesAttributeString
+                .Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(role =>
+                {
+                    if (role == "CL2")
+                        return "N1";
+                    if (role == "CL3")
+                        return "N2";
+                    return role;
+                })
+                .ToArray();
         }
 
         public static bool IsPageAffectedByLanguageMenu(SafeXmlElement page, bool legacy)
@@ -525,18 +530,15 @@ namespace Bloom.Book
                 // we prevent that by renaming bloom-editable and bloom-translationGroup.
                 if (IsVisible(editable))
                 {
-                    var group = editable.ParentNode as SafeXmlElement;
-                    switch (group?.GetAttribute("data-default-languages")?.Trim())
+                    switch (dataDefaultLanguages.Length == 1 ? dataDefaultLanguages[0] : null)
                     {
                         case "V":
                             editable.AddClass("bloom-contentFirst");
                             break;
                         case "N1":
-                        case "CL2":
                             editable.AddClass("bloom-contentSecond");
                             break;
                         case "N2":
-                        case "CL3":
                             editable.AddClass("bloom-contentThird");
                             break;
                     }
@@ -797,8 +799,8 @@ namespace Bloom.Book
                 // But, the new model makes L2 and L3 mean the second and third checked languages, while N1 and N2 are the
                 // second and third metadata languages, currently locked to the collection L2 and L3.
                 // V and L1 both mean the first checked language.
-                // CL1, CL2 and CL3 are the collection's first, second and third languages, whatever the
-                // toolbar checks (CL2 and CL3 are the same languages as N1 and N2).
+                // CL1 is the collection's first language, whatever the toolbar checks. (CL2 and CL3,
+                // its second and third, arrive here as N1 and N2; see ProcessLanguageList.)
                 // Changes here should result in consistent ones in Book.IsLanguageWanted and BookData.GatherDataItemsFromXElement
                 // and RuntimeInformationInjector.AddUIDictionaryToDom and I18ApiHandleI18nRequest
                 return (lang == bookData.Language1.Tag && dataDefaultLanguages.Contains("V"))
@@ -808,19 +810,11 @@ namespace Bloom.Book
                         && dataDefaultLanguages.Contains("CL1")
                     )
                     || (
-                        lang == bookData.MetadataLanguage1Tag
-                        && (
-                            dataDefaultLanguages.Contains("N1")
-                            || dataDefaultLanguages.Contains("CL2")
-                        )
+                        lang == bookData.MetadataLanguage1Tag && dataDefaultLanguages.Contains("N1")
                     )
                     || (lang == bookData.Language2Tag && dataDefaultLanguages.Contains("L2"))
                     || (
-                        lang == bookData.MetadataLanguage2Tag
-                        && (
-                            dataDefaultLanguages.Contains("N2")
-                            || dataDefaultLanguages.Contains("CL3")
-                        )
+                        lang == bookData.MetadataLanguage2Tag && dataDefaultLanguages.Contains("N2")
                     )
                     || (lang == bookData.Language3Tag && dataDefaultLanguages.Contains("L3"))
                     || dataDefaultLanguages.Contains(lang); // a literal language id, e.g. "en" (used by template starter)

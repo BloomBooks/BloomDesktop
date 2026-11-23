@@ -1288,7 +1288,8 @@ namespace BloomTests.Book
         }
 
         // CL1, CL2 and CL3 name the collection's languages, whatever the toolbar checks: here the
-        // toolbar's first language is the collection's L2, French.
+        // toolbar's first language is the collection's L2, French. The role goes through
+        // ProcessLanguageList, as a group's data-default-languages does.
         [TestCase("xyz", "CL1", true)]
         [TestCase("fr", "CL1", false)]
         [TestCase("fr", "V", true)]
@@ -1315,7 +1316,7 @@ namespace BloomTests.Book
             Assert.That(
                 TranslationGroupManager.ShouldNormallyShowEditable(
                     lang,
-                    new[] { role },
+                    TranslationGroupManager.ProcessLanguageList(role, bookData),
                     "",
                     "",
                     bookData

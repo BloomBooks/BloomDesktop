@@ -60,7 +60,6 @@ class NoopResizeObserver {
     NoopResizeObserver;
 // GetSettings is injected into the page by RuntimeInformationInjector (C#).
 (globalThis as unknown as { GetSettings: unknown }).GetSettings = () => ({
-    languageForNewTextBoxes: "tpi",
     collectionLanguage1: "tpi",
 });
 
