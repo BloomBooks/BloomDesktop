@@ -22,6 +22,7 @@ import {
     type Page,
 } from "@playwright/test";
 import { apiGet } from "./api";
+import { waitForEditTabSettled } from "./bookMaking";
 
 /** A command in a page thumbnail's context menu, named as the menu shows it in English. */
 export type PageMenuCommand =
@@ -126,12 +127,17 @@ export async function readUnlessDocumentReplaced<T>(
  * Click a page's thumbnail and wait for Bloom to report it selected. The click target is the
  * transparent cover over the thumbnail, which is what a person hits; the thumbnail's own
  * content ignores clicks.
+ *
+ * Bloom refuses a page change asked for while it is still loading a page, so this first waits for
+ * the Edit tab to settle: a test can get here just after opening a book or the Edit tab, or just
+ * after Bloom reloaded the page, all faster than a person.
  */
 export async function selectPage(
     page: Page,
     pageId: string,
     timeoutMs = 60000,
 ): Promise<void> {
+    await waitForEditTabSettled(page);
     // An attribute selector, not `#id`: Bloom's page ids are GUIDs that may start with a
     // digit, which a bare id selector cannot express.
     const thumbnail = pageListFrame(page).locator(

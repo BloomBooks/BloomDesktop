@@ -20,7 +20,6 @@ import {
     goToPage,
     makeBookFromTemplate,
     typeInGroup,
-    waitForSnapshotStreamIdle,
 } from "../helpers/bookMaking";
 import {
     addInlineImage,
@@ -213,10 +212,6 @@ test("a side handle crops an inline image in every language, Flip keeps the crop
             },
         )
         .toBe(0);
-    // A save takes the page from the last snapshot the page sent Bloom, which comes a moment after
-    // a change (kQuietMs in pageSnapshot.ts). Leaving the page within that moment would save it as
-    // it was before the Undo, so wait until Bloom has the page as it is now.
-    await waitForSnapshotStreamIdle(page);
 
     // Leaving the page saves it, and the crop is in the saved file for every language.
     const pages = await getPages(page);

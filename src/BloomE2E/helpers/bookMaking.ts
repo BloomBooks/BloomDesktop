@@ -13,7 +13,11 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet, apiGetJson, apiPost } from "./api";
 import { selectBook, waitForCollectionReady } from "./collection";
-import { markEditablePage, waitForEditablePageReload } from "./pageThumbnails";
+import {
+    markEditablePage,
+    readUnlessDocumentReplaced,
+    waitForEditablePageReload,
+} from "./pageThumbnails";
 import { switchTab } from "./workspace";
 
 /** One book as collections/books reports it. Only the fields used here. */
@@ -717,8 +721,15 @@ export async function reloadPageBeingEdited(page: Page): Promise<void> {
 /**
  * Show a page in the Edit tab. This is also how a test SAVES what it typed: Bloom writes the page
  * it is leaving, so text typed into a box reaches the file only once the book moves off that page.
+ *
+ * Bloom saves the page it is leaving from the last snapshot that page sent, which comes a moment
+ * after each change (kQuietMs in pageSnapshot.ts); no person leaves a page that fast. So this first
+ * waits until Bloom has the page as it is now, whatever changed it: typing, Undo, a drag. A test of
+ * what happens when the page is left within that moment needs a way of leaving that does not wait,
+ * not this one.
  */
 export async function goToPage(page: Page, pageId: string): Promise<void> {
+    await waitForSnapshotStreamIdleIfEditing(page);
     // Wait for the Edit tab first. A jump asked for while it is still loading a page is refused
     // (see waitForEditTabSettled), so ask at a moment when the tab acts on the jump at once.
     // Then ask, and ask again if the tab was busy after all. The tab answers with an error when
@@ -838,18 +849,20 @@ export async function waitForPageToSettle(page: Page): Promise<void> {
  * Only for a page known to be loaded and editable; a frame still loading its page has no stream to
  * ask, and this fails rather than guess.
  */
-export async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
+async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
     await expect
         .poll(
             () =>
-                editablePageFrame(page).evaluate(() =>
-                    (
-                        window as unknown as {
-                            editablePageBundle: {
-                                isSnapshotStreamIdle: () => boolean;
-                            };
-                        }
-                    ).editablePageBundle.isSnapshotStreamIdle(),
+                readUnlessDocumentReplaced(() =>
+                    editablePageFrame(page).evaluate(() =>
+                        (
+                            window as unknown as {
+                                editablePageBundle: {
+                                    isSnapshotStreamIdle: () => boolean;
+                                };
+                            }
+                        ).editablePageBundle.isSnapshotStreamIdle(),
+                    ),
                 ),
             {
                 timeout: 15000,
@@ -858,6 +871,29 @@ export async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
             },
         )
         .toBe(true);
+}
+
+/**
+ * waitForSnapshotStreamIdle, when the Edit tab holds an editable page; otherwise there is no stream
+ * to wait for, and this returns at once. That covers a frame still loading its page, a frame the
+ * Edit tab replaces while this asks, and a test that is not on the Edit tab at all.
+ */
+async function waitForSnapshotStreamIdleIfEditing(page: Page): Promise<void> {
+    const frame = page.frame({ name: "page" });
+    if (!frame) return;
+    const hasStream = await readUnlessDocumentReplaced(() =>
+        frame.evaluate(
+            () =>
+                typeof (
+                    window as unknown as {
+                        editablePageBundle?: {
+                            isSnapshotStreamIdle?: () => boolean;
+                        };
+                    }
+                ).editablePageBundle?.isSnapshotStreamIdle === "function",
+        ),
+    );
+    if (hasStream) await waitForSnapshotStreamIdle(page);
 }
 
 /**
