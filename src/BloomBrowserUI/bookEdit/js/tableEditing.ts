@@ -103,12 +103,19 @@ function ensureTableLibrarySetUp(): void {
     // makeTranslationGroup in CanvasElementFactories.ts.
     // The group shows the collection's first language only (data-default-languages CL1),
     // whatever the toolbar shows, until the user picks others in the table's menus; see
-    // tableCellLanguages.ts.
-    const collectionLanguage1 = GetSettings().collectionLanguage1;
+    // tableCellLanguages.ts. Its box is bloom-content1 only when that language is also the
+    // toolbar's first, as page load would mark it: the reader tools take bloom-content1 to be the
+    // toolbar's first language.
+    const settings = GetSettings();
+    const collectionLanguage1 = settings.collectionLanguage1;
+    const content1Class =
+        collectionLanguage1 === settings.languageForNewTextBoxes
+            ? " bloom-content1"
+            : "";
     replaceCellContentType(
         "text",
         "<div class='bloom-translationGroup bloom-trailingElement normal-style' data-default-languages='CL1'>" +
-            `<div class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='${collectionLanguage1}'><p></p></div>` +
+            `<div class='bloom-editable normal-style${content1Class} bloom-visibility-code-on' lang='${collectionLanguage1}'><p></p></div>` +
             "</div>",
         /bloom-translationGroup/,
         true,

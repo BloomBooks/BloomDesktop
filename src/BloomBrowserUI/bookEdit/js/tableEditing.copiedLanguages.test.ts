@@ -60,6 +60,7 @@ class NoopResizeObserver {
     NoopResizeObserver;
 // GetSettings is injected into the page by RuntimeInformationInjector (C#).
 (globalThis as unknown as { GetSettings: unknown }).GetSettings = () => ({
+    languageForNewTextBoxes: "tpi",
     collectionLanguage1: "tpi",
 });
 
@@ -94,6 +95,12 @@ describe("a language setting copied into a cell", () => {
         ).toBeDefined();
         expect(group.getAttribute("data-default-languages")).toBe("CL1");
         expect(shownLangsOf(group)).toEqual(["tpi"]);
+        // The collection's first language is the toolbar's first here, so its box is marked so.
+        expect(
+            group
+                .querySelector("[lang='tpi']")!
+                .classList.contains("bloom-content1"),
+        ).toBe(true);
         expect(getActiveDelayIds()).not.toContain(kCopiedLanguagesDelayId);
 
         cellSettingsHooks!.apply(cell, "CL1,N1");
