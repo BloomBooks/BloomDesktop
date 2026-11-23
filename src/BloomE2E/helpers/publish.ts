@@ -78,9 +78,9 @@ export interface ILanguageRow {
     disabled: boolean;
 }
 
-// The id each destination's tab carries in its data-testid, "publish-destination-<id>"
-// (PublishTabPane.tsx, publishTabs).
-const kPublishDestinationIds: Record<PublishDestination, string> = {
+// The testId of each destination in PublishTabPane.tsx's publishTabs; its tab's data-testid is
+// "publish-destination-<testId>".
+const kPublishDestinationTestIds: Record<PublishDestination, string> = {
     "PDF & Print": "pdf",
     Web: "web",
     BloomPUB: "bloompub",
@@ -100,7 +100,7 @@ function publishDestinationTab(
     destination: PublishDestination,
 ): Locator {
     return page.getByTestId(
-        `publish-destination-${kPublishDestinationIds[destination]}`,
+        `publish-destination-${kPublishDestinationTestIds[destination]}`,
     );
 }
 

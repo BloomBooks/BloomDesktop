@@ -198,10 +198,11 @@ export const PublishTabPane: React.FunctionComponent = () => {
         iconSrc: string;
         labelL10nKey: string;
         label: string;
-        // Identifies the tool to code, and to e2e tests as the tab's data-testid
-        // ("publish-destination-<id>"): the label is localized, and while the tool's tooltip is
-        // open the tab takes the tooltip's text as its accessible name.
-        id: string;
+        id?: string;
+        // For e2e tests, as the tab's data-testid ("publish-destination-<testId>"): the label is
+        // localized, and while the tool's tooltip is open the tab takes the tooltip's text as its
+        // accessible name.
+        testId: string;
         hidden?: boolean;
     }
     const publishTabs: PublishTabProps[] = [
@@ -210,21 +211,21 @@ export const PublishTabPane: React.FunctionComponent = () => {
             iconSrc: "/bloom/publish/PublishTab/PdfPrint.png",
             labelL10nKey: "PublishTab.PdfPrint.Button",
             label: "PDF & Print",
-            id: "pdf",
+            testId: "pdf",
         },
         {
             tipL10nKey: "PublishTab.ButtonThatShowsUploadForm-tooltip",
             iconSrc: "/bloom/publish/PublishTab/upload.png",
             labelL10nKey: "PublishTab.ButtonThatShowsUploadForm",
             label: "Web",
-            id: "web",
+            testId: "web",
         },
         {
             tipL10nKey: "PublishTab.bloomPUBButton-tooltip",
             iconSrc: "/bloom/publish/PublishTab/BloomPUB.png",
             labelL10nKey: "PublishTab.bloomPUBButton",
             label: "BloomPUB",
-            id: "bloompub",
+            testId: "bloompub",
         },
         {
             tipL10nKey: "PublishTab.Apps-tooltip",
@@ -232,6 +233,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
             labelL10nKey: "PublishTab.Apps",
             label: "Apps",
             id: "apps",
+            testId: "apps",
             hidden: !appBuilderFeatureStatus?.visible,
         },
         {
@@ -239,14 +241,14 @@ export const PublishTabPane: React.FunctionComponent = () => {
             iconSrc: "/bloom/publish/PublishTab/ePUBPublishButton.png",
             labelL10nKey: "PublishTab.EpubButton",
             label: "ePUB",
-            id: "epub",
+            testId: "epub",
         },
         {
             tipL10nKey: "PublishTab.RecordVideoButton-tooltip",
             iconSrc: "/bloom/publish/PublishTab/publish video.png",
             labelL10nKey: "PublishTab.RecordVideoButton",
             label: "Audio or Video",
-            id: "video",
+            testId: "video",
         },
     ];
 
@@ -385,7 +387,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                 {publishTabs.map((tab, index) => (
                                     <Tab
                                         key={index}
-                                        data-testid={`publish-destination-${tab.id}`}
+                                        data-testid={`publish-destination-${tab.testId}`}
                                         // Grey out the other publish tools while a modal operation
                                         // is running, so it's clear why they don't respond. The tool
                                         // the operation belongs to stays looking normal, the same way
