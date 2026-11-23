@@ -25,7 +25,11 @@ import {
 import { apiPost } from "../helpers/api";
 import { setCopyrightHolder } from "../helpers/copyrightAndLicense";
 import { chooseImageFile, getImagePlacement } from "../helpers/images";
-import { pageListFrame, selectPage } from "../helpers/pageThumbnails";
+import {
+    pageListFrame,
+    readUnlessDocumentReplaced,
+    selectPage,
+} from "../helpers/pageThumbnails";
 import type { Page, Response } from "@playwright/test";
 
 test.use({
@@ -169,9 +173,7 @@ test("closing the cover picture's Copyright and License dialog after typing a ti
         await expectRenamed(oldFolder, title);
         // After the rename Bloom shows the cover again from the new folder (SavePageAndReloadIt),
         // so the picture that counts is the one on that page, not on the page the dialog closed
-        // on. A read that the reload interrupts throws "Execution context was destroyed"; that is
-        // not an answer yet, and it has to be caught here, because expect.poll fails at once on a
-        // callback that throws.
+        // on. A read that the reload interrupts is not an answer yet.
         await expect
             .poll(
                 async () => {
@@ -181,19 +183,10 @@ test("closing the cover picture's Copyright and License dialog after typing a ti
                         )
                     )
                         return "(the page from the old folder)";
-                    let placement;
-                    try {
-                        placement = await getImagePlacement(page);
-                    } catch (error) {
-                        if (
-                            error instanceof Error &&
-                            /Execution context was destroyed|Frame was detached/.test(
-                                error.message,
-                            )
-                        )
-                            return "(the page is reloading)";
-                        throw error;
-                    }
+                    const placement = await readUnlessDocumentReplaced(() =>
+                        getImagePlacement(page),
+                    );
+                    if (!placement) return "(the page is reloading)";
                     return placement.loaded
                         ? placement.fileName
                         : "(not loaded)";
