@@ -129,20 +129,70 @@ export function languageClassesOf(tag: string): string[] {
 }
 
 /**
- * Add to `box` the language classes C# would give it (see languageClassesOf). Its callers have
- * already taken every bloom-content class off the box.
+ * Make `box`'s classes that start with `prefix` exactly `wanted`, changing nothing when they
+ * already are: a table menu changes every cell, and each change to a class makes the browser work
+ * out the page's styles again. Returns whether anything changed.
  */
-export function addLanguageClassesToBox(box: HTMLElement): void {
-    languageClassesOf(box.getAttribute("lang") ?? "").forEach((name) =>
-        box.classList.add(name),
+function setClassesWithPrefix(
+    box: HTMLElement,
+    prefix: string,
+    wanted: string[],
+): boolean {
+    const current = Array.from(box.classList).filter((name) =>
+        name.startsWith(prefix),
     );
+    if (
+        current.length === wanted.length &&
+        wanted.every((name) => current.includes(name))
+    )
+        return false;
+    // Even with nothing to remove or add, these calls would rewrite the class attribute.
+    if (current.length) box.classList.remove(...current);
+    if (wanted.length) box.classList.add(...wanted);
+    return true;
 }
+
+/**
+ * Give every box of `group` the bloom-content classes page load would give it, once the group
+ * shows the languages it should (TranslationGroupManager.UpdateContentLanguageClassesOnElement):
+ * its language classes (languageClassesOf), and, on a custom-layout page, bloom-contentFirst,
+ * Second or Third on a shown box of a group whose setting is just V, N1 or N2. A box whose classes
+ * are already right is left alone. A group whose visibility the Appearance system controls
+ * (data-visibility-variable) gets its order classes from another C# rule
+ * (AddThemeVisibleOrderClass), so its classes are left as page load set them.
+ */
+function setLanguageClassesInGroup(group: HTMLElement): void {
+    if (group.hasAttribute("data-visibility-variable")) return;
+    const roles = rolesInSetting(group.getAttribute("data-default-languages"));
+    const layoutClass =
+        roles.length === 1 &&
+        Object.hasOwn(kCustomLayoutClassOfRole, roles[0]) &&
+        group.closest(".bloom-customLayout")
+            ? kCustomLayoutClassOfRole[roles[0]]
+            : undefined;
+    boxesOf(group).forEach((box) => {
+        const wanted = languageClassesOf(box.getAttribute("lang") ?? "");
+        if (layoutClass && box.classList.contains("bloom-visibility-code-on"))
+            wanted.push(layoutClass);
+        setClassesWithPrefix(box, "bloom-content", wanted);
+    });
+}
+
+// On a custom-layout page, the class page load gives a shown box of a group whose setting is just
+// this role, which custom-layout styles size and place by.
+const kCustomLayoutClassOfRole: Record<string, string> = {
+    V: "bloom-contentFirst",
+    N1: "bloom-contentSecond",
+    N2: "bloom-contentThird",
+};
 
 /**
  * Make `group` show the boxes of the languages `tags` and hide its others, adding a box for any of
  * those languages it has none for. A box is added among the others in the order of `order` (tags
  * in the order the languages should read down the group); a language not in `order` goes last.
- * Returns the boxes added and the boxes that were there but hidden and are now shown; both go to
+ * Then every box gets the bloom-content classes page load would give it, as C# does for a group
+ * after working out which boxes it shows (setLanguageClassesInGroup); so the caller sets the
+ * group's data-default-languages first. Returns the boxes added and the boxes that were there but hidden and are now shown; both go to
  * setUpBoxesBuiltAfterLoad once the boxes are where they belong.
  *
  * Nothing is measured here, so that a caller changing many groups (a table menu changes every
@@ -163,18 +213,17 @@ export function showLanguagesInTranslationGroup(
         const wanted = tags.includes(box.getAttribute("lang") ?? "")
             ? "bloom-visibility-code-on"
             : "bloom-visibility-code-off";
-        const visibilityClasses = Array.from(box.classList).filter((name) =>
-            name.startsWith("bloom-visibility-code-"),
-        );
-        // Classes are changed only when they are wrong: a table menu calls this for every cell,
-        // and each change makes the browser work out the page's styles again.
-        if (visibilityClasses.length === 1 && visibilityClasses[0] === wanted)
-            return;
-        if (wanted === "bloom-visibility-code-on" && !added.includes(box))
+        const changed = setClassesWithPrefix(box, "bloom-visibility-code-", [
+            wanted,
+        ]);
+        if (
+            changed &&
+            wanted === "bloom-visibility-code-on" &&
+            !added.includes(box)
+        )
             shown.push(box);
-        visibilityClasses.forEach((name) => box.classList.remove(name));
-        box.classList.add(wanted);
     });
+    setLanguageClassesInGroup(group);
     return { added, shown };
 }
 
@@ -276,7 +325,6 @@ function addBox(group: HTMLElement, tag: string, order: string[]): HTMLElement {
         .filter((name) => kClassesNotCopied.test(name))
         .forEach((name) => box.classList.remove(name));
     box.setAttribute("lang", tag);
-    addLanguageClassesToBox(box);
     box.innerHTML = "<p></p>";
     const later = order
         .slice(order.indexOf(tag) + 1)

@@ -12,8 +12,6 @@ import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { getEditablePageBundleExports } from "../../js/workspaceFrames";
 import { IControlContext, IControlMenuCommandRow } from "./canvasControlTypes";
 
-const fieldsControlledByAppearanceSystem = ["bookTitle"];
-
 // The labelL10nId of each of these is used to localize its item in the "Field Type:" menu.
 // Two of them reuse strings that were created for other purposes but say exactly the right
 // thing; the other two have ids of their own in BloomLowPriority.xlf.
@@ -73,23 +71,14 @@ const fieldTypeData: Array<{
     },
 ];
 
-function removeClassesByPrefix(element: HTMLElement, prefix: string): void {
-    Array.from(element.classList).forEach((className) => {
-        if (className.startsWith(prefix)) {
-            element.classList.remove(className);
-        }
-    });
-}
-
 // Make the canvas element's text store `dataDefaultLang` and show, at once, `langCode`, the
 // language page load will show for that setting. A box for that language is added if the group has
-// none, set up as page load sets up every box, and the box gets the language classes page load
-// would give it.
+// none, set up as page load sets up every box, and every box of the group gets the classes page
+// load would give it (on a custom cover, bloom-contentFirst and the like among them).
 function updateTranslationGroupLanguage(
     translationGroup: HTMLElement,
     dataDefaultLang: string,
     langCode: string,
-    appearanceClass: string,
 ): void {
     translationGroup.setAttribute("data-default-languages", dataDefaultLang);
     if (
@@ -103,19 +92,6 @@ function updateTranslationGroupLanguage(
         translationGroup,
         [langCode],
     );
-    const editableInLang = translationGroup.querySelector<HTMLElement>(
-        `:scope > .bloom-editable[lang="${langCode}"]`,
-    )!;
-    removeClassesByPrefix(editableInLang, "bloom-content");
-    page.addLanguageClassesToBox(editableInLang);
-
-    const dataBookValue = editableInLang.getAttribute("data-book");
-    if (
-        dataBookValue &&
-        fieldsControlledByAppearanceSystem.includes(dataBookValue)
-    ) {
-        editableInLang.classList.add(appearanceClass);
-    }
     page.setUpBoxesBuiltAfterLoad(added, shown);
 }
 
@@ -211,17 +187,13 @@ export function makeLanguageMenuItem(
     // shows what the box will show after the page is next loaded too. A language two settings
     // share is listed once, under the setting that keeps it whatever the toolbar does: N1 or N2
     // rather than V, when the toolbar puts the collection's second or third language first.
-    const entries = [
-        { setting: "V", appearanceClass: "bloom-contentFirst" },
-        { setting: "N1", appearanceClass: "bloom-contentSecond" },
-        { setting: "N2", appearanceClass: "bloom-contentThird" },
-    ].map((entry) => ({
-        ...entry,
-        tag: page.languagesShownBySetting(entry.setting)[0],
+    const entries = ["V", "N1", "N2"].map((setting) => ({
+        setting,
+        tag: page.languagesShownBySetting(setting)[0],
     }));
     const subMenuItems: IControlMenuCommandRow[] = [];
     const tagsListed: string[] = [];
-    for (const { setting, appearanceClass, tag } of entries) {
+    for (const { setting, tag } of entries) {
         const name = nameOfTag.get(tag);
         if (!tag || !name || tagsListed.includes(tag)) continue;
         const fixedRoleHasIt = entries.some(
@@ -240,12 +212,7 @@ export function makeLanguageMenuItem(
                 if (!translationGroup) {
                     return;
                 }
-                updateTranslationGroupLanguage(
-                    translationGroup,
-                    setting,
-                    tag,
-                    appearanceClass,
-                );
+                updateTranslationGroupLanguage(translationGroup, setting, tag);
                 getCanvasElementManager()?.setActiveElement(
                     rowCtx.canvasElement,
                 );

@@ -192,9 +192,11 @@ describe("showLanguagesInTranslationGroup", () => {
     // A table menu calls this for every cell; a box already showing as asked must not be touched,
     // since every class change makes the browser work out the page's styles again.
     it("changes no box that already shows or hides as asked", () => {
+        // Each box has the classes page load gives it (in the tests' page settings, vitest.setup.ts,
+        // English is the toolbar's first language and French its third), so none needs changing.
         const group = makeGroup(
-            "<div class='bloom-editable bloom-visibility-code-on' lang='en'><p>a</p></div>" +
-                "<div class='bloom-editable bloom-visibility-code-off' lang='fr'><p>b</p></div>",
+            "<div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'><p>a</p></div>" +
+                "<div class='bloom-editable bloom-content3 bloom-contentNational2 bloom-visibility-code-off' lang='fr'><p>b</p></div>",
         );
         const observer = new MutationObserver(() => {});
         observer.observe(group, { attributes: true, subtree: true });

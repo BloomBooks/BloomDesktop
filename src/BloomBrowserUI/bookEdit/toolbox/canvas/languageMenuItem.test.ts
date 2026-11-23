@@ -19,7 +19,6 @@ vi.mock("./canvasElementPageBridge", () => ({
 import { makeLanguageMenuItem } from "./canvasControlTextMenuItems";
 import { IControlContext, IControlMenuCommandRow } from "./canvasControlTypes";
 import {
-    addLanguageClassesToBox,
     languagesShownBySetting,
     showLanguagesInTranslationGroup,
 } from "../../js/translationGroupLanguages";
@@ -27,7 +26,6 @@ import {
 Object.assign(pageExports, {
     languagesShownBySetting,
     showLanguagesInTranslationGroup,
-    addLanguageClassesToBox,
     setUpBoxesBuiltAfterLoad: () => {},
 });
 
@@ -51,18 +49,25 @@ function useToolbarFirst(toolbarFirst: string): void {
     });
 }
 
-// A canvas text box showing Tok Pisin, and the Language submenu's entries for it.
-function makeMenu(): {
+// A canvas text box showing Tok Pisin, and the Language submenu's entries for it; on a
+// custom-layout page (a custom cover) when `customLayout`, where its box is marked as such a page
+// marks the first language.
+function makeMenu(customLayout = false): {
     group: HTMLElement;
     entries: IControlMenuCommandRow[];
 } {
+    const page = document.createElement("div");
+    page.className = customLayout
+        ? "bloom-page bloom-customLayout"
+        : "bloom-page";
     const canvasElement = document.createElement("div");
     canvasElement.className = "bloom-canvas-element";
     canvasElement.innerHTML =
         "<div class='bloom-translationGroup' data-default-languages='V'>" +
-        "<div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='tpi'><p>tpi</p></div>" +
+        `<div class='bloom-editable bloom-content1 ${customLayout ? "bloom-contentFirst " : ""}bloom-visibility-code-on' lang='tpi'><p>tpi</p></div>` +
         "</div>";
-    document.body.appendChild(canvasElement);
+    page.appendChild(canvasElement);
+    document.body.appendChild(page);
     const ctx = {
         canvasElement,
         languageNameValues: kNames,
@@ -128,5 +133,30 @@ describe("the canvas text box's Language submenu", () => {
                 ),
             ).map((box) => box.getAttribute("lang")),
         ).toEqual(["en"]);
+    });
+
+    it("on a custom cover, marks every box of the text as page load would", () => {
+        useToolbarFirst("tpi");
+        const { group, entries } = makeMenu(true);
+        const contentClassesOf = (lang: string) =>
+            Array.from(
+                group.querySelector(`.bloom-editable[lang='${lang}']`)!
+                    .classList,
+            ).filter((name) => name.startsWith("bloom-content"));
+        // sanity check: the Tok Pisin box starts as the cover's first language
+        expect(contentClassesOf("tpi")).toContain("bloom-contentFirst");
+
+        choose(entries, "English");
+
+        // English, now shown and set to N1, is the cover's second language...
+        expect(contentClassesOf("en").sort()).toEqual([
+            "bloom-contentNational1",
+            "bloom-contentSecond",
+        ]);
+        // ...and the hidden Tok Pisin box is no longer marked as its first.
+        expect(contentClassesOf("tpi").sort()).toEqual([
+            "bloom-content1",
+            "bloom-contentCL1",
+        ]);
     });
 });
