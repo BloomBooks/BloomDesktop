@@ -145,7 +145,11 @@ namespace Bloom.Edit
                     {
                         _view.OnHideEditTab();
                     }
-                }
+                },
+                // canShowPage
+                () => Visible,
+                // showPageWhenVisible: OnBecomeVisible shows it, as it does for JumpToPage.
+                (string pageId) => _pageIdToShowWhenVisible = pageId
             );
 
             // A run has one EditingModel, and E2eTestingApi has no way to be handed it: the
@@ -1604,14 +1608,23 @@ namespace Bloom.Edit
             return newDiv;
         }
 
+        /// <summary>
+        /// The URL the Edit tab's page frame loads the current page from. It carries the state
+        /// machine's NavigationNumber as the "navigation" parameter, which the page hands back when
+        /// it reports that it has loaded (see HandlePageDomLoadedEvent), so that we can tell the
+        /// page we are waiting for from the same page loaded any other way. The server ignores the
+        /// parameter.
+        /// </summary>
         public string GetUrlForCurrentPage()
         {
             var url = BloomServer.UrlForCurrentBookPageEncodedForIframeSrc(
                 _bookSelection.CurrentSelection.FolderPath,
                 _pageSelection.CurrentSelection.Id
             );
+            // Without the number: a developer opening this in another browser must not be taken
+            // for the Edit tab's own load.
             BloomServer.SetCurrentEditPageUrlForDebugging(url);
-            return url;
+            return url + "?" + kNavigationNumberUrlParam + "=" + _stateMachine.NavigationNumber;
         }
 
         /// <summary>
@@ -1893,6 +1906,10 @@ namespace Bloom.Edit
         /// The page EditTabState is about, or null.
         /// </summary>
         public string EditTabStatePageId => _stateMachine.CurrentPageId;
+
+        // The parameter in the page's URL that carries the state machine's NavigationNumber (see
+        // GetUrlForCurrentPage). editablePage.ts reads it under the same name.
+        public const string kNavigationNumberUrlParam = "navigation";
 
         // How many times the page named by _announcedPageId has told us its DOM had loaded. See
         // HandlePageDomLoadedEvent.
@@ -2802,19 +2819,33 @@ namespace Bloom.Edit
             return WidgetHelper.AddWidgetFilesToBookFolder(CurrentBook.FolderPath, fullWidgetPath);
         }
 
-        public void HandlePageDomLoadedEvent(string pageId, string loadId = null)
+        /// <summary>
+        /// A page has told us its DOM has loaded. <paramref name="navigationNumber"/> is the
+        /// navigation number from the URL it was loaded from (see GetUrlForCurrentPage), or null
+        /// if its URL had none. Pages loaded any other way report too: the page layout update
+        /// (BookProcessor.ProcessOnePage) loads every page of the book off-screen, and each runs
+        /// the same code as the Edit tab's page. Those must not be taken for the page being
+        /// edited (BL-17089), so only the load of the navigation the state machine is waiting
+        /// for is acted on.
+        /// </summary>
+        public void HandlePageDomLoadedEvent(string pageId, string loadId, int? navigationNumber)
         {
             // Count the announcement before acting on it. A page announces itself more than once,
             // and the e2e suite has to know that the last one has been and gone before it asks
             // this tab for anything (see the editState endpoint and PageLoadAnnouncements).
-            if (pageId != _announcedPageId)
+            // Only announcements from pages the Edit tab loaded count: the ones the page layout
+            // update's off-screen pages make say nothing about what the tab is showing.
+            if (navigationNumber != null)
             {
-                _announcedPageId = pageId;
-                _pageLoadAnnouncements = 0;
+                if (pageId != _announcedPageId)
+                {
+                    _announcedPageId = pageId;
+                    _pageLoadAnnouncements = 0;
+                }
+                _pageLoadAnnouncements++;
             }
-            _pageLoadAnnouncements++;
 
-            var nowEditing = _stateMachine.ToEditing(pageId);
+            var nowEditing = _stateMachine.ToEditing(pageId, navigationNumber);
             // Only for a notification we accepted, i.e. for the page we are now editing; see
             // PageSnapshot.AcceptSnapshotsFromLoad for why a late one must not be adopted.
             if (nowEditing)

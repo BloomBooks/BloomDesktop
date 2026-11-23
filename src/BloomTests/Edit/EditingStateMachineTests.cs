@@ -20,6 +20,8 @@ namespace BloomTests.Edit
         private int _saveBookCount;
         private bool _saveBookSucceeds;
         private List<Exception> _reportedFailures;
+        private bool _editTabVisible;
+        private List<string> _pagesToShowWhenVisible;
         private EditingStateMachine _stateMachine;
 
         [SetUp]
@@ -31,6 +33,8 @@ namespace BloomTests.Edit
             _saveBookCount = 0;
             _saveBookSucceeds = true;
             _reportedFailures = new List<Exception>();
+            _editTabVisible = true;
+            _pagesToShowWhenVisible = new List<string>();
             _stateMachine = new EditingStateMachine(
                 navigate: pageId =>
                 {
@@ -44,7 +48,9 @@ namespace BloomTests.Edit
                     _navigationsAndWrites.Add("write");
                     return _saveBookSucceeds;
                 },
-                hidePage: () => { }
+                hidePage: () => { },
+                canShowPage: () => _editTabVisible,
+                showPageWhenVisible: pageId => _pagesToShowWhenVisible.Add(pageId)
             );
         }
 
@@ -55,8 +61,14 @@ namespace BloomTests.Edit
                 Is.True,
                 "test setup: should be able to start navigating"
             );
+            ArriveAt(pageId);
+        }
+
+        // The page we navigated to reports that it has loaded, as the Edit tab's page does.
+        private void ArriveAt(string pageId)
+        {
             Assert.That(
-                _stateMachine.ToEditing(pageId),
+                _stateMachine.ToEditing(pageId, _stateMachine.NavigationNumber),
                 Is.True,
                 "test setup: should be able to get to Editing"
             );
@@ -106,7 +118,7 @@ namespace BloomTests.Edit
             Assert.That(SaveThenGoTo("content", "page2"), Is.EqualTo(SaveOutcome.Saved));
 
             // Finish arriving, then click again, as an impatient user would.
-            Assert.That(_stateMachine.ToEditing("page2"), Is.True);
+            ArriveAt("page2");
             _navigatedTo.Clear();
 
             Assert.That(SaveThenGoTo("more content", "page3"), Is.EqualTo(SaveOutcome.Saved));
@@ -227,7 +239,7 @@ namespace BloomTests.Edit
                 Is.EqualTo(SaveOutcome.Saved),
                 "test setup"
             );
-            Assert.That(_stateMachine.ToEditing("page2"), Is.True, "test setup");
+            ArriveAt("page2");
 
             SaveThenGoTo("ERROR: second page", "page3");
 
@@ -243,7 +255,7 @@ namespace BloomTests.Edit
 
             // A successful save of the same page, then failing on it again after coming back.
             Assert.That(SaveThenGoTo("good content", "page1"), Is.EqualTo(SaveOutcome.Saved));
-            Assert.That(_stateMachine.ToEditing("page1"), Is.True, "test setup");
+            ArriveAt("page1");
             SaveThenGoTo("ERROR: later try", "page2");
 
             Assert.That(
@@ -590,6 +602,115 @@ namespace BloomTests.Edit
             Assert.Throws<InvalidOperationException>(
                 () => _stateMachine.ToNavigating("page2"),
                 "navigating away from an unsaved page must still be refused"
+            );
+        }
+
+        // Which load of a page may take us to Editing (BL-17089).
+
+        [Test]
+        public void ToEditing_ReportFromAPageLoadedOffScreen_IsIgnored()
+        {
+            // The page layout update loads every page of the book off-screen, and each one reports
+            // that it has loaded, with no navigation number. One of them can be the very page we
+            // are on our way to.
+            Assert.That(_stateMachine.ToNavigating("page1"), Is.True, "test setup");
+
+            Assert.That(_stateMachine.ToEditing("page1", null), Is.False);
+            Assert.That(
+                _stateMachine.CurrentState,
+                Is.EqualTo(State.Navigating),
+                "a page loaded off-screen is not the page the user is about to edit"
+            );
+        }
+
+        [Test]
+        public void ToEditing_ReportFromAnEarlierNavigationToTheSamePage_IsIgnored()
+        {
+            // Change Layout, importing a video and showing a page again after its book's folder was
+            // renamed all load the same page again. A late report from the load before must not
+            // count as the new one having arrived.
+            GoToEditing("page1");
+            var earlierNavigation = _stateMachine.NavigationNumber;
+            Assert.That(SaveThenGoTo("content", "page1"), Is.EqualTo(SaveOutcome.Saved));
+            Assert.That(
+                _stateMachine.NavigationNumber,
+                Is.Not.EqualTo(earlierNavigation),
+                "test setup: each navigation should get its own number"
+            );
+
+            Assert.That(_stateMachine.ToEditing("page1", earlierNavigation), Is.False);
+            Assert.That(_stateMachine.CurrentState, Is.EqualTo(State.Navigating));
+
+            Assert.That(
+                _stateMachine.ToEditing("page1", _stateMachine.NavigationNumber),
+                Is.True,
+                "the report from the load we started should still be accepted"
+            );
+        }
+
+        [Test]
+        public void ToEditing_WhenNotNavigating_IsIgnoredEvenWithTheRightNumber()
+        {
+            GoToEditing("page1");
+            _stateMachine.ToNoPageHavingSaved();
+
+            Assert.That(_stateMachine.ToEditing("page1", _stateMachine.NavigationNumber), Is.False);
+            Assert.That(_stateMachine.CurrentState, Is.EqualTo(State.NoPage));
+        }
+
+        // What happens to a request to show a page while the Edit tab is hidden (BL-17089).
+
+        [Test]
+        public void SaveThenNavigate_WhileHidden_SavesButLeavesThePageToBeShownLater()
+        {
+            // A click on a thumbnail can reach us after the user has gone to another tab. Leaving
+            // the tab already saved the page and emptied the editor. Whatever the request's action
+            // does to the book must still be written, but no page may be loaded where nobody can
+            // see it.
+            GoToEditing("page1");
+            _stateMachine.ToNoPageHavingSaved();
+            _editTabVisible = false;
+            _navigatedTo.Clear();
+            var actionRan = false;
+
+            var result = SaveThenDoAndGoTo(
+                "content",
+                () =>
+                {
+                    actionRan = true;
+                    return "page2";
+                }
+            );
+
+            Assert.That(result, Is.EqualTo(SaveOutcome.Saved));
+            Assert.That(actionRan, Is.True, "the action must still run");
+            Assert.That(_saveBookCount, Is.EqualTo(1), "what the action did must still be written");
+            Assert.That(_navigatedTo, Is.Empty, "no page may be loaded while the tab is hidden");
+            Assert.That(_stateMachine.CurrentState, Is.EqualTo(State.NoPage));
+            Assert.That(
+                _pagesToShowWhenVisible,
+                Is.EqualTo(new[] { "page2" }),
+                "the page should be the one shown when the user comes back"
+            );
+        }
+
+        [Test]
+        public void LateClickThenOffScreenUpdate_LeavingTheNextTabDoesNotThrow()
+        {
+            // The sequence in BL-17089: the user clicks a page and then the Publish tab, and the
+            // tab change reaches us first. Publish then runs the page layout update, whose
+            // off-screen pages report that they have loaded, and the user goes on to another tab.
+            GoToEditing("page1");
+            _stateMachine.ToNoPageHavingSaved(); // leaving the Edit tab
+            _editTabVisible = false;
+
+            SaveThenGoTo(null, "page2"); // the click that arrived late
+            _stateMachine.ToEditing("page2", null); // the off-screen load of that page
+
+            Assert.That(_stateMachine.CurrentState, Is.EqualTo(State.NoPage));
+            Assert.DoesNotThrow(
+                () => _stateMachine.ToNoPage(), // what hiding the Edit tab again does
+                "the Edit tab must not believe it is editing a page while it is hidden"
             );
         }
     }
