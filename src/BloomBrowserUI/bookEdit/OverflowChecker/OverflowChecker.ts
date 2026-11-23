@@ -98,12 +98,14 @@ export default class OverflowChecker {
             getElementsThatCanOverflowOrNeedToBeResized(container),
         );
 
-        // BL-1260: disable overflow checking for pages with too many elements
-        if ($editablePageElements.length > kMaxBoxesToCheck) {
+        // BL-1260: a page with too many elements is not checked when it loads, and shows no marks.
+        // Its handlers are still added: they size the boxes, and once the page is back under the
+        // limit (a table row deleted) they mark them too (CheckPageAncestorOverflow keeps the limit).
+        const overTheLimit = $editablePageElements.length > kMaxBoxesToCheck;
+        if (overTheLimit) {
             // since we're not going to check it, remove any indications from
             // previous checking.
             clearOverflowMarks(container);
-            return;
         }
 
         //Add the handler so that when the elements change, we test for overflow
@@ -182,6 +184,9 @@ export default class OverflowChecker {
         // other events to get in between, and also, if multiple sources request an overflow check
         // on the same element during startup, only one of them really happens. The delay is also
         // helpful in letting the page stabilize before we start resizing canvas text overlays.
+        if (overTheLimit) {
+            return;
+        }
         for (const editable of $editablePageElements.get()) {
             OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
         }
@@ -624,20 +629,16 @@ export default class OverflowChecker {
         const pageElements = marginBox
             ? getElementsThatCanOverflowOrNeedToBeResized(marginBox)
             : [];
-        // A page over the limit is not checked (BL-1260), so its marks are cleared without
-        // measuring all its boxes, which is the work that the limit exists to save.
-        if (pageElements.length > kMaxBoxesToCheck) {
-            clearOverflowMarks(marginBox!.closest<HTMLElement>(".bloom-page")!);
-            return;
-        }
         const editablesAndPage = Array.from(
             new Set([...editables, ...pageElements]),
         );
         // A page back under the limit (a row deleted) has had every mark cleared, so all its
-        // boxes are checked this once, not only the ones asked for.
-        const toCheck = pageWasClearedForTheLimit
-            ? editablesAndPage
-            : editables;
+        // boxes are checked this once, not only the ones asked for. On a page still over it,
+        // CheckPageAncestorOverflow clears the marks again and keeps this record.
+        const toCheck =
+            pageWasClearedForTheLimit && pageElements.length <= kMaxBoxesToCheck
+                ? editablesAndPage
+                : editables;
         pageWasClearedForTheLimit = false;
         // AdjustSizeAndMarkSelfOverflow changes the padding of a bloom-padForOverflow box
         // before it measures it, so a height measured beforehand would be out of date.

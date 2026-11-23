@@ -569,8 +569,9 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
 
     // BL-1260: Bloom does not check a page with more than 30 boxes, and AddOverflowHandlers clears
     // its marks, so marks put there by a table check would never be cleared. A page can also grow
-    // past 30 while it is open (a row added to a table): its earlier marks go then.
-    it("marks nothing on a page with more than 30 boxes, and clears a page that grows past 30", () => {
+    // past 30 while it is open (a row added to a table): its earlier marks go then. Its boxes are
+    // still sized to their text, as typing sizes them.
+    it("marks nothing on a page with more than 30 boxes, but sizes them, and clears a page that grows past 30", () => {
         const boxes = loadPageOfTooFullBoxes(30);
         OverflowChecker.AdjustSizeOrMarkOverflowOfAll(boxes);
         expect(
@@ -587,11 +588,21 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
             ),
         );
         expect(all.length).toBe(31);
+        const sizeToText = vi.mocked(
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent,
+        );
+        sizeToText.mockClear();
         OverflowChecker.AdjustSizeOrMarkOverflowOfAll(all);
 
         expect(
             all.filter((box) => box.classList.contains("overflow")),
             "No box on a page of 31 should be marked.",
+        ).toEqual([]);
+        expect(
+            all.filter(
+                (box) => !sizeToText.mock.calls.some((call) => call[0] === box),
+            ),
+            "Every box checked on a page of 31 should still be sized to its text.",
         ).toEqual([]);
 
         // Back under the limit (a row deleted), a check of one box, as a table's check asks,
@@ -668,9 +679,9 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
         }
     });
 
-    // A page that is over the limit when it loads is never checked; once a row is deleted and it is
-    // under the limit, nothing but this check would ever mark its text.
-    it("checks every box of a page that loaded over 30 boxes, once it is back under", () => {
+    // A page that is over the limit when it loads is not checked; once a row is deleted and it is
+    // under the limit, typing marks the box typed in, and the next table check marks every box.
+    it("checks typing, and then every box, on a page that loaded over 30 boxes, once it is back under", () => {
         const boxes = loadPageOfTooFullBoxes(31);
         // What page setup passes is the body that holds the page, not the page itself.
         new OverflowChecker().AddOverflowHandlers(
@@ -682,6 +693,23 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
         ).toEqual([]);
 
         boxes[30].parentElement!.remove();
+        // Typing is checked again once the page is back under the limit, though it loaded over it.
+        const jqueryPlugins = $.fn as unknown as { qtip?: () => void };
+        const qtipWas = jqueryPlugins.qtip;
+        jqueryPlugins.qtip = () => {};
+        try {
+            boxes[1].dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+            vi.advanceTimersByTime(150);
+        } finally {
+            jqueryPlugins.qtip = qtipWas;
+        }
+        expect(
+            boxes[1].classList.contains("overflow"),
+            "Typing in a box of a page back under 30 should mark it.",
+        ).toBe(true);
+
         OverflowChecker.AdjustSizeOrMarkOverflowOfAll([boxes[0]]);
 
         expect(
