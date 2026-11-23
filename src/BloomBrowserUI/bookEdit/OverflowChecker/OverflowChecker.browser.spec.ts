@@ -703,6 +703,21 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
             "A resize on a page loaded over 30 should check no box.",
         ).not.toHaveBeenCalled();
 
+        // Typing while it is still over the limit sizes the box typed in and marks nothing.
+        const sizeToText = vi.mocked(
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent,
+        );
+        sizeToText.mockClear();
+        typeIn(boxes[2]);
+        expect(
+            sizeToText.mock.calls.map((call) => call[0]),
+            "Typing on a page loaded over 30 should size the box typed in.",
+        ).toContain(boxes[2]);
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")),
+            "Typing on a page still over 30 should mark nothing.",
+        ).toEqual([]);
+
         boxes[30].parentElement!.remove();
         typeIn(boxes[1]);
         expect(
