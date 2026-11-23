@@ -1287,6 +1287,98 @@ namespace BloomTests.Book
             );
         }
 
+        // CL1, CL2 and CL3 name the collection's languages, whatever the toolbar checks: here the
+        // toolbar's first language is the collection's L2, French.
+        [TestCase("xyz", "CL1", true)]
+        [TestCase("fr", "CL1", false)]
+        [TestCase("fr", "V", true)]
+        [TestCase("xyz", "V", false)]
+        [TestCase("fr", "CL2", true)]
+        [TestCase("es", "CL3", true)]
+        [TestCase("fr", "CL3", false)]
+        public void ShouldNormallyShowEditable_CollectionLanguageRoles(
+            string lang,
+            string role,
+            bool expected
+        )
+        {
+            var bookData = new BookData(
+                new HtmlDom("<html><body></body></html>"),
+                _collectionSettings,
+                null
+            );
+            bookData.SetMultilingualContentLanguages("fr");
+            // sanity check: the toolbar's first language is not the collection's first
+            Assert.That(bookData.Language1.Tag, Is.EqualTo("fr"));
+            Assert.That(_collectionSettings.Language1Tag, Is.EqualTo("xyz"));
+
+            Assert.That(
+                TranslationGroupManager.ShouldNormallyShowEditable(
+                    lang,
+                    new[] { role },
+                    "",
+                    "",
+                    bookData
+                ),
+                Is.EqualTo(expected),
+                $"Should a box in {lang} show for {role}?"
+            );
+        }
+
+        // A box shown for CL1 may be in a language the toolbar has not checked, so the book's languages
+        // do not give the group one; it must still be made, and run right to left when that language does.
+        [Test]
+        public void PrepareElementsInPageOrDocument_CL1WhenToolbarLacksCollectionL1_MakesAndShowsItsBox()
+        {
+            var contents =
+                @"<html><body><div class='bloom-page'>
+					<div class='bloom-translationGroup' id='cl1' data-default-languages='CL1'>
+						<div class='bloom-editable' lang='fr'><p>French</p></div>
+					</div>
+					<div class='bloom-translationGroup' id='n1' data-default-languages='N1'>
+						<div class='bloom-editable' lang='fr'><p>French</p></div>
+					</div>
+				</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+            bookData.SetMultilingualContentLanguages("fr");
+            _collectionSettings.Language1.IsRightToLeft = true;
+            // sanity check: the book's languages leave out the collection's first
+            Assert.That(
+                bookData.GetAllBookLanguageCodes(includeMetaData2: true),
+                Does.Not.Contain("xyz")
+            );
+            var pageDiv = (SafeXmlElement)
+                dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+
+            TranslationGroupManager.PrepareElementsInPageOrDocument(pageDiv, bookData);
+            TranslationGroupManager.UpdateContentLanguageClasses(
+                pageDiv,
+                bookData,
+                LegacyAppearanceSettings,
+                "fr",
+                "",
+                ""
+            );
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='cl1']/div[@lang='xyz' and contains(@class, 'bloom-visibility-code-on') and @dir='rtl']",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='cl1']/div[@lang='fr' and not(contains(@class, 'bloom-visibility-code-on'))]",
+                    1
+                );
+            // A group that does not use CL1 gets no box in a language the book does not use.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@id='n1']/div[@lang='xyz']", 0);
+        }
+
         [Test]
         public void ShouldNormallyShowEditable_SituationsWhereNumberedLanguagesShouldBeShown()
         {

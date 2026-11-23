@@ -482,6 +482,9 @@ namespace Bloom.Book
             }
 
             d.Add("languageForNewTextBoxes", bookData.Language1.Tag);
+            // The collection's first language, which the role CL1 names (a new table cell shows it).
+            // Unlike languageForNewTextBoxes it does not follow the toolbar's language choice.
+            d.Add("collectionLanguage1", bookData.CollectionSettings.Language1Tag);
 
             // BL-2357 To aid in smart ordering of source languages in source bubble
             if (!String.IsNullOrEmpty(bookData.Language2Tag))
