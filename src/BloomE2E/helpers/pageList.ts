@@ -417,7 +417,12 @@ export async function deliverLatePageThumbnailClick(
         JSON.stringify({ pageId, detail: "late click" }),
         "application/json",
     );
-    return response.body.trim() === "true";
+    const reply = JSON.parse(response.body) as unknown;
+    if (typeof reply !== "boolean")
+        throw new Error(
+            `pageList/pageClicked should answer true or false, but answered: ${response.body}`,
+        );
+    return reply;
 }
 
 /** The red X Bloom draws across a page while it asks to confirm removing it. */
