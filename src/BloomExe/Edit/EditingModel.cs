@@ -1621,8 +1621,10 @@ namespace Bloom.Edit
                 _bookSelection.CurrentSelection.FolderPath,
                 _pageSelection.CurrentSelection.Id
             );
-            // Without the number: a developer opening this in another browser must not be taken
-            // for the Edit tab's own load.
+            // The debugging URL (see CURRENTPAGE in BloomServer) leaves out the navigation number.
+            // A CURRENTPAGE workspace opened in another browser still gets the number, through
+            // editView/frameSources, so a page it loads during a page change could be taken for
+            // the Edit tab's own. That is accepted as a risk only a developer debugging can meet.
             BloomServer.SetCurrentEditPageUrlForDebugging(url);
             return url + "?" + kNavigationNumberUrlParam + "=" + _stateMachine.NavigationNumber;
         }

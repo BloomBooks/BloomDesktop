@@ -19,6 +19,12 @@ House rules:
 
 ---
 
+## 2026-11-23 — An e2e failure's "bloom-log" is often another Bloom's log
+
+- **Cut:** the fixture attaches `%TEMP%\SIL\Bloom\Log.txt`, which every Bloom on the machine writes, so while another worktree's e2e run overlaps, the attached log is that Bloom's. Four failures in the BL-17089 worktree on 2026-11-23 came with logs from the overnight-failures and BL-17105 worktrees, leaving the state machine's transitions unreadable.
+- **Idea:** have each `--e2e` Bloom log to a file of its own (in its temp collection or user-settings folder) and attach that file.
+- **Context:** worked around by temporarily writing the state machine's log to a scratch file.
+
 ## 2026-11-05 — No supported way to run a worktree's Bloom on the production bundle
 
 - **Cut:** `go.sh` (and so the run-bloom skill) always serves the front end from the Vite dev server, which loads about 600 separate modules for every page document. That makes page changes several times slower than a released Bloom's, so measuring or feeling performance needs the built bundle. The only way to get it was to run `output/Debug/AnyCPU/Bloom.exe` directly, which AGENTS.md forbids because it may be stale; the e2e fixture runs it that way, with a staleness check.

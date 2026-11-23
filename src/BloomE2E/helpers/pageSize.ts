@@ -6,6 +6,8 @@
 // their own, so clicking one would mean matching the localized words Bloom shows, and the words
 // are not the subject. A test whose subject IS the size menu should click the menu instead.
 
+import * as fs from "node:fs";
+import * as Path from "node:path";
 import { expect, type Page } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
 import { waitForEditablePage, waitForEditTabSettled } from "./bookMaking";
@@ -100,4 +102,26 @@ export async function getPageSize(page: Page): Promise<string> {
                 ) ?? "",
         )
         .catch(() => "");
+}
+
+/**
+ * The page layout update level the book's file records, as last saved: 0 (or missing, read as 0)
+ * when its pages need the page layout update, as they do after a change of page size, and higher
+ * once Bloom has run it (BookProcessor.RecordPageLayoutUpdateDone). Publish and the AI image editor
+ * run the update, loading every page off-screen, only for a book below the current level. Read from
+ * disk, so it says what Bloom last wrote: a change of page size is written at once, and so is the
+ * update.
+ */
+export function getSavedPageLayoutUpdateLevel(bookFolder: string): number {
+    const htmFiles = fs
+        .readdirSync(bookFolder)
+        .filter((name) => name.toLowerCase().endsWith(".htm"));
+    if (htmFiles.length !== 1)
+        throw new Error(
+            `Expected one .htm file in ${bookFolder}, found: ${htmFiles.join(", ") || "none"}.`,
+        );
+    const html = fs.readFileSync(Path.join(bookFolder, htmFiles[0]), "utf8");
+    const match =
+        /<meta[^>]*name="pageLayoutUpdateLevel"[^>]*content="(\d+)"/.exec(html);
+    return match ? Number(match[1]) : 0;
 }

@@ -78,6 +78,24 @@ export interface ILanguageRow {
 }
 
 /**
+ * One of the destinations down the left of the Publish tab, found by the label it shows. Not by
+ * its accessible name: each destination carries a tooltip, and while the tooltip is open (the
+ * pointer resting on the destination just clicked, for one) MUI names the destination after the
+ * tooltip's text instead, so a lookup by name stops finding it.
+ */
+function publishDestinationTab(
+    page: Page,
+    destination: PublishDestination,
+): Locator {
+    const exactLabel = new RegExp(
+        `^${destination.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+    );
+    return page.getByRole("tab").filter({
+        has: page.locator(".sidebar-tab-label").filter({ hasText: exactLabel }),
+    });
+}
+
+/**
  * Go to the Publish tab and click one of its destinations, without waiting for what that screen
  * shows. Each screen's own module waits for its own content; they do not all show the same things
  * (the Web screen, for one, shows no Text Languages list for a book that has no text).
@@ -87,7 +105,7 @@ export async function selectPublishDestination(
     destination: PublishDestination,
 ): Promise<void> {
     await switchTab(page, "publish");
-    const target = page.getByRole("tab", { name: destination, exact: true });
+    const target = publishDestinationTab(page, destination);
     await target.waitFor({ state: "visible", timeout: 30000 });
     await target.click();
 }
@@ -110,6 +128,25 @@ export async function openPublishDestination(
         state: "visible",
         timeout: 60000,
     });
+}
+
+/**
+ * Go to the Publish tab, choose one of its destinations, and wait until Publish shows that
+ * destination's screen. A book's pages need bringing up to date after a change of page size or
+ * appearance (the page layout update, which loads every page off-screen behind a progress dialog),
+ * and Publish holds the chosen destination back until that is done, so when this returns the
+ * update has finished. Use it when the screen's contents are not the point; a book with no text,
+ * for one, shows no Text Languages list for openPublishDestination to wait for.
+ */
+export async function openPublishDestinationScreen(
+    page: Page,
+    destination: PublishDestination,
+): Promise<void> {
+    await selectPublishDestination(page, destination);
+    await expect(
+        publishDestinationTab(page, destination),
+        `Publish never showed its ${destination} screen; it may still be bringing the book's pages up to date.`,
+    ).toHaveAttribute("aria-selected", "true", { timeout: 120000 });
 }
 
 /**
