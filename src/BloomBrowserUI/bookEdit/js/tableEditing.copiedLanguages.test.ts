@@ -1,14 +1,14 @@
 import { describe, it, expect, vi } from "vitest";
 
 // A text cell's languages travel with its other settings: into a new row or column, and by Paint
-// format and Copy / Paste properties (setHostCellSettings in tableEditing.ts). The collection's
-// languages, which showing a setting needs, are asked for once per page load; a setting copied
-// before they arrive must still reach its cell once they do.
+// format and Copy / Paste properties (setHostCellSettings in tableEditing.ts). The menus' language
+// names are asked for once per page load; a copied setting must reach its cell at once, without
+// waiting for them, since showing it needs only the page's settings.
 //
 // A file of its own, because tableEditing.ts asks for the languages once per module load, and this
-// test needs to be the one that sees that request and decides when it is answered.
+// test needs to be the one that sees that request and keeps it unanswered.
 
-// The answer to each GET, held until the test gives it.
+// The answer to each GET, which the test never gives: it runs as if the languages had not arrived.
 const pendingGets = new Map<string, (result: { data: unknown }) => void>();
 vi.mock("../../utils/bloomApi", async (importOriginal) => ({
     ...((await importOriginal()) as object),
@@ -42,13 +42,8 @@ vi.mock("bloom-table", async (importOriginal) => ({
     },
 }));
 
-import {
-    AttachNewTable,
-    kCopiedLanguagesDelayId,
-    SetupTableEditing,
-} from "./tableEditing";
+import { AttachNewTable, SetupTableEditing } from "./tableEditing";
 import { setUpBoxesBuiltAfterLoad } from "./translationGroupLanguages";
-import { getActiveDelayIds, whenNoActiveDelays } from "./pageContentDelays";
 
 // jsdom has no ResizeObserver, which attachSingleTable installs to keep cell pictures fitted.
 class NoopResizeObserver {
@@ -58,8 +53,8 @@ class NoopResizeObserver {
 }
 (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver =
     NoopResizeObserver;
-// GetSettings is injected into the page by RuntimeInformationInjector (C#). It describes the same
-// collection as the languages the test answers with below: Tok Pisin, then English.
+// GetSettings is injected into the page by RuntimeInformationInjector (C#): a collection of Tok
+// Pisin, then English.
 (globalThis as unknown as { GetSettings: unknown }).GetSettings = () => ({
     languageForNewTextBoxes: "tpi",
     collectionLanguage1: "tpi",
@@ -74,7 +69,7 @@ const shownLangsOf = (group: HTMLElement) =>
     ).map((box) => box.getAttribute("lang"));
 
 describe("a language setting copied into a cell", () => {
-    it("reaches the cell when the collection's languages arrive after the copy, and saving waits for it", async () => {
+    it("reaches the cell at once, before the menus' languages have arrived", () => {
         const tableDiv = document.createElement("div");
         tableDiv.classList.add("bloom-table");
         document.body.appendChild(tableDiv);
@@ -103,29 +98,15 @@ describe("a language setting copied into a cell", () => {
                 .querySelector("[lang='tpi']")!
                 .classList.contains("bloom-content1"),
         ).toBe(true);
-        expect(getActiveDelayIds()).not.toContain(kCopiedLanguagesDelayId);
 
         cellSettingsHooks!.apply(cell, "CL1,N1");
-        // Until the cell has its setting, saving the page must wait, or it would save the old one.
-        expect(getActiveDelayIds()).toContain(kCopiedLanguagesDelayId);
-
-        answerLanguages!({
-            data: {
-                language1Tag: "tpi",
-                language1Name: "Tok Pisin",
-                language2Tag: "en",
-                language2Name: "English",
-            },
-        });
 
         expect(group.getAttribute("data-default-languages")).toBe("CL1,N1");
         expect(shownLangsOf(group)).toEqual(["tpi", "en"]);
-        const added = vi
-            .mocked(setUpBoxesBuiltAfterLoad)
-            .mock.calls.flatMap((call) => call[0]);
-        expect(added.map((box) => box.getAttribute("lang"))).toContain("en");
-        await whenNoActiveDelays();
-        expect(getActiveDelayIds()).not.toContain(kCopiedLanguagesDelayId);
+        // The English box was added, with the classes page load would give it; the wiring pass
+        // that follows every copy sets it up (see "cells the library announces" below).
+        const english = group.querySelector<HTMLElement>("[lang='en']")!;
+        expect(english.classList.contains("bloom-contentNational1")).toBe(true);
     });
 });
 

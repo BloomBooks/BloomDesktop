@@ -166,7 +166,7 @@ describe("showSettingInGroup", () => {
         const group = makeGroup("CL1", ["tpi"]);
         expect(visibleTagsOf(group)).toEqual(["tpi"]);
 
-        const { added } = showSettingInGroup(group, "CL1,N2", kLanguages);
+        const { added } = showSettingInGroup(group, "CL1,N2");
 
         expect(added).toEqual([]);
         expect(group.getAttribute("data-default-languages")).toBe("CL1,N2");
@@ -181,11 +181,7 @@ describe("showSettingInGroup", () => {
             "<div class='bloom-editable normal-style bloom-visibility-code-on' lang='tpi' contenteditable='true'><p>hi</p></div>";
         document.body.appendChild(group);
 
-        const { added: wired } = showSettingInGroup(
-            group,
-            "CL1,N2,N1",
-            kLanguages,
-        );
+        const { added: wired } = showSettingInGroup(group, "CL1,N2,N1");
 
         const editables = Array.from(
             group.querySelectorAll<HTMLElement>(":scope > .bloom-editable"),
@@ -206,7 +202,7 @@ describe("showSettingInGroup", () => {
     it("stores a setting exactly as given", () => {
         const group = makeGroup(null, ["tpi"]);
 
-        showSettingInGroup(group, "N1,CL1", kLanguages);
+        showSettingInGroup(group, "N1,CL1");
 
         expect(group.getAttribute("data-default-languages")).toBe("N1,CL1");
         expect(visibleTagsOf(group)).toEqual(["tpi", "en"]);
@@ -215,7 +211,7 @@ describe("showSettingInGroup", () => {
     it("shows the languages of CL2 and CL3, which are N1's and N2's", () => {
         const group = makeGroup("CL1", ["tpi"]);
 
-        showSettingInGroup(group, "CL2,CL3", kLanguages);
+        showSettingInGroup(group, "CL2,CL3");
 
         expect(visibleTagsOf(group)).toEqual(["en", "es"]);
     });
@@ -224,14 +220,14 @@ describe("showSettingInGroup", () => {
     // properties, Paint format, a new row beside it). The cell shows what page load will show.
     it("shows a setting the menu does not read as page load would: V the toolbar's first language, no setting the toolbar's languages", () => {
         // The toolbar ticks English, then Tok Pisin.
-        const languages = useCollection(kNames, ["en", "tpi"]);
+        useCollection(kNames, ["en", "tpi"]);
         const fromV = makeGroup("CL1", ["tpi"]);
         const fromNoSetting = makeGroup("CL1", ["tpi"]);
         const fromVAndN2 = makeGroup("CL1", ["tpi"]);
 
-        showSettingInGroup(fromV, "V", languages);
-        showSettingInGroup(fromNoSetting, null, languages);
-        showSettingInGroup(fromVAndN2, "V,N2", languages);
+        showSettingInGroup(fromV, "V");
+        showSettingInGroup(fromNoSetting, null);
+        showSettingInGroup(fromVAndN2, "V,N2");
 
         expect(visibleTagsOf(fromV)).toEqual(["en"]);
         expect(visibleTagsOf(fromNoSetting)).toEqual(["tpi", "en"]);

@@ -14,9 +14,9 @@
 import { tableHistoryManager } from "bloom-table";
 import { ILanguageNameValues } from "../toolbox/canvas/canvasControlTypes";
 import {
+    collectionLanguageTags,
     languagesShownBySetting,
     rolesInSetting,
-    setUpBoxesBuiltAfterLoad,
     showLanguagesInTranslationGroup,
 } from "./translationGroupLanguages";
 
@@ -178,22 +178,20 @@ function settingOfRoles(roles: LanguageRole[]): string {
  * languages it stands for as page load would (languagesShownBySetting), even a setting the menu
  * does not read, such as V copied from an older cell. Where the group has no bloom-editable in one
  * of those languages yet (a cell made since the page loaded has only its first one), one is added,
- * placed in the collection's order of `languages`. Returns
- * what showLanguagesInTranslationGroup returns: the added boxes and the boxes shown again, both
- * for setUpBoxesBuiltAfterLoad once they are in the page, best in one call for every group changed
- * together.
+ * placed in the collection's language order. Returns what showLanguagesInTranslationGroup returns:
+ * the added boxes and the boxes shown again, both for setUpBoxesBuiltAfterLoad once they are in the
+ * page, best in one call for every group changed together.
  */
 export function showSettingInGroup(
     group: HTMLElement,
     setting: string | null,
-    languages: ICellLanguage[],
 ): { added: HTMLElement[]; shown: HTMLElement[] } {
     if (setting === null) {
         group.removeAttribute("data-default-languages");
     } else {
         group.setAttribute("data-default-languages", setting);
     }
-    const order = languages.map((language) => language.tag);
+    const order = collectionLanguageTags();
     // In the collection's order, so that the boxes added come back in that order, whatever order
     // the setting lists its roles in; a language that is none of the collection's comes last.
     // (Where each box goes in the group is up to `order` alone.)
@@ -259,25 +257,7 @@ export function toggleRole(
         "Change the languages of table cells",
         () =>
             changes.forEach((change) =>
-                showSettingInGroup(change.group, change.setting, languages),
+                showSettingInGroup(change.group, change.setting),
             ),
-    );
-}
-
-// Give each of `groups` the setting at the same index, then set up the boxes that adds, and tag
-// the boxes it shows again, in one call for all the groups. Setting up and tagging measure the
-// boxes, so doing them group by group would lay the page out once per cell. The groups' boxes must
-// be in the page, where a box's direction can be read.
-export function showSettingsInGroups(
-    groups: HTMLElement[],
-    settings: (string | null)[],
-    languages: ICellLanguage[],
-): void {
-    const results = groups.map((group, index) =>
-        showSettingInGroup(group, settings[index], languages),
-    );
-    setUpBoxesBuiltAfterLoad(
-        results.flatMap((result) => result.added),
-        results.flatMap((result) => result.shown),
     );
 }

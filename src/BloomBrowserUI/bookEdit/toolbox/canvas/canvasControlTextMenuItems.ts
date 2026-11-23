@@ -81,14 +81,15 @@ function removeClassesByPrefix(element: HTMLElement, prefix: string): void {
     });
 }
 
-// Make the canvas element's text show `langCode` alone. A box for that language is added if the
-// group has none, set up as page load sets up every box, and the box gets the language classes
-// page load would give it.
+// Make the canvas element's text store `dataDefaultLang` and show, at once, `langCode`, the
+// language page load will show for that setting. A box for that language is added if the group has
+// none, set up as page load sets up every box, and the box gets the language classes page load
+// would give it.
 function updateTranslationGroupLanguage(
     translationGroup: HTMLElement,
-    langCode: string,
     dataDefaultLang: string,
-    appearanceClasses: string[],
+    langCode: string,
+    appearanceClass: string,
 ): void {
     translationGroup.setAttribute("data-default-languages", dataDefaultLang);
     if (
@@ -113,9 +114,7 @@ function updateTranslationGroupLanguage(
         dataBookValue &&
         fieldsControlledByAppearanceSystem.includes(dataBookValue)
     ) {
-        appearanceClasses.forEach((className) =>
-            editableInLang.classList.add(className),
-        );
+        editableInLang.classList.add(appearanceClass);
     }
     page.setUpBoxesBuiltAfterLoad(added, shown);
 }
@@ -199,41 +198,34 @@ export function makeLanguageMenuItem(
                 | undefined
         )?.getAttribute("lang");
     const { languageNameValues } = ctx;
+    // The collection's languages by tag, for naming each entry.
+    const nameOfTag = new Map<string | undefined, string | undefined>([
+        [languageNameValues.language1Tag, languageNameValues.language1Name],
+        [languageNameValues.language2Tag, languageNameValues.language2Name],
+        [languageNameValues.language3Tag, languageNameValues.language3Name],
+    ]);
+    const page = getEditablePageBundleExports()!;
 
-    const subMenuItems: IControlMenuCommandRow[] = [
-        {
-            id: "language",
-            englishLabel: languageNameValues.language1Name,
-            icon:
-                activeLangTag === languageNameValues.language1Tag
-                    ? React.createElement(CheckIcon, null)
-                    : undefined,
-            onSelect: (rowCtx) => {
-                if (!translationGroup) {
-                    return;
-                }
-                updateTranslationGroupLanguage(
-                    translationGroup,
-                    languageNameValues.language1Tag,
-                    "V",
-                    ["bloom-contentFirst"],
-                );
-                getCanvasElementManager()?.setActiveElement(
-                    rowCtx.canvasElement,
-                );
-            },
-        },
-    ];
-
-    if (
-        languageNameValues.language2Tag &&
-        languageNameValues.language2Tag !== languageNameValues.language1Tag
-    ) {
+    // One entry for each setting the menu stores, named for the language that setting shows (V is
+    // the toolbar's first language, N1 and N2 the collection's second and third), so the entry
+    // shows what the box will show after the page is next loaded too. A language two settings
+    // share is listed once, under the first.
+    const subMenuItems: IControlMenuCommandRow[] = [];
+    const tagsListed: string[] = [];
+    for (const { setting, appearanceClass } of [
+        { setting: "V", appearanceClass: "bloom-contentFirst" },
+        { setting: "N1", appearanceClass: "bloom-contentSecond" },
+        { setting: "N2", appearanceClass: "bloom-contentThird" },
+    ]) {
+        const tag = page.languagesShownBySetting(setting)[0];
+        const name = nameOfTag.get(tag);
+        if (!tag || !name || tagsListed.includes(tag)) continue;
+        tagsListed.push(tag);
         subMenuItems.push({
             id: "language",
-            englishLabel: languageNameValues.language2Name,
+            englishLabel: name,
             icon:
-                activeLangTag === languageNameValues.language2Tag
+                activeLangTag === tag
                     ? React.createElement(CheckIcon, null)
                     : undefined,
             onSelect: (rowCtx) => {
@@ -242,38 +234,9 @@ export function makeLanguageMenuItem(
                 }
                 updateTranslationGroupLanguage(
                     translationGroup,
-                    languageNameValues.language2Tag,
-                    "N1",
-                    ["bloom-contentSecond"],
-                );
-                getCanvasElementManager()?.setActiveElement(
-                    rowCtx.canvasElement,
-                );
-            },
-        });
-    }
-
-    if (
-        languageNameValues.language3Tag &&
-        languageNameValues.language3Tag !== languageNameValues.language1Tag &&
-        languageNameValues.language3Tag !== languageNameValues.language2Tag
-    ) {
-        subMenuItems.push({
-            id: "language",
-            englishLabel: languageNameValues.language3Name,
-            icon:
-                activeLangTag === languageNameValues.language3Tag
-                    ? React.createElement(CheckIcon, null)
-                    : undefined,
-            onSelect: (rowCtx) => {
-                if (!translationGroup) {
-                    return;
-                }
-                updateTranslationGroupLanguage(
-                    translationGroup,
-                    languageNameValues.language3Tag!,
-                    "N2",
-                    ["bloom-contentThird"],
+                    setting,
+                    tag,
+                    appearanceClass,
                 );
                 getCanvasElementManager()?.setActiveElement(
                     rowCtx.canvasElement,

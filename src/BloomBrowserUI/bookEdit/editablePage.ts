@@ -149,6 +149,7 @@ export interface IPageFrameExports {
     showLanguagesInTranslationGroup: typeof showLanguagesInTranslationGroup;
     setUpBoxesBuiltAfterLoad: typeof setUpBoxesBuiltAfterLoad;
     addLanguageClassesToBox: typeof addLanguageClassesToBox;
+    languagesShownBySetting: typeof languagesShownBySetting;
 
     origamiCanUndo(): boolean;
     origamiUndo(): void;
@@ -228,6 +229,7 @@ import {
     showLanguagesInTranslationGroup,
     setUpBoxesBuiltAfterLoad,
     addLanguageClassesToBox,
+    languagesShownBySetting,
 } from "./js/translationGroupLanguages";
 import {
     addRequestPageContentDelay,
@@ -261,6 +263,7 @@ export {
     showLanguagesInTranslationGroup,
     setUpBoxesBuiltAfterLoad,
     addLanguageClassesToBox,
+    languagesShownBySetting,
     removeImageId,
     changeImage,
     changeImageByElement,
@@ -582,6 +585,7 @@ interface EditablePageBundleApi {
     showLanguagesInTranslationGroup: typeof showLanguagesInTranslationGroup;
     setUpBoxesBuiltAfterLoad: typeof setUpBoxesBuiltAfterLoad;
     addLanguageClassesToBox: typeof addLanguageClassesToBox;
+    languagesShownBySetting: typeof languagesShownBySetting;
     removeImageId: typeof removeImageId;
     changeImage: typeof changeImage;
     changeImageByElement: typeof changeImageByElement;
@@ -674,6 +678,7 @@ window.editablePageBundle = {
     showLanguagesInTranslationGroup,
     setUpBoxesBuiltAfterLoad,
     addLanguageClassesToBox,
+    languagesShownBySetting,
     removeImageId,
     changeImage,
     changeImageByElement,

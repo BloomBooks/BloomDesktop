@@ -47,7 +47,6 @@ import {
     cellLanguagesOfCollection,
     ICellLanguage,
     showSettingInGroup,
-    showSettingsInGroups,
     textGroupOfCell,
 } from "./tableCellLanguages";
 import { TableCellLanguagesSection } from "./TableCellLanguagesSection";
@@ -209,33 +208,15 @@ function installHostHooks(): void {
             // Pasting over many cells mostly gives a cell the setting it already has.
             if (storedSettingOf(group) === value) return;
             const setting = value === kNoSetting ? null : value;
-            if (!cellLanguages) {
-                // The collection's languages have not arrived yet; the cell gets its setting when
-                // they do (requestCellLanguages), and saving the page waits for that.
-                if (settingsCopiedBeforeLanguages.length === 0)
-                    addRequestPageContentDelay(kCopiedLanguagesDelayId);
-                settingsCopiedBeforeLanguages.push({ group, setting });
-                return;
-            }
             // Every operation that copies settings (a new row or column, Paste properties, Paint
             // format) is followed by the wiring pass, which sets up the boxes this adds and tags
             // the ones it shows again, all at once rather than once per cell. That is also the
             // only time new boxes can be set up: a new row gets its settings before it is in the
             // page, where a box's direction cannot be read.
-            showSettingInGroup(group, setting, cellLanguages);
+            showSettingInGroup(group, setting);
         },
     });
 }
-
-// Language settings copied into cells before the collection's languages arrived, which the cells
-// get once they do.
-let settingsCopiedBeforeLanguages: {
-    group: HTMLElement;
-    setting: string | null;
-}[] = [];
-
-// The page-content delay held while settingsCopiedBeforeLanguages has settings in it.
-export const kCopiedLanguagesDelayId = "tableCellLanguagesCopiedEarly";
 
 // What setHostCellSettings carries for a text cell with no data-default-languages. The library
 // uses undefined for a cell with nothing to copy, so "no setting" needs a value of its own.
@@ -246,9 +227,10 @@ function storedSettingOf(group: HTMLElement): string {
     return group.getAttribute("data-default-languages") ?? kNoSetting;
 }
 
-// The collection's languages as a table cell can show them. Asked for as the page loads, so that
-// they are there by the time a table added later opens its menus; until they arrive, the menus
-// have no Languages item.
+// The collection's languages, with their names, as the table's Languages menus list them. Asked for
+// as the page loads, so that they are there by the time a table added later opens its menus; until
+// they arrive, the menus have no Languages item. (Showing a cell's languages needs only their tags,
+// which the page's settings already hold; see showSettingInGroup.)
 let cellLanguages: ICellLanguage[] | undefined;
 let cellLanguagesRequested = false;
 
@@ -258,21 +240,9 @@ function requestCellLanguages(): void {
     if (cellLanguagesRequested) return;
     cellLanguagesRequested = true;
     get("settings/languageNames", (result) => {
-        const languages = cellLanguagesOfCollection(
+        cellLanguages = cellLanguagesOfCollection(
             result.data as ILanguageNameValues,
         );
-        cellLanguages = languages;
-        const copied = settingsCopiedBeforeLanguages;
-        if (copied.length === 0) return;
-        settingsCopiedBeforeLanguages = [];
-        // Cells that an undo has since replaced are no longer in the page.
-        const waiting = copied.filter((entry) => entry.group.isConnected);
-        showSettingsInGroups(
-            waiting.map((entry) => entry.group),
-            waiting.map((entry) => entry.setting),
-            languages,
-        );
-        removeRequestPageContentDelay(kCopiedLanguagesDelayId);
     });
 }
 

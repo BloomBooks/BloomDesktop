@@ -87,8 +87,11 @@ item goes with them, and there is no other way to reach it.
 
 ## Not changed
 
-- The canvas element's Language submenu and the Text Box Properties Language tab keep their
-  current labels.
+- The Text Box Properties Language tab keeps its current labels.
+- The canvas element's Language submenu still stores `V`, `N1` and `N2`, but each entry is now named
+  for the language its setting shows (`V` is the toolbar's first language), and choosing it shows
+  that language at once, as page load will. When the toolbar's first language is the collection's
+  first, as usual, nothing changes for the user.
 - Text Box Properties still offers one language or "Normal".
 - Collection Settings keeps "Local Language", "Language 2" and "Language 3".
 

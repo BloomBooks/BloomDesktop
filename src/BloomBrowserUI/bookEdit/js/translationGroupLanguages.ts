@@ -68,6 +68,14 @@ function pageLanguages(): {
 }
 
 /**
+ * The collection's languages, first to third (those it has), by tag: the languages CL1, N1 and N2
+ * name. Bloom's settings for the page hold them, so they are known as soon as it loads.
+ */
+export function collectionLanguageTags(): string[] {
+    return languagesShownBySetting("CL1,N1,N2");
+}
+
+/**
  * The languages a translation group with `setting` as its data-default-languages shows, as C#
  * decides at page load (TranslationGroupManager.ShouldNormallyShowEditable, after
  * ProcessLanguageList): no setting or "auto" shows the toolbar's languages; V and L1 its first,
