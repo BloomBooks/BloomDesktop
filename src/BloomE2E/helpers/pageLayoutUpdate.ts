@@ -11,6 +11,7 @@ import * as fs from "node:fs";
 import { expect, type Page } from "@playwright/test";
 import { bookHtmlPath } from "./bookHtml";
 import { holdNextRequest, type IHeldRequest } from "./heldRequest";
+import { getPageSizeChoices, setPageSize } from "./pageSize";
 
 // The title of the progress box: BookProcessor.MakeUpdateBookProgressProps.
 const kUpdateBookTitle = "Update Book";
@@ -34,6 +35,55 @@ export function readPageLayoutUpdateLevel(bookFolder: string): string {
     const meta = /<meta\b[^>]*\bname="pageLayoutUpdateLevel"[^>]*>/.exec(html);
     const level = meta ? /\bcontent="([^"]*)"/.exec(meta[0]) : null;
     return level ? level[1] : "missing";
+}
+
+/**
+ * Make the book open in the Edit tab need the page layout update, the way a user does it while
+ * Bloom runs: change its page size, which Bloom records by setting the saved level to "0". It picks
+ * another size of the same orientation when the book offers one, since changing the orientation
+ * also rebuilds the front and back matter. Returns once the saved book records the change.
+ * (makeBookLookOlder does the same job for a Bloom that is stopped.)
+ */
+export async function makeBookNeedPageLayoutUpdate(
+    page: Page,
+    bookFolder: string,
+): Promise<void> {
+    const { choices, currentLayoutChoiceId } = await getPageSizeChoices(page);
+    const orientation = /(Portrait|Landscape|Square)$/.exec(
+        currentLayoutChoiceId,
+    )?.[1];
+    const others = choices.filter((c) => c.id !== currentLayoutChoiceId);
+    const target =
+        others.find((c) => orientation && c.id.endsWith(orientation)) ??
+        others[0];
+    if (!target)
+        throw new Error(
+            `This book offers no page size other than ${currentLayoutChoiceId}.`,
+        );
+    await setPageSize(page, target.id);
+    await expect
+        .poll(() => readPageLayoutUpdateLevel(bookFolder), {
+            timeout: 30000,
+            message:
+                "After a change of page size the saved book should record that it needs the page layout update.",
+        })
+        .toBe("0");
+}
+
+/**
+ * Wait until the saved book records that the page layout update has run (a level above 0), for
+ * instance after a Publish destination ran it.
+ */
+export async function waitForPageLayoutUpdateRecorded(
+    bookFolder: string,
+): Promise<void> {
+    await expect
+        .poll(() => Number(readPageLayoutUpdateLevel(bookFolder)) > 0, {
+            timeout: kPageLayoutUpdateTimeout,
+            message:
+                "The saved book never recorded that the page layout update had run.",
+        })
+        .toBe(true);
 }
 
 /**

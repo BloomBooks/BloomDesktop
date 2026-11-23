@@ -13,6 +13,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
+import { kPageLayoutUpdateTimeout } from "./pageLayoutUpdate";
 import { switchTab } from "./workspace";
 
 /** The publish destinations, by the label each one shows in the left-hand column. */
@@ -146,7 +147,9 @@ export async function openPublishDestinationScreen(
     await expect(
         publishDestinationTab(page, destination),
         `Publish never showed its ${destination} screen; it may still be bringing the book's pages up to date.`,
-    ).toHaveAttribute("aria-selected", "true", { timeout: 120000 });
+    ).toHaveAttribute("aria-selected", "true", {
+        timeout: kPageLayoutUpdateTimeout,
+    });
 }
 
 /**

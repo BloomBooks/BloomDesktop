@@ -7,23 +7,22 @@
 // it, so leaving Publish failed with "Cannot empty page while editing". Now the click is kept for
 // when the user comes back to Edit, and only the Edit tab's own load of a page counts.
 //
-// The order of the click and the tab change cannot be produced by clicking (see
-// deliverLatePageThumbnailClick), so the late click is the one step that goes straight to Bloom's
-// API. Everything the test measures, the tab changes in particular, goes through the real UI.
+// The late click is the one step that does not go through the UI; see
+// deliverLatePageThumbnailClick for why it cannot.
 
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
     getContentPages,
-    goToPage,
+    getPages,
+    getShownPageId,
     makeBookFromTemplate,
 } from "../helpers/bookMaking";
-import { deliverLatePageThumbnailClick } from "../helpers/pageList";
 import {
-    getPageSize,
-    getSavedPageLayoutUpdateLevel,
-    setPageSize,
-} from "../helpers/pageSize";
+    makeBookNeedPageLayoutUpdate,
+    waitForPageLayoutUpdateRecorded,
+} from "../helpers/pageLayoutUpdate";
+import { deliverLatePageThumbnailClick } from "../helpers/pageList";
 import { selectPage, waitForEditablePage } from "../helpers/pageThumbnails";
 import { openPublishDestinationScreen } from "../helpers/publish";
 import { switchTab } from "../helpers/workspace";
@@ -36,41 +35,32 @@ test("a page click handled after leaving Edit is shown on return, and leaving Pu
     page,
 }) => {
     const bookFolder = await makeBookFromTemplate(page, "Basic Book");
-    await addPage(page, "Just Text", 3);
-    const [first, second, third] = await getContentPages(page);
-    await goToPage(page, first.id);
-
-    // Publish brings the book's pages up to date, loading each one off-screen, only when they need
-    // it, and a change of page size is what makes them need it.
-    const otherSize =
-        (await getPageSize(page)) === "A5Portrait"
-            ? "LetterPortrait"
-            : "A5Portrait";
-    await setPageSize(page, otherSize);
+    // The new page is the one being edited, so the late click goes to another page: the cover.
+    await addPage(page, "Just Text");
+    const [contentPage] = await getContentPages(page);
+    const [cover] = await getPages(page);
+    // Publish runs the page layout update, which is what loads every page off-screen, only for a
+    // book that needs it.
+    await makeBookNeedPageLayoutUpdate(page, bookFolder);
     expect(
-        getSavedPageLayoutUpdateLevel(bookFolder),
-        "Setup failed: after a change of page size the book should need the page layout update.",
-    ).toBe(0);
+        await getShownPageId(page),
+        "test setup: the Edit tab should not already be showing the page the late click is for",
+    ).not.toBe(cover.id);
 
     await switchTab(page, "publish");
     expect(
-        await deliverLatePageThumbnailClick(page, second.id),
+        await deliverLatePageThumbnailClick(page, cover.id),
         "Bloom started opening a page in the Edit tab while that tab was hidden.",
     ).toBe(false);
 
-    // Publish shows the BloomPUB screen only once the page layout update has finished, so this
-    // waits until every page has been loaded off-screen.
     await openPublishDestinationScreen(page, "BloomPUB");
-    expect(
-        getSavedPageLayoutUpdateLevel(bookFolder),
-        "Publish did not run the page layout update, so the off-screen page loads this test is about never happened.",
-    ).toBeGreaterThan(0);
+    await waitForPageLayoutUpdateRecorded(bookFolder);
 
     // Leaving Publish is what failed. A problem dialog fails the test through the fixture.
     await switchTab(page, "collection");
 
     await switchTab(page, "edit");
-    // The page that was clicked is the one shown on coming back, and the Edit tab works.
-    await waitForEditablePage(page, second.id);
-    await selectPage(page, third.id);
+    // The page that was clicked is the one shown on coming back, and the Edit tab still works.
+    await waitForEditablePage(page, cover.id);
+    await selectPage(page, contentPage.id);
 });
