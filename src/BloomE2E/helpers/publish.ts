@@ -78,22 +78,30 @@ export interface ILanguageRow {
     disabled: boolean;
 }
 
+// The id each destination's tab carries in its data-testid, "publish-destination-<id>"
+// (PublishTabPane.tsx, publishTabs).
+const kPublishDestinationIds: Record<PublishDestination, string> = {
+    "PDF & Print": "pdf",
+    Web: "web",
+    BloomPUB: "bloompub",
+    Apps: "apps",
+    ePUB: "epub",
+    "Audio or Video": "video",
+};
+
 /**
- * One of the destinations down the left of the Publish tab, found by the label it shows. Not by
- * its accessible name: each destination carries a tooltip, and while the tooltip is open (the
- * pointer resting on the destination just clicked, for one) MUI names the destination after the
- * tooltip's text instead, so a lookup by name stops finding it.
+ * One of the destinations down the left of the Publish tab. Found by its test id rather than its
+ * accessible name: each destination carries a tooltip, and while the tooltip is open (the pointer
+ * resting on the destination just clicked, for one) MUI names the destination after the tooltip's
+ * text instead, so a lookup by name stops finding it.
  */
 function publishDestinationTab(
     page: Page,
     destination: PublishDestination,
 ): Locator {
-    const exactLabel = new RegExp(
-        `^${destination.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+    return page.getByTestId(
+        `publish-destination-${kPublishDestinationIds[destination]}`,
     );
-    return page.getByRole("tab").filter({
-        has: page.locator(".sidebar-tab-label").filter({ hasText: exactLabel }),
-    });
 }
 
 /**
