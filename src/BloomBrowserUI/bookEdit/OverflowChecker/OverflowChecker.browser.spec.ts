@@ -711,8 +711,8 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
         typeIn(boxes[2]);
         expect(
             sizeToText.mock.calls.map((call) => call[0]),
-            "Typing on a page loaded over 30 should size the box typed in.",
-        ).toContain(boxes[2]);
+            "Typing on a page loaded over 30 should size the box typed in, and no other.",
+        ).toEqual([boxes[2]]);
         expect(
             boxes.filter((box) => box.classList.contains("overflow")),
             "Typing on a page still over 30 should mark nothing.",
