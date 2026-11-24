@@ -7,14 +7,16 @@
 // - the Undo button: C# calls topBarButtonClick("undo") in this frame, which calls handleUndo;
 // - its enabled state: C# polls workspaceBundle.canUndo(), which asks this frame's canUndo;
 // - Ctrl+Y: the last-resort binding in this frame (redoKeyBinding.ts) uses canRedo and handleRedo.
+// Ctrl+Z, and Ctrl+Y ahead of CKEditor, reach the stack directly (undoKeys.ts).
 
 import { registerLegacyUndoProviders } from "./legacyUndoProviders";
 import { installRedoKeyBinding, IRedoTarget } from "./redoKeyBinding";
+import { installUndoKeys } from "./undoKeys";
 import { theOneUndoStack } from "./UndoStack";
 
 /**
  * Set up undo for the page that has just loaded: register the pre-existing undo mechanisms with the
- * stack, and bind Ctrl+Y. Call once per page load, from the page frame.
+ * stack, and bind Ctrl+Z and Ctrl+Y. Call once per page load, from the page frame.
  *
  * Ctrl+Y reaches the stack through the page bundle (`window.editablePageBundle`) rather than
  * directly, so that it goes through the same exported function as everything else, which is the
@@ -22,6 +24,7 @@ import { theOneUndoStack } from "./UndoStack";
  */
 export function setUpPageUndo(): void {
     registerLegacyUndoProviders();
+    installUndoKeys(document);
     installRedoKeyBinding(
         document,
         () =>

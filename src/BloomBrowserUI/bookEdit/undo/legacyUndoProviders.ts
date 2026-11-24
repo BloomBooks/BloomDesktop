@@ -7,9 +7,10 @@
 //
 // Know what that order governs. handleUndo() has one caller: the toolbar Undo button. Ctrl+Z is
 // claimed in the *page* frame — by origami in Change Layout mode, by the reader tools in any
-// editable while a markup tool is active (they preventDefault), and otherwise by CKEditor — and
-// never enters handleUndo() at all. So this file unifies the button, and the keyboard stays as it
-// was until those page-frame handlers are converted. See PLAN.md 3's correction.
+// editable while a markup tool is active (they preventDefault), by the page's key handler when the
+// stack's next undo is an entry of its own (undoKeys.ts), and otherwise by CKEditor — and never enters handleUndo() at all. So this file unifies the button,
+// and the keyboard's legacy undos stay as they were until those page-frame handlers are converted.
+// See PLAN.md 3's correction.
 //
 // Why no conversions yet: the four mechanisms are contextually exclusive in practice (origami only
 // in Change Layout mode, the reader undo only with an active markup tool, image undo only on an

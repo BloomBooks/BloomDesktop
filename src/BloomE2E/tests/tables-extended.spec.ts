@@ -860,6 +860,41 @@ test.describe("more ways to use a table", () => {
             .not.toBe("Banana");
     });
 
+    // The cases above undo through the Undo button's code. Ctrl+Z in a cell takes another route:
+    // CKEditor claims it there and knows nothing of the table's operations, so the page has to
+    // take the key first when the next undo is one (undo/undoKeys.ts in BloomBrowserUI), and the
+    // reader tools, which are not open here, must not say
+    // the key is theirs (BL-16900).
+    test("Ctrl+Z in a cell undoes a row that was added through the row menu", async ({
+        page,
+        step,
+    }) => {
+        await step("Add a row from the row menu", async () => {
+            await clickCell(page, 0, 0);
+            await openTableMenu(page, "row", 1);
+            await clickTableMenuCommand(page, "Add Row Below");
+            await expect
+                .poll(async () => (await getTableShape(page)).rows, {
+                    message: "The row menu should have added a row.",
+                })
+                .toBe(3);
+        });
+
+        await step("Press Ctrl+Z in a cell", async () => {
+            await pressKeyIn(
+                await cellTextBox(page, 0, 0, "en"),
+                "Control+z",
+                "the first cell's text box",
+            );
+            await expect
+                .poll(async () => (await getTableShape(page)).rows, {
+                    message:
+                        "Ctrl+Z in a cell should have taken the row back off.",
+                })
+                .toBe(2);
+        });
+    });
+
     test("re-tiles the cells when the whole table is made wider", async ({
         page,
         step,

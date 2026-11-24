@@ -172,7 +172,7 @@ export class UndoStack {
      * the next undo or our newest entry is not available just now.
      *
      * For a key handler that has to decide, before CKEditor acts on Ctrl+Z, whether the keystroke
-     * belongs to an entry on this stack (inline images do this; see inlineImageCanUndo). Like
+     * belongs to an entry on this stack (see undoKeys.ts). Like
      * {@link canUndo}, it believes a provider that says it can undo, so it answers undefined when
      * CKEditor claims an undo it then finds nothing for.
      */
