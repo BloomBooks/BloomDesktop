@@ -143,6 +143,10 @@ real bug in the code under test; read the message and fix it rather than working
   dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
   `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
   screen.
+- `helpers/colorPicker.ts` — Bloom's color picker dialog: `readColorPicker` reads every control
+  (hex box, sample, saturation box, hue and alpha sliders) so a test can check they agree;
+  `clickPaletteSwatch`, `clickHueSlider`, `clickSaturationBox`, `clickAlphaSliderMiddle`,
+  `typeInHexBox`, `appendToHexBox`; and closing it with OK, Cancel, Escape or a click outside.
 - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`, and the selected book's
   right-click menu (`chooseFromSelectedBookMenu`, `closeBookMenu`).
 - `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
