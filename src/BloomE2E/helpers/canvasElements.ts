@@ -13,7 +13,7 @@
 // attempts is a product problem, and retries: 0 is the point of this suite).
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
-import { editablePageFrame } from "./bookMaking";
+import { editablePageFrame, waitForBloomToHaveTyping } from "./bookMaking";
 import { type IRect } from "./geometry";
 import { realClick, realClickAt } from "./realClick";
 import { showToolbox, toolboxFrame } from "./toolbox";
@@ -33,8 +33,14 @@ export type PaletteItem =
 
 /** The controls the Canvas tool shows once it is open. */
 const CANVAS_TOOL_CONTROLS = "#canvasToolControls";
-/** The canvas that owns the Canvas tool; see canvas(). */
-const CANVAS_SELECTOR = '.bloom-canvas[data-tool-id="canvas"]';
+/**
+ * The canvas that owns the Canvas tool; see canvas(). A Canvas page's canvas carries
+ * data-tool-id="canvas"; a cover given a custom layout has instead one canvas of its own, straight
+ * inside its margin box, without that attribute (convertXmatterPageToCustom in
+ * customXmatterPage.tsx).
+ */
+const CANVAS_SELECTOR =
+    '.bloom-canvas[data-tool-id="canvas"], .bloom-page.bloom-customLayout .marginBox > .bloom-canvas';
 
 /** Where in the page frame the canvas element's floating toolbar and menu live. */
 const TOOLBAR = "#canvas-element-context-controls";
@@ -66,8 +72,9 @@ export async function openCanvasTool(page: Page): Promise<Frame> {
     const canvasBlock = canvas(page);
     if ((await canvasBlock.count()) === 0)
         throw new Error(
-            'The page being edited has no canvas with data-tool-id="canvas", so there is ' +
-                "nothing to click to open the Canvas tool. Add a Canvas page first.",
+            "The page being edited has no canvas that takes canvas elements, so there is " +
+                "nothing to click to open the Canvas tool. Add a Canvas page, or give the cover " +
+                "a custom layout, first.",
         );
     await canvasBlock.waitFor({ state: "visible", timeout: 30000 });
     // A real click, aimed just inside the canvas's top-left corner so it lands on the canvas
@@ -85,8 +92,8 @@ export async function openCanvasTool(page: Page): Promise<Frame> {
 
 /**
  * The canvas of the page being edited: the area canvas elements sit on. This is the canvas that
- * owns the Canvas tool (data-tool-id="canvas"); a picture box on an ordinary page is also a
- * bloom-canvas, but not one a person can drop palette items on.
+ * owns the Canvas tool (a Canvas page's, or a custom cover's; see CANVAS_SELECTOR); a picture box
+ * on an ordinary page is also a bloom-canvas, but not one a person can drop palette items on.
  */
 export function canvas(page: Page): Locator {
     return editablePageFrame(page).locator(CANVAS_SELECTOR).first();
@@ -341,12 +348,25 @@ export async function selectCanvasElement(
     page: Page,
     index: number,
 ): Promise<Locator> {
-    const element = canvasElement(page, index);
+    return selectCanvasElementAt(
+        canvasElement(page, index),
+        `canvas element ${index}`,
+    );
+}
+
+/**
+ * Select the canvas element `element` locates, as selectCanvasElement does, for a caller that finds
+ * it some other way than by index. `what` names it in the failure message.
+ */
+export async function selectCanvasElementAt(
+    element: Locator,
+    what: string,
+): Promise<Locator> {
     await element.waitFor({ state: "visible", timeout: 30000 });
     await realClick(element);
     await expect(
         element,
-        `Clicking canvas element ${index} did not select it.`,
+        `Clicking ${what} did not select it.`,
     ).toHaveAttribute("data-bloom-active", "true", { timeout: 15000 });
     return element;
 }
@@ -580,12 +600,25 @@ export async function clickCanvasElementSubmenuItem(
                 `${offered.join(", ") || "(nothing)"}.`,
         );
     }
-    await item.click();
+    await clickSubmenuRowAndWaitForMenusToClose(page, item, `"${l10nId}"`);
+}
+
+/**
+ * Click a row of an open submenu of the selected canvas element's "..." menu, then move the pointer
+ * off the menus and wait until none is left, so the command has been sent. See
+ * clickCanvasElementSubmenuItem for why the pointer has to move.
+ */
+async function clickSubmenuRowAndWaitForMenusToClose(
+    page: Page,
+    row: Locator,
+    what: string,
+): Promise<void> {
+    await row.click();
     await moveMouseOffMenus(page);
     await expect
         .poll(async () => getOpenCanvasElementMenuCount(page), {
             timeout: 30000,
-            message: `Choosing "${l10nId}" left a menu on screen.`,
+            message: `Choosing ${what} left a menu on screen.`,
         })
         .toBe(0);
 }
@@ -1092,4 +1125,133 @@ export async function getPaletteItemTooltip(
     await page.mouse.move(0, 0);
     await expect(tooltip).toHaveCount(0, { timeout: 10000 });
     return text;
+}
+
+/**
+ * Choose one of the collection's languages on the Language submenu of the selected canvas
+ * element's "..." menu, the way a person does: rest the pointer on Language, then click the
+ * language. The element's text then shows that language alone, and Bloom adds a box for it when
+ * the element had none. Waits until the menu has closed and the element is showing a box in that
+ * language.
+ *
+ * The submenu offers only on a page with a custom layout (a cover made custom with
+ * choosePageLayout), and only in a collection with more than one language. Its rows are the
+ * languages' names as the collection gives them, and carry no localization id, so `languageName`
+ * is the name the row shows, e.g. "Arabic"; `languageTag` is the language it stands for, e.g. "ar".
+ */
+export async function chooseCanvasElementLanguage(
+    page: Page,
+    languageName: string,
+    languageTag: string,
+): Promise<void> {
+    await openCanvasElementSubmenu(
+        page,
+        "EditTab.Toolbox.ComicTool.Options.Language",
+    );
+    const submenu = canvasElementSubmenu(
+        page,
+        "EditTab.Toolbox.ComicTool.Options.Language",
+    );
+    const row = submenu.getByRole("menuitem", {
+        name: languageName,
+        exact: true,
+    });
+    if ((await row.count()) === 0) {
+        const offered = (
+            await submenu.getByRole("menuitem").allInnerTexts()
+        ).map((label) => label.trim());
+        throw new Error(
+            `The Language submenu has no "${languageName}". It offers: ` +
+                `${offered.join(", ") || "(nothing)"}.`,
+        );
+    }
+    await clickSubmenuRowAndWaitForMenusToClose(
+        page,
+        row,
+        `the language "${languageName}"`,
+    );
+    await expect(
+        shownTextBoxOfActiveElement(page),
+        `Choosing "${languageName}" did not leave the element showing its "${languageTag}" box.`,
+    ).toHaveAttribute("lang", languageTag, { timeout: 15000 });
+}
+
+/** One language's box of a canvas element's text, as getCanvasElementTextBoxes reports it. */
+export interface ICanvasTextBox {
+    /** The box's language tag, e.g. "ar". The never-edited template box is "z". */
+    language: string;
+    /** Whether the element is showing this box. */
+    shown: boolean;
+    /** The box's dir attribute, e.g. "rtl", or undefined when it has none. */
+    dir?: string;
+    /** Whether a CKEditor is attached to the box, which is what lets a person type and format in it. */
+    hasEditor: boolean;
+    /** The language name the box's language tag shows (data-languagetipcontent), if it has one. */
+    languageTag?: string;
+    /** The box's text. */
+    text: string;
+}
+
+/**
+ * The language boxes of the text in canvas element `index` (in document order, as canvasElement
+ * counts), in the order they sit in the element.
+ */
+export async function getCanvasElementTextBoxes(
+    page: Page,
+    index: number,
+): Promise<ICanvasTextBox[]> {
+    return canvasElement(page, index)
+        .locator(".bloom-translationGroup > .bloom-editable")
+        .evaluateAll((boxes) => {
+            const editors = Object.values(
+                (
+                    window as unknown as {
+                        CKEDITOR?: {
+                            instances: Record<
+                                string,
+                                { element?: { $: Element } }
+                            >;
+                        };
+                    }
+                ).CKEDITOR?.instances ?? {},
+            );
+            return boxes.map((box) => ({
+                language: box.getAttribute("lang") ?? "",
+                shown: box.classList.contains("bloom-visibility-code-on"),
+                dir: box.getAttribute("dir") ?? undefined,
+                hasEditor: editors.some((editor) => editor.element?.$ === box),
+                languageTag:
+                    box.getAttribute("data-languagetipcontent") ?? undefined,
+                text: box.textContent ?? "",
+            }));
+        });
+}
+
+/**
+ * Click into the box the selected canvas element is showing, the way a person does, and type
+ * `text` at the end of what is there. Returns once Bloom has received the page with the text in
+ * it, so a save straight after keeps it.
+ *
+ * Like typeInGroup, this inserts the text as one input, so it raises no key events.
+ */
+export async function typeInCanvasElement(
+    page: Page,
+    text: string,
+): Promise<void> {
+    const box = shownTextBoxOfActiveElement(page);
+    await realClick(box);
+    await box.press("End");
+    await page.keyboard.insertText(text);
+    await expect(
+        box,
+        `The text typed into the canvas element did not reach its box.`,
+    ).toContainText(text, { timeout: 15000 });
+    await waitForBloomToHaveTyping(page, text);
+}
+
+/** The box that the selected canvas element's text is showing. */
+function shownTextBoxOfActiveElement(page: Page): Locator {
+    return activeCanvasElement(page).locator(
+        ".bloom-translationGroup > .bloom-editable.bloom-visibility-code-on",
+    );
 }

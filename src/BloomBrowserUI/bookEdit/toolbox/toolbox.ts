@@ -11,6 +11,10 @@ import {
     getPageIframeBody,
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
+import {
+    endPlayModeAsPageUnloads,
+    removePlayModeMarkupFromClone,
+} from "./games/gamePlayMode";
 import { isLongPressEvaluating } from "../longPressShared";
 import { configurePageEditingHandlers } from "./pageEditingMarkup";
 import {
@@ -93,7 +97,9 @@ export interface ITool {
     // tool starts running, so it also serves to make the tool's state track the
     // current book. The returned promise must resolve when the tool is ready to be shown.
     beginRestoreSettings(settings: IToolboxSettings): Promise<void>;
-    configureElements(container: HTMLElement);
+    // Sets up the page's text boxes (.bloom-editable elements) for this tool, e.g. by binding
+    // its key and focus handlers on them.
+    configureElements(boxes: JQuery);
     // Called when the tool starts running -- it has become the expanded tool of a showing
     // toolbox, or it was already expanded and a new page arrived. Expanding this tool's own
     // accordion section is not by itself what triggers it; starting to run is.
@@ -235,11 +241,14 @@ export class ToolBox {
         };
         doAdjustment();
     }
-    public configureElementsForTools(container: HTMLElement) {
+    // Has every tool set up these text boxes (.bloom-editable elements).
+    public configureElementsForTools(textBoxes: HTMLElement[]) {
+        // This frame's jQuery, whose bookkeeping releaseElementsForTools undoes.
+        const boxes = $(textBoxes);
         for (let i = 0; i < masterToolList.length; i++) {
-            masterToolList[i].configureElements(container);
+            masterToolList[i].configureElements(boxes);
         }
-        configurePageEditingHandlers(container, this);
+        configurePageEditingHandlers(boxes, this);
     }
 
     /// Undoes the jQuery bookkeeping that configureElementsForTools (and the
@@ -924,6 +933,8 @@ function restoreToolboxSettingsWhenPageReady(
 // current tool from the live page, which leaves the page unusable for further editing.
 export function removeToolboxMarkup() {
     detachExpandedTool();
+    // A game page's Play mode is not any tool's: the tester can be playing with any tool open.
+    endPlayModeAsPageUnloads();
 }
 
 // The tool we last told Bloom to remember. Only a cache, to keep us from re-posting the
@@ -932,11 +943,14 @@ export function removeToolboxMarkup() {
 // setting once even when two books in a row use the same tool.
 let lastPersistedToolId: string | undefined = undefined;
 
-// Strip from 'pageClone', a detached clone of the page div, the current tool's editing markup.
+// Strip from 'pageClone', a detached clone of the page div, the current tool's editing markup, and
+// the markup of a game page's Play mode.
 // The rest of detaching (doWhenClosingTool, live-only teardown) is deliberately skipped: the user
 // is still on this page and still using this tool. Called from the page iframe when saving.
 export function removeToolMarkupFromPageClone(pageClone: HTMLElement): void {
     findExpandedTool()?.removeToolMarkup(pageClone);
+    // Whatever tool is open, or none: a game page can be in Play mode with any of them.
+    removePlayModeMarkupFromClone(pageClone);
 }
 
 /**

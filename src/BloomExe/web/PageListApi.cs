@@ -317,10 +317,21 @@ namespace Bloom.web
                 request.Failed(System.Net.HttpStatusCode.NotFound, "Could not find page");
                 return;
             }
+            dynamic answer = new ExpandoObject();
+            // A page list still showing after the book's folder was renamed would ask for this
+            // page's pictures in the old folder, where they no longer are. Give it nothing to draw:
+            // it is about to be replaced by one from the new folder, which asks again (BL-17055;
+            // see EditingView.HandleBookRenamed). A request that got here just before the rename
+            // still fails; BloomServer.ShouldReportFailedRequest keeps that from being reported.
+            if (BloomServer.IsBookDocumentOutsideFolder(request.Referer, book.FolderPath))
+            {
+                answer.content = string.Empty;
+                request.ReplyWithJson(answer);
+                return;
+            }
             // The page list shows pages small, and its pictures are made small to match. The All Pages
             // view (bookGridView.ts) shows them at full size, so it asks for the pictures themselves.
             var fullSizePictures = request.GetParamOrNull("full-size") == "true";
-            dynamic answer = new ExpandoObject();
             answer.content = GetReadOnlyPageContent(page, fullSizePictures);
             request.ReplyWithJson(answer);
         }

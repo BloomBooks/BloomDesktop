@@ -1092,6 +1092,11 @@
         <note>ID: Common.Info</note>
         <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
       </trans-unit>
+      <trans-unit id="Common.Languages" translate="no">
+        <source xml:lang="en">Languages</source>
+        <note>ID: Common.Languages</note>
+        <note>A heading over a list of the languages of a book or collection, for example the languages that a table cell shows.</note>
+      </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
         <note>ID: Common.LearnMore</note>

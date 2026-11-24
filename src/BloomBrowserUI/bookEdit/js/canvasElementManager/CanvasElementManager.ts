@@ -334,6 +334,7 @@ export class CanvasElementManager {
                     this.adjustCanvasElementLocation.bind(this),
                 startMoving: this.startMoving.bind(this),
                 stopMoving: this.stopMoving.bind(this),
+                checkOverflowAfterMove: this.checkOverflowAfterMove.bind(this),
                 setLastMoveContainer: (container) => {
                     this.lastMoveContainer = container;
                 },
@@ -2592,6 +2593,20 @@ export class CanvasElementManager {
         this.alignControlFrameWithActiveElement();
     }
 
+    // Update the overflow marks of the text in `canvasElement`, and of the page around it, after the
+    // user has moved it. Where it is decides whether its text runs past the boxes that hold it (a
+    // table's rows can reach well past its canvas element), and nothing else checks when it moves.
+    // The check of each text box clears the marks its last check left on the boxes holding it.
+    private checkOverflowAfterMove(canvasElement: HTMLElement) {
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(
+            Array.from(
+                canvasElement.querySelectorAll<HTMLElement>(
+                    ".bloom-editable.bloom-visibility-code-on",
+                ),
+            ),
+        );
+    }
+
     // If we get a click (without movement) on a text canvas element, we treat subsequent mouse events on
     // that canvas element as text editing events, rather than drag events, as long as it keeps focus.
     // This is the canvas element, if any, that is currently in that state.
@@ -3181,10 +3196,10 @@ export class CanvasElementManager {
         this.editingSuspension.endDraggingSplitter();
     }
 
-    public suspendComicEditing(
+    public suspendCanvasElementEditing(
         forWhat: "forDrag" | "forTool" | "forGamePlayMode" | "forJqueryResize",
     ) {
-        this.editingSuspension.suspendComicEditing(forWhat);
+        this.editingSuspension.suspendCanvasElementEditing(forWhat);
     }
 
     public checkActiveElementIsVisible() {
@@ -3193,13 +3208,19 @@ export class CanvasElementManager {
         );
     }
 
-    public resumeComicEditing() {
-        this.editingSuspension.resumeComicEditing();
+    // Ends any suspension of canvas element editing except one for a game's Play mode.
+    public resumeCanvasElementEditing() {
+        this.editingSuspension.resumeCanvasElementEditing();
+    }
+
+    // Ends the suspension of canvas element editing for a game's Play mode, and no other.
+    public endGamePlayModeSuspension() {
+        this.editingSuspension.endGamePlayModeSuspension();
     }
 
     public adjustAfterOrigamiDoubleClick() {
         // make sure we're not still in a dragging-the-splitter state
-        theOneCanvasElementManager.resumeComicEditing();
+        theOneCanvasElementManager.resumeCanvasElementEditing();
         // this is automatic for changes that happen while we're dragging,
         // but dragging gets stopped by mouse up, so we need to do it here.
         theOneCanvasElementManager.handleResizeAdjustments();
@@ -3237,16 +3258,16 @@ export class CanvasElementManager {
     public initializeCanvasElementEditing(): void {
         clearImageOperationUndoState();
 
-        // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
-        // load, so that canvas element editing works even when the Canvas element tool is not active. So it definitely
-        // needs to be called there when we're calling SetupElements during page load. It's possible
-        // that's the only time it needs to be called from there, but I'm not sure so I'm leaving it
-        // called always. However, there's at least one situation where we call SetupElements but do
-        // NOT want comic editing turned on: when we're creating an image description translation group
-        // in the process of switching to the image description tool. Comic editing is deliberately
-        // suspended while that tool is active. For now I'm going with a more-or-less minimal change:
-        // if comic editing is not only already initialized, but suspended, we won't turn it on again
-        // here.
+        // This gets called in bloomEditable's SetupElements method. This is how it gets set up on
+        // page load, so that canvas element editing works even when the Canvas element tool is not
+        // active. So it definitely needs to be called there when we're calling SetupElements during
+        // page load. It's possible that's the only time it needs to be called from there, but I'm
+        // not sure so I'm leaving it called always. However, there's at least one situation where
+        // we call SetupElements but do NOT want canvas element editing turned on: when we're
+        // creating an image description translation group in the process of switching to the image
+        // description tool. Canvas element editing is deliberately suspended while that tool is
+        // active. For now I'm going with a more-or-less minimal change: if canvas element editing
+        // is not only already initialized, but suspended, we won't turn it on again here.
         if (this.editingSuspension.isSuspended()) {
             return;
         }

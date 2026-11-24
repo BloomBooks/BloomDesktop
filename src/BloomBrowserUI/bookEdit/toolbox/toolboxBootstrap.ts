@@ -15,7 +15,11 @@ import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
 import TalkingBookTool from "./talkingBook/talkingBookTool";
 import "errorHandler";
-import { setActiveDragActivityTab } from "./games/GameTool";
+import {
+    isGamePageInPlay,
+    redrawGameTabs,
+    setActiveDragActivityTab,
+} from "./games/GameTool";
 import { registerAllToolboxTools } from "./registerAllToolboxTools";
 // Explicit imports needed so that these symbols are in local scope for the window.toolboxBundle object
 import {
@@ -81,12 +85,15 @@ export interface IToolboxFrameExports {
     canUndo(): boolean;
     undo(): void;
     readerToolsHandleUndoKeys(): boolean;
+    restartReaderToolsHistoryIn(container: HTMLElement): void;
 
     applyToolboxStateToPage(): void;
 
     removeToolboxMarkup(): void;
     removeToolMarkupFromPageClone(pageClone: HTMLElement): void;
     setActiveDragActivityTab(tab: number): void;
+    isGamePageInPlay(): boolean;
+    redrawGameTabs(): void;
     getTheOneAudioRecorderForExportOnly(): IAudioRecorder;
     simulateBlurOnPageFrameMouseDown(): void;
 }
@@ -96,6 +103,8 @@ export {
     removeToolboxMarkup,
     removeToolMarkupFromPageClone,
     setActiveDragActivityTab,
+    isGamePageInPlay,
+    redrawGameTabs,
 };
 export {
     showSetupDialog,
@@ -144,6 +153,15 @@ export function canUndo(): boolean {
  */
 export function readerToolsHandleUndoKeys(): boolean {
     return !!getTheOneReaderToolsModel()?.shouldHandleUndo();
+}
+
+/**
+ * Starts the reader tools' undo history again if the text block it belongs to is inside
+ * `container`. The inline image code calls this after a picture change (see
+ * ReaderToolsModel.restartHistoryIn).
+ */
+export function restartReaderToolsHistoryIn(container: HTMLElement): void {
+    getTheOneReaderToolsModel()?.restartHistoryIn(container);
 }
 
 export function undo() {
@@ -204,7 +222,10 @@ const toolboxBundle: ToolboxBundleApi = {
     canUndo,
     undo,
     readerToolsHandleUndoKeys,
+    restartReaderToolsHistoryIn,
     setActiveDragActivityTab,
+    isGamePageInPlay,
+    redrawGameTabs,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,
     simulateBlurOnPageFrameMouseDown,

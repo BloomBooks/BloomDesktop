@@ -56,7 +56,7 @@ export default abstract class ToolboxToolReactAdaptor implements ITool {
     // Most tools' editing markup is bloom-ui or outside the page div, so neither is saved. See
     // ITool.removeToolMarkup.
     public removeToolMarkup(_pageOrClone: HTMLElement): void {}
-    public configureElements(_container: HTMLElement) {}
+    public configureElements(_boxes: JQuery) {}
     /* eslint-enable @typescript-eslint/no-empty-function */
 
     private removedToolMarkupWhileDetaching = false;

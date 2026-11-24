@@ -2,7 +2,7 @@
 // menu (BL-16649).
 // Kept separate from the React component so it can be unit tested against a plain DOM.
 
-import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
+import { isInCanvasElementOutsideTableCell } from "../toolbox/canvas/canvasElementConstants";
 
 // Put on an individual <p> to cancel the first-line indent that the paragraph's style
 // (see the Format dialog) would otherwise give it. The matching CSS rule is in
@@ -22,11 +22,10 @@ export function findParagraphForTextContextMenu(
     if (!paragraph) return undefined;
     if (!paragraph.closest(".bloom-editable")) return undefined;
     // A table cell holds an ordinary Bloom text box, and a right-click in one is either the
-    // table's own Cell menu or this menu; setupTextContextMenu decides which. The cell test has
-    // to come before the canvas-element test, because a table dropped on a Canvas page lives
-    // inside a canvas element, and rejecting it here would leave such a cell with no menu at all.
-    if (paragraph.closest(".bloom-cell")) return paragraph;
-    if (paragraph.closest(kCanvasElementSelector)) return undefined;
+    // table's own Cell menu or this menu; setupTextContextMenu decides which. A table dropped on a
+    // Canvas page lives inside a canvas element, and rejecting it here would leave such a cell with
+    // no menu at all.
+    if (isInCanvasElementOutsideTableCell(paragraph)) return undefined;
     return paragraph;
 }
 

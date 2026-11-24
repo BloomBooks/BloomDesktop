@@ -24,10 +24,11 @@ import { SetupWidgetEditing } from "./bloomWidgets";
 import {
     clearInlineImageSelection,
     commitInlineImageUndoForImageChange,
-    kInlineImageClass,
     prepareInlineImageUndoForImageChange,
+    removeCkEditorAttributesFromInlineImages,
     setupInlineImages,
 } from "./inlineImages";
+import { kInlineImageClass } from "./inlineImageConstants";
 import {
     cleanupInlineImageInteractions,
     adjustInlineImageOffsetsIfBlockSizeChanged,
@@ -68,6 +69,7 @@ import {
     theOneCanvasElementManager,
 } from "./canvasElementManager/CanvasElementManager";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
+import type { ToolBox } from "../toolbox/toolbox";
 import {
     canUndoImageOperation,
     clearImageOperationUndoState,
@@ -267,80 +269,69 @@ function SetupDeletable(containerDiv) {
     return $(containerDiv);
 }
 
-// Add various editing key handlers
-function AddEditKeyHandlers(container) {
+// The key handlers a bloom-editable gets for editing: F6 superscript, F7/F8 and Ctrl+Alt+0/1/2
+// paragraph styles, and Ctrl+Shift+Space to show invisibles. Page load gives them to every box
+// (AddEditKeyHandlers); setUpBoxesBuiltAfterLoad gives them to a box added later.
+export function addEditKeyHandlersToBoxes(boxes: JQuery) {
     //Make F6 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
     //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isF6 = e.key === "F6";
-            if (!isF6) return;
-            const selection = document.getSelection();
-            if (selection) {
-                // NB: by using execCommand, we get undo-ability
-                document.execCommand(
-                    "insertHTML",
-                    false,
-                    "<sup>" + document.getSelection() + "</sup>",
-                );
-            }
-        });
+    boxes.on("keydown", (e) => {
+        const isF6 = e.key === "F6";
+        if (!isF6) return;
+        const selection = document.getSelection();
+        if (selection) {
+            // NB: by using execCommand, we get undo-ability
+            document.execCommand(
+                "insertHTML",
+                false,
+                "<sup>" + document.getSelection() + "</sup>",
+            );
+        }
+    });
 
     //ctrl alt 0 is from google drive for "normal text"
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isCtrlAlt0 =
-                e.ctrlKey && e.altKey && !e.shiftKey && e.key === "0";
-            if (!isCtrlAlt0) return;
-            e.preventDefault();
-            document.execCommand("formatBlock", false, "P");
-        });
+    boxes.on("keydown", (e) => {
+        const isCtrlAlt0 =
+            e.ctrlKey && e.altKey && !e.shiftKey && e.key === "0";
+        if (!isCtrlAlt0) return;
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "P");
+    });
 
     // Make F7 apply top-level header style (H1)
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isF7 = e.key === "F7";
-            if (!isF7) return;
-            e.preventDefault();
-            document.execCommand("formatBlock", false, "H1");
-        });
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isCtrlAlt1 =
-                e.ctrlKey && e.altKey && !e.shiftKey && e.key === "1";
-            if (!isCtrlAlt1) return;
-            // ctrl alt 1 is from google drive
-            e.preventDefault();
-            document.execCommand("formatBlock", false, "H1");
-        });
+    boxes.on("keydown", (e) => {
+        const isF7 = e.key === "F7";
+        if (!isF7) return;
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H1");
+    });
+    boxes.on("keydown", (e) => {
+        const isCtrlAlt1 =
+            e.ctrlKey && e.altKey && !e.shiftKey && e.key === "1";
+        if (!isCtrlAlt1) return;
+        // ctrl alt 1 is from google drive
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H1");
+    });
 
     // Make F8 apply header style (H2)
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isF8 = e.key === "F8";
-            if (!isF8) return;
-            e.preventDefault();
-            document.execCommand("formatBlock", false, "H2");
-        });
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isCtrlAlt2 =
-                e.ctrlKey && e.altKey && !e.shiftKey && e.key === "2";
-            if (!isCtrlAlt2) return;
-            // ctrl alt 2 is from google drive
-            e.preventDefault();
-            document.execCommand("formatBlock", false, "H2");
-        });
+    boxes.on("keydown", (e) => {
+        const isF8 = e.key === "F8";
+        if (!isF8) return;
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H2");
+    });
+    boxes.on("keydown", (e) => {
+        const isCtrlAlt2 =
+            e.ctrlKey && e.altKey && !e.shiftKey && e.key === "2";
+        if (!isCtrlAlt2) return;
+        // ctrl alt 2 is from google drive
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H2");
+    });
 
     // for testing only: show invisibles
-    $(container)
-        .find("div.bloom-editable")
+    boxes
         .on("keydown", (e) => {
             const isCtrlShiftSpace =
                 e.ctrlKey && e.shiftKey && !e.altKey && e.key === " ";
@@ -352,6 +343,11 @@ function AddEditKeyHandlers(container) {
         .on("keyup blur", (e) => {
             hideInvisibles(e);
         });
+}
+
+// Add various editing key handlers
+function AddEditKeyHandlers(container) {
+    addEditKeyHandlersToBoxes($(container).find("div.bloom-editable"));
 
     // Ctrl+Space: "clear formatting" on the current selection. We route this through the CKEditor
     // instance that currently has focus (rather than the browser's document.execCommand) so that
@@ -400,61 +396,176 @@ function AddEditKeyHandlers(container) {
     // so that it can be caught even when the focus isn't on the browser
 }
 
+// Runs `task` with the toolbox once the toolbox frame has loaded.
+function doWithToolbox(task: (toolbox: ToolBox) => void) {
+    doWhenWorkspaceBundleLoaded((rootFrameExports) => {
+        rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
+            const toolbox = toolboxFrameExports.getTheOneToolbox();
+            // toolbox might be undefined in unit testing?
+            if (toolbox) {
+                task(toolbox);
+            }
+        });
+    });
+}
+
+// Lets whichever toolbox tool is open (Talking Book, the readers and others) set up the text
+// boxes in `container`, and adjusts the tool list when `container` holds the page.
+function configureContainerForTools(container: HTMLElement) {
+    doWithToolbox((toolbox) => {
+        toolbox.configureElementsForTools(
+            $(container).find(".bloom-editable").toArray(),
+        );
+        const page = container.getElementsByClassName("bloom-page")[0] as
+            | HTMLElement
+            | undefined;
+        // When this is called initially on page load, container is the body,
+        // and we will find a bloom-page and adjust the tool list.
+        // If it is called later to adjust something like an image-container,
+        // the toolbox should already be set for this page.
+        // In that case we won't find a page inside it, which is fine since
+        // we don't need to adjust the tool list again.
+        if (page) {
+            toolbox.adjustToolListForPage(page);
+        }
+    });
+}
+
+// Lets the toolbox tools set up `boxes`, text boxes added after page load. Only the new boxes
+// are passed: passing their groups would bind the tools' handlers a second time on the groups'
+// other boxes.
+export function configureElementsForTools(boxes: HTMLElement[]) {
+    doWithToolbox((toolbox) => toolbox.configureElementsForTools(boxes));
+}
+
+// Keeps a data-text attribute on each box equal to its text, for stylesheets that need to see the
+// text (a translation group with bloom-text-for-css).
+export function keepDataTextUpToDate(boxes: JQuery) {
+    boxes.each(function () {
+        // initially fill it
+        $(this).attr("data-text", this.textContent);
+        // keep it up to date
+        $(this).on("blur paste input", function () {
+            $(this).attr("data-text", this.textContent);
+        });
+    });
+}
+
+// In a box whose translation group has bloom-userCannotModifyStyles (BL-5575), paste only the
+// clipboard's plain text, so a paste cannot bring in formatting. (Converting standard format
+// verse markers on paste is BloomField.convertStandardFormatVerseMarkersToSuperscript's job.)
+export function addPlainTextPasteHandler(boxes: JQuery) {
+    boxes.on("paste", function (e) {
+        const theEvent = e.originalEvent as ClipboardEvent;
+        if (!theEvent.clipboardData) return;
+
+        const s = theEvent.clipboardData.getData("text/plain");
+        if (s === null || s === "") return;
+
+        if ($(this).parent().hasClass("bloom-userCannotModifyStyles")) {
+            e.preventDefault();
+            document.execCommand("insertText", false, s);
+            //NB: odd that this doesn't work?! document.execCommand("paste", false, s);
+            return;
+        }
+    });
+}
+
+//html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
+//So one of our foundational stylesheets looks for @data-placeholder and simulates the
+//@placeholder behavior.
+//Now, what's going on here is that we also support
+//<label class='placeholder'> inside a div.bloom-translationGroup to get this placeholder
+//behavior on each of the fields inside the group .
+//Using <label> instead of the attribute makes the html much easier to read, write, and add additional
+//behaviors through classes.
+//So the job of this bit here is to take the label.placeholder and create the data-placeholders.
+export function addPlaceholdersFromLabels(labels: JQuery) {
+    labels.each(function () {
+        const labelText = $(this).text();
+
+        //put the attributes on the individual child divs
+        $(this)
+            .parent()
+            .find(".bloom-editable")
+            .each(function () {
+                //enhance: it would make sense to allow each of these to be customized for their div
+                //so that you could have a placeholder that said "Name in {lang}", for example.
+                $(this).attr("data-placeholder", labelText);
+                //next, it's up to CSS to draw the placeholder when the field is empty.
+            });
+    });
+}
+
 // Add little language tags. (At one point we limited this to visible .bloom-editable divs,
 // probably as an optimization since there can be other-language divs present but hidden.
 // But there may be yet others that are not visible when we run this but which soon will be,
 // such as image descriptions. We don't seem to need the optimization, so let's just do
 // them all.)
 export function AddLanguageTags(container) {
-    $(container)
-        .find(".bloom-editable[contentEditable=true]")
-        .each(function () {
-            const $this = $(this);
+    addLanguageTagsToBoxes($(container).find(".bloom-editable"));
+}
 
-            // If this DIV already had a language tag, remove the content in case we decide the situation has changed.
-            if ($this.hasAttr("data-languageTipContent")) {
-                $this.removeAttr("data-languageTipContent");
-            }
-
-            // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
-            // with each other, leading to flashing back and forth
-            // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
-            // August 2024: for canvas elements, the language is now displayed in the context controls box, and isn't
-            // a problem for small text boxes.
-            if ($this.width() < 100 && !this.closest(kCanvasElementSelector)) {
-                return;
-            }
-
-            const key = $this.attr("lang");
-            if (key !== undefined && (key === "*" || key.length < 1)) {
-                return; //seeing a "*" was confusing even to me
-            }
-            // z is not a real language, it is used for prototype blocks, which are NEVER visible.
-            // Searching for it causes missing-localization toasts if attempted.
-            if (key === "z") {
-                return;
-            }
-
-            // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
-            // first usage (for instance) was turning off language tags for a whole page
-            if (
-                $this.hasClass("bloom-hideLanguageNameDisplay") ||
-                $this.parents(".bloom-hideLanguageNameDisplay").length !== 0
-            ) {
-                return;
-            }
-
-            let whatToSay = "";
-            if (key !== undefined) {
-                whatToSay = theOneLocalizationManager.getText(key);
-                if (!whatToSay) {
-                    whatToSay = key; //just show the code
-                }
-            }
-
+// The language tags of AddLanguageTags, for the editable ones among `boxes`. Every box's tag is
+// worked out before any box is changed, so the page is laid out once to measure the boxes rather
+// than once per box. (The tag is drawn by an absolutely positioned :after, so it does not change a
+// box's width.)
+export function addLanguageTagsToBoxes(boxes: JQuery) {
+    const editableBoxes = boxes.filter("[contentEditable=true]").toArray();
+    const tags = editableBoxes.map((box) => languageTagFor(box));
+    editableBoxes.forEach((box, index) => {
+        // If this DIV already had a language tag, remove the content in case we decide the situation has changed.
+        box.removeAttribute("data-languageTipContent");
+        const whatToSay = tags[index];
+        if (whatToSay !== undefined) {
             // Put whatToSay into data attribute for pickup by the css
-            $this.attr("data-languageTipContent", whatToSay);
-        });
+            box.setAttribute("data-languageTipContent", whatToSay);
+        }
+    });
+}
+
+// What the language tag of `box` should say, or undefined if it should have none.
+// The checks that need no layout come before the one that measures the box.
+function languageTagFor(box: HTMLElement): string | undefined {
+    const $this = $(box);
+
+    const key = $this.attr("lang");
+    if (key !== undefined && (key === "*" || key.length < 1)) {
+        return undefined; //seeing a "*" was confusing even to me
+    }
+    // z is not a real language, it is used for prototype blocks, which are NEVER visible.
+    // Searching for it causes missing-localization toasts if attempted.
+    if (key === "z") {
+        return undefined;
+    }
+
+    // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
+    // first usage (for instance) was turning off language tags for a whole page
+    if (
+        $this.hasClass("bloom-hideLanguageNameDisplay") ||
+        $this.parents(".bloom-hideLanguageNameDisplay").length !== 0
+    ) {
+        return undefined;
+    }
+
+    // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
+    // with each other, leading to flashing back and forth
+    // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
+    // August 2024: for canvas elements, the language is now displayed in the context controls box, and isn't
+    // a problem for small text boxes. (So a canvas element's box is not measured at all, which
+    // spares laying out the page to measure it.)
+    if (!box.closest(kCanvasElementSelector) && $this.width()! < 100) {
+        return undefined;
+    }
+
+    let whatToSay = "";
+    if (key !== undefined) {
+        whatToSay = theOneLocalizationManager.getText(key);
+        if (!whatToSay) {
+            whatToSay = key; //just show the code
+        }
+    }
+    return whatToSay;
 }
 
 function SetBookCopyrightAndLicenseButtonVisibility(container) {
@@ -474,20 +585,26 @@ function GetOverflowChecker() {
 
 // this is also called by the StyleEditor
 export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
-    $(container)
-        .find(".bloom-translationGroup")
-        .each(function () {
-            // set our font size so that we can use em units when setting padding of the translation group
-            // If visibility is under the control of the appearance system for this field the child we
-            // want has bloom-contentFirst, otherwise, bloom-content1.
-            // At the time of this writing (6.0) this is only used for cover page titles.
-            let mainChild = $(this).find(".bloom-contentFirst").first();
-            if (mainChild.length === 0) {
-                mainChild = $(this).find(".bloom-content1").first();
-            }
-            const fontSizeOfL1 = mainChild.css("font-size");
-            $(this).css("font-size", fontSizeOfL1);
-        });
+    matchGroupFontSizesToLanguage1(
+        $(container).find(".bloom-translationGroup").toArray(),
+    );
+}
+
+// Gives each group the font size of its main box, so that we can use em units when setting
+// padding of the translation group. Every size is read before any is written, so the page's
+// styles are worked out once however many groups there are.
+export function matchGroupFontSizesToLanguage1(groups: HTMLElement[]) {
+    const sizes = groups.map((group) => {
+        // If visibility is under the control of the appearance system for this field the child we
+        // want has bloom-contentFirst, otherwise, bloom-content1.
+        // At the time of this writing (6.0) this is only used for cover page titles.
+        let mainChild = $(group).find(".bloom-contentFirst").first();
+        if (mainChild.length === 0) {
+            mainChild = $(group).find(".bloom-content1").first();
+        }
+        return mainChild.css("font-size");
+    });
+    groups.forEach((group, index) => $(group).css("font-size", sizes[index]));
 }
 
 // called by C# to remove the id attribute from the image element
@@ -680,6 +797,9 @@ function hasOrigami(container: HTMLElement) {
 // can add new elements (such as during layout mode) and call this on only newly added elements.
 // Now document.load calls this with $('body') as the container.
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
+// A box (bloom-editable) added to a translation group after load is set up by
+// setUpBoxesBuiltAfterLoad (translationGroupLanguages.ts), which calls the same per-box helpers in
+// the same order; a per-box step added here belongs there too.
 export function SetupElements(
     container: HTMLElement,
     // undefined means it will do its best to find something to focus. "none" means don't focus anything.
@@ -754,44 +874,18 @@ export function SetupElements(
             this.innerHTML = this.value;
         });
 
-    doWhenWorkspaceBundleLoaded((rootFrameExports) => {
-        rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
-            const toolbox = toolboxFrameExports.getTheOneToolbox();
-            // toolbox might be undefined in unit testing?
-
-            if (toolbox) {
-                toolbox.configureElementsForTools(container);
-                const page = container.getElementsByClassName(
-                    "bloom-page",
-                )[0] as HTMLElement;
-                // When this is called initially on page load, container is the body,
-                // and we will find a bloom-page and adjust the tool list.
-                // If it is called later to adjust something like an image-container,
-                // the toolbox should already be set for this page.
-                // In that case we won't find a page inside it, which is fine since
-                // we don't need to adjust the tool list again.
-                if (page) {
-                    toolbox.adjustToolListForPage(page);
-                }
-            }
-        });
-    });
+    configureContainerForTools(container);
 
     SetBookCopyrightAndLicenseButtonVisibility(container);
 
     //CSS normally can't get at the text in order to, for example, show something different if it is empty.
     //This allows you to add .bloom-needs-data-text to a bloom-translationGroup in order to get
     //its child bloom-editable's to have data-placeholders on them
-    $(container)
-        .find(".bloom-translationGroup.bloom-text-for-css .bloom-editable")
-        .each(function () {
-            // initially fill it
-            $(this).attr("data-text", this.textContent);
-            // keep it up to date
-            $(this).on("blur paste input", function () {
-                $(this).attr("data-text", this.textContent);
-            });
-        });
+    keepDataTextUpToDate(
+        $(container).find(
+            ".bloom-translationGroup.bloom-text-for-css .bloom-editable",
+        ),
+    );
     SetupThingsSensitiveToStyleChanges(container);
 
     $(container)
@@ -834,25 +928,7 @@ export function SetupElements(
             }
         });
 
-    //Convert Standard Format Markers in the pasted text to html spans
-    // Also (see BL-5575), if the parent div has .bloom-userCannotModifyStyles,
-    // only allow plain text paste.
-    $(container)
-        .find("div.bloom-editable")
-        .on("paste", function (e) {
-            const theEvent = e.originalEvent as ClipboardEvent;
-            if (!theEvent.clipboardData) return;
-
-            const s = theEvent.clipboardData.getData("text/plain");
-            if (s === null || s === "") return;
-
-            if ($(this).parent().hasClass("bloom-userCannotModifyStyles")) {
-                e.preventDefault();
-                document.execCommand("insertText", false, s);
-                //NB: odd that this doesn't work?! document.execCommand("paste", false, s);
-                return;
-            }
-        });
+    addPlainTextPasteHandler($(container).find("div.bloom-editable"));
 
     AddEditKeyHandlers(container);
 
@@ -869,53 +945,14 @@ export function SetupElements(
             $(this).CenterVerticallyInParent();
         });
 
-    //html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
-    //So one of our foundational stylesheets looks for @data-placeholder and simulates the
-    //@placeholder behavior.
-    //Now, what's going on here is that we also support
-    //<label class='placeholder'> inside a div.bloom-translationGroup to get this placeholder
-    //behavior on each of the fields inside the group .
-    //Using <label> instead of the attribute makes the html much easier to read, write, and add additional
-    //behaviors through classes.
-    //So the job of this bit here is to take the label.placeholder and create the data-placeholders.
-    $(container)
-        .find("*.bloom-translationGroup > label.placeholder")
-        .each(function () {
-            const labelText = $(this).text();
-
-            //put the attributes on the individual child divs
-            $(this)
-                .parent()
-                .find(".bloom-editable")
-                .each(function () {
-                    //enhance: it would make sense to allow each of these to be customized for their div
-                    //so that you could have a placeholder that said "Name in {lang}", for example.
-                    $(this).attr("data-placeholder", labelText);
-                    //next, it's up to CSS to draw the placeholder when the field is empty.
-                });
-        });
+    addPlaceholdersFromLabels(
+        $(container).find("*.bloom-translationGroup > label.placeholder"),
+    );
 
     $(container)
         .find("div.bloom-editable")
         .each(function () {
             $(this).attr("contentEditable", "true");
-        });
-
-    // Bloom needs to make some fields readonly. E.g., the original license when the user is translating a shellbook
-    // Normally, we'd control this is a style in editTranslationMode.css/editOriginalMode.css. However, "readonly" isn't a style, just
-    // an attribute, so it can't be included in css.
-    // The solution here is to add the readonly attribute when we detect that the css has set the cursor to "not-allowed".
-    $(container)
-        .find("textarea, div")
-        .focus(function () {
-            //        if ($(this).css('border-bottom-color') == 'transparent') {
-            if ($(this).css("cursor") === "not-allowed") {
-                $(this).attr("readonly", "true");
-                $(this).removeAttr("contentEditable");
-            } else {
-                $(this).removeAttr("readonly");
-                //review: do we need to add contentEditable... that could lead to making things editable that shouldn't be
-            }
         });
 
     AddLanguageTags(container);
@@ -2133,12 +2170,15 @@ export function attachToCkEditor(element) {
             .parentsUntil(".marginBox")
             .hasClass("bloom-userCannotModifyStyles");
 
-    if ($(element).css("cursor") === "not-allowed") return;
-
     // see bl-12448. Here we add a rule blocking visibility of the toolbar
     $("body").addClass("hideAllCKEditors");
     const ckedit = CKEDITOR.inline(element);
     keepTypingWhenCkEditorLoads(ckedit, element);
+    // Registered here, before the undo plugin's own instanceReady listener, so that CKEditor's
+    // first undo snapshot is taken without the attributes this removes.
+    ckedit.on("instanceReady", () =>
+        removeCkEditorAttributesFromInlineImages(element),
+    );
 
     // Until this editor is ready, a gather reads the box from the DOM rather than from getData(),
     // and they differ: SetupElements puts an empty <p></p> into an empty editable, which getData()

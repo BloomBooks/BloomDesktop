@@ -30,6 +30,7 @@ import { bookHtmlPath } from "./bookHtml";
 import { clickInGroup, editablePageFrame } from "./bookMaking";
 import { pasteFromClipboard } from "./clipboard";
 import type { IRect } from "./geometry";
+import { chooseFileInImageChooser } from "./imageChooser";
 import { realClick, realClickAt } from "./realClick";
 
 /**
@@ -759,6 +760,22 @@ export async function getBlockScrollOverflowPx(
 }
 
 /**
+ * How much wider the block's content is than the block, in layout pixels. Zero when nothing
+ * reaches past its side. Bloom marks a block whose content is wider than the block as overflowing,
+ * as it does one whose content is taller.
+ */
+export async function getBlockSidewaysOverflowPx(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<number> {
+    return editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
+        .first()
+        .evaluate((block) => block.scrollWidth - block.clientWidth);
+}
+
+/**
  * Whether Bloom has marked this block as holding more text than it can show, which is what gives
  * the person the red marking and the warning. getBlockScrollOverflowPx measures the overflow;
  * this reads Bloom's verdict. OverflowChecker adds the "overflow" class, and it checks every
@@ -783,11 +800,9 @@ export async function blockIsMarkedOverflowing(
  *
  * computeInlineImageDock decides the dock from where the picture ends up, and the position of
  * the mouse pointer does not matter. It divides the block's width into thirds: the left and right
- * thirds mean the left and right docks, and the middle third means the full-width band. Within
- * the middle third, the bottom dock applies once the band no longer fits the picture inside the
- * block's content, and anywhere below the block means the bottom dock whatever the horizontal
- * position. This helper aims at the middle of the region for the dock asked for, so the caller
- * only names the dock.
+ * thirds mean the left and right docks, and the middle third means the full-width band. Anywhere
+ * below the block means the bottom dock, whatever the horizontal position. This helper aims at
+ * the middle of the region for the dock asked for, so the caller only names the dock.
  *
  * Bloom puts the image back where it started if the move would make the block overflow. When that
  * happens, the failure message gives the dock the image is still in. It means the caller's block
@@ -820,20 +835,21 @@ export async function dragInlineImageToDock(
     // Aim at the horizontal middle of the region that means this dock, and keep the picture at
     // the height it already had, because a drop lower down the block would also change how far
     // down the picture starts. The bottom dock is different: the drop goes just below the block,
-    // which means the bottom dock however tall the block is and whatever else is in it.
+    // which means the bottom dock however tall the block is and whatever else is in it; see
+    // dragInlineImageBelowBlock.
     const acrossFraction = {
         left: 1 / 6,
         middle: 0.5,
         right: 5 / 6,
         bottom: 0.5,
     }[dock];
-    await dragInlineImageTo(page, groupSelector, languageTag, id, {
-        x: block.x + block.width * acrossFraction,
-        y:
-            dock === "bottom"
-                ? block.y + block.height * 1.05
-                : picture.y + picture.height / 2,
-    });
+    if (dock === "bottom")
+        await dragInlineImageBelowBlock(page, groupSelector, languageTag, id);
+    else
+        await dragInlineImageTo(page, groupSelector, languageTag, id, {
+            x: block.x + block.width * acrossFraction,
+            y: picture.y + picture.height / 2,
+        });
     await expect
         .poll(
             async () =>
@@ -850,6 +866,266 @@ export async function dragInlineImageToDock(
             },
         )
         .toBe(copyCount);
+}
+
+/**
+ * Drag an inline image to just below its block, which means the bottom dock. The picture's centre
+ * has to end below the block, and in a small window, like the nightly runner's, the bottom of the
+ * block can be out of sight below the window, where the mouse cannot go. Then this does what a
+ * person does: it drags the picture as far down as the window shows, scrolls the page down, and
+ * drags again.
+ */
+async function dragInlineImageBelowBlock(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+): Promise<void> {
+    await dragInlineImageDownTo(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+        0.5,
+        (block) => block.y + block.height * 1.05,
+    );
+}
+
+/** How far above the bottom of its block dragInlineImageToBottomOfBlock aims the picture's centre. */
+const kAimAboveBlockBottomPx = 3;
+
+/**
+ * Drag an inline image down its block as far as it goes, the way a person does, in the left,
+ * middle or right third of the block, and let go. The pointer, and so the centre of the picture,
+ * ends just above the bottom edge of the block, which is further than the picture can go: Bloom
+ * stops it at the lowest place where it still fits. In a small window, where the bottom of the
+ * block is out of sight, this drags, scrolls the page and drags again, as a person does.
+ *
+ * It waits for nothing and checks nothing, because where the picture stops is the caller's
+ * question; read it with getInlineImage and getInlineImageRects.
+ */
+export async function dragInlineImageToBottomOfBlock(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+    third: "left" | "middle" | "right",
+): Promise<void> {
+    await dragInlineImageDownTo(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+        { left: 1 / 6, middle: 0.5, right: 5 / 6 }[third],
+        (block) => block.y + block.height - kAimAboveBlockBottomPx,
+    );
+}
+
+/**
+ * Drag an inline image to the same place as dragInlineImageToBottomOfBlock, but with a single
+ * movement of the pointer, as a fast drag does: Bloom then sees the pointer where the drag began
+ * and where it ended, and nowhere between. The picture stays in the third of the block it is in.
+ * The whole movement has to be inside the window, so this throws when the bottom of the block is
+ * out of sight; drag the picture near the bottom first. Waits for nothing and checks nothing.
+ */
+export async function dragInlineImageToBottomOfBlockInOneMove(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+): Promise<void> {
+    const picture = await pictureRectInView(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+    );
+    const block = await blockRect(page, groupSelector, languageTag);
+    const dropY = block.y + block.height - kAimAboveBlockBottomPx;
+    const viewBottomY = await pageViewBottomY(
+        inlineImageBlock(page, groupSelector, languageTag),
+        block,
+    );
+    if (dropY > viewBottomY)
+        throw new Error(
+            `The bottom of the block is ${Math.round(dropY - viewBottomY)}px below the window, ` +
+                `so inline image ${id} cannot be dragged there in one movement.`,
+        );
+    await page.mouse.move(
+        picture.x + picture.width / 2,
+        picture.y + picture.height / 2,
+    );
+    await page.mouse.down();
+    await page.mouse.move(picture.x + picture.width / 2, dropY, { steps: 1 });
+    await page.mouse.up();
+}
+
+/**
+ * The bottom of the page frame's view, in the coordinates of `block`, which is the rectangle of
+ * `blockLocator` on screen.
+ */
+async function pageViewBottomY(
+    blockLocator: Locator,
+    block: IRect,
+): Promise<number> {
+    return blockLocator.evaluate(
+        (element, blockTopOnScreen) =>
+            blockTopOnScreen -
+            element.getBoundingClientRect().top +
+            element.ownerDocument.defaultView!.innerHeight,
+        block.y,
+    );
+}
+
+/** One step of dragInlineImageInSteps: where the pointer was, and what the picture did. */
+export interface IInlineImageDragStep {
+    /**
+     * Where the top of the picture would be if it followed the pointer exactly, in screen pixels
+     * below the top of the block.
+     */
+    pointerTopInBlock: number;
+    /** Where the top of the picture is, in screen pixels below the top of the block. */
+    pictureTopInBlock: number;
+    /** The dock the picture is in at this step. */
+    dock: InlineImageDock;
+    /** The picture and its block on screen at this step. */
+    picture: IRect;
+    block: IRect;
+}
+
+/**
+ * Press on an inline image and move it straight down (or up, with a negative `stepPx`) one small
+ * step at a time, the way a person drags slowly, reading after each step which dock the picture is
+ * in and where it is. `stop` sees the steps so far after each one; the drag ends, by letting go,
+ * when it returns true or after `maxSteps`. Returns every step, so the caller can check what the
+ * picture did on the way, such as staying in one place while the pointer went on. `toThird` makes
+ * the drag go down the middle of that third of the block instead of straight down from where the
+ * picture is.
+ */
+export async function dragInlineImageInSteps(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+    stepPx: number,
+    stop: (steps: IInlineImageDragStep[]) => boolean,
+    maxSteps = 80,
+    toThird?: "left" | "middle" | "right",
+): Promise<IInlineImageDragStep[]> {
+    const start = await pictureRectInView(page, groupSelector, languageTag, id);
+    const pointer = {
+        x: start.x + start.width / 2,
+        y: start.y + start.height / 2,
+    };
+    await page.mouse.move(pointer.x, pointer.y);
+    await page.mouse.down();
+    // With `toThird`, the first step also carries the picture across to the middle of that third
+    // of the block, so the rest of the drag goes down that third.
+    if (toThird) {
+        const block = await blockRect(page, groupSelector, languageTag);
+        pointer.x =
+            block.x +
+            block.width * { left: 1 / 6, middle: 0.5, right: 5 / 6 }[toThird];
+    }
+    // The page can scroll during a drag, so the pointer's place in the block is worked out at
+    // each step from where the block is then.
+    const steps: IInlineImageDragStep[] = [];
+    try {
+        for (let count = 0; count < maxSteps; count++) {
+            pointer.y += stepPx;
+            await page.mouse.move(pointer.x, pointer.y, { steps: 2 });
+            const picture = await pictureRect(
+                page,
+                groupSelector,
+                languageTag,
+                id,
+            );
+            const block = await blockRect(page, groupSelector, languageTag);
+            steps.push({
+                pointerTopInBlock: pointer.y - picture.height / 2 - block.y,
+                pictureTopInBlock: picture.y - block.y,
+                dock: (
+                    await getInlineImage(page, groupSelector, languageTag, id)
+                ).dock,
+                picture,
+                block,
+            });
+            if (stop(steps)) break;
+        }
+    } finally {
+        await page.mouse.up();
+    }
+    return steps;
+}
+
+/**
+ * Drag an inline image down, in rounds if the window is too small to do it in one, until the
+ * pointer reaches the point `dropYOf` gives for the block, `acrossFraction` of the way across it.
+ */
+async function dragInlineImageDownTo(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+    acrossFraction: number,
+    dropYOf: (block: IRect) => number,
+): Promise<void> {
+    const blockLocator = inlineImageBlock(page, groupSelector, languageTag);
+    // A few pixels inside the edge of the window, so the mouse stays over the page.
+    const edgeMarginPx = 10;
+    // Each round moves the picture down by most of a window, so a block several windows tall
+    // needs several. More rounds than this means the picture is not moving.
+    const maxRounds = 6;
+    for (let round = 0; ; round++) {
+        const picture = await pictureRectInView(
+            page,
+            groupSelector,
+            languageTag,
+            id,
+        );
+        const block = await blockRect(page, groupSelector, languageTag);
+        const across = block.x + block.width * acrossFraction;
+        const dropY = dropYOf(block);
+        // The bottom of the page frame's view, in the same coordinates as the rectangles above.
+        const viewBottomY = await pageViewBottomY(blockLocator, block);
+        if (dropY <= viewBottomY - edgeMarginPx) {
+            await dragInlineImageTo(page, groupSelector, languageTag, id, {
+                x: across,
+                y: dropY,
+            });
+            return;
+        }
+        if (round >= maxRounds)
+            throw new Error(
+                `After ${maxRounds} rounds of dragging inline image ${id} down and scrolling ` +
+                    `the page, the point just below its block is still ` +
+                    `${Math.round(dropY - viewBottomY)}px below the window, so the picture ` +
+                    `cannot be dragged there.`,
+            );
+        // Carry the picture as far down as the window shows. Bloom stops it at the bottom of the
+        // block if that comes first.
+        await dragInlineImageTo(page, groupSelector, languageTag, id, {
+            x: across,
+            y: viewBottomY - edgeMarginPx - picture.height / 2,
+        });
+        // Scroll the page down to bring the drop point into view, but keep the picture in view,
+        // since the next drag starts on it.
+        const moved = await pictureRect(page, groupSelector, languageTag, id);
+        await blockLocator.evaluate(
+            (element, { wantedPx, pictureTopOnScreen, blockTopOnScreen }) => {
+                const view = element.ownerDocument.defaultView!;
+                const pictureTopInView =
+                    pictureTopOnScreen -
+                    (blockTopOnScreen - element.getBoundingClientRect().top);
+                view.scrollBy(0, Math.min(wantedPx, pictureTopInView - 20));
+            },
+            {
+                wantedPx: dropY - viewBottomY + 2 * edgeMarginPx,
+                pictureTopOnScreen: moved.y,
+                blockTopOnScreen: block.y,
+            },
+        );
+    }
 }
 
 /**
@@ -1065,7 +1341,7 @@ export async function getBlockLineHeightPx(
  * (see computeInlineImageWidthPercent).
  *
  * `pixels` is how far the corner moves outward, which grows the picture; pass a negative number
- * to shrink it. Bloom keeps the width between 10% and 95% of the block.
+ * to shrink it. Bloom keeps the width between 10% and 100% of the block.
  */
 export async function resizeInlineImage(
     page: Page,
@@ -1111,6 +1387,45 @@ export async function resizeInlineImage(
         .not.toBe(before.widthPercent);
     return (await getInlineImage(page, groupSelector, languageTag, id))
         .widthPercent;
+}
+
+/**
+ * Make an inline image as big as Bloom allows, the way a person does who drags a corner handle
+ * outward until the pointer is past the far side of the text block. Returns the width the picture
+ * ends at, as a percentage of the block.
+ *
+ * Use a right-hand corner for a picture docked left or in the middle, and a left-hand corner for
+ * one docked right, so that outward is toward the far side of the block. The pointer goes 30
+ * pixels past that side, which asks for more than the full width of the text. Bloom decides where
+ * the picture stops: at the full width, or sooner when a bigger picture would push text out of
+ * the block (continueResize in bookEdit/js/inlineImageInteractions.ts).
+ */
+export async function resizeInlineImagePastBlockEdge(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+    corner: InlineImageCorner,
+): Promise<number> {
+    const picture = await pictureRectInView(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+    );
+    const block = await blockRect(page, groupSelector, languageTag);
+    const eastward = corner === "ne" || corner === "se";
+    const toFarSide = eastward
+        ? block.x + block.width - (picture.x + picture.width)
+        : picture.x - block.x;
+    return resizeInlineImage(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+        corner,
+        toFarSide + 30,
+    );
 }
 
 /**
@@ -1193,6 +1508,65 @@ export async function changeInlineImagePicture(
             },
         )
         .toBe(copyCount);
+}
+
+/**
+ * Change an inline image's picture the way a person does: right-click the picture, choose "Choose
+ * image from your computer...", and in the Image Chooser open the file at `filePath` and click "Use
+ * this image" (helpers/imageChooser.ts). Returns once every language's copy shows the new file
+ * with the picture's shape written on it.
+ *
+ * Unlike changeInlineImagePicture, this goes through the menu and the dialog, which hold on to the
+ * picture element from the right-click until the picture is chosen. So it is the route for a test
+ * about something that could replace that element in between, such as a reader tool tidying the
+ * text when it loses the focus.
+ */
+export async function chooseInlineImagePictureFromMenu(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+    filePath: string,
+): Promise<void> {
+    const copyCount = (
+        await getInlineImageInEveryLanguage(page, groupSelector, id)
+    ).length;
+    expect(
+        copyCount,
+        `inline image ${id} should exist in at least one language before its picture changes`,
+    ).toBeGreaterThan(0);
+    await openInlineImageMenu(page, groupSelector, languageTag, id);
+    await clickInlineImageMenuCommand(page, kChooseImageCommand);
+    await chooseFileInImageChooser(page, filePath);
+    // Bloom copies the file into the book under its own name, or under that name with a number
+    // added when the book already has a file by that name.
+    const fileName = Path.basename(filePath);
+    const extension = Path.extname(fileName);
+    const stem = fileName.slice(0, fileName.length - extension.length);
+    const isTheChosenFile = (name: string) =>
+        name.startsWith(stem) &&
+        name.endsWith(extension) &&
+        /^\d*$/.test(name.slice(stem.length, name.length - extension.length));
+    await expect
+        .poll(
+            async () =>
+                (await getInlineImageInEveryLanguage(page, groupSelector, id))
+                    .filter(
+                        (copy) =>
+                            isTheChosenFile(copy.fileName) && copy.aspectRatio,
+                    )
+                    .map((copy) => copy.languageTag)
+                    .sort(),
+            {
+                timeout: 30000,
+                message:
+                    `After ${fileName} was chosen in the Image Chooser, it did not reach every ` +
+                    `language's copy of inline image ${id} (these are the languages that show ` +
+                    `it). A chooser that changes a picture element no longer on the page ` +
+                    `changes nothing that anyone sees.`,
+            },
+        )
+        .toHaveLength(copyCount);
 }
 
 /**
@@ -1462,6 +1836,54 @@ export async function typeAtEndOfBlock(
             message: `Typing "${text}" at the end of the "${languageTag}" block did not land.`,
         })
         .toMatch(new RegExp(`${escapeForRegExp(text.trim())}$`));
+}
+
+/**
+ * Click just before the first letter of a block's text, the way a person puts the caret at the very
+ * start of the text, and return once the block has the focus and the caret is there: collapsed,
+ * with no text of the block before it. The pictures docked at the top of the block come before the
+ * text in the markup, and the caret is still at the start of the text, after them.
+ */
+export async function putCaretAtStartOfBlockText(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<void> {
+    await putCaretAtEdgeOfBlockText(page, groupSelector, languageTag, "start");
+}
+
+/**
+ * Click just after the last letter of a block's text, the way a person puts the caret at the very
+ * end of the text, and return once the block has the focus and the caret is there: collapsed, with
+ * no text of the block after it. A picture docked at the bottom comes after the text in the markup,
+ * and the caret is still at the end of the text, before it.
+ */
+export async function putCaretAtEndOfBlockText(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<void> {
+    await putCaretAtEdgeOfBlockText(page, groupSelector, languageTag, "end");
+}
+
+/**
+ * Type text where the caret is, with real key presses, and return once the block's text has it.
+ * The text arrives after every key pressed before it has been handled, so this is also how a test
+ * waits for those keys to finish before it checks what they did.
+ */
+export async function typeAtCaretInBlock(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    text: string,
+): Promise<void> {
+    await page.keyboard.type(text);
+    await expect
+        .poll(async () => getBlockText(page, groupSelector, languageTag), {
+            timeout: 30000,
+            message: `Typing "${text}" in the "${languageTag}" block did not land.`,
+        })
+        .toContain(text);
 }
 
 /**
@@ -1755,58 +2177,75 @@ async function clearTextPoint(
     // elementFromPoint, below, finds nothing outside the window, and in a small window, like the
     // nightly runner's, the page can be scrolled so that the block is out of sight.
     await block.scrollIntoViewIfNeeded();
-    const onScreen = await blockRect(page, groupSelector, languageTag);
     const found = await block.evaluate(
         (element, markup) => {
-            // A Range over a text node reports one rectangle for each line of it. The paragraph's
-            // box would not do, because it spans the block's full width whether the text wraps or
-            // not, so its middle can be over the picture.
-            const lines: DOMRect[] = [];
-            const walker = document.createTreeWalker(
-                element,
-                NodeFilter.SHOW_TEXT,
-            );
-            while (walker.nextNode()) {
-                const node = walker.currentNode;
-                if (
-                    (node.parentElement as HTMLElement | null)?.closest(
-                        "." + markup.wrapperClass,
-                    )
-                )
-                    continue;
-                if (!node.textContent?.trim()) continue;
-                const range = document.createRange();
-                range.selectNodeContents(node);
-                lines.push(...Array.from(range.getClientRects()));
-            }
-            // Try several points along each line, starting from its middle and moving outward,
-            // because a line beside a docked picture is partly over it.
-            const candidates = lines
-                .filter((line) => line.width > 2 && line.height > 2)
-                .flatMap((line) =>
-                    [0.5, 0.25, 0.75, 0.1, 0.9].map((along) => ({
-                        x: line.left + line.width * along,
-                        y: line.top + line.height / 2,
-                    })),
+            const findClearPoint = () => {
+                // A Range over a text node reports one rectangle for each line of it. The
+                // paragraph's box would not do, because it spans the block's full width whether
+                // the text wraps or not, so its middle can be over the picture.
+                const lines: DOMRect[] = [];
+                const walker = document.createTreeWalker(
+                    element,
+                    NodeFilter.SHOW_TEXT,
                 );
-            const clear = candidates.find((point) => {
-                // This is the same check Bloom's right-click handler makes. The element under the
-                // pointer has to be inside this text block, outside the picture, and outside the
-                // bloom-ui editing controls. The format gear, for instance, sits at the bottom
-                // left corner of the focused block and would otherwise get the right-click.
-                const under = document.elementFromPoint(
-                    point.x,
-                    point.y,
-                ) as HTMLElement | null;
-                if (!under || !element.contains(under)) return false;
-                if (under.closest("." + markup.wrapperClass)) return false;
-                if (under.closest(".bloom-ui")) return false;
-                return true;
-            });
+                while (walker.nextNode()) {
+                    const node = walker.currentNode;
+                    if (
+                        (node.parentElement as HTMLElement | null)?.closest(
+                            "." + markup.wrapperClass,
+                        )
+                    )
+                        continue;
+                    if (!node.textContent?.trim()) continue;
+                    const range = document.createRange();
+                    range.selectNodeContents(node);
+                    lines.push(...Array.from(range.getClientRects()));
+                }
+                // Try several points along each line, starting from its middle and moving
+                // outward, because a line beside a docked picture is partly over it.
+                const point = lines
+                    .filter((line) => line.width > 2 && line.height > 2)
+                    .flatMap((line) =>
+                        [0.5, 0.25, 0.75, 0.1, 0.9].map((along) => ({
+                            x: line.left + line.width * along,
+                            y: line.top + line.height / 2,
+                        })),
+                    )
+                    .find((candidate) => {
+                        // This is the same check Bloom's right-click handler makes. The element
+                        // under the pointer has to be inside this text block, outside the
+                        // picture, and outside the bloom-ui editing controls. The format gear,
+                        // for instance, sits at the bottom left corner of the focused block and
+                        // would otherwise get the right-click.
+                        const under = document.elementFromPoint(
+                            candidate.x,
+                            candidate.y,
+                        ) as HTMLElement | null;
+                        if (!under || !element.contains(under)) return false;
+                        if (under.closest("." + markup.wrapperClass))
+                            return false;
+                        if (under.closest(".bloom-ui")) return false;
+                        return true;
+                    });
+                return { point, lines };
+            };
+            let search = findClearPoint();
+            // Scrolled into view, a block taller than the window has its top at the top of the
+            // window, where an element of the editing page's own UI covers the first line (seen
+            // at the nightly runner's window size). A block of one line then has nowhere clear,
+            // so bring the first line to the middle of the window and look again.
+            if (!search.point && search.lines.length) {
+                const first = search.lines[0];
+                window.scrollBy(
+                    0,
+                    first.top + first.height / 2 - window.innerHeight / 2,
+                );
+                search = findClearPoint();
+            }
             const rect = element.getBoundingClientRect();
             return {
-                point: clear,
-                lineCount: lines.length,
+                point: search.point,
+                lineCount: search.lines.length,
                 blockLeft: rect.left,
                 blockTop: rect.top,
             };
@@ -1819,6 +2258,7 @@ async function clearTextPoint(
                 `its inline images and of the editing furniture, over ${found.lineCount} lines of ` +
                 `text. A block with no text has nowhere to point at, so type something first.`,
         );
+    const onScreen = await blockRect(page, groupSelector, languageTag);
     // Coordinates inside the page are measured from the top left of its frame, and mouse
     // coordinates from the top left of Bloom's window. The difference is where the frame sits,
     // which comparing the block's position in both gives.
@@ -1826,6 +2266,145 @@ async function clearTextPoint(
         x: onScreen.x + (found.point.x - found.blockLeft),
         y: onScreen.y + (found.point.y - found.blockTop),
     };
+}
+
+/**
+ * Click at one edge of a block's text, just inside its first or last letter, and wait until the
+ * caret is at that edge of the text. See putCaretAtStartOfBlockText and putCaretAtEndOfBlockText.
+ */
+async function putCaretAtEdgeOfBlockText(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    edge: "start" | "end",
+): Promise<void> {
+    const block = inlineImageBlock(page, groupSelector, languageTag);
+    await block.waitFor({ state: "visible", timeout: 30000 });
+    const found = await block.evaluate(
+        (element, args) => {
+            const texts: Text[] = [];
+            const walker = document.createTreeWalker(
+                element,
+                NodeFilter.SHOW_TEXT,
+            );
+            while (walker.nextNode()) {
+                const node = walker.currentNode as Text;
+                if (node.parentElement?.closest("." + args.wrapperClass))
+                    continue;
+                if (!node.data.trim()) continue;
+                texts.push(node);
+            }
+            if (texts.length === 0) return undefined;
+            // The rectangle of the first or last letter that is not white space.
+            const node =
+                args.edge === "start" ? texts[0] : texts[texts.length - 1];
+            const index =
+                args.edge === "start"
+                    ? node.data.search(/\S/)
+                    : node.data.search(/\S\s*$/);
+            const range = document.createRange();
+            range.setStart(node, index);
+            range.setEnd(node, index + 1);
+            // Scroll the page so the letter is well inside the page frame's view. The block can
+            // be taller than the window, so scrolling the block into view is not enough: in a
+            // small window, like the nightly runner's, its first line can be at the very top of
+            // the frame, where a click lands on the shell's top bar instead.
+            const view = element.ownerDocument.defaultView!;
+            const margin = 40;
+            let letter = range.getClientRects()[0];
+            if (letter.top < margin) view.scrollBy(0, letter.top - margin);
+            else if (letter.bottom > view.innerHeight - margin)
+                view.scrollBy(0, letter.bottom - (view.innerHeight - margin));
+            letter = range.getClientRects()[0];
+            // One pixel inside the letter, on the side of the edge, which puts the caret on
+            // that side of it, and halfway down the line.
+            const x =
+                args.edge === "start" ? letter.left + 1 : letter.right - 1;
+            const y = letter.top + letter.height / 2;
+            const under = element.ownerDocument.elementFromPoint(x, y);
+            const rect = element.getBoundingClientRect();
+            return {
+                x,
+                y,
+                blockLeft: rect.left,
+                blockTop: rect.top,
+                pointIsOnText:
+                    !!under &&
+                    element.contains(under) &&
+                    !under.closest("." + args.wrapperClass),
+                letterTop: letter.top,
+                viewHeight: view.innerHeight,
+            };
+        },
+        { wrapperClass: kWrapperClass, edge },
+    );
+    if (!found)
+        throw new Error(
+            `The "${languageTag}" block of "${groupSelector}" has no text, so there is no ${edge} ` +
+                `of its text to put the caret at. Type something first.`,
+        );
+    if (!found.pointIsOnText)
+        throw new Error(
+            `The ${edge} of the "${languageTag}" block's text is not where a click would reach it: ` +
+                `after scrolling, its letter is at ${Math.round(found.letterTop)}px in a page view ` +
+                `${found.viewHeight}px high, and something else is under that point.`,
+        );
+    // Measured after the scroll above, so it matches the letter's position.
+    const onScreen = await blockRect(page, groupSelector, languageTag);
+    await realClickAt(
+        page,
+        onScreen.x + (found.x - found.blockLeft),
+        onScreen.y + (found.y - found.blockTop),
+    );
+    await expect(
+        block,
+        `Clicking the text of the "${languageTag}" block did not give it the focus.`,
+    ).toBeFocused({ timeout: 15000 });
+    await expect
+        .poll(
+            async () =>
+                block.evaluate(
+                    (element, args) => {
+                        const selection = element.ownerDocument.getSelection();
+                        if (!selection || selection.rangeCount === 0)
+                            return "there is no selection";
+                        if (!selection.isCollapsed)
+                            return `text is selected: "${selection.toString()}"`;
+                        const caret = selection.getRangeAt(0);
+                        if (!element.contains(caret.startContainer))
+                            return "the caret is outside the block";
+                        // The block's text, from the caret to the edge, leaving the pictures out.
+                        const text = Array.from(element.children).filter(
+                            (child) =>
+                                !child.classList.contains(args.wrapperClass),
+                        );
+                        const between = element.ownerDocument.createRange();
+                        if (args.edge === "start") {
+                            between.setStartBefore(text[0]);
+                            between.setEnd(
+                                caret.startContainer,
+                                caret.startOffset,
+                            );
+                        } else {
+                            between.setStart(
+                                caret.startContainer,
+                                caret.startOffset,
+                            );
+                            between.setEndAfter(text[text.length - 1]);
+                        }
+                        const skipped = between.toString();
+                        return skipped
+                            ? `the caret has "${skipped}" between it and the ${args.edge}`
+                            : `at the ${args.edge}`;
+                    },
+                    { wrapperClass: kWrapperClass, edge },
+                ),
+            {
+                timeout: 15000,
+                message: `Clicking at the ${edge} of the "${languageTag}" block's text did not put the caret there.`,
+            },
+        )
+        .toBe(`at the ${edge}`);
 }
 
 /**

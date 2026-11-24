@@ -42,7 +42,10 @@ import { kBloomYellow } from "../../bloomMaterialUITheme";
 import { RenderRoot } from "./AudioHilitePage";
 import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
-import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
+import {
+    isInCanvasElementOutsideTableCell,
+    kCanvasElementSelector,
+} from "../toolbox/canvas/canvasElementConstants";
 import { getPageIFrame } from "../../utils/shared";
 import { getEditablePageBundleExports } from "../js/workspaceFrames";
 import { updateOtherPagesUserModifiedStyles } from "../js/bookGridView";
@@ -1113,10 +1116,7 @@ export default class StyleEditor {
             fmtButton.style.top = bottom / scale - this.fmtButtonHeight + "px";
             fmtButton.style.left = "unset";
             fmtButton.style.right = "0";
-        } else if (
-            element.closest(kCanvasElementSelector) &&
-            !element.closest(".bloom-cell")
-        ) {
+        } else if (isInCanvasElementOutsideTableCell(element)) {
             // This element is inside a text-over-picture element. (A table cell is
             // excluded: a canvas element holding a table has a box per cell, so the
             // button belongs inside the cell, where the code below puts it, and not

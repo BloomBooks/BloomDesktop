@@ -12,6 +12,8 @@ import {
     setGetLocalizations,
     setRowHeight,
     setCellMenuOpenHandler,
+    setHostCellSettings,
+    setHostMenuSectionProvider,
     setStructuralChromeGate,
     kTableCellContentChangedEvent,
 } from "bloom-table";
@@ -24,20 +26,29 @@ import "bloom-table/bloom-table-edit.css";
 import "./tableEditing.less";
 import { SetupImagesInContainer } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
-import { post } from "../../utils/bloomApi";
-import $ from "jquery";
-import BloomField from "../bloomField/BloomField";
-import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
+import { setUpBoxesBuiltAfterLoad } from "./translationGroupLanguages";
+import { get, post } from "../../utils/bloomApi";
+import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import {
-    activateLongPressFor,
-    AddLanguageTags,
-    attachToCkEditor,
-} from "./bloomEditing";
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
+} from "./pageContentDelays";
+import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
 import {
     refreshTableFeatureStatus,
     tablesMayBeRestructured,
 } from "./tableFeature";
 import { noteTableHistoryUpdate } from "../undo/tableUndo";
+import { ILanguageNameValues } from "../toolbox/canvas/canvasControlTypes";
+import {
+    cellLanguagesOfCollection,
+    ICellLanguage,
+    showSettingInGroup,
+    showSettingsInGroups,
+    textGroupOfCell,
+} from "./tableCellLanguages";
+import { TableCellLanguagesSection } from "./TableCellLanguagesSection";
+import { createElement } from "react";
 import { getLocalizations } from "../../lib/localizationManager/getLocalizations";
 
 // The library's own "something changed in a table" notification. It fires on the
@@ -90,10 +101,13 @@ function ensureTableLibrarySetUp(): void {
     // editable a new cell has nothing to type in, and so no format button and no
     // language name either. This is what a text canvas element does too; see
     // makeTranslationGroup in CanvasElementFactories.ts.
+    // The group shows the toolbar's first language only (data-default-languages V), which is the
+    // language new text boxes use, until the user picks others in the table's menus; see
+    // tableCellLanguages.ts.
     const languageForNewText = GetSettings().languageForNewTextBoxes;
     replaceCellContentType(
         "text",
-        "<div class='bloom-translationGroup bloom-trailingElement normal-style'>" +
+        "<div class='bloom-translationGroup bloom-trailingElement normal-style' data-default-languages='V'>" +
             `<div class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='${languageForNewText}'><p></p></div>` +
             "</div>",
         /bloom-translationGroup/,
@@ -159,12 +173,116 @@ function ensureTableLibrarySetUp(): void {
 function installHostHooks(): void {
     setStructuralChromeGate(() => tablesMayBeRestructured());
     setCellMenuOpenHandler(() => !tablesMayBeRestructured());
+    // The Languages item of the Cell, Row, Column and Table menus, for the text cells the menu
+    // acts on. A menu over no text cell has none.
+    setHostMenuSectionProvider((_scope, cells) => {
+        if (!cellLanguages) return undefined;
+        const groups = cells
+            .map(textGroupOfCell)
+            .filter((group): group is HTMLElement => !!group);
+        if (groups.length === 0) return undefined;
+        return createElement(TableCellLanguagesSection, {
+            groups,
+            languages: cellLanguages,
+        });
+    });
+    // A text cell's languages travel with the cell's other settings: into a new row or column
+    // from the one it was inserted beside, and by Paint format and Copy / Paste properties.
+    setHostCellSettings({
+        // The setting is copied as stored, so a cell with none (it shows the toolbar's languages)
+        // gives the cell it is copied to none either.
+        snapshot: (cell) => {
+            const group = textGroupOfCell(cell);
+            if (!group) return undefined;
+            return storedSettingOf(group);
+        },
+        apply: (cell, value) => {
+            const group = textGroupOfCell(cell);
+            // undefined: the cell copied from is not a text cell, so it has no languages to give.
+            if (!group || value === undefined) return;
+            // Pasting over many cells mostly gives a cell the setting it already has.
+            if (storedSettingOf(group) === value) return;
+            const setting = value === kNoSetting ? null : value;
+            if (!cellLanguages) {
+                // The collection's languages have not arrived yet; the cell gets its setting when
+                // they do (requestCellLanguages), and saving the page waits for that.
+                if (settingsCopiedBeforeLanguages.length === 0)
+                    addRequestPageContentDelay(kCopiedLanguagesDelayId);
+                settingsCopiedBeforeLanguages.push({ group, setting });
+                return;
+            }
+            // Every operation that copies settings (a new row or column, Paste properties, Paint
+            // format) is followed by the wiring pass, which sets up the boxes this adds and tags
+            // the ones it shows again, all at once rather than once per cell. That is also the
+            // only time new boxes can be set up: a new row gets its settings before it is in the
+            // page, where a box's direction cannot be read.
+            showSettingInGroup(group, setting, cellLanguages);
+        },
+    });
+}
+
+// Language settings copied into cells before the collection's languages arrived, which the cells
+// get once they do.
+let settingsCopiedBeforeLanguages: {
+    group: HTMLElement;
+    setting: string | null;
+}[] = [];
+
+// The page-content delay held while settingsCopiedBeforeLanguages has settings in it.
+export const kCopiedLanguagesDelayId = "tableCellLanguagesCopiedEarly";
+
+// What setHostCellSettings carries for a text cell with no data-default-languages. The library
+// uses undefined for a cell with nothing to copy, so "no setting" needs a value of its own.
+const kNoSetting = "";
+
+// A text cell's language setting as setHostCellSettings carries it.
+function storedSettingOf(group: HTMLElement): string {
+    return group.getAttribute("data-default-languages") ?? kNoSetting;
+}
+
+// The collection's languages as a table cell can show them. Asked for as the page loads, so that
+// they are there by the time a table added later opens its menus; until they arrive, the menus
+// have no Languages item.
+let cellLanguages: ICellLanguage[] | undefined;
+let cellLanguagesRequested = false;
+
+// SetupTableEditing runs again whenever a canvas element is added; the languages cannot change
+// within one page load (this module lives in the page iframe), so they are asked for once.
+function requestCellLanguages(): void {
+    if (cellLanguagesRequested) return;
+    cellLanguagesRequested = true;
+    const settings = GetSettings();
+    // The languages ticked in the toolbar, the first one first.
+    const toolbarTags = [
+        settings.languageForNewTextBoxes,
+        settings.currentCollectionLanguage2,
+        settings.currentCollectionLanguage3,
+    ].filter((tag) => !!tag);
+    get("settings/languageNames", (result) => {
+        const languages = cellLanguagesOfCollection(
+            result.data as ILanguageNameValues,
+            toolbarTags,
+        );
+        cellLanguages = languages;
+        const copied = settingsCopiedBeforeLanguages;
+        if (copied.length === 0) return;
+        settingsCopiedBeforeLanguages = [];
+        // Cells that an undo has since replaced are no longer in the page.
+        const waiting = copied.filter((entry) => entry.group.isConnected);
+        showSettingsInGroups(
+            waiting.map((entry) => entry.group),
+            waiting.map((entry) => entry.setting),
+            languages,
+        );
+        removeRequestPageContentDelay(kCopiedLanguagesDelayId);
+    });
 }
 
 /**
- * Give the Bloom content of the cells inside `root` the wiring that Bloom
- * normally applies to a whole page as it loads, for the cells that have not had
- * it yet.
+ * Give the Bloom content of the cells inside `roots` (cells or tables) the wiring
+ * that Bloom normally applies to a whole page as it loads, for the cells that have
+ * not had it yet. The boxes of all of them are set up in one pass, so the page is
+ * measured once however many roots there are.
  *
  * The library builds cell content itself, and it does so long after the page
  * loaded: a new row or column, every cell of a nested table, a cell whose
@@ -179,34 +297,40 @@ function installHostHooks(): void {
  * through here has a contenteditable attribute, which is what identifies the
  * ones that still need the treatment.
  */
-function wireBloomContentOfNewCells(root: HTMLElement): void {
+function wireBloomContentOfNewCells(allRoots: HTMLElement[]): void {
     // A table made in Change Layout mode is not editable there, like the
     // mode's text boxes, which origami makes not contenteditable. Leaving the
     // mode rebuilds the page, and the page-load pass wires these cells then.
-    if (root.closest(".origami-layout-mode")) return;
-    // `root` is a cell or a table, so everything below it that is a
-    // bloom-editable belongs to some cell of some table.
-    root.querySelectorAll<HTMLElement>(
-        ".bloom-editable:not([contenteditable])",
-    ).forEach((editable) => {
-        // Must come before attachToCkEditor: CKEditor's inline mode decides
-        // whether the editor is read-only from the element's contenteditable
-        // state at the moment it attaches.
-        editable.setAttribute("contenteditable", "true");
-        BloomField.ManageField(editable);
-        attachToCkEditor(editable);
-        activateLongPressFor($(editable));
-    });
-    // Gives each cell the little tag naming the language it is in. Run on the
-    // whole root because it only looks at editables that are contenteditable,
-    // which the ones above have only just become.
-    AddLanguageTags(root);
-    // `root` itself is one of these when a cell has just become a picture cell.
-    const imageCellSelector = ".bloom-cell[data-content-type='image']";
-    const imageCells = Array.from(
-        root.querySelectorAll<HTMLElement>(imageCellSelector),
+    // A root inside another (a cell of a nested table, announced along with the cell that holds
+    // it) is covered by that one, and would otherwise have its boxes set up twice.
+    const roots = allRoots.filter(
+        (root) =>
+            !root.closest(".origami-layout-mode") &&
+            !allRoots.some((other) => other !== root && other.contains(root)),
     );
-    if (root.matches(imageCellSelector)) imageCells.push(root);
+    if (roots.length === 0) return;
+    const within = (selector: string) =>
+        roots.flatMap((root) =>
+            Array.from(root.querySelectorAll<HTMLElement>(selector)),
+        );
+    // Each root is a cell or a table, so everything below it that is a
+    // bloom-editable belongs to some cell of some table.
+    const newEditables = within(".bloom-editable:not([contenteditable])");
+    // Each new box gets what page load gives every box: editing, CKEditor, its language tag, its
+    // group's inline pictures and its direction. Every other box in the roots that is showing gets
+    // its language tag again, in the same pass: an operation can change a cell's width, which
+    // decides whether its box has a tag, and a copied setting can show a box that was hidden.
+    // (A hidden box needs no tag, and measuring one makes jQuery lay out the page for it alone.)
+    const oldEditables = within(
+        ".bloom-editable.bloom-visibility-code-on",
+    ).filter((editable) => !newEditables.includes(editable));
+    setUpBoxesBuiltAfterLoad(newEditables, oldEditables);
+    // A root is itself one of these when a cell has just become a picture cell.
+    const imageCellSelector = ".bloom-cell[data-content-type='image']";
+    const imageCells = [
+        ...within(imageCellSelector),
+        ...roots.filter((root) => root.matches(imageCellSelector)),
+    ];
     imageCells.forEach((cell) => {
         SetupImagesInContainer(cell);
         // A picture cell made after the page loaded also needs the drawing
@@ -220,8 +344,10 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
                 ),
         );
     });
-    observeImageCells(root);
-    wireVideoContainersOfNewCells(root);
+    roots.forEach((root) => {
+        observeImageCells(root);
+        wireVideoContainersOfNewCells(root);
+    });
 }
 
 // The video containers this has already wired. SetupVideoEditing adds a click
@@ -256,17 +382,35 @@ function wireVideoContainersOfNewCells(root: HTMLElement): void {
     post("edit/pageControls/requestVideoPlaceHolder");
 }
 
+// Cells whose content the library has (re)built during the current operation, not yet wired. An
+// operation announces each cell of a new row or column on its own; wiring them together lets the
+// page be measured once for all of them rather than once per cell.
+const cellsAwaitingWiring = new Set<HTMLElement>();
+
 /** Handle a cell's content being (re)initialised. Attached via SetupTableEditing. */
 function onTableCellContentChanged(e: Event): void {
     const custom = e as CustomEvent<{
         cell: HTMLElement;
         contentType: string;
     }>;
-    const { cell } = custom.detail;
     // The cell may now hold a text box, a picture, or a whole nested table
     // whose own cells the library filled with Bloom's default cell content, so
     // rather than switch on the content type we wire whatever is in there.
-    wireBloomContentOfNewCells(cell);
+    if (cellsAwaitingWiring.size === 0) {
+        // The operation's history update wires the whole table, these cells included; if it has
+        // not come by the end of this task, they are wired here.
+        queueMicrotask(wireCellsAwaitingWiring);
+    }
+    cellsAwaitingWiring.add(custom.detail.cell);
+}
+
+// Wire the cells onTableCellContentChanged collected, together.
+function wireCellsAwaitingWiring(): void {
+    const cells = Array.from(cellsAwaitingWiring).filter(
+        (cell) => cell.isConnected,
+    );
+    cellsAwaitingWiring.clear();
+    wireBloomContentOfNewCells(cells);
 }
 
 /** Handle the library finishing a table operation. Attached via SetupTableEditing. */
@@ -279,7 +423,21 @@ function onTableHistoryUpdated(e: Event): void {
     // wire; and an operation on a nested table hands us that table, while an
     // undo can have restored the cells of the table that holds it. Wiring from
     // the outermost table covers both.
-    if (table?.isConnected) wireBloomContentOfNewCells(outermostTable(table));
+    if (table?.isConnected) {
+        const outermost = outermostTable(table);
+        // Wiring the table covers the cells the operation announced in it.
+        cellsAwaitingWiring.forEach((cell) => {
+            if (outermost.contains(cell)) cellsAwaitingWiring.delete(cell);
+        });
+        wireBloomContentOfNewCells([outermost]);
+        observeCellSizes(outermost);
+        // An operation can change how much room a cell's text has without any cell changing
+        // size (a row changed from Hug to Grow that already had that height), so the
+        // overflow marks are checked here as well as when a cell resizes.
+        checkTableTextAtNextFrame([outermost]);
+    } else {
+        stopObservingCellsNotInPage();
+    }
     // After the wiring, not before: wiring attaches CKEditor to the cells the operation built,
     // and an attach can be reported as a CKEditor change. Recording the table's change last
     // leaves the table as the more recent of the two, which is what it is.
@@ -355,12 +513,118 @@ function observeImageCells(root: HTMLElement): void {
     );
 }
 
+// The one ResizeObserver watching every table cell on the page, so the overflow marks follow
+// a row or column while it is dragged. The library reports a resize only when the drag ends.
+// Page-wide for the same reason as imageCellObserver.
+let cellSizeObserver: ResizeObserver | undefined;
+
+// The cells cellSizeObserver watches, so that it can stop watching the ones an operation or an
+// undo took out of the page: an observer keeps every element it watches alive.
+const cellsWhoseSizeIsObserved = new Set<HTMLElement>();
+
+// The outermost tables whose text waits for the next animation frame to be checked, so that a
+// drag that resizes a whole column, or an operation that also resizes cells, gets one check per
+// frame rather than one per cell or per cause.
+const tablesAwaitingOverflowCheck = new Set<HTMLElement>();
+
+// The page-content delay that the overflow checks of tables hold, since a check can change the
+// height of a canvas element or the padding of a text box, which are saved with the page.
+const kTableOverflowCheckDelayId = "tableOverflowCheck";
+
+// Whether the overflow checks of tables hold kTableOverflowCheckDelayId. A drag checks on every
+// frame, and each release of the delay makes the page send C# a snapshot, so the delay is held
+// from the first check until a frame passes with no check waiting.
+let holdingTableOverflowCheckDelay = false;
+
+/**
+ * Update the overflow marks of every text block in `tables` and of the page around them, at the
+ * next frame, together with any other tables already waiting. Called whenever a cell changes
+ * size, which is on every frame of a row or column drag, so it uses AdjustSizeOrMarkOverflowOfAll
+ * rather than AdjustSizeOrMarkOverflowSoon, whose one-second wait would leave the marks behind
+ * the drag.
+ */
+function checkTableTextAtNextFrame(tables: HTMLElement[]): void {
+    const wasIdle = tablesAwaitingOverflowCheck.size === 0;
+    tables.forEach((table) =>
+        tablesAwaitingOverflowCheck.add(outermostTable(table)),
+    );
+    if (!wasIdle || tablesAwaitingOverflowCheck.size === 0) return;
+    if (!holdingTableOverflowCheckDelay) {
+        holdingTableOverflowCheckDelay = true;
+        addRequestPageContentDelay(kTableOverflowCheckDelayId);
+    }
+    requestAnimationFrame(() => {
+        try {
+            const waiting = Array.from(tablesAwaitingOverflowCheck).filter(
+                (table) => table.isConnected,
+            );
+            tablesAwaitingOverflowCheck.clear();
+            OverflowChecker.AdjustSizeOrMarkOverflowOfAll(
+                waiting.flatMap((table) =>
+                    Array.from(
+                        table.querySelectorAll<HTMLElement>(
+                            ".bloom-editable.bloom-visibility-code-on",
+                        ),
+                    ),
+                ),
+            );
+        } finally {
+            requestAnimationFrame(releaseTableOverflowCheckDelayIfIdle);
+        }
+    });
+}
+
+/** Release kTableOverflowCheckDelayId, unless another overflow check of a table is waiting. */
+function releaseTableOverflowCheckDelayIfIdle(): void {
+    if (!holdingTableOverflowCheckDelay || tablesAwaitingOverflowCheck.size > 0)
+        return;
+    holdingTableOverflowCheckDelay = false;
+    removeRequestPageContentDelay(kTableOverflowCheckDelayId);
+}
+
+/** Check the text of the tables that hold the cells in `entries`, at the next frame. */
+function onCellsResized(entries: ResizeObserverEntry[]): void {
+    checkTableTextAtNextFrame(
+        entries
+            .map((entry) => entry.target.closest<HTMLElement>(".bloom-table"))
+            .filter((table): table is HTMLElement => !!table),
+    );
+}
+
+/** Stop watching the size of the cells that an operation or an undo took out of the page. */
+function stopObservingCellsNotInPage(): void {
+    cellsWhoseSizeIsObserved.forEach((cell) => {
+        if (!cell.isConnected) {
+            cellSizeObserver?.unobserve(cell);
+            cellsWhoseSizeIsObserved.delete(cell);
+        }
+    });
+}
+
+/**
+ * Watch the size of every cell within `root`, so its text is checked for overflow as it resizes,
+ * and stop watching the cells that are no longer in the page.
+ */
+function observeCellSizes(root: HTMLElement): void {
+    if (!cellSizeObserver) {
+        cellSizeObserver = new ResizeObserver(onCellsResized);
+    }
+    const observer = cellSizeObserver;
+    stopObservingCellsNotInPage();
+    // Observing a cell that is already observed does nothing.
+    root.querySelectorAll<HTMLElement>(".bloom-cell").forEach((cell) => {
+        observer.observe(cell);
+        cellsWhoseSizeIsObserved.add(cell);
+    });
+}
+
 function attachSingleTable(tableDiv: HTMLElement): void {
     if (tableDiv.hasAttribute("data-table-attached")) return;
     tableDiv.setAttribute("data-table-attached", "1");
     ensureTableLibrarySetUp();
     attachTable(tableDiv);
     observeImageCells(tableDiv);
+    observeCellSizes(tableDiv);
 }
 
 /**
@@ -375,6 +639,7 @@ export function SetupTableEditing(container: HTMLElement): void {
     // it: until it arrives the answer is "no", which is the safe way round, since
     // it withholds chrome rather than showing chrome that then has to disappear.
     void refreshTableFeatureStatus();
+    requestCellLanguages();
     // Both listeners go on the document, not on `container`. SetupElements (and
     // so this) runs again on a subtree whenever a canvas element is added, and a
     // listener on that subtree would hear a cell's event a second time on its
@@ -481,6 +746,11 @@ export function TeardownTableEditing(container: HTMLElement): void {
     );
     imageCellObserver?.disconnect();
     imageCellObserver = undefined;
+    cellSizeObserver?.disconnect();
+    cellSizeObserver = undefined;
+    cellsWhoseSizeIsObserved.clear();
+    tablesAwaitingOverflowCheck.clear();
+    releaseTableOverflowCheckDelayIfIdle();
     // Every table, not only the ones we attached: the library attaches a nested
     // table itself, both when the user makes one and when an undo rebuilds it,
     // so a nested table has no data-table-attached of ours to find it by.

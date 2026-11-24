@@ -269,30 +269,23 @@ export async function getHandleTitlesAsync(
 
 /**
  * Give each resize handle and each crop handle the cursor for the direction it really moves
- * on screen; see getHandleCursorForRotation.
+ * on screen; see getHandleCursorForRotation. Each cursor goes in a --handle-cursor-<handle>
+ * property on the frame, which the handle's own stylesheet rule reads, so the cursor is not
+ * an inline style on the handle that code dealing with whatever is under the mouse could
+ * overwrite.
  */
 function setHandleCursorsForRotation(
     controlFrame: HTMLElement,
     rotation: number,
 ): void {
-    const setCursor = (className: string, cursor: string) => {
-        const handle = controlFrame.getElementsByClassName(className)[0] as
-            | HTMLElement
-            | undefined;
-        if (handle) handle.style.cursor = cursor;
-    };
-    (["nw", "ne", "se", "sw"] as const).forEach((corner) => {
-        setCursor(
-            "bloom-ui-canvas-element-resize-handle-" + corner,
-            getHandleCursorForRotation(corner, rotation),
-        );
-    });
-    (["n", "e", "s", "w"] as const).forEach((side) => {
-        setCursor(
-            "bloom-ui-canvas-element-side-handle-" + side,
-            getHandleCursorForRotation(side, rotation),
-        );
-    });
+    (["n", "ne", "e", "se", "s", "sw", "w", "nw"] as const).forEach(
+        (handle) => {
+            controlFrame.style.setProperty(
+                "--handle-cursor-" + handle,
+                getHandleCursorForRotation(handle, rotation),
+            );
+        },
+    );
 }
 
 // Align the control frame with the active canvas element.

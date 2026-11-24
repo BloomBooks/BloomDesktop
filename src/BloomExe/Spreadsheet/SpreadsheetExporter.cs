@@ -851,6 +851,12 @@ namespace Bloom.Spreadsheet
             {
                 if (ImageUtils.IsPlaceholderImageFilename(imageSourcePath))
                     return; // don't need to copy this around.
+                var destPath = Path.Combine(_outputImageFolder, Path.GetFileName(imageSourcePath));
+                // The output folder starts empty, so a file is already there only if ReallyCropImages
+                // wrote it or we copied it for an earlier use; don't overwrite it. A crop that got a
+                // new name exists only there, so check this before checking the source (BL-16990).
+                if (RobustFile.Exists(destPath))
+                    return;
                 if (!RobustFile.Exists(imageSourcePath))
                 {
                     _progress.MessageWithParams(
@@ -863,12 +869,7 @@ namespace Bloom.Spreadsheet
                     return;
                 }
 
-                var destPath = Path.Combine(_outputImageFolder, Path.GetFileName(imageSourcePath));
-                // We erase any existing content in the output folder before we start, so the only way a file
-                // should be there already is if ReallyCropImages wrote a cropped version there.
-                // In that case we don't want to overwrite it.
-                if (!RobustFile.Exists(destPath))
-                    RobustFile.Copy(imageSourcePath, destPath);
+                RobustFile.Copy(imageSourcePath, destPath);
             }
         }
 
