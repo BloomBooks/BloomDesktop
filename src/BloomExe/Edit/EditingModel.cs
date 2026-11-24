@@ -2826,10 +2826,6 @@ namespace Bloom.Edit
                 var afterPageLoad = _doAfterNextPageLoad;
                 _doAfterNextPageLoad = null;
                 afterPageLoad?.Invoke(pageId);
-                // In case the book was renamed while this page was loading, by something other
-                // than a save in this tab (a save is declined while a page loads), such as work on
-                // another thread.
-                ShowPageAgainIfFromAnotherFolderSoon();
                 // The user clicked another page while this one was loading (see
                 // EditingStateMachine.GoToOnceLoaded), so go there now. Not inside this
                 // notification, which the page is waiting on before it starts sending its content.
@@ -2839,22 +2835,32 @@ namespace Bloom.Edit
                 var clickedWhileLoading = _stateMachine.TakePageToGoToOnceLoaded();
                 if (clickedWhileLoading != null && afterPageLoad == null)
                     RunOffTheApiLock(() => GoToPageClickedWhileLoading(clickedWhileLoading));
+                else
+                    // In case the book was renamed while this page was loading, by something
+                    // other than a save in this tab (a save is declined while a page loads), such
+                    // as work on another thread. Going to a clicked page does this too (see
+                    // GoToPageClickedWhileLoading).
+                    ShowPageAgainIfFromAnotherFolderSoon();
             }
         }
 
         /// <summary>
         /// Go to a page the user clicked while another was loading: save the page now being edited
-        /// and go, as JumpToPage does. It runs a moment after that page loaded, and is dropped if
-        /// things have moved on since: the user has left the tab (a save from there would start a
-        /// page load in a hidden tab), or the tab is no longer editing that page (the user has
-        /// since clicked yet another page, whose request stands). JumpToPage drops a page the book
-        /// no longer has.
+        /// and go, as JumpToPage does. The clicked page is shown from the book's folder as it is
+        /// now, so if the book was renamed while the other page loaded, this also takes the place
+        /// of showing that page again from the new folder. It runs a moment after that page
+        /// loaded, and does not go if things have moved on since: the user has left the tab (a
+        /// save from there would start a page load in a hidden tab), or the tab is no longer
+        /// editing that page (the user has since clicked yet another page, whose request stands),
+        /// or JumpToPage refuses (the page has gone). When it does not go, the page being edited
+        /// still has to come from the book's folder.
         /// </summary>
         private void GoToPageClickedWhileLoading(string pageId)
         {
-            if (!Visible || !_stateMachine.Editing)
+            if (Visible && _stateMachine.Editing && JumpToPage(pageId))
                 return;
-            JumpToPage(pageId);
+            if (PageBeingEditedIsFromAnotherFolder())
+                ShowPageAgainFromBookFolder();
         }
 
         // The one action queued by RunAfterNextPageLoad, or null.
