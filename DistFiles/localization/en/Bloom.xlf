@@ -3053,12 +3053,12 @@
       <trans-unit id="Errors.DefenderFolderProtection">
         <source xml:lang="en">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</source>
         <note>ID: Errors.DefenderFolderProtection</note>
-        <note>After an October 2017 windows update, this appears when Bloom opens a collection and tries to write out the collection settings.</note>
+        <note>Obsolete as of 6.6 — replaced by Errors.FolderAntivirusProtection, which doesn't blame Windows Defender when something else may be the cause (BL-16728).</note>
       </trans-unit>
       <trans-unit id="Errors.DefenderFolderProtectionHeading">
         <source xml:lang="en">This program cannot write to the folder {0}.</source>
         <note>ID: Errors.DefenderFolderProtectionHeading</note>
-        <note>This only happens on Windows after an October 2017 update, {0} is the folder that Bloom failed to write to.</note>
+        <note>First line of a message shown on Windows when Bloom cannot write in a folder it needs (a collection's folder, or Documents), for example because it is read-only, the user lacks permission, or antivirus blocks it. Also shown when Bloom opened a collection but cannot do some of the things it does to books there. {0} is the folder that Bloom failed to write to.</note>
       </trans-unit>
       <trans-unit id="Errors.DeniedAccess">
         <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>

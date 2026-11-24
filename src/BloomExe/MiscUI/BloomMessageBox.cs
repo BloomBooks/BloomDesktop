@@ -17,11 +17,18 @@ namespace Bloom.MiscUI
         private static bool s_justRecordMessageBoxMessagesForTesting = false;
         private static string s_previousMessageBoxMessage;
 
+        /// <summary>
+        /// Show messageHtml with rightButtons and return the id of the button the user pressed.
+        /// The dialog doesn't grow to fit its message (the message scrolls), so a long message
+        /// should ask for more room with logicalWidth and logicalHeight.
+        /// </summary>
         public static string Show(
             IWin32Window owner,
             string messageHtml,
             MessageBoxButton[] rightButtons,
-            MessageBoxIcon icon = MessageBoxIcon.None
+            MessageBoxIcon icon = MessageBoxIcon.None,
+            int logicalWidth = 500,
+            int logicalHeight = 200
         )
         {
             if (s_justRecordMessageBoxMessagesForTesting)
@@ -50,7 +57,7 @@ namespace Bloom.MiscUI
                 )
             )
             {
-                dlg.SetScaledSize(500, 200);
+                dlg.SetScaledSize(logicalWidth, logicalHeight);
                 // This dialog is neater without a task bar. We don't need to be able to
                 // drag it around. There's nothing left to give it one if we don't set a title
                 // and remove the control box.

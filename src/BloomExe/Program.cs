@@ -645,7 +645,7 @@ namespace Bloom
                     using (_applicationContainer = new ApplicationContainer())
                     {
                         InstallerSupport.MakeBloomRegistryEntries(args);
-                        BookDownloadSupport.EnsureDownloadFolderExists();
+                        BookDownloadSupport.TryEnsureDownloadFolderExists();
 
                         if (
                             args.Length == 1
@@ -744,7 +744,14 @@ namespace Bloom
                             Environment.Exit(-1);
                         }
 
-                        if (!DefenderFolderProtectionCheck.CanWriteToDirectory())
+                        // With a collection to open, opening it checks its folder and, if Bloom
+                        // can't write there, reports that and offers the collection chooser
+                        // (BL-16728). Exiting here would deny the user that choice, so only check
+                        // Documents, where a new collection would go, when there is none.
+                        if (
+                            string.IsNullOrEmpty(Settings.Default.MruProjects.Latest)
+                            && !FolderWriteCheck.CanWriteToDocuments()
+                        )
                         {
                             Environment.Exit(-1);
                         }
@@ -1508,7 +1515,7 @@ namespace Bloom
             using (_applicationContainer = new ApplicationContainer())
             {
                 //JT please review: is this needed? InstallerSupport.MakeBloomRegistryEntries(args);
-                BookDownloadSupport.EnsureDownloadFolderExists();
+                BookDownloadSupport.TryEnsureDownloadFolderExists();
                 LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage);
                 var downloader = new BookDownload(ProjectContext.CreateBloomS3Client());
                 downloader.HandleBloomBookOrder(bookOrderUrl);
@@ -2246,10 +2253,7 @@ namespace Bloom
                 // themselves rather than warn a person, this is the decision to revisit.
                 if (MinimumBloomVersionCheck.IsThisBloomTooOld(path, out var minimumBloomVersion))
                 {
-                    // We're normally still showing the splash screen at this point, and it would sit on
-                    // top of our dialog. Also, the dialog is a ReactDialog, so it needs the server.
-                    StartupScreenManager.HideSplashScreenForDialog();
-                    _applicationContainer.BloomServer.EnsureListening();
+                    ReactDialog.GetReadyToShowBeforeACollectionIsOpen();
                     if (
                         MinimumBloomVersionCheck.ReportCollectionNeedsNewerBloom(
                             Path.GetFileNameWithoutExtension(path),
@@ -2451,6 +2455,14 @@ namespace Bloom
                     $"Error loading collection (e2e): {errorFilePath}{Environment.NewLine}{originalError}"
                 );
                 Environment.Exit(1);
+            }
+
+            // We know what is wrong and what the user can do about it; a generic "problem loading"
+            // report would only hide that. (BL-16728)
+            if (originalError is CollectionFolderNotWritableException notWritable)
+            {
+                FolderWriteCheck.ReportProblem(notWritable);
+                return;
             }
 
             // Normally, NotifyUserOfProblem would take an exception and do this special-exception processing for us.
