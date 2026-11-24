@@ -2891,6 +2891,10 @@ namespace Bloom.Edit
         /// to the page as it does while a slow page loads. A test of what happens during that time,
         /// such as a page click (BL-17173), uses this to be sure its action lands then, whatever
         /// the machine's speed. ReleasePageLoadsForTest acts on them.
+        /// Unlike a slow page, a held page has had its report answered, so it starts sending its
+        /// content at once, and Bloom turns those snapshots away until the report is acted on;
+        /// the page sends again only when it changes. So a test should not rely on what a page
+        /// loaded during a hold saves unless it changes that page after the release.
         /// </summary>
         public void HoldPageLoadsForTest()
         {
