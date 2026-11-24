@@ -13,7 +13,10 @@ import {
 } from "../toolbox/canvas/canvasElementConstants";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 import { removeScrollOffset } from "../js/scrollOffset";
-import { refreshOverflowIndicatorsSoon } from "./overflowIndicators";
+import {
+    kBoxSelector,
+    refreshOverflowIndicatorsSoon,
+} from "./overflowIndicators";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -46,9 +49,101 @@ function getElementsThatCanOverflowOrNeedToBeResized(
     return results;
 }
 
+// BL-1260: a page with more boxes than this is not checked for overflow at all, and shows no marks.
+const kMaxBoxesToCheck = 30;
+
+// Whether the page was cleared because it had more than kMaxBoxesToCheck boxes, when it loaded or
+// since, so that, once it is back under the limit, all of its boxes are checked again. One flag is
+// enough: each page is loaded into a frame of its own (pageFrame.ts), so this module only ever
+// sees one page.
+let pageWasClearedForTheLimit = false;
+
+// Remove every overflow mark from `container` and everything in it, and redraw the indicators to
+// match: what a page over kMaxBoxesToCheck shows, since it is not checked.
+function clearOverflowMarks(container: HTMLElement): void {
+    pageWasClearedForTheLimit = true;
+    const markClasses = [
+        "overflow",
+        "thisOverflowingParent",
+        "childOverflowingThis",
+        "Layout-Problem-Detected",
+        "pageOverflows",
+    ];
+    const marked = [
+        container,
+        ...Array.from(
+            container.querySelectorAll<HTMLElement>(
+                markClasses.map((className) => "." + className).join(","),
+            ),
+        ),
+    ].filter((element) =>
+        markClasses.some((className) => element.classList.contains(className)),
+    );
+    // Every check of such a page ends here, so redraw the indicators only when a mark went.
+    if (marked.length === 0) {
+        return;
+    }
+    marked.forEach((element) => element.classList.remove(...markClasses));
+    refreshOverflowIndicatorsSoon();
+}
+
 // The page-wide overflow check waiting to run for each margin box (see
 // CheckPageAncestorOverflowSoon).
 const pageChecksWaiting = new WeakMap<Element, ReturnType<typeof setTimeout>>();
+
+// Checks a text box for overflow as it is typed or pasted in: every box of the page, including
+// ones added or shown after it loaded (a new table row, a language shown in a table cell or a
+// canvas text box), as one handler on the page's body (addTypingHandler).
+function checkTheBoxTypedIn(e: Event): void {
+    // Don't test for overflow on navigation keys.
+    if (e instanceof KeyboardEvent && e.keyCode >= 33 && e.keyCode <= 40) {
+        return;
+    }
+    // BL-2892 The box, not the paste target, which may be inside it (e.g. a <p>): tested for
+    // overflow, that would overflow artificially. Only a box on the page: a dialog may hold a copy
+    // of one (the Letter Drag prompt). Boxes in game targets are duplicates that don't need to
+    // show overflow (as in getElementsThatCanOverflowOrNeedToBeResized).
+    const editable =
+        e.target instanceof Element
+            ? e.target.closest<HTMLElement>(kBoxSelector)
+            : null;
+    if (
+        !editable ||
+        !editable.closest(".bloom-page") ||
+        editable.closest("[data-target-of]")
+    ) {
+        return;
+    }
+    // Give the browser time to get the pasted text into the DOM first, before testing for overflow
+    // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
+    //        At first I was concerned that this might slow typing, but it doesn't seem to.
+    setTimeout(() => {
+        if (e.type === "paste") {
+            // If we're pasting, show as much of the text as possible even it can't all be shown.
+            // See BL-14632.
+            OverflowChecker.AdjustSizeOrMarkOverflow(editable, false, true);
+        } else {
+            OverflowChecker.AdjustSizeOrMarkOverflow(editable);
+        }
+
+        //REVIEW: why is this here, in the overflow detection?
+
+        // This will make sure that any language tags on this div stay in position with editing.
+        // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
+        (<qtipInterface>(
+            $(getElementsThatCanOverflowOrNeedToBeResized(document.body))
+        )).qtip("reposition");
+    }, 100); // 100 milliseconds
+}
+
+// Gives the page its typing handler. It listens as the event comes down to the box, so nothing
+// that handles the key or paste at the box (CKEditor, say) can stop it from seeing it. Page setup
+// calls this for every container it sets up; the browser adds the same listener to a document
+// only once.
+function addTypingHandler(doc: Document): void {
+    doc.body.addEventListener("keyup", checkTheBoxTypedIn, true);
+    doc.body.addEventListener("paste", checkTheBoxTypedIn, true);
+}
 
 export default class OverflowChecker {
     private;
@@ -60,70 +155,19 @@ export default class OverflowChecker {
             getElementsThatCanOverflowOrNeedToBeResized(container),
         );
 
-        // BL-1260: disable overflow checking for pages with too many elements
-        if ($editablePageElements.length > 30) {
-            // since we're not going to check it, remove any indications from
-            // previous checking.
-            const cleanup = (className: string) => {
-                Array.from(container.getElementsByClassName(className)).forEach(
-                    (x) => x.classList.remove(className),
-                );
-            };
-            cleanup("overflow");
-            cleanup("thisOverflowingParent");
-            cleanup("childOverflowingThis");
-            cleanup("Layout-Problem-Detected");
-            cleanup("pageOverflows");
-            refreshOverflowIndicatorsSoon();
+        addTypingHandler(container.ownerDocument);
 
-            return;
-        }
-
-        //Add the handler so that when the elements change, we test for overflow
-        $editablePageElements.on("keyup paste", (e) => {
-            // Don't test for overflow on navigation keys.
-            if (e.keyCode >= 33 && e.keyCode <= 40) {
-                return;
-            }
-
-            // BL-2892 There's no guarantee that the paste target isn't inside one of the editablePageElements
-            // If we allow an embedded paste target (e.g. <p>) to get tested for overflow, it will overflow artificially.
-            const editable = $(e.target).closest($editablePageElements)[0];
-            // Give the browser time to get the pasted text into the DOM first, before testing for overflow
-            // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
-            //        At first I was concerned that this might slow typing, but it doesn't seem to.
-            setTimeout(() => {
-                if (e.type === "paste") {
-                    // If we're pasting, show as much of the text as possible even it can't all be shown.
-                    // See BL-14632.
-                    OverflowChecker.AdjustSizeOrMarkOverflow(
-                        editable,
-                        false,
-                        true,
-                    );
-                } else {
-                    OverflowChecker.AdjustSizeOrMarkOverflow(editable);
-                }
-
-                //REVIEW: why is this here, in the overflow detection?
-
-                // This will make sure that any language tags on this div stay in position with editing.
-                // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
-                (<qtipInterface>(
-                    $(
-                        getElementsThatCanOverflowOrNeedToBeResized(
-                            document.body,
-                        ),
-                    )
-                )).qtip("reposition");
-            }, 100); // 100 milliseconds
-            e.stopPropagation();
-        });
+        // The resize handlers check their boxes one at a time, which is the work that the limit
+        // exists to save, so neither checks a page cleared for the limit (split-pane set-up resizes
+        // as the page loads); such a page is checked whole once it is back under the limit.
 
         // Add another handler so that when the user resizes an origami pane, we check the overflow again
         $(container)
             .find(".split-pane-component-inner")
             .bind("_splitpaneparentresize", function () {
+                if (pageWasClearedForTheLimit) {
+                    return;
+                }
                 const $this = $(this);
                 $(getElementsThatCanOverflowOrNeedToBeResized($this[0])).each(
                     function () {
@@ -134,6 +178,9 @@ export default class OverflowChecker {
 
         // Add a handler to check overflow when button canvas elements are resized
         $(container).on("buttonCanvasElementResized", function () {
+            if (pageWasClearedForTheLimit) {
+                return;
+            }
             $(getElementsThatCanOverflowOrNeedToBeResized(container)).each(
                 function () {
                     OverflowChecker.AdjustSizeOrMarkOverflowSoon(this);
@@ -155,8 +202,18 @@ export default class OverflowChecker {
         // other events to get in between, and also, if multiple sources request an overflow check
         // on the same element during startup, only one of them really happens. The delay is also
         // helpful in letting the page stabilize before we start resizing canvas text overlays.
-        for (const editable of $editablePageElements.get()) {
-            OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
+        // BL-1260: a page with too many elements is not checked when it loads, and shows no marks.
+        // Typing is still handled: it sizes the box typed in, and once the page is back under the
+        // limit (a table row deleted) the first check covers the whole page; resizes are checked
+        // only from then on (CheckPageAncestorOverflow keeps the limit for marks).
+        if ($editablePageElements.length > kMaxBoxesToCheck) {
+            // since we're not going to check it, remove any indications from
+            // previous checking.
+            clearOverflowMarks(container);
+        } else {
+            for (const editable of $editablePageElements.get()) {
+                OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
+            }
         }
     }
 
@@ -575,6 +632,22 @@ export default class OverflowChecker {
         // doesn't overflow internally (i.e. has too much stuff to fit in itself).
         // 2-We also need to check that this element and any OTHER elements on the page
         // haven't been pushed outside the margins
+        // A page cleared for the limit and back under it is checked whole, as a table check would,
+        // however it got back under.
+        if (pageWasClearedForTheLimit) {
+            const marginBox = editable.closest<HTMLElement>(".marginBox");
+            if (
+                marginBox &&
+                getElementsThatCanOverflowOrNeedToBeResized(marginBox).length <=
+                    kMaxBoxesToCheck
+            ) {
+                OverflowChecker.AdjustSizeOrMarkOverflowOfAll([editable]);
+                // That checked this box as an ordinary check would; a paste checks it again.
+                if (!doNotShrink && !growAsMuchAsPossible) {
+                    return;
+                }
+            }
+        }
         OverflowChecker.AdjustSizeAndMarkSelfOverflow(
             editable,
             doNotShrink,
@@ -597,11 +670,22 @@ export default class OverflowChecker {
         const pageElements = marginBox
             ? getElementsThatCanOverflowOrNeedToBeResized(marginBox)
             : [];
+        const editablesAndPage = Array.from(
+            new Set([...editables, ...pageElements]),
+        );
+        // On a page over the limit, CheckPageAncestorOverflow reads none of the rest of the page:
+        // it clears the page's marks.
+        const overTheLimit = pageElements.length > kMaxBoxesToCheck;
+        // A page back under the limit (a row deleted) has had every mark cleared, so all its
+        // boxes are checked this once, not only the ones asked for.
+        const checkWholePage = pageWasClearedForTheLimit && !overTheLimit;
+        if (checkWholePage) {
+            pageWasClearedForTheLimit = false;
+        }
+        const toCheck = checkWholePage ? editablesAndPage : editables;
         // AdjustSizeAndMarkSelfOverflow changes the padding of a bloom-padForOverflow box
         // before it measures it, so a height measured beforehand would be out of date.
-        const measurable = Array.from(
-            new Set([...editables, ...pageElements]),
-        ).filter(
+        const measurable = (overTheLimit ? editables : editablesAndPage).filter(
             (element) => !element.classList.contains("bloom-padForOverflow"),
         );
         const batch: NonNullable<typeof OverflowChecker.batch> = {
@@ -612,16 +696,16 @@ export default class OverflowChecker {
         OverflowChecker.batch = batch;
         try {
             // The rest of the page is read by CheckPageAncestorOverflow, before it marks anything.
-            editables.forEach((editable) =>
+            toCheck.forEach((editable) =>
                 batch.selfOverflowAmounts.set(
                     editable,
                     OverflowChecker.getSelfOverflowAmounts(editable),
                 ),
             );
-            editables.forEach((editable) =>
+            toCheck.forEach((editable) =>
                 OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable),
             );
-            OverflowChecker.CheckPageAncestorOverflow(editables[0]);
+            OverflowChecker.CheckPageAncestorOverflow(toCheck[0]);
         } finally {
             OverflowChecker.batch = undefined;
         }
@@ -780,6 +864,14 @@ export default class OverflowChecker {
         const editablePageElements = $(
             getElementsThatCanOverflowOrNeedToBeResized(container.get(0)),
         );
+        // BL-1260: a page over the limit shows no marks. Every check that can mark a box ends
+        // with this one (typing, a pane or button resize, the format dialog, a table), so this is
+        // where the limit is kept, for a page that grew past it while open as for one that loaded
+        // over it; the checks before it still size their boxes and update their scroll bars.
+        if (editablePageElements.length > kMaxBoxesToCheck) {
+            clearOverflowMarks(container.closest(".bloom-page").get(0)!);
+            return;
+        }
 
         // Type 2 Overflow - We'll check ALL of these for overflow past any ancestor.
         // Every element is measured before any is marked: a mark written between two

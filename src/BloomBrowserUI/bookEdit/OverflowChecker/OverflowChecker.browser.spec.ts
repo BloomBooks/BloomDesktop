@@ -1,4 +1,5 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
+import $ from "jquery";
 import OverflowChecker from "./OverflowChecker";
 import {
     initializeCanvasElementManager,
@@ -542,5 +543,257 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
             "The second box's text fits once the canvas element has grown.",
         ).toBeLessThanOrEqual(0);
         expect(second.classList.contains("overflow")).toBe(false);
+    });
+
+    // Puts in the document a margin box holding `count` boxes too small for their text.
+    function loadPageOfTooFullBoxes(count: number): HTMLElement[] {
+        const box =
+            `<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on" ` +
+            `style="height: 10px; width: 100px; font: 16px Arial; overflow: hidden">${"words ".repeat(10)}</div></div>`;
+        loadFixture(
+            `<div class="bloom-page"><div class="marginBox">${box.repeat(count)}</div></div>`,
+        );
+        vi.useFakeTimers();
+        initializeCanvasElementManager();
+        // The boxes are not in canvas elements, so their sizes stay as they are.
+        vi.spyOn(
+            theOneCanvasElementManager,
+            "adjustSizeOfContainingCanvasElementToMatchContent",
+        ).mockImplementation((_element, overflowY) => overflowY);
+        return Array.from(
+            document.querySelectorAll<HTMLElement>(
+                "#fixtureRoot .bloom-editable",
+            ),
+        );
+    }
+
+    // Types in `box`, on a page set up by AddOverflowHandlers, and lets the typing check run: it
+    // checks a box a tenth of a second after the key comes up (the page's own first check waits a
+    // second, which these tests never reach).
+    function typeIn(box: HTMLElement): void {
+        // The typing check repositions the language tips, which the qtip plugin does; it is not
+        // loaded here.
+        const jqueryPlugins = $.fn as unknown as { qtip?: () => void };
+        const qtipWas = jqueryPlugins.qtip;
+        jqueryPlugins.qtip = () => {};
+        try {
+            box.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
+            vi.advanceTimersByTime(150);
+        } finally {
+            jqueryPlugins.qtip = qtipWas;
+        }
+    }
+
+    // A box added after the page loaded (a new table row, a language shown in a cell) is checked as
+    // it is typed in, as the page's own boxes are, even when something at the box stops the key
+    // from going further (CKEditor handles keys and pastes there), and once per key however often
+    // the page is set up again (adding a canvas element sets up its canvas).
+    it("checks a box added after the page was set up, once per key", () => {
+        const boxes = loadPageOfTooFullBoxes(1);
+        const container = document.getElementById("fixtureRoot")!;
+        new OverflowChecker().AddOverflowHandlers(container);
+        const group = boxes[0].parentElement!;
+        const addedGroup = group.cloneNode(true) as HTMLElement;
+        group.after(addedGroup);
+        const added = addedGroup.querySelector<HTMLElement>(".bloom-editable")!;
+        added.addEventListener("keyup", (e) => e.stopPropagation());
+        new OverflowChecker().AddOverflowHandlers(container);
+        // sanity check: nothing has checked the added box yet
+        expect(added.classList.contains("overflow")).toBe(false);
+        const check = vi.spyOn(OverflowChecker, "AdjustSizeOrMarkOverflow");
+
+        typeIn(added);
+
+        expect(
+            check.mock.calls.map((call) => call[0]),
+            "Typing in the added box should check it, once.",
+        ).toEqual([added]);
+        expect(added.classList.contains("overflow")).toBe(true);
+    });
+
+    // A dialog may hold a copy of a page's text box (the Letter Drag prompt); typing there is not
+    // a page's text to check.
+    it("does not check a text box that is not on the page", () => {
+        const boxes = loadPageOfTooFullBoxes(1);
+        new OverflowChecker().AddOverflowHandlers(
+            document.getElementById("fixtureRoot")!,
+        );
+        const dialogBox = boxes[0].cloneNode(true) as HTMLElement;
+        document.getElementById("fixtureRoot")!.appendChild(dialogBox);
+        // sanity check: the copy is outside the page
+        expect(dialogBox.closest(".bloom-page")).toBeNull();
+        const check = vi.spyOn(OverflowChecker, "AdjustSizeOrMarkOverflow");
+
+        typeIn(dialogBox);
+
+        expect(check).not.toHaveBeenCalled();
+        dialogBox.remove();
+    });
+
+    // BL-2892: a paste lands in a paragraph inside the box, and it is the box that is checked.
+    it("checks the box, not the paragraph inside it that a key or paste comes from", () => {
+        const boxes = loadPageOfTooFullBoxes(1);
+        boxes[0].innerHTML = `<p>${"words ".repeat(10)}</p>`;
+        new OverflowChecker().AddOverflowHandlers(
+            document.getElementById("fixtureRoot")!,
+        );
+        const check = vi.spyOn(OverflowChecker, "AdjustSizeOrMarkOverflow");
+
+        typeIn(boxes[0].querySelector("p")!);
+
+        expect(
+            check.mock.calls.map((call) => call[0]),
+            "A key in a paragraph of the box should check the box.",
+        ).toEqual([boxes[0]]);
+    });
+
+    // BL-1260: Bloom does not check a page with more than 30 boxes, and AddOverflowHandlers clears
+    // its marks, so marks put there by a table check would never be cleared. A page can also grow
+    // past 30 while it is open (a row added to a table): its earlier marks go then. Its boxes are
+    // still sized to their text, as typing sizes them.
+    it("marks nothing on a page with more than 30 boxes, but sizes them, and clears a page that grows past 30", () => {
+        const boxes = loadPageOfTooFullBoxes(30);
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(boxes);
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")).length,
+            "A page of 30 too-full boxes should be marked, or this tests nothing.",
+        ).toBe(30);
+
+        const group = boxes[0].parentElement!;
+        const thirtyFirst = group.cloneNode(true) as HTMLElement;
+        group.after(thirtyFirst);
+        const all = Array.from(
+            document.querySelectorAll<HTMLElement>(
+                "#fixtureRoot .bloom-editable",
+            ),
+        );
+        expect(all.length).toBe(31);
+        const sizeToText = vi.mocked(
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent,
+        );
+        sizeToText.mockClear();
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(all);
+
+        expect(
+            all.filter((box) => box.classList.contains("overflow")),
+            "No box on a page of 31 should be marked.",
+        ).toEqual([]);
+        expect(
+            all.filter(
+                (box) => !sizeToText.mock.calls.some((call) => call[0] === box),
+            ),
+            "Every box checked on a page of 31 should still be sized to its text.",
+        ).toEqual([]);
+
+        // Back under the limit (a row deleted), a check of one box, as a table's check asks,
+        // marks the whole page again: nothing else would restore the marks just cleared.
+        thirtyFirst.remove();
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll([boxes[0]]);
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")).length,
+            "Every box on the page, not only the one checked, should be marked again.",
+        ).toBe(30);
+    });
+
+    // Typing in a box of a page that has grown past the limit since it loaded (a row added to a
+    // table) must not mark it, since the page is no longer marked by any other check either; but
+    // the box must still be sized to its text (a canvas text box grows as it is typed in).
+    it("marks nothing, but still sizes the box, when typing on a page that grew past 30 boxes", () => {
+        const boxes = loadPageOfTooFullBoxes(30);
+        new OverflowChecker().AddOverflowHandlers(
+            document.getElementById("fixtureRoot")!,
+        );
+        typeIn(boxes[0]);
+        expect(
+            boxes[0].classList.contains("overflow"),
+            "Typing on a page of 30 should mark the box, or this tests nothing.",
+        ).toBe(true);
+
+        const group = boxes[0].parentElement!;
+        const thirtyFirst = group.cloneNode(true) as HTMLElement;
+        group.after(thirtyFirst);
+        const sizeToText = vi.mocked(
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent,
+        );
+        sizeToText.mockClear();
+        typeIn(boxes[1]);
+
+        expect(
+            sizeToText.mock.calls.map((call) => call[0]),
+            "The box typed in should still be sized to its text.",
+        ).toContain(boxes[1]);
+        expect(
+            Array.from(
+                document.querySelectorAll<HTMLElement>(
+                    "#fixtureRoot .bloom-editable",
+                ),
+            ).filter((box) => box.classList.contains("overflow")),
+            "Typing on a page grown to 31 should mark nothing, and clear what was marked.",
+        ).toEqual([]);
+
+        // Back under the limit, the next table check marks the whole page again. This also
+        // leaves the page's record of being cleared (module state) as the next test expects.
+        thirtyFirst.remove();
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll([boxes[0]]);
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")).length,
+            "Every box on the page should be marked again once it is back under 30.",
+        ).toBe(30);
+    });
+
+    // A page that is over the limit when it loads is not checked, and a resize does not check its
+    // boxes one at a time (split-pane set-up resizes as the page loads). Once it is back under the
+    // limit, however it got there, typing in one box checks every box, and resizes are checked.
+    it("checks a page that loaded over 30 boxes whole, and then its resizes, once typing finds it back under", () => {
+        const boxes = loadPageOfTooFullBoxes(31);
+        // What page setup passes is the body that holds the page, not the page itself.
+        const container = document.getElementById("fixtureRoot")!;
+        // The fixture root is shared by every test, so it still has the resize handlers that the
+        // earlier tests' page setups added.
+        $(container).off("buttonCanvasElementResized");
+        new OverflowChecker().AddOverflowHandlers(container);
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")),
+            "A page of 31 should not have been checked when it loaded, or this tests nothing.",
+        ).toEqual([]);
+        const checkSoon = vi.spyOn(
+            OverflowChecker,
+            "AdjustSizeOrMarkOverflowSoon",
+        );
+        $(container).trigger("buttonCanvasElementResized");
+        expect(
+            checkSoon,
+            "A resize on a page loaded over 30 should check no box.",
+        ).not.toHaveBeenCalled();
+
+        // Typing while it is still over the limit sizes the box typed in and marks nothing.
+        const sizeToText = vi.mocked(
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent,
+        );
+        sizeToText.mockClear();
+        typeIn(boxes[2]);
+        expect(
+            sizeToText.mock.calls.map((call) => call[0]),
+            "Typing on a page loaded over 30 should size the box typed in, and no other.",
+        ).toEqual([boxes[2]]);
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")),
+            "Typing on a page still over 30 should mark nothing.",
+        ).toEqual([]);
+
+        boxes[30].parentElement!.remove();
+        typeIn(boxes[1]);
+        expect(
+            boxes
+                .slice(0, 30)
+                .filter((box) => box.classList.contains("overflow")).length,
+            "Typing in one box of a page back under 30 should mark every box on it.",
+        ).toBe(30);
+
+        $(container).trigger("buttonCanvasElementResized");
+        expect(
+            checkSoon,
+            "Once the page has been checked whole, a resize should check its boxes.",
+        ).toHaveBeenCalled();
     });
 });

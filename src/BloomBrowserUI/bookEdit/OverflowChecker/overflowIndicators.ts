@@ -25,7 +25,7 @@ const kLayerId = "bloom-overflow-indicator-layer";
 
 // The boxes that OverflowChecker checks: text boxes, and the textareas that a calendar's day
 // cells use. Keep in step with getElementsThatCanOverflowOrNeedToBeResized in OverflowChecker.ts.
-const kBoxSelector = ".bloom-editable, textarea";
+export const kBoxSelector = ".bloom-editable, textarea";
 
 // What the chips say: each one's l10n id and its text, in English until the localized text
 // arrives (see requestChipText).
