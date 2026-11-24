@@ -2272,6 +2272,28 @@ export async function expectPictureInsideCell(
 }
 
 /**
+ * Add a row below row `afterRow` with the table's row menu (clicking the first cell first, so the
+ * table's chrome is showing), and wait until the table has gained it. `why` finishes the failure
+ * message, e.g. "after leaving the page and coming back".
+ */
+export async function addRowFromMenu(
+    page: Page,
+    why: string,
+    afterRow = 0,
+    tableIndex = 0,
+): Promise<void> {
+    const rowsBefore = (await getTableShape(page, tableIndex)).rows;
+    await clickCell(page, 0, 0, tableIndex);
+    await openTableMenu(page, "row", afterRow, tableIndex);
+    await clickTableMenuCommand(page, "Add Row Below");
+    await expect
+        .poll(async () => (await getTableShape(page, tableIndex)).rows, {
+            message: `The row menu's Add Row Below should have added a row ${why}.`,
+        })
+        .toBe(rowsBefore + 1);
+}
+
+/**
  * Add a row below the first one from the table's row menu, check the table gained it, then undo
  * and check the table is back to the rows it had. This is how a test shows that a table is still
  * wired to the table library after something rebuilt the page around it (leaving the page and
@@ -2287,14 +2309,7 @@ export async function addRowFromMenuThenUndo(
     tableIndex = 0,
 ): Promise<void> {
     const rowsBefore = (await getTableShape(page, tableIndex)).rows;
-    await clickCell(page, 0, 0, tableIndex);
-    await openTableMenu(page, "row", 0, tableIndex);
-    await clickTableMenuCommand(page, "Add Row Below");
-    await expect
-        .poll(async () => (await getTableShape(page, tableIndex)).rows, {
-            message: `The row menu's Add Row Below should have added a row ${why}.`,
-        })
-        .toBe(rowsBefore + 1);
+    await addRowFromMenu(page, why, 0, tableIndex);
     await undo(page);
     await expect
         .poll(async () => (await getTableShape(page, tableIndex)).rows, {

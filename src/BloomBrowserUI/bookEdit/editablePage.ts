@@ -49,6 +49,10 @@ import {
     setUpPageUndo,
 } from "./undo/pageUndo";
 import { tableCanUndo } from "./undo/tableUndo";
+import {
+    getCkeditorToUndo,
+    ICkeditorChangeSource,
+} from "./undo/ckeditorChanges";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -425,24 +429,20 @@ function e2eClearCanExpandToFillSpaceOverride(): void {
 // And we really NEED to get at the ckeditor undo mechanism, since ckeditor intercepts paste
 // in such a way that after a paste the C# browser object answers false to CanUndo.
 export function ckeditorCanUndo(): boolean {
-    // review: do we need to examine all instances?
-    // C# may apparently call this before the module that defines the variable CKEDITOR
-    // is even loaded. To avoid an error, we have to check both that it is defined AND
-    // that it has a value.
-    if (
-        typeof CKEDITOR !== "undefined" &&
-        CKEDITOR &&
-        CKEDITOR.currentInstance &&
-        (<any>CKEDITOR.currentInstance).undoManager &&
-        (<any>CKEDITOR.currentInstance).undoManager.undoable() &&
-        // Not an editor whose box has gone from the page (a table undo rebuilds its cells, for
-        // instance): undoing there would change nothing anyone can see, and would stop the Undo
-        // button reaching whatever comes next.
-        (<any>CKEDITOR.currentInstance).element.$.isConnected
-    ) {
-        return true;
-    }
-    return false;
+    return !!ckeditorToUndo();
+}
+
+// The editor the next undo of typing belongs to (see getCkeditorToUndo): the box typed in last,
+// which need not be the one with the focus.
+function ckeditorToUndo(): ICkeditorChangeSource | undefined {
+    // C# may apparently call this before the module that defines CKEDITOR is even loaded, so it
+    // is read from the window, where a missing one is undefined rather than an error.
+    const ckeditor = (
+        window as unknown as {
+            CKEDITOR?: { currentInstance?: ICkeditorChangeSource | null };
+        }
+    ).CKEDITOR;
+    return getCkeditorToUndo(ckeditor?.currentInstance ?? undefined);
 }
 
 /**
@@ -456,8 +456,8 @@ export function ckeditorCanUndo(): boolean {
  * undo/legacyUndoProviders.ts.)
  */
 export function ckeditorUndo(): boolean {
-    // review: do we need to examine all instances?
-    return (<any>CKEDITOR.currentInstance).undoManager.undo();
+    const editor = ckeditorToUndo();
+    return !!editor?.undoManager?.undo?.();
 }
 
 // The bloom-table library's undo is an entry on the one undo stack (undo/tableUndo.ts). This is

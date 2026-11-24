@@ -185,6 +185,16 @@ export class UndoStack {
             : undefined;
     }
 
+    /**
+     * The name of the legacy provider that the next undo would go to first, or undefined when none
+     * has the turn (our own newest entry, or nothing, comes next). For the key handler, which
+     * leaves Ctrl+Z to CKEditor only when CKEditor would undo the box that has the focus.
+     */
+    public getLegacyProviderForNextUndo(): string | undefined {
+        return this.legacyProviders.find((p) => this.providerHasTheNextUndo(p))
+            ?.name;
+    }
+
     /** Whether our own newest entry can be undone just now. */
     private ownEntryCanUndo(): boolean {
         const entry = this.entries[this.currentIndex];
@@ -196,10 +206,10 @@ export class UndoStack {
      *
      * Unlike {@link canUndo}, this does not ask the legacy providers, because none of them redoes
      * through the stack. Each mechanism that has a redo (origami, the reader tools, CKEditor)
-     * handles Ctrl+Y in its own key handler, and there is no Redo button. The only caller is the
-     * last-resort Ctrl+Y binding (redoKeyBinding.ts), which must act only for entries on this
-     * stack. Saying yes on a legacy mechanism's behalf would make that binding swallow the
-     * keystroke and call {@link redo}, which has nothing of its own to redo.
+     * handles Ctrl+Y in its own key handler, and there is no Redo button. The caller that matters
+     * is the page's Ctrl+Y (undoKeys.ts), which must act only for entries on this stack. Saying
+     * yes on a legacy mechanism's behalf would make it swallow the keystroke and call
+     * {@link redo}, which has nothing of its own to redo.
      */
     public canRedo(): boolean {
         const next = this.entries[this.currentIndex + 1];

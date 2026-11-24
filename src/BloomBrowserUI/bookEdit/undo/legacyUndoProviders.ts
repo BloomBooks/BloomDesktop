@@ -111,10 +111,11 @@ export const imageUndoProvider: ILegacyUndoProvider = {
 /**
  * CKEditor's own per-editable undo manager — the mechanism this whole project exists to replace.
  *
- * Its ordering across boxes is already wrong (each editable has its own stack, so undo follows
- * focus rather than time). We reproduce that rather than fix it: fixing it here would be a
- * behaviour change in the commit whose whole value is being behaviour-neutral, and Stage 3 removes
- * the mechanism.
+ * Each editable has its own history. The one undone is that of the box typed in last, while it
+ * has something to undo, and otherwise that of the box with the focus (getCkeditorToUndo in
+ * ckeditorChanges.ts), so typing in a box the person has since clicked out of is not passed over
+ * for an older table change. Further back than that, the order across boxes still follows the
+ * focus rather than time; Stage 3 removes the mechanism.
  */
 export const ckeditorUndoProvider: ILegacyUndoProvider = {
     name: "ckeditor",

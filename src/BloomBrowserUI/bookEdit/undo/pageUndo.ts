@@ -6,11 +6,11 @@
 // (editablePage.ts):
 // - the Undo button: C# calls topBarButtonClick("undo") in this frame, which calls handleUndo;
 // - its enabled state: C# polls workspaceBundle.canUndo(), which asks this frame's canUndo;
-// - Ctrl+Y: the last-resort binding in this frame (redoKeyBinding.ts) uses canRedo and handleRedo.
-// Ctrl+Z, and Ctrl+Y ahead of CKEditor, reach the stack directly (undoKeys.ts).
+// - Ctrl+Y: the page's undo keys (undoKeys.ts) redo through handleRedo. There is no Redo button,
+//   so canRedo is for the e2e tests, which have no other way to see whether there is a redo.
+// Ctrl+Z reaches the stack from the page's undo keys directly.
 
 import { registerLegacyUndoProviders } from "./legacyUndoProviders";
-import { installRedoKeyBinding, IRedoTarget } from "./redoKeyBinding";
 import { installUndoKeys } from "./undoKeys";
 import { theOneUndoStack } from "./UndoStack";
 
@@ -24,12 +24,12 @@ import { theOneUndoStack } from "./UndoStack";
  */
 export function setUpPageUndo(): void {
     registerLegacyUndoProviders();
-    installUndoKeys(document);
-    installRedoKeyBinding(
-        document,
-        () =>
-            (window as unknown as { editablePageBundle?: IRedoTarget })
-                .editablePageBundle ?? null,
+    installUndoKeys(document, () =>
+        (
+            window as unknown as {
+                editablePageBundle: { handleRedo(): void };
+            }
+        ).editablePageBundle.handleRedo(),
     );
 }
 
@@ -43,12 +43,12 @@ export function canUndo(): boolean {
     return theOneUndoStack.canUndo();
 }
 
-/** Redo one step: Ctrl+Y, from redoKeyBinding.ts. There is no Redo button. */
+/** Redo one step: Ctrl+Y, from the page's undo keys (undoKeys.ts). There is no Redo button. */
 export function handleRedo(): void {
     void theOneUndoStack.redo();
 }
 
-/** Whether Ctrl+Y would do anything. O(1): asked on every Ctrl+Y keydown. */
+/** Whether the stack has anything to redo. O(1). For the e2e tests; see the top of this file. */
 export function canRedo(): boolean {
     return theOneUndoStack.canRedo();
 }

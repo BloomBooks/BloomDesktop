@@ -3,10 +3,10 @@
 //
 // Every inline image operation is an entry on Bloom's one undo stack (bookEdit/undo), beside
 // CKEditor's record of the typing. The two keys reach that stack by different routes. Ctrl+Z in a
-// text block belongs to CKEditor unless the stack's next undo is an inline image entry; then
-// inlineImages.ts cancels CKEditor's undo command and undoes the entry through the stack instead.
-// Ctrl+Y goes to the stack's redo key binding (redoKeyBinding.ts) whenever the stack has something
-// to redo. Typing discards what the stack could redo (undo/ckeditorChanges.ts), so after
+// text block belongs to CKEditor unless the stack's next undo is one of its own entries; then the
+// page's undo keys (undo/undoKeys.ts in BloomBrowserUI) take the key before CKEditor sees it and
+// undo the entry through the stack. Ctrl+Y goes to the stack's redo the same way whenever the
+// stack has something to redo and the block's CKEditor has nothing of its own. Typing discards what the stack could redo (undo/ckeditorChanges.ts), so after
 // "change a picture, Undo, type", Ctrl+Y must not bring the picture change back over the typing.
 //
 // Nothing in src/BloomExe binds either key, so both reach the page. The first test undoes a picture
@@ -35,6 +35,7 @@ import {
     anyTextBlockHasFocus,
     blockCkeditorCanUndo,
     changeInlineImagePicture,
+    clickInBlockText,
     clickPageMargin,
     getBlockText,
     getInlineImage,
@@ -44,6 +45,7 @@ import {
     typeAtEndOfBlock,
 } from "../helpers/inlineImages";
 import { pressKey } from "../helpers/keys";
+import { openToolboxWithTalkingBook } from "../helpers/talkingBook";
 import { canRedo } from "../helpers/undo";
 
 test.use({
@@ -309,5 +311,37 @@ test("Ctrl+Z takes back a picture change when the caret is not in the picture's 
         page,
         originalWidth,
         "Ctrl+Z with no caret in the block",
+    );
+});
+
+// Opening the toolbox loads the reader tools' settings, because Talking Book, its first tool,
+// shares their sentence rules. Loading them used to make the reader tools claim Ctrl+Z in every
+// text block, with no reader tool open, so the page left the key to them and nothing happened
+// (BL-16900). The caret goes in the picture's block, where that claim applied.
+test("with the toolbox open, Ctrl+Z in the picture's text takes back a picture change [Test Case ID 815]", async ({
+    page,
+}) => {
+    test.setTimeout(300000);
+    await openToolboxWithTalkingBook(page);
+    widenedWidth = await resizeInlineImage(
+        page,
+        BLOCK,
+        LANG,
+        imageId,
+        "se",
+        40,
+    );
+    expect(
+        widenedWidth,
+        "The resize did not change the picture's width, so there is nothing for undo to take back.",
+    ).not.toBe(originalWidth);
+    await clickInBlockText(page, BLOCK, LANG);
+
+    await pressKey(page, "Control+z");
+
+    await expectEveryCopyWidth(
+        page,
+        originalWidth,
+        "Ctrl+Z in the text with the toolbox open",
     );
 });

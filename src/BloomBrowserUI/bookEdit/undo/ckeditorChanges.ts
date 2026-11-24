@@ -28,12 +28,40 @@ export interface ICkeditorChangeSource {
         listenerData?: unknown,
         priority?: number,
     ): void;
-    undoManager?: { undoable(): boolean };
+    undoManager?: { undoable(): boolean; undo?(): boolean };
+    /** The editable the editor edits, wrapped as CKEditor wraps elements. */
+    element?: { $: HTMLElement };
 }
 
-// Run after every other beforeCommandExec listener. One that runs earlier can cancel the command
-// (the inline image Ctrl+Z handler does), which stops the listeners after it; this one then never
-// marks a command that did not run.
+// The editor that recorded the most recent change a person could undo. Typing is undone in the
+// box it was typed in, which is not always the box that has the focus: "add a row, type in it,
+// click another cell" leaves the typing in the new row's editor while the focus is elsewhere.
+let lastChangedEditor: ICkeditorChangeSource | undefined;
+
+/**
+ * The CKEditor whose history the next Undo of typing should take from: the one that recorded the
+ * most recent change, while it is still in the page and has something to undo, and otherwise
+ * `focusedEditor` (CKEditor's current instance), if it has. Undefined when neither has anything
+ * to undo, or an editor has gone from the page (a table undo rebuilds its cells, for instance):
+ * undoing there would change nothing anyone can see.
+ */
+export function getCkeditorToUndo(
+    focusedEditor?: ICkeditorChangeSource,
+): ICkeditorChangeSource | undefined {
+    return [lastChangedEditor, focusedEditor].find(
+        (editor) =>
+            !!editor?.undoManager?.undoable() &&
+            !!editor.element?.$.isConnected,
+    );
+}
+
+/** Forget which editor changed last. For tests. */
+export function resetCkeditorChangesForTests(): void {
+    lastChangedEditor = undefined;
+}
+
+// Run after every other beforeCommandExec listener. One that runs earlier can cancel the command,
+// which stops the listeners after it; this one then never marks a command that did not run.
 const kAfterOtherListeners = 999;
 
 /**
@@ -66,6 +94,7 @@ export function trackCkeditorChanges(
     editor.on("change", () => {
         if (!editor.undoManager?.undoable()) return;
         noteCkeditorChange();
+        lastChangedEditor = editor;
         if (!runningUndoOrRedo) stack.discardRedo();
     });
 }
