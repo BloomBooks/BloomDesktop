@@ -567,7 +567,7 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
         );
     }
 
-    // Types in `box` on a page set up by AddOverflowHandlers, and lets the typing check run: it
+    // Types in `box`, a box given the typing handler, and lets the typing check run: it
     // checks a box a tenth of a second after the key comes up (the page's own first check waits a
     // second, which these tests never reach).
     function typeIn(box: HTMLElement): void {

@@ -8,7 +8,7 @@ import { addLanguageTagsToBoxes } from "./bloomEditing";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 
 // The steps of setUpBoxesBuiltAfterLoad that need the real editing page (CKEditor, the toolbox,
-// jQuery handlers on a live page). The inline picture step is left real.
+// jQuery handlers on a live page, the overflow check). The inline picture step is left real.
 vi.mock("./bloomEditing", () => ({
     activateLongPressFor: vi.fn(),
     addEditKeyHandlersToBoxes: vi.fn(),
@@ -19,6 +19,9 @@ vi.mock("./bloomEditing", () => ({
     configureElementsForTools: vi.fn(),
     keepDataTextUpToDate: vi.fn(),
     matchGroupFontSizesToLanguage1: vi.fn(),
+}));
+vi.mock("../OverflowChecker/OverflowChecker", () => ({
+    default: { AddTypingHandlers: vi.fn() },
 }));
 vi.mock("../bloomField/BloomField", async (importOriginal) => {
     const actual =
@@ -310,9 +313,8 @@ describe("setUpBoxesBuiltAfterLoad", () => {
         // sanity check: an es box was added and the fr box shown again
         expect(added.map((box) => box.getAttribute("lang"))).toEqual(["es"]);
         expect(shown.map((box) => box.getAttribute("lang"))).toEqual(["fr"]);
-        const addTypingHandlers = vi
-            .spyOn(OverflowChecker, "AddTypingHandlers")
-            .mockImplementation(() => {});
+        const addTypingHandlers = vi.mocked(OverflowChecker.AddTypingHandlers);
+        addTypingHandlers.mockClear();
 
         setUpBoxesBuiltAfterLoad(added, shown);
 
@@ -321,6 +323,5 @@ describe("setUpBoxesBuiltAfterLoad", () => {
             ...added,
             ...shown,
         ]);
-        addTypingHandlers.mockRestore();
     });
 });

@@ -166,17 +166,17 @@ export default class OverflowChecker {
     // given it again keeps one handler, not two.
     public static AddTypingHandlers(boxes: HTMLElement[]) {
         const $boxes = $(boxes);
-        //Add the handler so that when the elements change, we test for overflow
         $boxes.off(".overflowChecker");
+        //Add the handler so that when the elements change, we test for overflow
         $boxes.on("keyup.overflowChecker paste.overflowChecker", (e) => {
             // Don't test for overflow on navigation keys.
             if (e.keyCode >= 33 && e.keyCode <= 40) {
                 return;
             }
 
-            // BL-2892 There's no guarantee that the paste target isn't inside one of the editablePageElements
-            // If we allow an embedded paste target (e.g. <p>) to get tested for overflow, it will overflow artificially.
-            const editable = $(e.target).closest($boxes)[0];
+            // BL-2892 The box the handler is on, not the paste target, which may be inside it
+            // (e.g. a <p>): tested for overflow, that would overflow artificially.
+            const editable = e.currentTarget as HTMLElement;
             // Give the browser time to get the pasted text into the DOM first, before testing for overflow
             // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
             //        At first I was concerned that this might slow typing, but it doesn't seem to.
