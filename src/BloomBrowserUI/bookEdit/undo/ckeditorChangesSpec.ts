@@ -125,6 +125,21 @@ describe("which CKEditor an undo of typing goes to", () => {
         expect(box.undos).toBe(1);
     });
 
+    // "Type, add a row, paste into another box": the paste is the newest change, ahead of the row.
+    it("puts a paste made after a table change ahead of it", async () => {
+        const typedIn = makeEditor();
+        const pastedInto = makeEditor();
+        typedIn.typed();
+        const rowAddedAt = nextChangeOrder();
+        focus(pastedInto);
+        pastedInto.pasted();
+        await Promise.resolve();
+
+        expect(getCkeditorUndoOrder()).toBeGreaterThan(rowAddedAt);
+        expect(undoCkeditorTyping(rowAddedAt)).toBe(true);
+        expect(pastedInto.undos).toBe(1);
+    });
+
     // "Paste into one box, type in another, click back into the first": the typing is newer.
     it("puts typing in another box after a paste ahead of the paste", async () => {
         const pastedInto = makeEditor();
