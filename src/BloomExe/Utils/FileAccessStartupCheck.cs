@@ -58,11 +58,7 @@ namespace Bloom.Utils
             if (problem != null)
             {
                 // A dialog, since books may fail to save, be renamed or open.
-                DefenderFolderProtectionCheck.ReportPartlyBlocked(
-                    problem,
-                    collectionFolder,
-                    failedPath
-                );
+                FolderWriteCheck.ReportPartlyBlocked(problem, collectionFolder, failedPath);
             }
 
             // This thread has time to wait for Windows. Program's Sentry setup adds the answer to

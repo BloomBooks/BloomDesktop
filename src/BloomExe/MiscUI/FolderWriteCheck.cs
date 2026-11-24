@@ -13,7 +13,7 @@ namespace Bloom.MiscUI
 {
     /// <summary>
     /// Thrown when Bloom cannot write in a collection's folder, so the collection cannot be opened
-    /// or created there. Callers report it with DefenderFolderProtectionCheck.ReportProblem.
+    /// or created there. Callers report it with FolderWriteCheck.ReportProblem.
     /// (BL-16728)
     /// </summary>
     public class CollectionFolderNotWritableException : ApplicationException
@@ -38,7 +38,7 @@ namespace Bloom.MiscUI
     /// Besides ordinary causes (a read-only folder, a share without write permission), antivirus
     /// folder protection such as Windows Security's Controlled Folder Access can stop it.
     /// </summary>
-    public static class DefenderFolderProtectionCheck
+    public static class FolderWriteCheck
     {
         /// <summary>
         /// Returns 'true' unless Bloom can't write in Documents, where a new collection goes, in

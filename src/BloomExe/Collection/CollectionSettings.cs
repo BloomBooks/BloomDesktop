@@ -316,7 +316,7 @@ namespace Bloom.Collection
             }
             else
             {
-                DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(collectionDirectory);
+                FolderWriteCheck.EnsureFolderExistsAndIsWritable(collectionDirectory);
                 Save();
             }
         }

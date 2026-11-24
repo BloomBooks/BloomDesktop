@@ -96,7 +96,7 @@ namespace Bloom
                     // manager syncs the collection's files, so that an unwritable folder is
                     // reported as such rather than as a Team Collection failure. (BL-16728)
                     if (!Program.RunningInConsoleMode)
-                        DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(
+                        FolderWriteCheck.ThrowIfCollectionFolderNotWritable(
                             Path.GetDirectoryName(SettingsPath)
                         );
                 }

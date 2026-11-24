@@ -3055,21 +3055,6 @@
         <note>ID: Errors.DefenderFolderProtectionHeading</note>
         <note>First line of a message shown on Windows when Bloom cannot write in a folder it needs (a collection's folder, or Documents), for example because it is read-only, the user lacks permission, or antivirus blocks it. Also shown when Bloom opened a collection but cannot do some of the things it does to books there. {0} is the folder that Bloom failed to write to.</note>
       </trans-unit>
-      <trans-unit id="Errors.FolderPartlyBlocked" translate="no">
-        <source xml:lang="en">Bloom opened the collection, but books may fail to save, be renamed or open until this is fixed.</source>
-        <note>ID: Errors.FolderPartlyBlocked</note>
-        <note>Second paragraph of a message whose first line is "This program cannot write to the folder {0}." (Errors.DefenderFolderProtectionHeading), shown soon after a collection opens when Bloom finds that Windows won't let it create, change, rename or delete some kinds of files in the collection's folder. It is followed by Errors.FolderAntivirusProtection or Errors.FolderNotWritable.</note>
-      </trans-unit>
-      <trans-unit id="Errors.FolderAntivirusProtection" translate="no">
-        <source xml:lang="en">Antivirus software, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access, may be stopping Bloom. Tell that program that you trust Bloom.</source>
-        <note>ID: Errors.FolderAntivirusProtection</note>
-        <note>Part of a message whose first line is "This program cannot write to the folder {0}." (Errors.DefenderFolderProtectionHeading), shown when Bloom can't write in a folder it needs and antivirus may be the cause; it is followed by a link to a help page. "Ransomware Shield" is the name of a feature of the Avast antivirus program, and "Controlled Folder Access" is the name of a setting in Windows Security; use the names those programs show in your language, if they are translated.</note>
-      </trans-unit>
-      <trans-unit id="Errors.FolderNotWritable" translate="no">
-        <source xml:lang="en">You may not have permission to change files there, or the folder may be read-only. Choose a folder you can change, or ask whoever manages this computer or network for permission.</source>
-        <note>ID: Errors.FolderNotWritable</note>
-        <note>Part of a message whose first line is "This program cannot write to the folder {0}." (Errors.DefenderFolderProtectionHeading), shown when Bloom can't write in a folder it needs because the user lacks permission or the folder is read-only; it is followed by a link to a help page.</note>
-      </trans-unit>
       <trans-unit id="Errors.DeniedAccess">
         <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>
         <note>ID: Errors.DeniedAccess</note>

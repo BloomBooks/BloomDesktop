@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Diagnostics;
@@ -67,7 +67,7 @@ namespace Bloom.CollectionCreating
                 {
                     // Explain, and leave the user where they were (the collection chooser or the
                     // current collection) to choose somewhere else. (BL-16728)
-                    DefenderFolderProtectionCheck.ReportProblem(notWritable);
+                    FolderWriteCheck.ReportProblem(notWritable);
                     return null;
                 }
             }

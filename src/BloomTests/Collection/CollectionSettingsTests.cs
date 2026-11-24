@@ -118,13 +118,11 @@ namespace BloomTests.Collection
             using (FolderAccessForTests.DenyWrite(folder))
             {
                 var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
-                    DefenderFolderProtectionCheck.ThrowIfCollectionFolderNotWritable(
-                        folder.FullName
-                    )
+                    FolderWriteCheck.ThrowIfCollectionFolderNotWritable(folder.FullName)
                 );
                 Assert.That(thrown.FolderPath, Is.EqualTo(folder.FullName));
-                // What DefenderFolderProtectionCheck.IsPermissionProblem treats as a permission
-                // problem when nothing else is suspected; see DefenderFolderProtectionCheckTests.
+                // What FolderWriteCheck.IsPermissionProblem treats as a permission
+                // problem when nothing else is suspected; see FolderWriteCheckTests.
                 Assert.That(
                     thrown.InnerException,
                     Is.InstanceOf<System.UnauthorizedAccessException>(),

@@ -179,12 +179,12 @@ namespace Bloom.WebLibraryIntegration
                     ? NewCollectionWizard.DefaultParentDirectoryForCollections
                     : BookDownloadSupport.EnsureDownloadFolderExists();
                 // The downloads collection may have been there already, yet not be writable.
-                DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(destination);
+                FolderWriteCheck.EnsureFolderExistsAndIsWritable(destination);
                 return destination;
             }
             catch (CollectionFolderNotWritableException notWritable)
             {
-                DefenderFolderProtectionCheck.ReportProblem(notWritable);
+                FolderWriteCheck.ReportProblem(notWritable);
                 return null;
             }
         }

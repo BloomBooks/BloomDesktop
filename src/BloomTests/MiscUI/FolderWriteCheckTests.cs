@@ -6,11 +6,11 @@ using NUnit.Framework;
 namespace BloomTests.MiscUI
 {
     /// <summary>
-    /// How DefenderFolderProtectionCheck decides which explanation to give when Bloom cannot write
+    /// How FolderWriteCheck decides which explanation to give when Bloom cannot write
     /// in a collection's folder. (BL-16728)
     /// </summary>
     [TestFixture]
-    public class DefenderFolderProtectionCheckTests
+    public class FolderWriteCheckTests
     {
         /// <summary>
         /// Access denied with no antivirus suspected is an ordinary permission or read-only
@@ -20,7 +20,7 @@ namespace BloomTests.MiscUI
         public void IsPermissionProblem_AccessDeniedNoAntivirusSuspected_True()
         {
             Assert.That(
-                DefenderFolderProtectionCheck.IsPermissionProblem(
+                FolderWriteCheck.IsPermissionProblem(
                     new UnauthorizedAccessException("Access to the path is denied."),
                     false
                 ),
@@ -36,7 +36,7 @@ namespace BloomTests.MiscUI
         public void IsPermissionProblem_AccessDeniedWithAntivirusSuspected_False()
         {
             Assert.That(
-                DefenderFolderProtectionCheck.IsPermissionProblem(
+                FolderWriteCheck.IsPermissionProblem(
                     new UnauthorizedAccessException("Access to the path is denied."),
                     true
                 ),
@@ -52,7 +52,7 @@ namespace BloomTests.MiscUI
         public void MakeMessageHtml_PermissionProblem_NamesFolderAndLinksToPermissionsHelp()
         {
             var folder = @"C:\Stories & Songs";
-            var html = DefenderFolderProtectionCheck.MakeMessageHtml(folder, null, true, null);
+            var html = FolderWriteCheck.MakeMessageHtml(folder, null, true, null);
 
             Assert.That(html, Does.Contain(@"C:\Stories &amp; Songs"));
             Assert.That(html, Does.Not.Contain("Songs & "), "the folder should be HTML-escaped");
@@ -74,7 +74,7 @@ namespace BloomTests.MiscUI
         {
             var extra = "Bloom opened the collection, but books may fail to save.";
             var likelyCause = "Avast's Ransomware Shield may be blocking Bloom.";
-            var html = DefenderFolderProtectionCheck.MakeMessageHtml(
+            var html = FolderWriteCheck.MakeMessageHtml(
                 @"C:\Stories",
                 extra,
                 false,
@@ -108,7 +108,7 @@ namespace BloomTests.MiscUI
                 var folder = Path.Combine(temp.Path, "Bloom");
                 Assert.That(Directory.Exists(folder), Is.False, "Sanity check");
 
-                DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(folder);
+                FolderWriteCheck.EnsureFolderExistsAndIsWritable(folder);
 
                 Assert.That(Directory.Exists(folder), Is.True);
             }
@@ -129,7 +129,7 @@ namespace BloomTests.MiscUI
                 using (FolderAccessForTests.DenyWrite(new DirectoryInfo(temp.Path)))
                 {
                     var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
-                        DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(folder)
+                        FolderWriteCheck.EnsureFolderExistsAndIsWritable(folder)
                     );
                     Assert.That(thrown.FolderPath, Is.EqualTo(folder));
                     Assert.That(Directory.Exists(folder), Is.False);
@@ -151,7 +151,7 @@ namespace BloomTests.MiscUI
                 using (FolderAccessForTests.DenyWrite(folder))
                 {
                     var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
-                        DefenderFolderProtectionCheck.EnsureFolderExistsAndIsWritable(
+                        FolderWriteCheck.EnsureFolderExistsAndIsWritable(
                             folder.FullName
                         )
                     );
@@ -168,7 +168,7 @@ namespace BloomTests.MiscUI
         public void IsPermissionProblem_FileNotFound_False()
         {
             Assert.That(
-                DefenderFolderProtectionCheck.IsPermissionProblem(
+                FolderWriteCheck.IsPermissionProblem(
                     new FileNotFoundException("Could not find file."),
                     false
                 ),
