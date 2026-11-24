@@ -722,12 +722,17 @@ namespace Bloom.Book
                 languagePriorityIdsNotLang1,
                 out string langUsed
             );
-            // The last condition here (langUsed ==...) is meant to detect if the string has been translated
+            // The langUsed condition here is meant to detect if the string has been translated
             // into the current language or not.
+            // A custom license is whatever the user typed (e.g. "For permission to re-use this text,
+            // contact the copyright holder."), which rarely reads well after "Licensed under", and
+            // usually ends with its own period. So for that we fall through and show the user's text
+            // on its own after the copyright sentence (BL-17023).
             if (
                 !string.IsNullOrEmpty(originalTitle)
                 && !string.IsNullOrEmpty(rawCopyright)
                 && !string.IsNullOrEmpty(licenseOnly)
+                && !(originalMetadata.License is CustomLicenseInfo)
                 && langUsed == languagePriorityIdsNotLang1.First()
             )
             {
