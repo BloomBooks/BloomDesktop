@@ -712,7 +712,12 @@ namespace Bloom.web.controllers
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
             string loadId = requestData.loadId;
-            View.Model.HandlePageDomLoadedEvent(pageId, loadId);
+            // The navigation number from the page's URL, or absent if its URL had none (see
+            // EditingModel.HandlePageDomLoadedEvent).
+            int? navigationNumber = requestData.IsDefined("navigationNumber")
+                ? (int?)(int)requestData.navigationNumber
+                : null;
+            View.Model.HandlePageDomLoadedEvent(pageId, loadId, navigationNumber);
             request.PostSucceeded();
         }
 

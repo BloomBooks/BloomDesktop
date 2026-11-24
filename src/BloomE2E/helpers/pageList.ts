@@ -398,6 +398,33 @@ export async function clickPageThumbnail(
     await target.click();
 }
 
+/**
+ * Deliver a click on a page's thumbnail the way Bloom gets it when the user clicks the thumbnail
+ * and then, at once, another workspace tab, and Bloom handles the tab change first (BL-17089). Both
+ * requests wait for the same lock in Bloom, which does not take them in order, so a person can
+ * produce this order but cannot choose it; a test can only get it by sending the page list's own
+ * request, pageList/pageClicked, after it has left the Edit tab. Call it with the Edit tab hidden.
+ *
+ * Returns whether Bloom started opening the page, which is what the page list itself is told.
+ */
+export async function deliverLatePageThumbnailClick(
+    page: Page,
+    pageId: string,
+): Promise<boolean> {
+    const response = await apiPost(
+        page,
+        "pageList/pageClicked",
+        JSON.stringify({ pageId, detail: "late click" }),
+        "application/json",
+    );
+    const reply = JSON.parse(response.body) as unknown;
+    if (typeof reply !== "boolean")
+        throw new Error(
+            `pageList/pageClicked should answer true or false, but answered: ${response.body}`,
+        );
+    return reply;
+}
+
 /** The red X Bloom draws across a page while it asks to confirm removing it. */
 export interface IRemovalMark {
     left: number;

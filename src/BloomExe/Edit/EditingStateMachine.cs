@@ -39,8 +39,13 @@ public enum SaveOutcome
 ///
 ///   - you cannot navigate away from, or blank, a page that is being edited, because its unsaved
 ///     edits would go with it. ToNoPageHavingSaved is how a caller that HAS saved says so.
-///   - a "page finished loading" notification for a page we are no longer going to is ignored,
-///     since those arrive asynchronously and can be late.
+///   - a "page finished loading" notification is accepted only from the load we started, which
+///     it names by the navigation number we gave it (see NavigationNumber). Others are ignored:
+///     one for a page we are no longer going to arrives late, and the page layout update loads
+///     every page off-screen, each of which sends one (BL-17089).
+///   - no page is shown while the Edit tab is hidden. A request that would show one (a click
+///     that reaches us after the user has gone to another tab) still saves, but the page it
+///     names is handed on to be shown when the tab comes back (BL-17089).
 ///   - a save arriving while a page is still loading is declined: there is no settled page to save.
 ///   - a save requested from inside another save's own action is declined rather than re-entered.
 ///     Reordering a page does exactly this, by changing the page selection (see _saveInProgress).
@@ -63,20 +68,29 @@ public class EditingStateMachine
     // we go to the page the action named.
     private bool _saveInProgress;
     private Action _hidePage;
+    private Func<bool> _canShowPage;
+    private Action<string> _showPageWhenVisible; // arg is (pageId)
 
     /// <summary>
-    /// Set up a state machine. It must be passed four actions:
+    /// Set up a state machine. It must be passed six actions:
     /// </summary>
-    /// <param name="navigate">Called to start navigation to another (or the same) page. String is page ID.</param>
+    /// <param name="navigate">Called to start navigation to another (or the same) page. String is page ID.
+    /// NavigationNumber is already the number of this navigation when it is called.</param>
     /// <param name="updateBookWithPageContents">Called with page ID and pageContent to update the main DOM with current page content</param>
     /// <param name="saveBook">Called to save the current state of the DOM to disk. Returns false if
     /// something needed writing and the write failed (which it reports itself).</param>
     /// <param name="hidePage">Called to make the transition to NoPage (when edit tab is hidden).</param>
+    /// <param name="canShowPage">Returns false while the Edit tab is hidden, when no page may be shown.</param>
+    /// <param name="showPageWhenVisible">Called, instead of navigating, with the page that a
+    /// navigation asked for while the Edit tab was hidden, so that it can be shown when the tab
+    /// next becomes visible.</param>
     public EditingStateMachine(
         Action<string> navigate,
         Action<string, string> updateBookWithPageContents,
         Func<bool> saveBook,
-        Action hidePage
+        Action hidePage,
+        Func<bool> canShowPage,
+        Action<string> showPageWhenVisible
     )
     {
         _currentState = State.NoPage;
@@ -84,7 +98,17 @@ public class EditingStateMachine
         _updateBookWithPageContents = updateBookWithPageContents;
         _saveBook = saveBook;
         _hidePage = hidePage;
+        _canShowPage = canShowPage;
+        _showPageWhenVisible = showPageWhenVisible;
     }
+
+    /// <summary>
+    /// The number of the latest navigation we started. The page loaded for it must hand this back
+    /// when it reports that it has loaded (see ToEditing), so that a report from any other load
+    /// of a page cannot make us think the page being edited has arrived. EditingModel puts it in
+    /// the URL of the page it shows (GetUrlForCurrentPage).
+    /// </summary>
+    public int NavigationNumber { get; private set; }
 
     /// <summary>
     /// Leave the editor showing nothing, when the caller has ALREADY merged and written the page
@@ -203,6 +227,21 @@ public class EditingStateMachine
 
     private void StartNavigating(string pageId)
     {
+        if (!_canShowPage())
+        {
+            // The Edit tab is hidden, so nothing can be shown, and a page that loaded now would be
+            // edited where the user cannot see it. Leaving the tab has already saved the page and
+            // emptied the editor; whatever asked for this page has already been saved too (this
+            // is reached after the write in RunActionThenSaveAndNavigate). So the page is just
+            // the one to show when the user comes back.
+            Log(
+                $"Not navigating to {pageId} because the Edit tab is hidden; it will be shown when the tab is next visible"
+            );
+            EmptyTheEditorIfShowingAPage();
+            _showPageWhenVisible(pageId);
+            return;
+        }
+        NavigationNumber++;
         LogTransition("navigating", pageId);
         _currentState = State.Navigating;
         _pageId = pageId;
@@ -210,28 +249,26 @@ public class EditingStateMachine
     }
 
     /// <summary>
-    /// Called after we hear from the browser JS that the dom is finished loading
+    /// Called after we hear from the browser JS that the dom is finished loading.
+    /// <paramref name="navigationNumber"/> is the NavigationNumber the page was loaded with, or
+    /// null if it was not loaded by us (the page layout update loads pages off-screen, and a
+    /// developer may open the page in another browser). Only the load of the navigation we are
+    /// waiting for takes us to Editing.
     /// </summary>
-    public bool ToEditing(string pageId)
+    public bool ToEditing(string pageId, int? navigationNumber)
     {
-        switch (_currentState)
+        if (
+            _currentState == State.Navigating
+            && _pageId == pageId
+            && navigationNumber == NavigationNumber
+        )
         {
-            case State.Navigating:
-                if (_pageId == pageId)
-                {
-                    LogTransition("editing", pageId);
-                    _currentState = State.Editing;
-                    return true;
-                }
-                else
-                {
-                    LogIgnore("edit");
-                    return false;
-                }
-            default:
-                LogIgnore("edit");
-                return false;
+            LogTransition("editing", pageId);
+            _currentState = State.Editing;
+            return true;
         }
+        LogIgnore("edit", $"{pageId} from navigation {navigationNumber}");
+        return false;
     }
 
     /// <summary>
@@ -351,16 +388,24 @@ public class EditingStateMachine
         // page (EditingModel.StartNavigationToEditPage) is not prevented.
         if (pageIdToGoTo == null)
         {
-            if (_currentState != State.NoPage)
-            {
-                LogTransition("empty page", null);
-                _hidePage();
-                _currentState = State.NoPage;
-            }
+            EmptyTheEditorIfShowingAPage();
             return written;
         }
         StartNavigating(pageIdToGoTo);
         return written;
+    }
+
+    /// <summary>
+    /// Go to NoPage, hiding the page, unless we are there already. For callers that have saved
+    /// whatever needed saving.
+    /// </summary>
+    private void EmptyTheEditorIfShowingAPage()
+    {
+        if (_currentState == State.NoPage)
+            return;
+        LogTransition("empty page", null);
+        _hidePage();
+        _currentState = State.NoPage;
     }
 
     private void Log(string message)
