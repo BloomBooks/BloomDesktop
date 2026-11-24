@@ -398,6 +398,43 @@ export async function selectPageInAddPageDialog(
     return dialog;
 }
 
+/**
+ * The words of the notice the Add Page dialog shows in place of its Add Page button for a page
+ * whose feature the collection's subscription tier does not include. Select such a page first.
+ */
+export async function getAddPageSubscriptionNoticeText(
+    page: Page,
+): Promise<string> {
+    const dialog = await findAddPageDialog(page);
+    const notice = dialog.locator(".messageSettingsDialogWrapper");
+    await expect(
+        notice,
+        "The Add Page dialog is not showing a subscription notice for the selected page.",
+    ).toBeVisible({ timeout: 15000 });
+    return (await notice.innerText()).trim();
+}
+
+/**
+ * Click the "Bloom Subscription Settings" button on the notice the Add Page dialog shows for a page
+ * whose feature the collection's tier does not include, the way a person does. Select such a page
+ * first. The button opens the Collection Settings dialog on its Subscription page; this returns
+ * once it has been clicked, and the caller asks what opened (getShowingCollectionSettingsPage).
+ *
+ * The button is found by its class, requiresSubscriptionButton, rather than its words, which are
+ * localized (RequiresSubscriptionNotice in react_components/requiresSubscription.tsx).
+ */
+export async function clickAddPageSubscriptionSettings(
+    page: Page,
+): Promise<void> {
+    const dialog = await findAddPageDialog(page);
+    const button = dialog.locator(".requiresSubscriptionButton");
+    await expect(
+        button,
+        "The Add Page dialog's subscription notice has no Bloom Subscription Settings button.",
+    ).toBeVisible({ timeout: 15000 });
+    await button.click();
+}
+
 /** What the Add Page dialog offers for the page that is selected. */
 export interface IAddPageOffer {
     /** True when the dialog is offering its Add Page button, so the page can be added. */
