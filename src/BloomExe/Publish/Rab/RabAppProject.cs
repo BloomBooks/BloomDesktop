@@ -75,8 +75,14 @@ namespace Bloom.Publish.Rab
                 Path.GetFileNameWithoutExtension(FilePath) + "_data"
             );
 
-        private string ContentsFilePath =>
-            Path.Combine(ProjectDataFolderPath, "contents", "contents.xml");
+        private string ContentsFolderPath => Path.Combine(ProjectDataFolderPath, "contents");
+
+        private string ContentsFilePath => Path.Combine(ContentsFolderPath, "contents.xml");
+
+        /// <summary>
+        /// Where RAB looks for the pictures that contents.xml names.
+        /// </summary>
+        internal string ContentsImagesFolderPath => Path.Combine(ContentsFolderPath, "images");
 
         private string BooksRootPath => Path.Combine(ProjectDataFolderPath, "books");
 
@@ -395,11 +401,7 @@ namespace Bloom.Publish.Rab
                 );
             }
 
-            SetContentsEntries(
-                bookEntries.Select(book =>
-                    (book.BookElementId, book.Book.Title, GetThumbnailFileName(book.Book))
-                )
-            );
+            SetContentsEntries(bookEntries);
         }
 
         /// <summary>
@@ -420,11 +422,7 @@ namespace Bloom.Publish.Rab
         /// </summary>
         public void SetTrackedContentsEntries(IEnumerable<RabBookPublishInfo> books)
         {
-            SetContentsEntries(
-                books.Select(
-                    (book, index) => ($"B{index + 1:000}", book.Title, GetThumbnailFileName(book))
-                )
-            );
+            SetContentsEntries(books.Select((book, index) => ($"B{index + 1:000}", book)));
         }
 
         /// <summary>
@@ -949,7 +947,7 @@ namespace Bloom.Publish.Rab
         }
 
         private void SetContentsEntries(
-            IEnumerable<(string BookElementId, string Title, string ThumbnailFileName)> books
+            IEnumerable<(string BookElementId, RabBookPublishInfo Book)> books
         )
         {
             var bookEntries = books.ToList();
@@ -971,17 +969,17 @@ namespace Bloom.Publish.Rab
 
             for (var index = 0; index < bookEntries.Count; index++)
             {
-                var book = bookEntries[index];
+                var (bookElementId, book) = bookEntries[index];
                 contentsItemsElement.Add(
                     new XElement(
                         "contents-item",
                         new XAttribute("id", (index + 1).ToString()),
                         new XElement("title", new XAttribute("lang", "default"), book.Title),
-                        new XElement("image-filename", book.ThumbnailFileName),
+                        new XElement("image-filename", GetContentsImageFileName(book)),
                         new XElement(
                             "link",
                             new XAttribute("type", "reference"),
-                            new XAttribute("target", book.BookElementId)
+                            new XAttribute("target", bookElementId)
                         ),
                         new XElement(
                             "features",
@@ -1069,11 +1067,30 @@ namespace Bloom.Publish.Rab
             return safeName + ".apk";
         }
 
-        private static string GetThumbnailFileName(RabBookPublishInfo book)
+        /// <summary>
+        /// The name of the book's thumbnail inside its BloomPUB.
+        /// </summary>
+        internal static string GetThumbnailFileName(RabBookPublishInfo book)
         {
             return !string.IsNullOrWhiteSpace(book?.ThumbnailFileName)
                 ? book.ThumbnailFileName
                 : "thumbnail.jpg";
+        }
+
+        /// <summary>
+        /// The name, unique to the book, under which its thumbnail goes into ContentsImagesFolderPath
+        /// for the contents menu (RabProjectService.CopyFilesFromBloomPubs copies it there). Every
+        /// BloomPUB's thumbnail has the same name, and RAB packages contents pictures by name, so a
+        /// shared name would give every book in the menu the same picture.
+        /// </summary>
+        internal static string GetContentsImageFileName(RabBookPublishInfo book)
+        {
+            // The id comes from the book's meta.json; keep only what a GUID has, so it can't
+            // name a path outside the images folder.
+            var safeId = new string(
+                book.BookId.Where(c => char.IsAsciiLetterOrDigit(c) || c == '-').ToArray()
+            );
+            return safeId + "-cover" + Path.GetExtension(GetThumbnailFileName(book));
         }
     }
 }

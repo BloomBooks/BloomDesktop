@@ -11,6 +11,10 @@ import {
     getPageIframeBody,
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
+import {
+    endPlayModeAsPageUnloads,
+    removePlayModeMarkupFromClone,
+} from "./games/gamePlayMode";
 import { isLongPressEvaluating } from "../longPressShared";
 import { configurePageEditingHandlers } from "./pageEditingMarkup";
 import {
@@ -929,6 +933,8 @@ function restoreToolboxSettingsWhenPageReady(
 // current tool from the live page, which leaves the page unusable for further editing.
 export function removeToolboxMarkup() {
     detachExpandedTool();
+    // A game page's Play mode is not any tool's: the tester can be playing with any tool open.
+    endPlayModeAsPageUnloads();
 }
 
 // The tool we last told Bloom to remember. Only a cache, to keep us from re-posting the
@@ -937,11 +943,14 @@ export function removeToolboxMarkup() {
 // setting once even when two books in a row use the same tool.
 let lastPersistedToolId: string | undefined = undefined;
 
-// Strip from 'pageClone', a detached clone of the page div, the current tool's editing markup.
+// Strip from 'pageClone', a detached clone of the page div, the current tool's editing markup, and
+// the markup of a game page's Play mode.
 // The rest of detaching (doWhenClosingTool, live-only teardown) is deliberately skipped: the user
 // is still on this page and still using this tool. Called from the page iframe when saving.
 export function removeToolMarkupFromPageClone(pageClone: HTMLElement): void {
     findExpandedTool()?.removeToolMarkup(pageClone);
+    // Whatever tool is open, or none: a game page can be in Play mode with any of them.
+    removePlayModeMarkupFromClone(pageClone);
 }
 
 /**
