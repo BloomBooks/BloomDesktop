@@ -593,28 +593,90 @@ namespace BloomTests.Edit
             );
         }
 
-        // Clicking quickly through the page list: a click while another page is still loading goes
-        // straight to the clicked page (EditingModel.GoToClickedPageInsteadOfTheOneLoading), and
-        // the late load notification of the page left behind must not put the tab in Editing.
+        // Clicking quickly through the page list: a click that arrives while another page is still
+        // loading is declined, and remembered so that the Edit tab can go there once that page has
+        // loaded (EditingModel.HandlePageDomLoadedEvent).
         [Test]
-        public void ToNavigating_WhilePageLoads_GoesToTheNewPageAndIgnoresTheOldPagesLoad()
+        public void GoToOnceLoaded_WhilePageLoads_IsRememberedUntilTaken()
         {
             GoToEditing("page1");
             SaveThenGoTo(null, "page2");
             Assert.That(_stateMachine.Navigating, Is.True, "test setup: page2 should be loading");
             _navigatedTo.Clear();
 
-            Assert.That(_stateMachine.ToNavigating("page3"), Is.True);
+            Assert.That(_stateMachine.GoToOnceLoaded("page3"), Is.True);
+            Assert.That(_stateMachine.PageToGoToOnceLoaded, Is.EqualTo("page3"));
+            // The load of page2 is not abandoned: abandoning a load lets its late notification be
+            // taken for a later load of the same page, whose edits would then be refused.
+            Assert.That(_navigatedTo, Is.Empty);
+            Assert.That(_stateMachine.CurrentPageId, Is.EqualTo("page2"));
 
-            Assert.That(_navigatedTo, Is.EqualTo(new[] { "page3" }));
-            Assert.That(_stateMachine.CurrentPageId, Is.EqualTo("page3"));
+            Assert.That(_stateMachine.ToEditing("page2"), Is.True);
+            Assert.That(_stateMachine.TakePageToGoToOnceLoaded(), Is.EqualTo("page3"));
             Assert.That(
-                _stateMachine.ToEditing("page2"),
-                Is.False,
-                "the abandoned page's load notification must be ignored"
+                _stateMachine.TakePageToGoToOnceLoaded(),
+                Is.Null,
+                "a remembered page is acted on once"
             );
-            Assert.That(_stateMachine.Navigating, Is.True);
-            Assert.That(_stateMachine.ToEditing("page3"), Is.True);
+        }
+
+        [Test]
+        public void GoToOnceLoaded_SeveralClicksWhilePageLoads_KeepsTheLast()
+        {
+            GoToEditing("page1");
+            SaveThenGoTo(null, "page2");
+
+            _stateMachine.GoToOnceLoaded("page3");
+            _stateMachine.GoToOnceLoaded("page4");
+
+            Assert.That(_stateMachine.PageToGoToOnceLoaded, Is.EqualTo("page4"));
+        }
+
+        [Test]
+        public void GoToOnceLoaded_ClickOnThePageThatIsLoading_ForgetsAnEarlierClick()
+        {
+            GoToEditing("page1");
+            SaveThenGoTo(null, "page2");
+            _stateMachine.GoToOnceLoaded("page3");
+            Assert.That(
+                _stateMachine.PageToGoToOnceLoaded,
+                Is.EqualTo("page3"),
+                "test setup: page3 should be remembered"
+            );
+
+            Assert.That(_stateMachine.GoToOnceLoaded("page2"), Is.True);
+
+            Assert.That(
+                _stateMachine.PageToGoToOnceLoaded,
+                Is.Null,
+                "the user's last click was on the page already loading"
+            );
+        }
+
+        [Test]
+        public void GoToOnceLoaded_WhenNoPageIsLoading_RemembersNothing()
+        {
+            GoToEditing("page1");
+
+            Assert.That(_stateMachine.GoToOnceLoaded("page2"), Is.False);
+            Assert.That(_stateMachine.PageToGoToOnceLoaded, Is.Null);
+        }
+
+        [Test]
+        public void GoToOnceLoaded_LeavingTheTab_ForgetsIt()
+        {
+            GoToEditing("page1");
+            SaveThenGoTo(null, "page2");
+            _stateMachine.GoToOnceLoaded("page3");
+            Assert.That(
+                _stateMachine.PageToGoToOnceLoaded,
+                Is.EqualTo("page3"),
+                "test setup: page3 should be remembered"
+            );
+
+            _stateMachine.ToNoPage();
+
+            Assert.That(_stateMachine.PageToGoToOnceLoaded, Is.Null);
         }
     }
 }
