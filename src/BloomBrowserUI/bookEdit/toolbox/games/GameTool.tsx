@@ -27,11 +27,11 @@ import {
     classSetter,
     getTarget,
     playInitialElements,
-    prepareActivity,
     setDefaultSoundUrls,
     shuffle,
-    undoPrepareActivity,
 } from "bloom-player";
+import { preparePageForPlay, takePageOutOfPlayMode } from "./gamePlayMode";
+import { areImageDescriptionsShowing } from "../imageDescription/imageDescriptionUtils";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import {
     getWithPromise,
@@ -42,6 +42,7 @@ import {
 import {
     getEditablePageBundleExports,
     getToolboxBundleExports,
+    tryGetWorkspaceBundleExports,
 } from "../../js/workspaceFrames";
 import { MenuItem, Select } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
@@ -1833,8 +1834,8 @@ export class GameTool extends ToolboxToolReactAdaptor {
 
         const pageId = page.getAttribute("id") ?? "";
         if (pageId === this.lastPageId) {
-            // reinitialize for the current tab. This is especially important in Play mode,
-            // because detachFromPage() undoes some of the initialization for that tab.
+            // reinitialize for the current tab, so that the tab control and this tool agree on it.
+            // (If the page is already in play mode, this leaves it be: see preparePageForPlay.)
             const currentTab = getActiveDragActivityTab();
             getToolboxBundleExports()?.setActiveDragActivityTab(currentTab);
         } else {
@@ -1855,13 +1856,10 @@ export class GameTool extends ToolboxToolReactAdaptor {
         }
     }
 
-    // On the Play tab, prepareActivity() has put the page into play mode, which must not be saved.
-    // undoPrepareActivity changes only the element it is given, so a saved clone gets the
-    // draggables where the author put them while the live page goes on being played (bloom-player's
-    // tests cover that guarantee).
-    public removeToolMarkup(pageOrClone: HTMLElement): void {
-        undoPrepareActivity(pageOrClone);
-    }
+    // No removeToolMarkup override. The only thing on a game page that changes the DOM in a way a
+    // save must undo is Play mode, and that is controlled by the game tabs, not this tool: Play
+    // works whatever tool is open, so every save cleans it off its copy of the page through
+    // gamePlayMode.ts, whether or not this tool is open.
 }
 export function playSound(
     newSoundId: string,
@@ -1995,8 +1993,21 @@ export function setActiveDragActivityTab(tab: number) {
     ).startsWith("drag-");
     // Non-drag games can still pass through this API during page setup. Force Start mode there
     // so drag-only positioning logic (for Correct/Wrong/Play) cannot mutate their canvas elements.
-    const effectiveTab = isDragActivityPage ? tab : startTabIndex;
+    let effectiveTab = isDragActivityPage ? tab : startTabIndex;
+    // Play is not available while image descriptions are showing (see the note above isGamePageInPlay); this
+    // catches a page load that would restore it.
+    if (
+        effectiveTab === playTabIndex &&
+        areImageDescriptionsShowing(page.ownerDocument.body)
+    ) {
+        effectiveTab = startTabIndex;
+    }
     window.top!["dragActivityPage"] = effectiveTab;
+    // Play is for seeing how the game behaves when published, not for editing it.
+    // (Off-screen, e.g. process-book, there is no workspace.)
+    tryGetWorkspaceBundleExports()?.setEditingDisabled(
+        effectiveTab === playTabIndex,
+    );
 
     updateTabClass(effectiveTab);
     pageFrameExports.renderDragActivityTabControl(effectiveTab);
@@ -2013,51 +2024,16 @@ export function setActiveDragActivityTab(tab: number) {
 
     const canvasElementManager = getCanvasElementManager();
     if (effectiveTab === playTabIndex) {
-        canvasElementManager!.suspendComicEditing("forGamePlayMode");
+        canvasElementManager!.suspendCanvasElementEditing("forGamePlayMode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
-        prepareActivity(page, (_next) => {
-            /* nothing to do */
-        });
-        playInitialElements(page, true);
-
-        // Follow image hyperlinks to external sites.
-        // Bloom player has its own image hyperlink handling and follows both links to external sites and links to other
-        // pages and books, which we can't do here in the Edit tab.
-        const imagesWithLinks = Array.from(
-            page.querySelectorAll("[data-href]"),
-        ).filter((elt: HTMLElement) => {
-            return (
-                elt.classList.contains("bloom-imageContainer") &&
-                !elt.closest(kDraggableIdAttribute)
-            );
-        });
-        imagesWithLinks.forEach((elt: HTMLElement) => {
-            elt.addEventListener("click", (e: MouseEvent) => {
-                const linkElement = (e.target as HTMLElement).closest(
-                    "[href], [data-href]",
-                ) as HTMLElement;
-                if (!linkElement) return;
-
-                const href: string | undefined =
-                    (linkElement.getAttribute("href") ||
-                        linkElement.getAttribute("data-href")) ??
-                    undefined;
-                if (!href) return;
-                if (href.startsWith("http://") || href.startsWith("https://")) {
-                    // This is a generic external link. We open it in a new window or tab.
-                    // (The host possibly could intercept this and open a browser to handle it.)
-                    e.preventDefault();
-                    e.stopPropagation();
-                    postString("link", href);
-                    return;
-                }
-            });
-        });
+        if (preparePageForPlay(page)) {
+            setUpPlayOnPreparedPage(page);
+        }
         //Slider: wrapper?.removeEventListener("click", designTimeClickOnSlider);
     } else {
-        undoPrepareActivity(page);
-        canvasElementManager?.resumeComicEditing();
+        takePageOutOfPlayMode(page);
+        canvasElementManager?.endGamePlayModeSuspension();
         canvasElementManager?.checkActiveElementIsVisible();
         //Slider: wrapper?.addEventListener("click", designTimeClickOnSlider);
     }
@@ -2081,6 +2057,73 @@ export function setActiveDragActivityTab(tab: number) {
     // selection state, even if copied by external runtime code paths.
     removeBloomSelectedFromTargets(page);
     scheduleRemoveBloomSelectedFromTargets(page);
+}
+
+// A game's Play tab and image descriptions (shown by the Image Description tool, or by the Talking
+// Book tool when asked) don't go together. Nobody who needs image descriptions is likely to play a
+// dragging game, and both take over the page's canvas elements, so we don't let them overlap: Play
+// is disabled while they show, and they never show during Play. Like setActiveDragActivityTab, both
+// of these must be called through getToolboxBundleExports().
+
+// True while the page being edited is a game page in Play, when image descriptions must not show.
+// (In Play the whole toolbox, its show/hide toggle included, is disabled, so no tool should ask
+// for them then; showImageDescriptions checks this so that they still can't.)
+export function isGamePageInPlay(): boolean {
+    const page = getBloomPageElement();
+    return (
+        !!page &&
+        isPageBloomGame(page) &&
+        getActiveDragActivityTab() === playTabIndex
+    );
+}
+
+// Call just after image descriptions are shown or hidden: redraws a game page's tabs, so that its
+// Play tab is enabled only while they are hidden.
+export function redrawGameTabs(): void {
+    getEditablePageBundleExports()?.renderDragActivityTabControl(
+        getActiveDragActivityTab(),
+    );
+}
+
+// The rest of starting play on a page that preparePageForPlay() has just put into play mode. Like
+// that, it must happen only once per time the page enters Play, or the opening audio plays again and
+// each image link gets a second click handler.
+function setUpPlayOnPreparedPage(page: HTMLElement): void {
+    playInitialElements(page, true);
+
+    // Follow image hyperlinks to external sites.
+    // Bloom player has its own image hyperlink handling and follows both links to external sites and links to other
+    // pages and books, which we can't do here in the Edit tab.
+    const imagesWithLinks = Array.from(
+        page.querySelectorAll("[data-href]"),
+    ).filter((elt: HTMLElement) => {
+        return (
+            elt.classList.contains("bloom-imageContainer") &&
+            !elt.closest(kDraggableIdAttribute)
+        );
+    });
+    imagesWithLinks.forEach((elt: HTMLElement) => {
+        elt.addEventListener("click", (e: MouseEvent) => {
+            const linkElement = (e.target as HTMLElement).closest(
+                "[href], [data-href]",
+            ) as HTMLElement;
+            if (!linkElement) return;
+
+            const href: string | undefined =
+                (linkElement.getAttribute("href") ||
+                    linkElement.getAttribute("data-href")) ??
+                undefined;
+            if (!href) return;
+            if (href.startsWith("http://") || href.startsWith("https://")) {
+                // This is a generic external link. We open it in a new window or tab.
+                // (The host possibly could intercept this and open a browser to handle it.)
+                e.preventDefault();
+                e.stopPropagation();
+                postString("link", href);
+                return;
+            }
+        });
+    });
 }
 
 // Replace the origami control with the Game tab control if the page is a game.

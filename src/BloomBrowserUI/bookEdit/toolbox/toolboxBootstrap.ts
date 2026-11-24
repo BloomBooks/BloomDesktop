@@ -15,7 +15,11 @@ import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
 import TalkingBookTool from "./talkingBook/talkingBookTool";
 import "errorHandler";
-import { setActiveDragActivityTab } from "./games/GameTool";
+import {
+    isGamePageInPlay,
+    redrawGameTabs,
+    setActiveDragActivityTab,
+} from "./games/GameTool";
 import { registerAllToolboxTools } from "./registerAllToolboxTools";
 // Explicit imports needed so that these symbols are in local scope for the window.toolboxBundle object
 import {
@@ -88,6 +92,8 @@ export interface IToolboxFrameExports {
     removeToolboxMarkup(): void;
     removeToolMarkupFromPageClone(pageClone: HTMLElement): void;
     setActiveDragActivityTab(tab: number): void;
+    isGamePageInPlay(): boolean;
+    redrawGameTabs(): void;
     getTheOneAudioRecorderForExportOnly(): IAudioRecorder;
     simulateBlurOnPageFrameMouseDown(): void;
 }
@@ -97,6 +103,8 @@ export {
     removeToolboxMarkup,
     removeToolMarkupFromPageClone,
     setActiveDragActivityTab,
+    isGamePageInPlay,
+    redrawGameTabs,
 };
 export {
     showSetupDialog,
@@ -216,6 +224,8 @@ const toolboxBundle: ToolboxBundleApi = {
     readerToolsHandleUndoKeys,
     restartReaderToolsHistoryIn,
     setActiveDragActivityTab,
+    isGamePageInPlay,
+    redrawGameTabs,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,
     simulateBlurOnPageFrameMouseDown,

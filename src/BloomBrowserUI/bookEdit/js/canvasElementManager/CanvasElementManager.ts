@@ -3196,10 +3196,10 @@ export class CanvasElementManager {
         this.editingSuspension.endDraggingSplitter();
     }
 
-    public suspendComicEditing(
+    public suspendCanvasElementEditing(
         forWhat: "forDrag" | "forTool" | "forGamePlayMode" | "forJqueryResize",
     ) {
-        this.editingSuspension.suspendComicEditing(forWhat);
+        this.editingSuspension.suspendCanvasElementEditing(forWhat);
     }
 
     public checkActiveElementIsVisible() {
@@ -3208,13 +3208,19 @@ export class CanvasElementManager {
         );
     }
 
-    public resumeComicEditing() {
-        this.editingSuspension.resumeComicEditing();
+    // Ends any suspension of canvas element editing except one for a game's Play mode.
+    public resumeCanvasElementEditing() {
+        this.editingSuspension.resumeCanvasElementEditing();
+    }
+
+    // Ends the suspension of canvas element editing for a game's Play mode, and no other.
+    public endGamePlayModeSuspension() {
+        this.editingSuspension.endGamePlayModeSuspension();
     }
 
     public adjustAfterOrigamiDoubleClick() {
         // make sure we're not still in a dragging-the-splitter state
-        theOneCanvasElementManager.resumeComicEditing();
+        theOneCanvasElementManager.resumeCanvasElementEditing();
         // this is automatic for changes that happen while we're dragging,
         // but dragging gets stopped by mouse up, so we need to do it here.
         theOneCanvasElementManager.handleResizeAdjustments();
@@ -3252,16 +3258,16 @@ export class CanvasElementManager {
     public initializeCanvasElementEditing(): void {
         clearImageOperationUndoState();
 
-        // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
-        // load, so that canvas element editing works even when the Canvas element tool is not active. So it definitely
-        // needs to be called there when we're calling SetupElements during page load. It's possible
-        // that's the only time it needs to be called from there, but I'm not sure so I'm leaving it
-        // called always. However, there's at least one situation where we call SetupElements but do
-        // NOT want comic editing turned on: when we're creating an image description translation group
-        // in the process of switching to the image description tool. Comic editing is deliberately
-        // suspended while that tool is active. For now I'm going with a more-or-less minimal change:
-        // if comic editing is not only already initialized, but suspended, we won't turn it on again
-        // here.
+        // This gets called in bloomEditable's SetupElements method. This is how it gets set up on
+        // page load, so that canvas element editing works even when the Canvas element tool is not
+        // active. So it definitely needs to be called there when we're calling SetupElements during
+        // page load. It's possible that's the only time it needs to be called from there, but I'm
+        // not sure so I'm leaving it called always. However, there's at least one situation where
+        // we call SetupElements but do NOT want canvas element editing turned on: when we're
+        // creating an image description translation group in the process of switching to the image
+        // description tool. Canvas element editing is deliberately suspended while that tool is
+        // active. For now I'm going with a more-or-less minimal change: if canvas element editing
+        // is not only already initialized, but suspended, we won't turn it on again here.
         if (this.editingSuspension.isSuspended()) {
             return;
         }

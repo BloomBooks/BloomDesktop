@@ -123,7 +123,7 @@ function getRequiredOrigamiTemplate(selector: string) {
     return template;
 }
 function setupLayoutMode() {
-    theOneCanvasElementManager.suspendComicEditing("forTool");
+    theOneCanvasElementManager.suspendCanvasElementEditing("forTool");
     $(".split-pane-component-inner").each(function (): boolean {
         const $this = $(this);
         if ($this.find(".split-pane").length) {
@@ -204,7 +204,7 @@ function changeLayoutModeToggleClickHandler() {
     } else {
         // This line is currently redundant since we will reload the page, but in case we
         // stop doing that, it will be important.
-        theOneCanvasElementManager.resumeComicEditing();
+        theOneCanvasElementManager.resumeCanvasElementEditing();
 
         marginBox.removeClass("origami-layout-mode");
         marginBox.find(".textBox-identifier, .table-identifier").remove();

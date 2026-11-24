@@ -33,6 +33,7 @@ export const BookSettingsButton: React.FunctionComponent = (props) => {
             iconPath={bookSettingsIconPath}
             labelL10nKey="BookAndPageSettings.Title"
             labelEnglish="Book and Page Settings"
+            testId="book-settings-button"
             onClick={handleClick}
             backgroundColor={kBloomPurple}
             textColor={kTextOnPurple}

@@ -349,12 +349,25 @@ export async function selectCanvasElement(
     page: Page,
     index: number,
 ): Promise<Locator> {
-    const element = canvasElement(page, index);
+    return selectCanvasElementAt(
+        canvasElement(page, index),
+        `canvas element ${index}`,
+    );
+}
+
+/**
+ * Select the canvas element `element` locates, as selectCanvasElement does, for a caller that finds
+ * it some other way than by index. `what` names it in the failure message.
+ */
+export async function selectCanvasElementAt(
+    element: Locator,
+    what: string,
+): Promise<Locator> {
     await element.waitFor({ state: "visible", timeout: 30000 });
     await realClick(element);
     await expect(
         element,
-        `Clicking canvas element ${index} did not select it.`,
+        `Clicking ${what} did not select it.`,
     ).toHaveAttribute("data-bloom-active", "true", { timeout: 15000 });
     return element;
 }
