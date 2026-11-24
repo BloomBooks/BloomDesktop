@@ -64,12 +64,12 @@ import {
     waitForPageCount,
 } from "../helpers/pageThumbnails";
 import {
+    addRowFromMenu,
     addRowFromMenuThenUndo,
     cell,
     cellTextBox,
     cellVideoBox,
     clickCell,
-    clickTableMenuCommand,
     dragAcrossCellText,
     dragBoundary,
     expectCellsTile,
@@ -84,7 +84,6 @@ import {
     closeAnyMenu,
     measureChrome,
     measureTable,
-    openTableMenu,
     rightClickCell,
     toggleCellLanguageInCellMenu,
     setCellContentType,
@@ -139,6 +138,26 @@ function rowHeight(measurement: ITableMeasurement, row: number): number {
     );
     if (!first) throw new Error(`The table has no row ${row}.`);
     return first.rect.height;
+}
+
+// Undo with `undoOnce` until the table is back to `rows` rows, or ten tries have not got it there.
+// CKEditor decides for itself how many snapshots some typing is worth, so the number of undos
+// that a row added before typing takes to reach is not fixed.
+async function undoUntilRows(
+    page: import("@playwright/test").Page,
+    rows: number,
+    undoOnce: () => Promise<void>,
+): Promise<void> {
+    for (let attempt = 0; attempt < 10; attempt++) {
+        if ((await getTableShape(page)).rows === rows) break;
+        await undoOnce();
+    }
+    await expect
+        .poll(async () => (await getTableShape(page)).rows, {
+            message:
+                "Undoing past the typing should have reached the row added before it.",
+        })
+        .toBe(rows);
 }
 
 // The pages and the book folder, all set by the first test.
@@ -477,14 +496,7 @@ test.describe("more ways to use a table", () => {
             "Add a row, so the table's history has something to undo",
             async () => {
                 const rowsBefore = (await getTableShape(page)).rows;
-                await clickCell(page, 0, 0);
-                await openTableMenu(page, "row", 0);
-                await clickTableMenuCommand(page, "Add Row Below");
-                await expect
-                    .poll(async () => (await getTableShape(page)).rows, {
-                        message: "Add Row Below should have added a row.",
-                    })
-                    .toBe(rowsBefore + 1);
+                await addRowFromMenu(page, "before Change Layout");
                 expect(
                     await tableCanUndo(),
                     "Sanity check: the table's history should hold the row just added.",
@@ -752,16 +764,9 @@ test.describe("more ways to use a table", () => {
         page,
         step,
     }) => {
-        await step("Add a row from the row menu", async () => {
-            await clickCell(page, 0, 0);
-            await openTableMenu(page, "row", 1);
-            await clickTableMenuCommand(page, "Add Row Below");
-            await expect
-                .poll(async () => (await getTableShape(page)).rows, {
-                    message: "The row menu should have added a row.",
-                })
-                .toBe(3);
-        });
+        await step("Add a row from the row menu", () =>
+            addRowFromMenu(page, "below the second row", 1),
+        );
 
         await step("Type in the new row, key by key", async () => {
             // Key by key because CKEditor's undo stack is built from key events, and the quick
@@ -818,16 +823,9 @@ test.describe("more ways to use a table", () => {
             await typeInCellKeyByKey(page, 1, 0, "en", "Banana");
         });
 
-        await step("Add a row from the row menu", async () => {
-            await clickCell(page, 0, 0);
-            await openTableMenu(page, "row", 1);
-            await clickTableMenuCommand(page, "Add Row Below");
-            await expect
-                .poll(async () => (await getTableShape(page)).rows, {
-                    message: "The row menu should have added a row.",
-                })
-                .toBe(3);
-        });
+        await step("Add a row from the row menu", () =>
+            addRowFromMenu(page, "below the second row", 1),
+        );
 
         await step("Undo, and check the typing is still there", async () => {
             await undo(page);
@@ -858,6 +856,126 @@ test.describe("more ways to use a table", () => {
                     "The second undo should have taken back the typing that came before the row.",
             })
             .not.toBe("Banana");
+    });
+
+    // The cases above undo through the Undo button's code. Ctrl+Z in a cell takes another route:
+    // CKEditor claims it there and knows nothing of the table's operations, so the page has to
+    // take the key first when the next undo is one (undo/undoKeys.ts in BloomBrowserUI), and the
+    // reader tools, which are not open here, must not say the key is theirs (BL-16900).
+    test("Ctrl+Z in a cell undoes a row that was added through the row menu", async ({
+        page,
+        step,
+    }) => {
+        await step("Add a row from the row menu", () =>
+            addRowFromMenu(page, "below the second row", 1),
+        );
+
+        await step("Press Ctrl+Z in a cell", async () => {
+            await pressKeyIn(
+                await cellTextBox(page, 0, 0, "en"),
+                "Control+z",
+                "the first cell's text box",
+            );
+            await expect
+                .poll(async () => (await getTableShape(page)).rows, {
+                    message:
+                        "Ctrl+Z in a cell should have taken the row back off.",
+                })
+                .toBe(2);
+        });
+    });
+
+    // The keyboard twin of "undoes the typing that came after the row, and then the row": Ctrl+Z
+    // has to leave the typing to CKEditor while it is the newer change, and reach the row after.
+    test("Ctrl+Z takes back typing in a new row before the row", async ({
+        page,
+        step,
+    }) => {
+        await step("Add a row from the row menu", () =>
+            addRowFromMenu(page, "below the second row", 1),
+        );
+        await step("Type in the new row, key by key", async () => {
+            await typeInCellKeyByKey(page, 2, 0, "en", "Cherry");
+        });
+
+        await step("Press Ctrl+Z in that cell", async () => {
+            await pressKeyIn(
+                await cellTextBox(page, 2, 0, "en"),
+                "Control+z",
+                "the new row's text box",
+            );
+            await expect
+                .poll(async () => getCellText(page, 2, 0, "en"), {
+                    message:
+                        "Ctrl+Z should have taken back the typing, the newer of the two changes.",
+                })
+                .not.toBe("Cherry");
+            expect(
+                (await getTableShape(page)).rows,
+                "Ctrl+Z took the row as well as the typing in it.",
+            ).toBe(3);
+        });
+
+        await step("Keep pressing Ctrl+Z, and check the row goes", () =>
+            undoUntilRows(page, 2, () => pressKey(page, "Control+z")),
+        );
+    });
+
+    // CKEditor's side of the undo decision used to ask only the cell with the focus, which had
+    // nothing to undo, so the row went with the text typed in it and could not be redone
+    // (BL-16900). Now the typing is undone where it was typed, from the keyboard or the button.
+    test("undoes typing in a new row before the row, though another cell has the focus", async ({
+        page,
+        step,
+    }) => {
+        await step("Add a row from the row menu", () =>
+            addRowFromMenu(page, "below the second row", 1),
+        );
+
+        await step(
+            "Type in the new row, click the first cell, press Ctrl+Z",
+            async () => {
+                await typeInCellKeyByKey(page, 2, 0, "en", "Cherry");
+                await pressKeyIn(
+                    await cellTextBox(page, 0, 0, "en"),
+                    "Control+z",
+                    "the first cell's text box",
+                );
+                await expect
+                    .poll(async () => getCellText(page, 2, 0, "en"), {
+                        message:
+                            "Ctrl+Z in another cell should have taken back the typing in the new row.",
+                    })
+                    .not.toBe("Cherry");
+                expect(
+                    (await getTableShape(page)).rows,
+                    "Ctrl+Z in another cell took the row away, with the text typed in it.",
+                ).toBe(3);
+            },
+        );
+
+        await step(
+            "Type in the new row again, click the first cell, click Undo",
+            async () => {
+                await typeInCellKeyByKey(page, 2, 0, "en", "Date");
+                await clickCell(page, 0, 0);
+                await clickUndoButton(page);
+                await expect
+                    .poll(async () => getCellText(page, 2, 0, "en"), {
+                        message:
+                            "The Undo button should have taken back the typing in the new row.",
+                    })
+                    .not.toBe("Date");
+                expect(
+                    (await getTableShape(page)).rows,
+                    "The Undo button took the row away, with the text typed in it.",
+                ).toBe(3);
+            },
+        );
+
+        await step("Undo until the row goes", () =>
+            undoUntilRows(page, 2, () => undo(page)),
+        );
     });
 
     test("re-tiles the cells when the whole table is made wider", async ({

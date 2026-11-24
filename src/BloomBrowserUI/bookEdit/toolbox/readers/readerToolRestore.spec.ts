@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Picks up where readerToolsSettingsLoadFailure.spec.ts leaves off: that one shows a failed
 // settings load settling with the model's synphony still undefined; these show what then
@@ -29,6 +29,7 @@ import { getTheOneReaderToolsModel } from "./readerToolsModel";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 import { LeveledReaderTool } from "./leveledReader/leveledReaderTool";
 import { DecodableReaderTool } from "./decodableReader/decodableReaderTool";
+import { setToolboxUiMounted } from "../toolboxState";
 
 /** Settings with four stages and four levels, so stage/level 3 is a real choice. */
 function makeSynphonyWithFourOfEach(): ReadersSynphonyWrapper {
@@ -116,5 +117,31 @@ describe("restoring a reader tool before the Synphony settings have arrived", ()
         // Only four levels exist, so level 9 is not a choice we can honor. Holding the
         // request must not mean imposing a level that isn't there.
         expect(model.levelNumber).toBe(1);
+    });
+});
+
+// The toolbox loads the Synphony settings, and so restores the reader state, whichever tool is
+// open. The markup type says which reader tool is marking up the page, and so whether the reader
+// tools own Ctrl+Z and Ctrl+Y there; only a reader tool on a page it can mark up sets it. When
+// restoring set it too, the page's own undo keys stood aside on every page for reader tools that
+// were not there, and Ctrl+Z did nothing after a table operation (BL-16900).
+describe("restoring the reader state with no reader tool marking up the page", () => {
+    beforeEach(() => {
+        getTheOneReaderToolsModel().clearForTest();
+        // restoreState does nothing until the toolbox is on screen.
+        setToolboxUiMounted(true);
+    });
+    afterEach(() => {
+        setToolboxUiMounted(false);
+    });
+
+    it("leaves the undo keys to the page", () => {
+        const model = getTheOneReaderToolsModel();
+        // Sanity check: no reader tool has set a markup type.
+        expect(model.shouldHandleUndo()).toBe(false);
+
+        model.restoreState();
+
+        expect(model.shouldHandleUndo()).toBe(false);
     });
 });

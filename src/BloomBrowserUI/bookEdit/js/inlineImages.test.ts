@@ -27,8 +27,6 @@ import {
     kInlineImageAspectRatioVar,
     kInlineImageLeftClass,
     kInlineImageMiddleClass,
-    inlineImageCanUndo,
-    inlineImageUndo,
     insertInlineImage,
     kInlineImageBottomClass,
     kInlineImageRightClass,
@@ -1235,70 +1233,6 @@ describe("inlineImages", () => {
             commitPendingInlineImageUndo(second);
 
             expect(theOneUndoStack.getEntryCount()).toBe(2);
-        });
-
-        // inlineImageCanUndo and inlineImageUndo are for Ctrl+Z in the text, which CKEditor
-        // handles and which never reaches the stack. They must agree with what the Undo button
-        // would do.
-        describe("from the keyboard", () => {
-            it("takes back the picture operation when it is the stack's next undo", () => {
-                const group = makeTranslationGroup([
-                    {
-                        lang: "en",
-                        classes: "bloom-content1",
-                        content: "<p>a</p>",
-                    },
-                ]);
-                typing();
-                insertInlineImage(group);
-
-                expect(inlineImageCanUndo()).toBe(true);
-                expect(inlineImageUndo()).toBe(true);
-
-                expect(getInlineImages(group).length).toBe(0);
-                expect(ckeditorUndos).toBe(0);
-            });
-
-            it("leaves Ctrl+Z to CKEditor when typing is newer", () => {
-                const group = makeTranslationGroup([
-                    {
-                        lang: "en",
-                        classes: "bloom-content1",
-                        content: "<p>a</p>",
-                    },
-                ]);
-                insertInlineImage(group);
-                typing();
-
-                expect(inlineImageCanUndo()).toBe(false);
-                expect(inlineImageUndo()).toBe(false);
-
-                expect(getInlineImages(group).length).toBe(1);
-                expect(ckeditorUndos).toBe(0);
-            });
-
-            it("leaves an operation that is not an inline image's to the Undo button", () => {
-                const group = makeTranslationGroup([
-                    {
-                        lang: "en",
-                        classes: "bloom-content1",
-                        content: "<p>a</p>",
-                    },
-                ]);
-                const log: string[] = [];
-                insertInlineImage(group);
-                otherOperation("Add Row", log);
-
-                expect(inlineImageCanUndo()).toBe(false);
-                expect(inlineImageUndo()).toBe(false);
-
-                expect(log).toEqual([]);
-                expect(getInlineImages(group).length).toBe(1);
-            });
-
-            it("says no when there is nothing to undo", () => {
-                expect(inlineImageCanUndo()).toBe(false);
-            });
         });
 
         it("takes charge of undo only for images that really are inline images", () => {

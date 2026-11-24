@@ -618,10 +618,6 @@ type PendingInlineImageUndo = {
 
 let pendingInlineImageUndo: PendingInlineImageUndo | undefined;
 
-// The entries this file has pushed, so that inlineImageCanUndo can tell whether the stack's next
-// undo is one of them.
-const inlineImageUndoEntries = new WeakSet<IUndoEntry>();
-
 /**
  * Records the inline images of a translation group before an operation on them, which
  * commitPendingInlineImageUndo then turns into an entry on the undo stack once the operation has
@@ -670,7 +666,6 @@ export function commitPendingInlineImageUndo(element: HTMLElement): boolean {
         pending.before,
         after,
     );
-    inlineImageUndoEntries.add(entry);
     theOneUndoStack.push(entry);
     return true;
 }
@@ -678,33 +673,6 @@ export function commitPendingInlineImageUndo(element: HTMLElement): boolean {
 /** Throws away a prepared operation, for one that turned out not to happen. */
 export function discardPendingInlineImageUndo(): void {
     pendingInlineImageUndo = undefined;
-}
-
-/**
- * Whether the next Undo would take back an inline image operation: the one undo stack's next
- * undo is one of the entries this file pushed, and no legacy mechanism (CKEditor, for typing
- * newer than it) has the turn first. The Undo button needs no help from this; the stack decides
- * for it. This is for Ctrl+Z, which CKEditor handles in the text and which never reaches the
- * stack. CKEditor would undo only the copy in the focused editable, so the page's Ctrl+Z
- * handler asks this first and, when it says yes, calls inlineImageUndo instead.
- *
- * An inline image operation recorded as part of a larger gesture (undo/runUndoable.ts) is one
- * entry with the rest of the gesture, which this does not recognize, so Ctrl+Z leaves it to the
- * Undo button.
- */
-export function inlineImageCanUndo(): boolean {
-    const next = theOneUndoStack.getEntryForNextUndo();
-    return !!next && inlineImageUndoEntries.has(next);
-}
-
-/**
- * Undoes the most recent inline image operation, through the one undo stack, if that is what
- * the next Undo would do (see inlineImageCanUndo). Returns whether it did.
- */
-export function inlineImageUndo(): boolean {
-    if (!inlineImageCanUndo()) return false;
-    void theOneUndoStack.undo();
-    return true;
 }
 
 /**

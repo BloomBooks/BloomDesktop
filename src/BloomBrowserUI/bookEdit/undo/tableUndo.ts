@@ -18,6 +18,7 @@
 // rebuilds the cells, which discards their CKEditor typing history.
 
 import { tableHistoryManager } from "bloom-table";
+import { isInChangeLayoutMode } from "./undoKeys";
 import { theOneUndoStack, UndoStack } from "./UndoStack";
 import { IUndoEntry } from "./undoTypes";
 
@@ -69,7 +70,7 @@ export function noteTableHistoryUpdate(
  * origami. Taking a row off a faded table the person cannot edit would be invisible and wrong.
  */
 export function tableCanUndo(): boolean {
-    return !isInChangeLayoutMode() && tableHistoryManager.canUndo();
+    return !isInChangeLayoutMode(document) && tableHistoryManager.canUndo();
 }
 
 /** The stack entry for one operation the library has just recorded, labelled as the library labels it. */
@@ -104,7 +105,7 @@ function makeTableUndoEntry(operation: string): IUndoEntry {
     return {
         label: operation,
         kind: "custom",
-        isAvailable: () => !isInChangeLayoutMode(),
+        isAvailable: () => !isInChangeLayoutMode(document),
         undo: () => {
             checkStillInStep(tableHistoryManager.getLastOperationLabel());
             runInLibrary(() => tableHistoryManager.undoLast(), "undo");
@@ -114,11 +115,6 @@ function makeTableUndoEntry(operation: string): IUndoEntry {
         // since then is not on this stack, so it would be silently lost. Redo can come when
         // typing joins the stack (Stage 3).
     };
-}
-
-/** Whether the page is in Change Layout mode, which origami signals on `.marginBox`. */
-function isInChangeLayoutMode(): boolean {
-    return !!document.querySelector(".origami-layout-mode");
 }
 
 /** Forget what the library has done. For tests. */
