@@ -2323,7 +2323,7 @@ export type CellLanguageRole = "L1" | "L2" | "L3";
 
 // The role each menu entry stands for, as TableCellLanguagesSection.tsx marks its row.
 const kStoredRoleOfMenuRole: Record<CellLanguageRole, string> = {
-    L1: "V",
+    L1: "CL1",
     L2: "N1",
     L3: "N2",
 };
