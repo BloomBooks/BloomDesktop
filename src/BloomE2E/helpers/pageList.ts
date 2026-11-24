@@ -400,6 +400,9 @@ export async function clickPageThumbnail(
     await target.click();
 }
 
+/** How long clickPageWhileAnotherLoads waits for the clicked page to report that it has loaded. */
+const kLoadReportDeadlineMs = 60000;
+
 /**
  * Click `first` in the page list and then `second` while `first` is still loading, whatever the
  * machine's speed, and check that Bloom remembered the second click
@@ -420,7 +423,21 @@ export async function clickPageWhileAnotherLoads(
     );
     try {
         await clickPageThumbnail(page, first);
-        const report = await loaded.requested;
+        let deadline: ReturnType<typeof setTimeout> | undefined;
+        const report = await Promise.race([
+            loaded.requested,
+            new Promise<never>((_, reject) => {
+                deadline = setTimeout(
+                    () =>
+                        reject(
+                            new Error(
+                                `Page ${first} never reported that it had loaded, within ${kLoadReportDeadlineMs / 1000}s of being clicked.`,
+                            ),
+                        ),
+                    kLoadReportDeadlineMs,
+                );
+            }),
+        ]).finally(() => clearTimeout(deadline));
         expect(
             report.postDataJSON().pageId,
             `The first page to report it had loaded should be page ${first}, the one clicked.`,
