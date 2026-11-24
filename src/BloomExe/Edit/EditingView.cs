@@ -640,7 +640,7 @@ namespace Bloom.Edit
             }
             catch (Exception e)
             {
-                ImageUtils.ReportImageMetadataProblem(
+                ImageUtils.ReportImageMetadataSaveProblem(
                     Path.Combine(_model.CurrentBook.FolderPath, _fileNameOfImageBeingModified),
                     e
                 );
