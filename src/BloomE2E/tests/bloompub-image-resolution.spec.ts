@@ -1,0 +1,235 @@
+// The BloomPUB image resolution in Book and Page Settings: a book starts at HD, and a BloomPUB
+// carries each picture reduced to fit the resolution chosen, Small, HD, Full HD or 4K.
+// Automates the manual test "4K Image BloomPUB Resolutions" (Test Case ID 403).
+//
+// The book has two pictures larger than 4K: a portrait one, 2560x3840, and a landscape one,
+// 3992x2242, the sizes of the photos the manual test uses. The test makes them itself, so their
+// byte counts differ from those photos', and it checks sizes in pixels only.
+//
+// Bloom can come out a pixel or two short of the largest size that fits (BL-16829): its resize
+// rounds the long side down before it fits the picture in the box. The card's own expected sizes
+// already show that (Dylan 1278x718 at HD), so the expectation allows two pixels short and nothing
+// over.
+//
+// What stays manual, and why, is in the pull request: the byte counts, uploading to Bloom Library
+// and the BloomPUBs the harvester makes there, and saving a real .bloompub file, which goes through
+// a native save dialog. The test reads the files Bloom stages for a BloomPUB instead, which are the
+// files an unzipped .bloompub holds (see stageBloomPub).
+//
+// The tests are serial because each one publishes the book the first one made.
+
+import { expect, test } from "../fixtures/bloomTest";
+import {
+    addPage,
+    getContentPages,
+    goToPage,
+    makeBookFromTemplate,
+    waitForEditablePage,
+} from "../helpers/bookMaking";
+import {
+    cancelBookSettings,
+    getBloomPubImageSettings,
+    getBloomPubResolutionInBookSettings,
+    kBloomPubResolutions,
+    okBookSettings,
+    openBookSettings,
+    setBloomPubResolutionInBookSettings,
+    type BloomPubResolutionName,
+} from "../helpers/bookSettings";
+import {
+    chooseImageFile,
+    getImagePlacement,
+    makeJpegFile,
+    type IPixelSize,
+} from "../helpers/images";
+import {
+    getStagedImageSize,
+    selectPublishDestination,
+    stageBloomPub,
+} from "../helpers/publish";
+import { switchTab } from "../helpers/workspace";
+
+test.use({
+    collectionSpec: { name: "bloompub-image-resolution", languages: ["en"] },
+});
+
+test.describe.configure({ mode: "serial" });
+
+// The two pictures, by the sizes of the manual test's photos "1 Samuel.jpg" and "2 Dylan.jpg".
+const PORTRAIT: IPixelSize = { width: 2560, height: 3840 };
+const LANDSCAPE: IPixelSize = { width: 3992, height: 2242 };
+
+// How many pixels short of the largest size that fits a published picture may be (BL-16829).
+const ROUNDING_SHORTFALL = 2;
+
+// The names of the two pictures' files in the book. Set by the first test.
+let portraitFile: string;
+let landscapeFile: string;
+
+/**
+ * The size a picture of `source` size should have in a BloomPUB made at `resolution`: the largest
+ * that fits its box, turned on its side for a portrait picture, and never larger than the picture.
+ */
+const sizeThatFits = (
+    source: IPixelSize,
+    resolution: BloomPubResolutionName,
+): IPixelSize & { boxWidth: number; boxHeight: number } => {
+    const box = kBloomPubResolutions.find((r) => r.name === resolution)!;
+    const portrait = source.height > source.width;
+    const boxWidth = portrait ? box.maxHeight : box.maxWidth;
+    const boxHeight = portrait ? box.maxWidth : box.maxHeight;
+    const scale = Math.min(
+        1,
+        boxWidth / source.width,
+        boxHeight / source.height,
+    );
+    return {
+        width: source.width * scale,
+        height: source.height * scale,
+        boxWidth,
+        boxHeight,
+    };
+};
+
+/** Check that a published picture has the size that fits `resolution`, within BL-16829's rounding. */
+const expectPublishedSize = (
+    published: IPixelSize,
+    source: IPixelSize,
+    resolution: BloomPubResolutionName,
+    which: string,
+) => {
+    const fit = sizeThatFits(source, resolution);
+    const described = `The ${which} picture (${source.width}x${source.height}) came out ${published.width}x${published.height} in a BloomPUB at ${resolution}; the largest that fits is ${fit.width.toFixed(1)}x${fit.height.toFixed(1)}`;
+    expect(published.width, described).toBeLessThanOrEqual(fit.boxWidth);
+    expect(published.height, described).toBeLessThanOrEqual(fit.boxHeight);
+    expect(published.width, described).toBeLessThanOrEqual(
+        Math.ceil(fit.width),
+    );
+    expect(published.height, described).toBeLessThanOrEqual(
+        Math.ceil(fit.height),
+    );
+    expect(published.width, described).toBeGreaterThanOrEqual(
+        Math.floor(fit.width) - ROUNDING_SHORTFALL,
+    );
+    expect(published.height, described).toBeGreaterThanOrEqual(
+        Math.floor(fit.height) - ROUNDING_SHORTFALL,
+    );
+};
+
+test.describe("BloomPUB image resolution", () => {
+    test("a new book is set to publish BloomPUB pictures at HD (1280x720) [Test Case ID 403]", async ({
+        page,
+        step,
+    }, testInfo) => {
+        test.setTimeout(300000);
+        await step("Make a book with two content pages", async () => {
+            await makeBookFromTemplate(page, "Basic Book");
+            await addPage(page, "Basic Text & Image", 2);
+        });
+
+        await step("Check the BloomPUB page of Book Settings", async () => {
+            await openBookSettings(page, "BloomPUB");
+            expect(
+                await getBloomPubResolutionInBookSettings(page),
+                "A new book's BloomPUB image resolution is not HD.",
+            ).toBe("HD");
+            expect(await getBloomPubImageSettings(page)).toEqual({
+                maxWidth: 1280,
+                maxHeight: 720,
+            });
+            await cancelBookSettings(page);
+        });
+
+        await step(
+            "Put a portrait and a landscape 4K picture in the book",
+            async () => {
+                const [first, second] = await getContentPages(page);
+                const portraitPath = testInfo.outputPath("Samuel.jpg");
+                const landscapePath = testInfo.outputPath("Dylan.jpg");
+                await makeJpegFile(
+                    page,
+                    portraitPath,
+                    PORTRAIT.width,
+                    PORTRAIT.height,
+                );
+                await makeJpegFile(
+                    page,
+                    landscapePath,
+                    LANDSCAPE.width,
+                    LANDSCAPE.height,
+                );
+                await goToPage(page, first.id);
+                await chooseImageFile(page, portraitPath);
+                portraitFile = (await getImagePlacement(page)).fileName;
+                await goToPage(page, second.id);
+                await chooseImageFile(page, landscapePath);
+                landscapeFile = (await getImagePlacement(page)).fileName;
+                // Leaving the page saves it.
+                await goToPage(page, first.id);
+            },
+        );
+    });
+
+    // HD first, with the setting the book started with; then each other size, chosen on the slider.
+    for (const resolution of ["HD", "Full HD", "Small", "4K"] as const) {
+        test(`a BloomPUB at ${resolution} carries each picture reduced to fit ${resolution} [Test Case ID 403]`, async ({
+            page,
+            step,
+        }) => {
+            test.setTimeout(300000);
+            if (resolution !== "HD")
+                await step(
+                    `Set the BloomPUB resolution to ${resolution}`,
+                    async () => {
+                        await switchTab(page, "edit");
+                        await waitForEditablePage(page);
+                        await openBookSettings(page, "BloomPUB");
+                        await setBloomPubResolutionInBookSettings(
+                            page,
+                            resolution,
+                        );
+                        await okBookSettings(page);
+                        const box = kBloomPubResolutions.find(
+                            (r) => r.name === resolution,
+                        )!;
+                        expect(
+                            await getBloomPubImageSettings(page),
+                            `Book Settings did not save the ${resolution} resolution.`,
+                        ).toEqual({
+                            maxWidth: box.maxWidth,
+                            maxHeight: box.maxHeight,
+                        });
+                    },
+                );
+
+            const staged = await step(
+                "Publish the book as a BloomPUB",
+                async () => {
+                    // A book with no text has no language lists to wait for, so this does not use
+                    // openPublishDestination; staging waits for whatever it needs.
+                    await selectPublishDestination(page, "BloomPUB");
+                    return stageBloomPub(page);
+                },
+            );
+            if (!staged) throw new Error("The BloomPUB was never staged.");
+
+            await step(
+                "Check the size of each picture in the BloomPUB",
+                async () => {
+                    expectPublishedSize(
+                        getStagedImageSize(staged, portraitFile),
+                        PORTRAIT,
+                        resolution,
+                        "portrait",
+                    );
+                    expectPublishedSize(
+                        getStagedImageSize(staged, landscapeFile),
+                        LANDSCAPE,
+                        resolution,
+                        "landscape",
+                    );
+                },
+            );
+        });
+    }
+});

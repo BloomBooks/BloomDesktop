@@ -309,3 +309,118 @@ export async function cancelBookSettings(page: Page): Promise<void> {
         "Book and Page Settings did not close after Cancel",
     ).toHaveCount(0);
 }
+
+/**
+ * The image resolutions the BloomPUB page of Book and Page Settings offers on its slider, in the
+ * slider's order, by the name the slider shows, with the largest picture each allows, landscape
+ * (BloomResolutionSliderInner in BookSettingsConfigrPages.tsx). A portrait picture gets the same
+ * box turned on its side.
+ */
+export const kBloomPubResolutions = [
+    { name: "Small", maxWidth: 600, maxHeight: 600 },
+    { name: "HD", maxWidth: 1280, maxHeight: 720 },
+    { name: "Full HD", maxWidth: 1920, maxHeight: 1080 },
+    { name: "4K", maxWidth: 3840, maxHeight: 2160 },
+] as const;
+
+/** One of the BloomPUB image resolutions, by the name the slider shows. */
+export type BloomPubResolutionName =
+    (typeof kBloomPubResolutions)[number]["name"];
+
+/** The largest picture, landscape, that the book's BloomPUBs carry, as the book has it saved. */
+export async function getBloomPubImageSettings(
+    page: Page,
+): Promise<{ maxWidth: number; maxHeight: number }> {
+    const settings = await apiGetJson<{
+        publish?: {
+            bloomPUB?: {
+                imageSettings?: { maxWidth: number; maxHeight: number };
+            };
+        };
+    }>(page, "book/settings");
+    const imageSettings = settings.publish?.bloomPUB?.imageSettings;
+    if (!imageSettings)
+        throw new Error(
+            "book/settings has no publish.bloomPUB.imageSettings for the book: " +
+                JSON.stringify(settings.publish),
+        );
+    return {
+        maxWidth: imageSettings.maxWidth,
+        maxHeight: imageSettings.maxHeight,
+    };
+}
+
+/** The image resolution slider on the BloomPUB page of Book and Page Settings. */
+function bloomPubResolutionSlider(page: Page): Locator {
+    return bookSettingsDialog(page).locator(".MuiSlider-root");
+}
+
+/**
+ * The image resolution the BloomPUB page of the open Book and Page Settings dialog shows, by the
+ * name written above its slider, e.g. "HD". The page must be showing (see showBookSettingsPage).
+ */
+export async function getBloomPubResolutionInBookSettings(
+    page: Page,
+): Promise<string> {
+    const slider = bloomPubResolutionSlider(page);
+    await expect(
+        slider,
+        "the showing Book and Page Settings page has no image resolution slider",
+    ).toHaveCount(1);
+    // The name is the heading beside the slider, in the same column.
+    return (
+        await slider.locator("xpath=preceding-sibling::*[1]").innerText()
+    ).trim();
+}
+
+/**
+ * Move the image resolution slider on the BloomPUB page of the open Book and Page Settings dialog
+ * to `resolution`, the way a person does with the keyboard: the slider's thumb takes the arrow
+ * keys, one step per press. Returns once the slider shows that name. Nothing is saved until OK.
+ */
+export async function setBloomPubResolutionInBookSettings(
+    page: Page,
+    resolution: BloomPubResolutionName,
+): Promise<void> {
+    const names = kBloomPubResolutions.map((r) => r.name as string);
+    const shown = await getBloomPubResolutionInBookSettings(page);
+    const from = names.indexOf(shown);
+    if (from < 0)
+        throw new Error(
+            `The image resolution slider shows "${shown}", which is none of ${names.join(", ")}.`,
+        );
+    const to = names.indexOf(resolution);
+    const thumb = bloomPubResolutionSlider(page).locator('input[type="range"]');
+    await thumb.focus();
+    for (let i = 0; i < Math.abs(to - from); i++)
+        await thumb.press(to > from ? "ArrowRight" : "ArrowLeft");
+    await expect
+        .poll(async () => getBloomPubResolutionInBookSettings(page), {
+            timeout: 10000,
+            message: `The image resolution slider never moved to ${resolution}.`,
+        })
+        .toBe(resolution);
+}
+
+/**
+ * Close Book and Page Settings with OK, so that what was changed in it is saved, and return once
+ * the dialog has closed and Bloom has rebuilt the page being edited with the saved settings.
+ * Something must have been changed: with nothing changed, OK saves nothing and Bloom rebuilds
+ * nothing, so this would wait in vain.
+ */
+export async function okBookSettings(page: Page): Promise<void> {
+    await markPageDocument(page);
+    await realClick(bookSettingsDialog(page).getByTestId("dialog-ok"));
+    await expect(
+        bookSettingsDialog(page),
+        "Book and Page Settings did not close after OK",
+    ).toHaveCount(0);
+    await expect
+        .poll(async () => isPageDocumentMarked(page), {
+            timeout: 60000,
+            message:
+                "Bloom never rebuilt the page after saving the book's settings.",
+        })
+        .toBe(false);
+    await waitForEditablePage(page);
+}

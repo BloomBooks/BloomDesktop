@@ -13,6 +13,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
+import { readImageFileSize, type IPixelSize } from "./images";
 import { switchTab } from "./workspace";
 
 /** The publish destinations, by the label each one shows in the left-hand column. */
@@ -426,4 +427,37 @@ export async function getTooltipForLanguage(
     await row.hover();
     await tooltip.first().waitFor({ state: "visible", timeout: 30000 });
     return (await tooltip.first().innerText()).trim();
+}
+
+/**
+ * The size in pixels of one picture in a staged BloomPUB (see stageBloomPub), by the name of its
+ * file in the book. This is the picture as a reader's device gets it, after Bloom has reduced it to
+ * the book's BloomPUB image resolution.
+ *
+ * A picture Bloom resized or converted is published under a new name: the book's name with a
+ * suffix for what was done to it ("_r" resized, "_t" or "_tf" made transparent), perhaps a number
+ * to keep it unique, and perhaps another extension (BloomPubMaker.CompressImages). So the picture
+ * is found by its name in the book with any of those suffixes. Fails, listing the pictures the
+ * BloomPUB does carry, unless exactly one file matches.
+ */
+export function getStagedImageSize(
+    stagedFolder: string,
+    imageFileName: string,
+): IPixelSize {
+    const base = Path.basename(imageFileName, Path.extname(imageFileName));
+    const escaped = base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const published = new RegExp(
+        `^${escaped}(_(r|t|tf)\\d*)?\\.(jpe?g|png)$`,
+        "i",
+    );
+    const pictures = fs
+        .readdirSync(stagedFolder)
+        .filter((name) => /\.(jpe?g|png)$/i.test(name));
+    const matches = pictures.filter((name) => published.test(name));
+    if (matches.length !== 1)
+        throw new Error(
+            `The staged BloomPUB has ${matches.length} pictures that could be ${imageFileName}` +
+                ` (${matches.join(", ")}). It has: ${pictures.join(", ")}.`,
+        );
+    return readImageFileSize(Path.join(stagedFolder, matches[0]));
 }
