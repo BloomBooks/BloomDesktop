@@ -431,6 +431,8 @@ const Editor: React.FC<{
                     flex-direction: row;
                     align-items: baseline;
                     flex-grow: 1;
+                    // Space between the code and the Copy button.
+                    margin-right: 12px;
                 `}
             >
                 <Label
@@ -487,13 +489,23 @@ const Editor: React.FC<{
                     }}
                 />
             </div>
-            <Button variant="text" onClick={handleCopy} size="small">
+            <Button
+                variant="text"
+                onClick={handleCopy}
+                size="small"
+                css={kCopyPasteButtonCss}
+            >
                 <Stack direction="column" alignItems="center">
                     <ContentCopy />
                     <Label l10nKey="EditTab.CopyButton">Copy</Label>
                 </Stack>
             </Button>
-            <Button variant="text" onClick={handlePaste} size="small">
+            <Button
+                variant="text"
+                onClick={handlePaste}
+                size="small"
+                css={kCopyPasteButtonCss}
+            >
                 <Stack direction="column" alignItems="center">
                     <ContentPaste />
                     <Label l10nKey="EditTab.PasteButton">Paste</Label>
@@ -502,6 +514,18 @@ const Editor: React.FC<{
         </div>
     );
 };
+
+// The Copy and Paste buttons beside the code: a small icon over a small label, so they stay
+// secondary to the code itself.
+const kCopyPasteButtonCss = css`
+    min-width: 0;
+    padding: 2px 6px;
+    font-size: 10px;
+    line-height: 1.2;
+    svg {
+        font-size: 18px;
+    }
+`;
 
 function getSubscriptionCodeToDisplayForEditingBlorgBook(
     subscriptionCode: string,

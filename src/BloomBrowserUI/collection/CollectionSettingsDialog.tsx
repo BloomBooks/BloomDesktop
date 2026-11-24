@@ -1,4 +1,5 @@
 import { css } from "@emotion/react";
+import { kBloomBlue } from "../bloomMaterialUITheme";
 import * as React from "react";
 import {
     ConfigrValues,
@@ -16,6 +17,7 @@ import {
     kConfigrDialogSizeCss,
     kConfigrPaneClassName,
     kConfigrThemeOverrides,
+    useConfigrSearchBox,
 } from "../react_components/ConfigrDialogMiddle";
 import { useEventLaunchedBloomDialog } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import {
@@ -117,6 +119,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const paneRef = React.useRef<ConfigrPaneHandle>(null);
     // The top-level page Config-R is showing, so Help can open that page's topic.
     const [shownPageKey, setShownPageKey] = React.useState<string>();
+    const { searchBox, searchBoxProps } = useConfigrSearchBox();
 
     // Config-r can call onChange while rendering, so state updates from it are deferred; the OK
     // handler reads this ref to be sure it has the newest values.
@@ -292,7 +295,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             draggable={false}
             maxWidth={false}
         >
-            <DialogTitle title={dialogTitle} />
+            <DialogTitle title={dialogTitle}>{searchBox}</DialogTitle>
             <ConfigrDialogMiddle>
                 {notAllowedMessage && (
                     <div
@@ -308,9 +311,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                     <ConfigrPane
                         ref={paneRef}
                         className={kConfigrPaneClassName}
-                        label={dialogTitle}
-                        showAppBar={false}
-                        showSearch={false}
+                        label=""
+                        {...searchBoxProps}
                         initialValues={
                             loadedSettings.values as unknown as ConfigrValues
                         }
@@ -352,20 +354,24 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                             )?.helpTopic ?? kGeneralSettingsHelpTopic
                         }
                     />
-                    {needsRestart && (
-                        <div
-                            css={css`
-                                align-self: center;
-                            `}
-                        >
-                            {restartMessage}
-                        </div>
-                    )}
                 </DialogBottomLeftButtons>
                 {notAllowedMessage ? (
                     <DialogCloseButton onClick={closeDialog} />
                 ) : (
                     <React.Fragment>
+                        {needsRestart && (
+                            // Beside the Restart button, which it explains.
+                            <div
+                                css={css`
+                                    align-self: center;
+                                    color: ${kBloomBlue};
+                                    font-size: 12px;
+                                    margin-right: 12px;
+                                `}
+                            >
+                                {restartMessage}
+                            </div>
+                        )}
                         <DialogOkButton
                             default={true}
                             enabled={

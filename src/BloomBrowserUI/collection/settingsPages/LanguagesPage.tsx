@@ -460,6 +460,11 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                     path={path}
                     label={languageLabel}
                     control={WrittenLanguageControl}
+                    // The chosen language is what this group is about, so Config-R names it in
+                    // the heading wherever this row is out of sight (search results, the More
+                    // page), and searching for the language's name finds the group.
+                    identifiesGroup={true}
+                    valueText={(language) => language?.name}
                 />
                 {present && (
                     <ConfigrCustomStringInput

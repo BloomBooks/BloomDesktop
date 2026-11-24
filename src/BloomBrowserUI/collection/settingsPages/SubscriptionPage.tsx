@@ -8,6 +8,20 @@ import { SubscriptionControls } from "../subscriptionCodeControl";
 import { kUiFontStack } from "../../bloomMaterialUITheme";
 import { ISettingsPage, ISettingsPageContext } from "./settingsPage";
 
+const kIntroEnglish =
+    "To help cover a portion of the costs associated with providing Bloom, we offer [advanced features](%0) and customizations as a subscription service.";
+const kRequestEnglish =
+    "Please contact [%0](%1) to purchase your subscription code.";
+const kFeatureMatrixUrl = "https://bloomlibrary.org/feature-matrix"; // redirected by cloudflare
+const kSubscriptionsEmail = "subscriptions@bloomlibrary.org";
+const kSubscriptionsMailto = "mailto:subscriptions@bloomlibrary.org";
+
+// The words of Markdown text as the reader sees them: a link's text without its brackets and
+// address, so a phrase that runs into a link still matches and the address does not.
+function markdownLinksAsText(markdown: string): string {
+    return markdown.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1");
+}
+
 // Config-R's own rows are padded like this (MUI ListItem).
 const kRowPadding = "8px 16px";
 // The page's text is in Bloom's UI font, as in the rest of Bloom's subscription UI.
@@ -32,25 +46,40 @@ export function useSubscriptionPage(
     // As typed; undefined until the values have loaded.
     const code = context.values?.subscription.code;
 
+    // The introduction as the user reads it. Search finds the English written below; these let
+    // it find the translation the Markdown shows instead.
+    const introText = useL10n(
+        kIntroEnglish,
+        "Settings.Subscription.IntroText",
+        undefined,
+        kFeatureMatrixUrl,
+    );
+    const requestText = useL10n(
+        kRequestEnglish,
+        "Settings.Subscription.RequestSubscription",
+        undefined,
+        kSubscriptionsEmail,
+        kSubscriptionsMailto,
+    );
+
     const element = (
         <ConfigrPage label={label} pageKey="subscription" topLevel={true}>
-            <ConfigrStatic>
+            <ConfigrStatic
+                searchTerms={markdownLinksAsText(`${introText} ${requestText}`)}
+            >
                 <div css={kTextStyle}>
                     <Markdown
                         l10nKey="Settings.Subscription.IntroText"
-                        l10nParam0={"https://bloomlibrary.org/feature-matrix"} // redirected by cloudflare
+                        l10nParam0={kFeatureMatrixUrl}
                     >
-                        To help cover a portion of the costs associated with
-                        providing Bloom, we offer [advanced features](%0) and
-                        customizations as a subscription service.
+                        {kIntroEnglish}
                     </Markdown>
                     <Markdown
                         l10nKey="Settings.Subscription.RequestSubscription"
-                        l10nParam0={"subscriptions@bloomlibrary.org"}
-                        l10nParam1={"mailto:subscriptions@bloomlibrary.org"}
+                        l10nParam0={kSubscriptionsEmail}
+                        l10nParam1={kSubscriptionsMailto}
                     >
-                        Please contact [%0](%1) to purchase your subscription
-                        code.
+                        {kRequestEnglish}
                     </Markdown>
                 </div>
             </ConfigrStatic>
