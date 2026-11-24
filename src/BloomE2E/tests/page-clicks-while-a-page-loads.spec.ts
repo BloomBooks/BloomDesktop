@@ -4,12 +4,14 @@
 // all-pages-typing-after-a-page-change.spec.ts covers: leaving the Edit tab while a click is
 // remembered, and a click made while Bloom renames the book's folder because its title changed.
 
+import * as fs from "node:fs";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page, Response } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
+    editablePageFrame,
     getPages,
     getShownPageId,
     goToPage,
@@ -134,6 +136,10 @@ test("a page clicked while the book's folder is renamed for its new title is whe
     await chooseImageFile(page, fixtureImage("bird.png"));
     await goToPage(page, pages[0].id);
     await typeInGroup(page, ".bookTitle", "en", "How Clocks Tick");
+    expect(
+        fs.existsSync(oldFolder),
+        "test setup: typing a title does not rename the folder by itself",
+    ).toBe(true);
     const failed = await failedRequestsUnder(page, oldFolder, async () => {
         // THE ACTION UNDER TEST: the first click saves the cover, which renames the book's folder
         // for its title, and starts loading a page; the second arrives while that page loads.
@@ -144,10 +150,20 @@ test("a page clicked while the book's folder is renamed for its new title is whe
         await waitForEditTabSettled(page);
     });
 
+    const title = "How Clocks Tick";
+    const newFolder = Path.join(Path.dirname(oldFolder), title);
+    expect(
+        fs.existsSync(newFolder) && !fs.existsSync(oldFolder),
+        "The save should have renamed the book's folder for its title, or this tests nothing.",
+    ).toBe(true);
     expect(
         await getShownPageId(page),
         "The Edit tab should end on the page clicked last.",
     ).toBe(target.id);
+    expect(
+        decodeURI(editablePageFrame(page).url()),
+        "The page clicked last should have been loaded from the book's renamed folder.",
+    ).toContain(`/${title}/`);
     await expect
         .poll(
             async () => {
