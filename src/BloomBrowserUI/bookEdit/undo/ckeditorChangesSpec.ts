@@ -20,6 +20,7 @@ type FakeEditor = ICkeditorChangeSource & {
     undos: number;
     box: HTMLElement;
     typed(): void;
+    pasted(): void;
 };
 
 describe("which CKEditor an undo of typing goes to", () => {
@@ -54,6 +55,12 @@ describe("which CKEditor an undo of typing goes to", () => {
             typed() {
                 editor.canUndo = true;
                 changeListeners.forEach((l) => l({}));
+            },
+            // A change no keystroke led up to, as CKEditor records it: it says so, and only then
+            // saves the snapshot that gives it something to undo.
+            pasted() {
+                changeListeners.forEach((l) => l({}));
+                editor.canUndo = true;
             },
         };
         trackCkeditorChanges(editor, new UndoStack());
@@ -105,6 +112,45 @@ describe("which CKEditor an undo of typing goes to", () => {
         focus(pastedInto);
 
         expect(getCkeditorToUndo()).toBe(pastedInto);
+    });
+
+    it("undoes a paste that is the page's first change", async () => {
+        const box = makeEditor();
+        focus(box);
+        box.pasted();
+        await Promise.resolve();
+
+        expect(undoCkeditorTyping(0)).toBe(true);
+
+        expect(box.undos).toBe(1);
+    });
+
+    // "Paste into one box, type in another, click back into the first": the typing is newer.
+    it("puts typing in another box after a paste ahead of the paste", async () => {
+        const pastedInto = makeEditor();
+        const typedIn = makeEditor();
+        focus(pastedInto);
+        pastedInto.pasted();
+        await Promise.resolve();
+        typedIn.typed();
+        focus(pastedInto);
+
+        expect(getCkeditorToUndo()).toBe(typedIn);
+    });
+
+    // CKEditor attaching itself to the cells a table operation builds can report a change that
+    // becomes undoable; those cells do not have the focus, and the change is not the person's.
+    it("does not record a late-undoable change in a box without the focus", async () => {
+        const typedIn = makeEditor();
+        const newCell = makeEditor();
+        typedIn.typed();
+        const typedAt = getCkeditorUndoOrder();
+        focus(typedIn);
+
+        newCell.pasted();
+        await Promise.resolve();
+
+        expect(getCkeditorUndoOrder()).toBe(typedAt);
     });
 
     it("lists the boxes typed in after the focused one, the most recent first", () => {

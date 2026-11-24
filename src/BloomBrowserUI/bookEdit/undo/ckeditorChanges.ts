@@ -37,6 +37,19 @@ export interface ICkeditorChangeSource {
     element?: { $: HTMLElement };
 }
 
+// The editor of the box that has the focus: CKEditor's current instance. C# may call into this
+// module before the module that defines CKEDITOR is even loaded, so it is read from the window,
+// where a missing one is undefined rather than an error.
+function focusedCkeditor(): ICkeditorChangeSource | undefined {
+    return (
+        (
+            window as unknown as {
+                CKEDITOR?: { currentInstance?: ICkeditorChangeSource | null };
+            }
+        ).CKEDITOR?.currentInstance ?? undefined
+    );
+}
+
 // The editors that recorded a change a person could undo, the most recent first, each with when it
 // last did, on the sequence the stack's entries share (changeOrder.ts). Typing is undone in the box
 // it was typed in, which is not always the box that has the focus: "add a row, type in it, click
@@ -54,20 +67,12 @@ const kMaxChangedEditors = 10;
  * page; an editor whose box a table undo rebuilt, for instance, is left out, since undoing there
  * would change nothing anyone can see.
  *
- * The editor that has the focus (CKEditor's current instance) is among them even when it recorded
- * no change: a change CKEditor makes without a keystroke, such as a first paste into a box, is
- * reported before CKEditor counts it as undoable, so it is missing from the record. Such an editor
- * counts as having made the latest change, and on a tie the focused editor goes first, so a box
- * with typing of its own keeps its Undo.
+ * The editor that has the focus (CKEditor's current instance) is among them even when none of its
+ * changes was recorded. Such an editor counts as having made the latest change, and on a tie the
+ * focused editor goes first, so a box with something to undo of its own keeps its Undo.
  */
 export function getCkeditorsToUndo(): ICkeditorChangeSource[] {
-    // C# may call into this before the module that defines CKEDITOR is even loaded, so it is read
-    // from the window, where a missing one is undefined rather than an error.
-    const focusedEditor = (
-        window as unknown as {
-            CKEDITOR?: { currentInstance?: ICkeditorChangeSource | null };
-        }
-    ).CKEDITOR?.currentInstance;
+    const focusedEditor = focusedCkeditor();
     // Editors with nothing left to undo, or whose boxes have left the page, are dropped here, so
     // removed boxes' editors are not kept alive.
     changedEditors = changedEditors.filter((e) => canUndoIn(e.editor));
@@ -98,8 +103,8 @@ export function getCkeditorUndoOrder(): number {
     return orderOf(getCkeditorToUndo());
 }
 
-// When `editor` recorded its latest change; for an editor whose change went unrecorded (a first
-// paste), or none, the last change CKEditor recorded anywhere.
+// When `editor` recorded its latest change; for an editor with no change recorded, or none, the
+// last change CKEditor recorded anywhere.
 function orderOf(editor: ICkeditorChangeSource | undefined): number {
     return (
         changedEditors.find((e) => e.editor === editor)?.order ??
@@ -165,21 +170,43 @@ export function trackCkeditorChanges(
         if (isUndoOrRedo(evt)) runningUndoOrRedo = false;
     });
 
-    // The undoable() test keeps the changes CKEditor makes while it attaches itself to a box out
-    // of the reckoning: only a change a person could undo counts as a change the person made.
+    // Only a change a person could undo counts as a change the person made; that keeps out the
+    // changes CKEditor makes while it attaches itself to a box. But CKEditor fires "change" before
+    // it saves the snapshot that makes a box undoable, so the first change in a box that no
+    // keystroke led up to (a paste, a cut) is not yet undoable when reported. For the box that has
+    // the focus, where a person makes such changes, it is checked again once CKEditor has saved
+    // it. A box CKEditor is attaching itself to, such as the cells a table operation builds, does
+    // not have the focus.
     editor.on("change", () => {
-        if (!editor.undoManager?.undoable()) return;
-        noteCkeditorChange();
-        const order = getCkeditorChangeOrder();
-        // Usually the box typed in is already the most recent.
-        if (changedEditors[0]?.editor === editor) {
-            changedEditors[0].order = order;
-        } else {
-            changedEditors = [
-                { editor, order },
-                ...changedEditors.filter((e) => e.editor !== editor),
-            ].slice(0, kMaxChangedEditors);
-        }
-        if (!runningUndoOrRedo) stack.discardRedo();
+        const duringUndoOrRedo = runningUndoOrRedo;
+        const recordIfUndoable = () => {
+            if (editor.undoManager?.undoable())
+                recordChange(editor, duringUndoOrRedo, stack);
+        };
+        if (!editor.undoManager?.undoable() && editor === focusedCkeditor())
+            queueMicrotask(recordIfUndoable);
+        else recordIfUndoable();
     });
+}
+
+// Note a change `editor` recorded: its place in the order (changeOrder.ts), the editor as the most
+// recently changed, and, for a new edit rather than CKEditor's own undo or redo, that the stack's
+// redo branch is abandoned.
+function recordChange(
+    editor: ICkeditorChangeSource,
+    duringUndoOrRedo: boolean,
+    stack: UndoStack,
+): void {
+    noteCkeditorChange();
+    const order = getCkeditorChangeOrder();
+    // Usually the box typed in is already the most recent.
+    if (changedEditors[0]?.editor === editor) {
+        changedEditors[0].order = order;
+    } else {
+        changedEditors = [
+            { editor, order },
+            ...changedEditors.filter((e) => e.editor !== editor),
+        ].slice(0, kMaxChangedEditors);
+    }
+    if (!duringUndoOrRedo) stack.discardRedo();
 }
