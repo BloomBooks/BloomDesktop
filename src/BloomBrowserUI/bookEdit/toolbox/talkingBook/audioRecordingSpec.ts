@@ -35,7 +35,7 @@ import {
 // (there is no editable-page bundle) -- and every existing test is unaffected. A test that
 // needs to exercise the audio code's handling of an active canvas element calls __enable() and
 // __setActiveForTest(...). When enabled it is a Proxy so that any method the production code
-// happens to call (e.g. resumeComicEditing during image-description setup) is a safe no-op,
+// happens to call (e.g. resumeCanvasElementEditing during image-description setup) is a safe no-op,
 // while getActiveElement returns the (possibly stale/detached) element the test supplied.
 const mockCanvasElement = vi.hoisted(() => {
     let activeElement: HTMLElement | undefined = undefined;
