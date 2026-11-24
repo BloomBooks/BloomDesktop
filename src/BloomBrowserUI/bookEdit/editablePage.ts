@@ -68,14 +68,29 @@ function getPageId(): string {
 //
 // The load id goes with it: once C# answers, it accepts snapshots only from this load (see
 // getPageLoadId()), so the page snapshot waits for that answer before it starts.
+//
+// So does the navigation number C# put in the URL of a page it loads into the Edit tab (see
+// EditingModel.GetUrlForCurrentPage). C# acts on the notification only when that number is the
+// navigation it is waiting for. Pages loaded any other way have none: the page layout update
+// loads every page of the book off-screen, and they must not be taken for the page being edited
+// (BL-17089). C# answers them all the same, so everything here carries on as usual.
 let pageDomLoadedAnswered: Promise<unknown> | undefined;
 function tellCSharpPageDomLoaded(): Promise<unknown> {
     if (!pageDomLoadedAnswered)
         pageDomLoadedAnswered = postJson("editView/pageDomLoaded", {
             pageId: getPageId(),
             loadId: getPageLoadId(),
+            // Left out of the JSON when undefined.
+            navigationNumber: getNavigationNumber(),
         });
     return pageDomLoadedAnswered;
+}
+
+// The navigation number in this page's URL, if it has one (see tellCSharpPageDomLoaded). The
+// parameter name matches EditingModel.kNavigationNumberUrlParam.
+function getNavigationNumber(): number | undefined {
+    const value = new URLSearchParams(window.location.search).get("navigation");
+    return value === null ? undefined : Number(value);
 }
 document.addEventListener("DOMContentLoaded", () => {
     void tellCSharpPageDomLoaded();

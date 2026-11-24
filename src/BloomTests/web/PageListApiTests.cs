@@ -146,9 +146,16 @@ namespace BloomTests.web
         /// </summary>
         private static EditingStateMachine MakeStateMachineEditingPageA()
         {
-            var machine = new EditingStateMachine(_ => { }, (_, __) => { }, () => true, () => { });
+            var machine = new EditingStateMachine(
+                _ => { },
+                (_, __) => { },
+                () => true,
+                () => { },
+                () => true,
+                _ => { }
+            );
             machine.ToNavigating("a");
-            machine.ToEditing("a");
+            machine.ToEditing("a", machine.NavigationNumber);
             Assert.That(
                 machine.CurrentState,
                 Is.EqualTo(State.Editing),
