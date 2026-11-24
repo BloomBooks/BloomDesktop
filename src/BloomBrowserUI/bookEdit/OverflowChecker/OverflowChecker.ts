@@ -98,46 +98,7 @@ export default class OverflowChecker {
             getElementsThatCanOverflowOrNeedToBeResized(container),
         );
 
-        //Add the handler so that when the elements change, we test for overflow
-        $editablePageElements.on("keyup paste", (e) => {
-            // Don't test for overflow on navigation keys.
-            if (e.keyCode >= 33 && e.keyCode <= 40) {
-                return;
-            }
-
-            // BL-2892 There's no guarantee that the paste target isn't inside one of the editablePageElements
-            // If we allow an embedded paste target (e.g. <p>) to get tested for overflow, it will overflow artificially.
-            const editable = $(e.target).closest($editablePageElements)[0];
-            // Give the browser time to get the pasted text into the DOM first, before testing for overflow
-            // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
-            //        At first I was concerned that this might slow typing, but it doesn't seem to.
-            setTimeout(() => {
-                if (e.type === "paste") {
-                    // If we're pasting, show as much of the text as possible even it can't all be shown.
-                    // See BL-14632.
-                    OverflowChecker.AdjustSizeOrMarkOverflow(
-                        editable,
-                        false,
-                        true,
-                    );
-                } else {
-                    OverflowChecker.AdjustSizeOrMarkOverflow(editable);
-                }
-
-                //REVIEW: why is this here, in the overflow detection?
-
-                // This will make sure that any language tags on this div stay in position with editing.
-                // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
-                (<qtipInterface>(
-                    $(
-                        getElementsThatCanOverflowOrNeedToBeResized(
-                            document.body,
-                        ),
-                    )
-                )).qtip("reposition");
-            }, 100); // 100 milliseconds
-            e.stopPropagation();
-        });
+        OverflowChecker.AddTypingHandlers($editablePageElements.get());
 
         // The resize handlers check their boxes one at a time, which is the work that the limit
         // exists to save, so neither checks a page cleared for the limit (split-pane set-up resizes
@@ -197,6 +158,55 @@ export default class OverflowChecker {
                 OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
             }
         }
+    }
+
+    // Checks each of `boxes` for overflow as it is typed or pasted in. Page load gives this to the
+    // boxes the page shows (AddOverflowHandlers), and setUpBoxesBuiltAfterLoad to boxes added or
+    // shown since (a new table row, a language shown in a table cell or a canvas text box). A box
+    // given it again keeps one handler, not two.
+    public static AddTypingHandlers(boxes: HTMLElement[]) {
+        const $boxes = $(boxes);
+        //Add the handler so that when the elements change, we test for overflow
+        $boxes.off(".overflowChecker");
+        $boxes.on("keyup.overflowChecker paste.overflowChecker", (e) => {
+            // Don't test for overflow on navigation keys.
+            if (e.keyCode >= 33 && e.keyCode <= 40) {
+                return;
+            }
+
+            // BL-2892 There's no guarantee that the paste target isn't inside one of the editablePageElements
+            // If we allow an embedded paste target (e.g. <p>) to get tested for overflow, it will overflow artificially.
+            const editable = $(e.target).closest($boxes)[0];
+            // Give the browser time to get the pasted text into the DOM first, before testing for overflow
+            // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
+            //        At first I was concerned that this might slow typing, but it doesn't seem to.
+            setTimeout(() => {
+                if (e.type === "paste") {
+                    // If we're pasting, show as much of the text as possible even it can't all be shown.
+                    // See BL-14632.
+                    OverflowChecker.AdjustSizeOrMarkOverflow(
+                        editable,
+                        false,
+                        true,
+                    );
+                } else {
+                    OverflowChecker.AdjustSizeOrMarkOverflow(editable);
+                }
+
+                //REVIEW: why is this here, in the overflow detection?
+
+                // This will make sure that any language tags on this div stay in position with editing.
+                // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
+                (<qtipInterface>(
+                    $(
+                        getElementsThatCanOverflowOrNeedToBeResized(
+                            document.body,
+                        ),
+                    )
+                )).qtip("reposition");
+            }, 100); // 100 milliseconds
+            e.stopPropagation();
+        });
     }
 
     // Actual testable determination of Type I overflow or not

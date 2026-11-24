@@ -5,6 +5,7 @@ import {
 } from "./translationGroupLanguages";
 import { insertInlineImage } from "./inlineImages";
 import { addLanguageTagsToBoxes } from "./bloomEditing";
+import OverflowChecker from "../OverflowChecker/OverflowChecker";
 
 // The steps of setUpBoxesBuiltAfterLoad that need the real editing page (CKEditor, the toolbox,
 // jQuery handlers on a live page). The inline picture step is left real.
@@ -293,5 +294,33 @@ describe("setUpBoxesBuiltAfterLoad", () => {
 
         expect(tag).toHaveBeenCalledTimes(1);
         expect(tag.mock.calls[0][0].toArray()).toEqual([...added, ...shown]);
+    });
+
+    // Page load checks the boxes it shows for overflow as they are typed in; a box added later, or
+    // hidden at load and shown now, must be checked too.
+    it("checks the boxes added and the boxes shown again for overflow as they are typed in", () => {
+        const group = makeGroup(
+            "<div class='bloom-editable bloom-visibility-code-on' lang='en'><p>a</p></div>" +
+                "<div class='bloom-editable bloom-visibility-code-off' lang='fr'><p>b</p></div>",
+        );
+        const { added, shown } = showLanguagesInTranslationGroup(group, [
+            "fr",
+            "es",
+        ]);
+        // sanity check: an es box was added and the fr box shown again
+        expect(added.map((box) => box.getAttribute("lang"))).toEqual(["es"]);
+        expect(shown.map((box) => box.getAttribute("lang"))).toEqual(["fr"]);
+        const addTypingHandlers = vi
+            .spyOn(OverflowChecker, "AddTypingHandlers")
+            .mockImplementation(() => {});
+
+        setUpBoxesBuiltAfterLoad(added, shown);
+
+        expect(addTypingHandlers).toHaveBeenCalledTimes(1);
+        expect(addTypingHandlers.mock.calls[0][0]).toEqual([
+            ...added,
+            ...shown,
+        ]);
+        addTypingHandlers.mockRestore();
     });
 });

@@ -584,6 +584,27 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
         }
     }
 
+    // A box added after the page loaded (a new table row, a language shown in a cell) is given the
+    // typing handler by setUpBoxesBuiltAfterLoad, perhaps more than once.
+    it("checks a box given the typing handler after load once per keystroke", () => {
+        const boxes = loadPageOfTooFullBoxes(2);
+        // sanity check: nothing has checked the boxes yet
+        expect(
+            boxes.filter((box) => box.classList.contains("overflow")),
+        ).toEqual([]);
+        OverflowChecker.AddTypingHandlers([boxes[1]]);
+        OverflowChecker.AddTypingHandlers([boxes[1]]);
+        const check = vi.spyOn(OverflowChecker, "AdjustSizeOrMarkOverflow");
+
+        typeIn(boxes[1]);
+
+        expect(
+            check.mock.calls.map((call) => call[0]),
+            "Typing in the box should check it, once however often it was given the handler.",
+        ).toEqual([boxes[1]]);
+        expect(boxes[1].classList.contains("overflow")).toBe(true);
+    });
+
     // BL-1260: Bloom does not check a page with more than 30 boxes, and AddOverflowHandlers clears
     // its marks, so marks put there by a table check would never be cleared. A page can also grow
     // past 30 while it is open (a row added to a table): its earlier marks go then. Its boxes are
