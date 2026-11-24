@@ -9,7 +9,6 @@
 
 import $ from "jquery";
 import BloomField from "../bloomField/BloomField";
-import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import {
     activateLongPressFor,
     addEditKeyHandlersToBoxes,
@@ -75,8 +74,10 @@ export function showLanguagesInTranslationGroup(
  * until C# gives it its bloom-content class; the canvas does the same for its new elements
  * (CanvasElementManager.addEventsToFocusableElements).
  *
- * `boxesToTagAgain` are boxes already set up that need only their language tags worked out again,
- * and the overflow check as they are typed in, which page load gives only to the boxes it shows:
+ * Overflow checking as a box is typed in needs nothing here: one handler on the page's body
+ * (OverflowChecker's addTypingHandler) covers every box, however it got there.
+ *
+ * `boxesToTagAgain` are boxes already set up that need only their language tags worked out again:
  * those showLanguagesInTranslationGroup has shown again (a hidden box gets no tag, since
  * AddLanguageTags skips a box too narrow to hold one), or boxes whose width may have changed. They
  * are tagged with the new boxes, so the page is laid out once to measure them all.
@@ -125,8 +126,6 @@ export function setUpBoxesBuiltAfterLoad(
     boxes.forEach((box) => box.setAttribute("contenteditable", "true"));
     addLanguageTagsToBoxes($([...boxes, ...boxesToTagAgain]));
     boxes.forEach((box) => attachToCkEditor(box));
-    // Page load gives this only to the boxes it shows, so a box shown again may never have had it.
-    OverflowChecker.AddTypingHandlers([...boxes, ...boxesToTagAgain]);
     // After CKEditor, which can replace the boxes' nodes, as at page load.
     activateLongPressFor($boxes);
 }

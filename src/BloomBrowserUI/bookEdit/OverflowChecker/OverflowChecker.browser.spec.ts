@@ -567,7 +567,7 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
         );
     }
 
-    // Types in `box`, a box given the typing handler, and lets the typing check run: it
+    // Types in `box`, on a page set up by AddOverflowHandlers, and lets the typing check run: it
     // checks a box a tenth of a second after the key comes up (the page's own first check waits a
     // second, which these tests never reach).
     function typeIn(box: HTMLElement): void {
@@ -584,32 +584,40 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
         }
     }
 
-    // A box added after the page loaded (a new table row, a language shown in a cell) is given the
-    // typing handler by setUpBoxesBuiltAfterLoad, perhaps more than once.
-    it("checks a box given the typing handler after load once per keystroke", () => {
-        const boxes = loadPageOfTooFullBoxes(2);
-        // sanity check: nothing has checked the boxes yet
-        expect(
-            boxes.filter((box) => box.classList.contains("overflow")),
-        ).toEqual([]);
-        OverflowChecker.AddTypingHandlers([boxes[1]]);
-        OverflowChecker.AddTypingHandlers([boxes[1]]);
+    // A box added after the page loaded (a new table row, a language shown in a cell) is checked as
+    // it is typed in, as the page's own boxes are, even when something at the box stops the key
+    // from going further (CKEditor handles keys and pastes there), and once per key however often
+    // the page is set up again (adding a canvas element sets up its canvas).
+    it("checks a box added after the page was set up, once per key", () => {
+        const boxes = loadPageOfTooFullBoxes(1);
+        const container = document.getElementById("fixtureRoot")!;
+        new OverflowChecker().AddOverflowHandlers(container);
+        const group = boxes[0].parentElement!;
+        const addedGroup = group.cloneNode(true) as HTMLElement;
+        group.after(addedGroup);
+        const added = addedGroup.querySelector<HTMLElement>(".bloom-editable")!;
+        added.addEventListener("keyup", (e) => e.stopPropagation());
+        new OverflowChecker().AddOverflowHandlers(container);
+        // sanity check: nothing has checked the added box yet
+        expect(added.classList.contains("overflow")).toBe(false);
         const check = vi.spyOn(OverflowChecker, "AdjustSizeOrMarkOverflow");
 
-        typeIn(boxes[1]);
+        typeIn(added);
 
         expect(
             check.mock.calls.map((call) => call[0]),
-            "Typing in the box should check it, once however often it was given the handler.",
-        ).toEqual([boxes[1]]);
-        expect(boxes[1].classList.contains("overflow")).toBe(true);
+            "Typing in the added box should check it, once.",
+        ).toEqual([added]);
+        expect(added.classList.contains("overflow")).toBe(true);
     });
 
     // BL-2892: a paste lands in a paragraph inside the box, and it is the box that is checked.
     it("checks the box, not the paragraph inside it that a key or paste comes from", () => {
         const boxes = loadPageOfTooFullBoxes(1);
         boxes[0].innerHTML = `<p>${"words ".repeat(10)}</p>`;
-        OverflowChecker.AddTypingHandlers(boxes);
+        new OverflowChecker().AddOverflowHandlers(
+            document.getElementById("fixtureRoot")!,
+        );
         const check = vi.spyOn(OverflowChecker, "AdjustSizeOrMarkOverflow");
 
         typeIn(boxes[0].querySelector("p")!);
