@@ -18,7 +18,12 @@ import {
     goToPage,
     makeBookFromTemplate,
 } from "./bookMaking";
-import { selectCanvasElementAt } from "./canvasElements";
+import {
+    canvasElements,
+    dispatchPaletteDrag,
+    selectCanvasElementAt,
+    type PaletteItem,
+} from "./canvasElements";
 import type { IViewRect } from "./pageView";
 import { expandToolByHeader } from "./toolbox";
 export type GameTab = "Start" | "Correct" | "Wrong" | "Play";
@@ -287,4 +292,49 @@ export async function dragItemOntoItsTarget(page: Page): Promise<string> {
         `Dragging item ${id} onto its target did not place it there.`,
     ).toHaveClass(/bloom-draggedToTarget/, { timeout: 10000 });
     return id;
+}
+
+/** The Game tool's panel in the toolbox, which holds its palette for the tab showing. */
+const GAME_TOOL_PANEL = '.MuiAccordion-root:has([data-toolid="game"])';
+/** The canvas of a game page, which takes the items dragged from the Game tool's palette. */
+const GAME_PAGE_CANVAS = '.bloom-page[data-tool-id="game"] .bloom-canvas';
+
+/**
+ * Drag one item from the Game tool's palette onto the game page being edited, as a person does,
+ * and wait until the page has one more canvas element. Returns the position of the new element
+ * among the page's canvas elements (canvasElements), which holds until another is added or removed.
+ * In the Correct or Wrong tab the palette is that tab's, so the new item shows only in that tab.
+ *
+ * Bloom does not always add the new element last on a game page, so it is found as the one that
+ * was not there before the drag.
+ *
+ * `at` places the drop within the canvas, as a fraction of its width and height. Like the Canvas
+ * tool's palette drag (dragPaletteItemOntoCanvas), the drag is dispatched rather than made with the
+ * real mouse; that function's helper says why.
+ */
+export async function dragGamePaletteItemOntoPage(
+    page: Page,
+    item: PaletteItem,
+    at: { xFraction: number; yFraction: number },
+): Promise<number> {
+    const existing = await canvasElements(page).elementHandles();
+    await dispatchPaletteDrag(
+        page,
+        item,
+        at,
+        GAME_TOOL_PANEL,
+        GAME_PAGE_CANVAS,
+    );
+    await expect
+        .poll(async () => canvasElements(page).count(), {
+            timeout: 30000,
+            message: `Dragging the Game tool's ${item} item onto the page did not add a canvas element.`,
+        })
+        .toBe(existing.length + 1);
+    const index = await canvasElements(page).evaluateAll(
+        (elements, before) => elements.findIndex((e) => !before.includes(e)),
+        existing,
+    );
+    await Promise.all(existing.map((handle) => handle.dispose()));
+    return index;
 }

@@ -142,11 +142,17 @@ export function activeCanvasElement(page: Page): Locator {
  * It runs in Bloom's shell document, because that is the only place both frames are in reach: the
  * palette lives in the toolbox frame and the canvas in the page frame, and one DataTransfer has to
  * pass between them.
+ *
+ * `from` names the tool whose palette the item comes from, by a selector for its controls in the
+ * toolbox, and `onto` the canvas it is dropped on, by a selector in the page. They default to the
+ * Canvas tool and a Canvas page's canvas; a game page has the Game tool's palette and canvas.
  */
-async function dispatchPaletteDrag(
+export async function dispatchPaletteDrag(
     page: Page,
     item: PaletteItem,
     at: { xFraction: number; yFraction: number },
+    from: string = CANVAS_TOOL_CONTROLS,
+    onto: string = CANVAS_SELECTOR,
 ): Promise<void> {
     const failure = await page.evaluate(
         (what) => {
@@ -175,9 +181,9 @@ async function dispatchPaletteDrag(
                     `Bloom is not showing both the toolbox and the page ` +
                     `(toolbox: ${!!toolboxDocument}, page: ${!!pageDocument}).`
                 );
-            // The Games tool's panel carries palette items with the same test ids, and the
-            // accordion keeps every tool's panel in the document, so take the Canvas tool's own
-            // item, and only one that is laid out (a hidden panel's items have no rects).
+            // The Canvas and Game tools' panels carry palette items with the same test ids, and
+            // the accordion keeps every tool's panel in the document, so take the item from the
+            // tool named, and only one that is laid out (a hidden panel's items have no rects).
             const source = Array.from(
                 toolboxDocument.querySelectorAll<HTMLElement>(
                     `${what.controls} [data-testid="palette-${what.item}"]`,
@@ -248,8 +254,8 @@ async function dispatchPaletteDrag(
             item,
             xFraction: at.xFraction,
             yFraction: at.yFraction,
-            controls: CANVAS_TOOL_CONTROLS,
-            canvasSelector: CANVAS_SELECTOR,
+            controls: from,
+            canvasSelector: onto,
         },
     );
     if (failure) throw new Error(`Could not drag the ${item} item: ${failure}`);
