@@ -1894,10 +1894,8 @@ namespace Bloom.Edit
         /// </summary>
         public string EditTabStatePageId => _stateMachine.CurrentPageId;
 
-        // How many times the page named by _announcedPageId has told us its DOM had loaded. See
-        // HandlePageDomLoadedEvent.
-        private string _announcedPageId;
-        private int _pageLoadAnnouncements;
+        // When a page last told us its DOM had loaded. See HandlePageDomLoadedEvent.
+        private DateTime _lastPageLoadAnnouncement = DateTime.MinValue;
 
         // The book folder the page on screen was loaded from, which its URL is in; see
         // ShowPageAgainIfFromAnotherFolderSoon.
@@ -1981,11 +1979,13 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// How many times the page now being shown has announced that its DOM had loaded. A page
-        /// does that more than once, so the e2e suite waits for this to stop rising before it
-        /// treats the page as loaded. For automation only.
+        /// How many milliseconds ago a page last announced that its DOM had loaded. A page does
+        /// that more than once, so the e2e suite waits until this has grown past the longest gap
+        /// between two announcements of one load before it treats the page as loaded. For
+        /// automation only.
         /// </summary>
-        public int PageLoadAnnouncements => _pageLoadAnnouncements;
+        public long MsSinceLastPageLoadAnnouncement =>
+            (long)(DateTime.UtcNow - _lastPageLoadAnnouncement).TotalMilliseconds;
 
         /// <summary>
         /// Show the page with this id in the Edit tab. The page being left is saved on the way,
@@ -2804,15 +2804,10 @@ namespace Bloom.Edit
 
         public void HandlePageDomLoadedEvent(string pageId, string loadId = null)
         {
-            // Count the announcement before acting on it. A page announces itself more than once,
+            // Note the announcement before acting on it. A page announces itself more than once,
             // and the e2e suite has to know that the last one has been and gone before it asks
-            // this tab for anything (see the editState endpoint and PageLoadAnnouncements).
-            if (pageId != _announcedPageId)
-            {
-                _announcedPageId = pageId;
-                _pageLoadAnnouncements = 0;
-            }
-            _pageLoadAnnouncements++;
+            // this tab for anything (see the editState endpoint and MsSinceLastPageLoadAnnouncement).
+            _lastPageLoadAnnouncement = DateTime.UtcNow;
 
             var nowEditing = _stateMachine.ToEditing(pageId);
             // Only for a notification we accepted, i.e. for the page we are now editing; see

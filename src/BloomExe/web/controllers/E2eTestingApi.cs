@@ -162,14 +162,13 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "shellUrl", HandleGetShellUrl, true);
 
             // GET returns what the Edit tab is doing, as
-            // {state, pageId, visible, pageLoadAnnouncements}. A test must not ask that tab to
-            // change pages while it is still loading one, and a page announces itself more than
-            // once, so the Editing state can show before the page has finished arriving. The DOM
-            // cannot tell a test any of this, because the frame still holds the page from before
-            // the tab switch, so the count of announcements is how a test knows the last one has
-            // been and gone. Off
-            // the UI thread on purpose: this reads three fields, and a test asks for them exactly
-            // when the UI thread is busy.
+            // {state, pageId, visible, msSinceLastPageLoadAnnouncement}. A test must not ask that
+            // tab to change pages while it is still loading one, and a page announces itself more
+            // than once, so the Editing state can show before the page has finished arriving. The
+            // DOM cannot tell a test any of this, because the frame still holds the page from
+            // before the tab switch, so the time since the last announcement is how a test knows
+            // it has been and gone. Off the UI thread on purpose: this reads a few fields, and a
+            // test asks for them exactly when the UI thread is busy.
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "editState",
                 HandleGetEditState,
@@ -269,17 +268,17 @@ namespace Bloom.web.controllers
         {
             var model = Bloom.Edit.EditingModel.ModelForE2eTests;
             // The UI thread can change these fields between one read and the next, so keep
-            // pageLoadAnnouncements last. A count read after the state can only be the same or
-            // higher, which makes a test see the count still rising and wait again. Read first, it
-            // could pair a stale count with a settled state, and a test would stop waiting too
-            // soon.
+            // msSinceLastPageLoadAnnouncement last. Read after the state, it can only be shorter
+            // than it was then, which makes a test wait again. Read first, it could pair a stale,
+            // long quiet time with a state that a new announcement had just changed, and a test
+            // would stop waiting too soon.
             request.ReplyWithJson(
                 new
                 {
                     state = (model?.EditTabState ?? State.NoPage).ToString(),
                     pageId = model?.EditTabStatePageId ?? "",
                     visible = model?.Visible ?? false,
-                    pageLoadAnnouncements = model?.PageLoadAnnouncements ?? 0,
+                    msSinceLastPageLoadAnnouncement = model?.MsSinceLastPageLoadAnnouncement ?? 0,
                 }
             );
         }
