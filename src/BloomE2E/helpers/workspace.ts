@@ -8,7 +8,7 @@
 
 import { expect, type Page } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
-import { editablePageFrame } from "./bookMaking";
+import { editablePageFrame, waitForBloomToHavePageAsItIs } from "./bookMaking";
 
 /** The three workspace tabs, named as Bloom's API names them. */
 export type WorkspaceTabId = "collection" | "edit" | "publish";
@@ -59,12 +59,16 @@ export async function waitForActiveTab(
  * either of them must select a book first (see helpers/collection.ts).
  *
  * The tab is found by its test id, not by its label, so this works in any UI language.
+ *
+ * Leaving the Edit tab saves the page being edited, so this first waits until Bloom has that page
+ * as it is now (waitForBloomToHavePageAsItIs; it returns at once when no page is being edited).
  */
 export async function switchTab(
     page: Page,
     tab: WorkspaceTabId,
     timeoutMs = 30000,
 ): Promise<void> {
+    await waitForBloomToHavePageAsItIs(page);
     const target = page.getByTestId(tabTestId(tab));
     await target.waitFor({ state: "visible", timeout: timeoutMs });
     await target.click();
