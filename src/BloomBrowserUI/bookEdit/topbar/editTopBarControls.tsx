@@ -18,6 +18,11 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { LocalizableMenuItem } from "../../react_components/localizableMenuItem";
 import { callOnBlur } from "../../utils/menuCloseOnBlur";
 import { LayoutChoicesDropdown } from "./layoutChoicesDropdown";
+import {
+    editingDisabledCss,
+    editingDisabledProps,
+    useEditingDisabled,
+} from "../workspaceRoot";
 
 interface IDropdownData {
     contentLanguagesEnabled: boolean;
@@ -167,13 +172,21 @@ export const EditTopBarControls: React.FunctionComponent = () => {
         setDropdowns(results.message);
     });
 
+    // Every control in here edits the book, so all of them are disabled while a game page is
+    // being played, including any added later.
+    const editingDisabled = useEditingDisabled();
+
     return (
         <div
-            css={css`
-                display: flex;
-                justify-content: space-between;
-                width: 100%;
-            `}
+            css={[
+                css`
+                    display: flex;
+                    justify-content: space-between;
+                    width: 100%;
+                `,
+                editingDisabledCss(editingDisabled),
+            ]}
+            {...editingDisabledProps(editingDisabled)}
         >
             <div
                 css={css`
