@@ -2178,12 +2178,10 @@ namespace BloomTests.Book
             Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("6.6"));
         }
 
-        // Roles that merely contain the letters of a collection-language role are not one.
-        [TestCase("V,N1")]
-        [TestCase("XCL1")]
-        public void GetRequiredVersions_NoCollectionLanguageRole_RequiresNothing(string roles)
+        [Test]
+        public void GetRequiredVersions_NoCollectionLanguageRole_RequiresNothing()
         {
-            var storage = StorageWithOneGroupShowing(roles);
+            var storage = StorageWithOneGroupShowing("V,N1");
 
             Assert.That(BookStorage.GetRequiredVersions(storage.Dom), Is.Empty);
         }
