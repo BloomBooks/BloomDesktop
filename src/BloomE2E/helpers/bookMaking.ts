@@ -500,7 +500,7 @@ export async function waitForEditablePage(
 }
 
 /** What e2e/editState replies with: what the Edit tab is doing. */
-export interface IEditTabState {
+interface IEditTabState {
     /** A name from Bloom's State enum: NoPage, Navigating, Editing. */
     state: string;
     /** The page that state is about, or "". */
@@ -552,10 +552,7 @@ export async function waitForEditTabSettled(
     await expect
         .poll(
             async () => {
-                const now = await apiGetJson<IEditTabState>(
-                    page,
-                    "e2e/editState",
-                );
+                const now = await getEditTabState(page);
                 if (!now.visible || now.state !== "Editing") {
                     lastReading = "";
                     return now.state;

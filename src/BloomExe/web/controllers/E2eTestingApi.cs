@@ -116,26 +116,6 @@ namespace Bloom.web.controllers
                 false // does not need the UI thread
             );
 
-            // POST true: Bloom sets aside each report that a page has loaded instead of acting on
-            // it, so the Edit tab stays on its way to that page as it does while a slow page loads;
-            // POST false: it acts on the reports set aside, in order, and stops holding. A test of
-            // what happens while a page loads (a page click then; BL-17173) uses this so its action
-            // lands in that time on any machine. GET: whether loads are held. On the UI thread,
-            // like the page-loaded report itself.
-            apiHandler.RegisterBooleanEndpointHandler(
-                kApiUrlPart + "holdPageLoads",
-                request => EditingModel.ModelForE2eTests.PageLoadsAreHeldForTest,
-                (request, hold) =>
-                {
-                    // ModelForE2eTests, not _editingModel: see HandleGetEditState.
-                    if (hold)
-                        EditingModel.ModelForE2eTests.HoldPageLoadsForTest();
-                    else
-                        EditingModel.ModelForE2eTests.ReleasePageLoadsForTest();
-                },
-                true
-            );
-
             // GET ?text=... returns true once the content the browser last sent for the page being
             // edited (its snapshot; see PageSnapshot) contains that text. Every save takes the page
             // from that snapshot, which the browser sends a moment after typing settles, so a test

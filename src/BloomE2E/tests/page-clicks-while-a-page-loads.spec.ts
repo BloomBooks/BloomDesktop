@@ -1,15 +1,16 @@
 // A page clicked in the page list while another page is still loading is remembered, and the Edit
-// tab goes there once the page that was loading is ready (BL-17173). These tests cover the two
-// ways that can go wrong outside a plain run of quick clicks, which
-// all-pages-typing-after-a-page-change.spec.ts covers: leaving the Edit tab while a click is
-// remembered, and a click made while Bloom renames the book's folder because its title changed.
-// Each holds page loads (e2e/holdPageLoads) so the second click lands while the first page is still
-// loading on any machine, and checks that Bloom remembered it.
+// tab goes there once the page that was loading is ready (BL-17173). The quick-click tests in
+// all-pages-typing-after-a-page-change.spec.ts reach that only when a click happens to land during a
+// load; these make sure one does, in two cases: leaving the Edit tab while a click is remembered,
+// and a click made while the page after a save that renamed the book's folder (because its title
+// changed) is loading.
+// Each holds back the first page's report that it has loaded (clickPageWhileAnotherLoads), so the
+// second click lands while that page is still loading on any machine, and checks that Bloom
+// remembered it.
 
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Page, Response } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
@@ -24,6 +25,7 @@ import {
     waitForEditTabSettled,
 } from "../helpers/bookMaking";
 import { readBook } from "../helpers/bookHtml";
+import { failedRequestsUnder } from "../helpers/failedRequests";
 import { chooseImageFile, getImagePlacement } from "../helpers/images";
 import { clickPageWhileAnotherLoads } from "../helpers/pageList";
 import { waitForPageToBeShown } from "../helpers/pageView";
@@ -43,31 +45,6 @@ const fixtureImage = (name: string) =>
         "images",
         name,
     );
-
-/**
- * Record every request that failed and named `folder` while `body` runs, and return them. The
- * listener is removed afterwards, because the page outlives the test.
- */
-async function failedRequestsUnder(
-    page: Page,
-    folder: string,
-    body: () => Promise<void>,
-): Promise<string[]> {
-    const folderName = Path.basename(folder);
-    const failed: string[] = [];
-    const listener = (response: Response) => {
-        const url = decodeURI(response.url());
-        if (response.status() >= 400 && url.includes(folderName))
-            failed.push(`${response.status()} ${url}`);
-    };
-    page.on("response", listener);
-    try {
-        await body();
-    } finally {
-        page.off("response", listener);
-    }
-    return failed;
-}
 
 test("leaving the Edit tab while a page click is remembered leaves the tab working [BL-17173]", async ({
     page,
@@ -100,11 +77,7 @@ test("leaving the Edit tab while a page click is remembered leaves the tab worki
     // Coming back, the Edit tab settles on a page, rather than staying stuck on its way to one.
     await switchTab(page, "edit");
     await waitForEditTabSettled(page);
-    const shown = await getShownPageId(page);
-    expect(
-        shown,
-        "The Edit tab should be showing a page after coming back to it.",
-    ).toBeDefined();
+    const shown = (await getShownPageId(page))!;
 
     // And it still saves: typing on that page reaches the book once the page is left.
     const typed = "Typed after coming back";
@@ -147,7 +120,8 @@ test("a page clicked while the book's folder is renamed for its new title is whe
     await goToPage(page, target.id);
     await chooseImageFile(page, fixtureImage("bird.png"));
     await goToPage(page, pages[0].id);
-    await typeInGroup(page, ".bookTitle", "en", "How Clocks Tick");
+    const title = "How Clocks Tick";
+    await typeInGroup(page, ".bookTitle", "en", title);
     expect(
         fs.existsSync(oldFolder),
         "test setup: typing a title does not rename the folder by itself",
@@ -161,7 +135,6 @@ test("a page clicked while the book's folder is renamed for its new title is whe
         await waitForEditTabSettled(page);
     });
 
-    const title = "How Clocks Tick";
     const newFolder = Path.join(Path.dirname(oldFolder), title);
     expect(
         fs.existsSync(newFolder) && !fs.existsSync(oldFolder),
