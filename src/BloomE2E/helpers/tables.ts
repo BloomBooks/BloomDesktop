@@ -2053,6 +2053,27 @@ export async function expectOverflowMarksMatchWhatFits(
         .map((c) => ({ row: c.row, column: c.column }));
 }
 
+/**
+ * The text cells of the table that Bloom marks as overflowing, with any of the marks
+ * getCellOverflowMarks reads, as they are now, row by row. Reads every cell at once. A cell's mark
+ * can lag its text by a second or so (see expectTableSettlesUnmarked), so wait for the page to
+ * settle, or for the cell expected to be marked, first.
+ */
+export async function getMarkedCells(
+    page: Page,
+    tableIndex = 0,
+): Promise<{ row: number; column: number }[]> {
+    const { columns } = await getTableShape(page, tableIndex);
+    const fits = await measureCellsTextFit(
+        table(page, tableIndex).locator("> .bloom-cell"),
+    );
+    return fits.flatMap((fit, index) =>
+        fit.marked
+            ? [{ row: Math.floor(index / columns), column: index % columns }]
+            : [],
+    );
+}
+
 /** Whether a cell's text reaches past the cell, and whether the cell cuts that part off. */
 export interface ICellTextCutOff {
     /** Whether any of the cell's text boxes reaches below the cell's content area. */

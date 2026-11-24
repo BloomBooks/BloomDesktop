@@ -15,6 +15,7 @@
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { editablePageFrame, waitForBloomToHaveTyping } from "./bookMaking";
 import { type IRect } from "./geometry";
+import { emptyTextBox, getTextBoxView } from "./overflowMarks";
 import { realClick, realClickAt } from "./realClick";
 import { showToolbox, toolboxFrame } from "./toolbox";
 
@@ -1251,4 +1252,51 @@ export async function isCanvasMarkedAsOverflowed(page: Page): Promise<boolean> {
     return canvas(page).evaluate((element) =>
         element.classList.contains("childOverflowingThis"),
     );
+}
+
+/**
+ * One language's box of the text in canvas element `index` (in document order, as canvasElement
+ * counts), shown or not.
+ */
+export function canvasElementTextBox(
+    page: Page,
+    index: number,
+    languageTag: string,
+): Locator {
+    return canvasElement(page, index).locator(
+        `.bloom-translationGroup > .bloom-editable[lang="${languageTag}"]`,
+    );
+}
+
+/**
+ * Empty one language's box of the text in canvas element `index`, and type more lines into it than
+ * the whole canvas has room for, ending each with a real Enter, as a person does. Returns the box.
+ *
+ * A canvas element grows to fit its text, up to the bottom of the canvas, and only then is its text
+ * too much for it. It grows when Bloom checks the box, a moment after a key comes up, so how much
+ * of the text fits at any moment of the typing depends on how fast it is typed. So, rather than
+ * type until the text no longer fits, this types a number of lines worked out beforehand, enough
+ * that the element could not fit them even if it filled the canvas. Whether Bloom then grew the
+ * element, or marked the box, is the caller's question.
+ */
+export async function fillCanvasElementTextPastTheCanvas(
+    page: Page,
+    index: number,
+    languageTag: string,
+): Promise<Locator> {
+    const box = canvasElementTextBox(page, index, languageTag);
+    await emptyTextBox(box);
+    const { height: canvasHeight } = await getCanvasRect(page);
+    const { lineHeight } = await getTextBoxView(box);
+    // Two lines more than the canvas could show, if the element began at its very top.
+    const lines = Math.ceil(canvasHeight / lineHeight) + 2;
+    for (let line = 1; line <= lines; line++) {
+        await page.keyboard.insertText(`Line ${line}`);
+        await box.press("Enter");
+    }
+    await expect(
+        box,
+        `The lines typed into the "${languageTag}" box did not all reach it.`,
+    ).toContainText(`Line ${lines}`, { timeout: 15000 });
+    return box;
 }

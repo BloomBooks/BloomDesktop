@@ -18,12 +18,14 @@ import {
 } from "../helpers/canvasElements";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import { bottom } from "../helpers/geometry";
+import { fillTextBoxPastItsBottom } from "../helpers/overflowMarks";
 import {
     openPublishDestination,
     showBloomPubPreview,
 } from "../helpers/publish";
 import {
     beginBoundaryDrag,
+    cellTextBox,
     clickCell,
     clickTableMenuCommand,
     closeAnyMenu,
@@ -37,12 +39,14 @@ import {
     getCellTextBottom,
     getCellTextClipping,
     getCellTextCutOffIn,
+    getMarkedCells,
     getTableShape,
     makeBookWithTableOnCanvasPage,
     measureTable,
     moveBoundaryDragTo,
     openTableMenu,
     setRowSize,
+    toggleCellLanguageInCellMenu,
     toggleMenuCellLanguage,
     typeInCell,
     waitForCellOverflowMarks,
@@ -516,6 +520,91 @@ test.describe("moving a canvas element checks its text again", () => {
                         .toBe(false);
                 },
             );
+        });
+    });
+});
+
+// Bloom checks a text box for overflow as it is typed in, and that has to hold for a box the
+// page did not have, or did not show, when it loaded: a language ticked in a cell's Languages
+// menu, and a new row's cells. These tests share a fourth book, which shows only Language 1 to
+// start with.
+test.describe("a box added or shown after the page loaded is checked as it is typed in", () => {
+    // The cell whose Language 2 the first test fills.
+    const languageCell = { row: ROW, column: COLUMN };
+
+    test("typing more than fits into a language ticked in a cell's menu marks the cell", async ({
+        page,
+        step,
+    }) => {
+        // This test also pays for making a fourth book.
+        test.setTimeout(300000);
+        await step(
+            "Make a book with a table, showing one language",
+            async () => {
+                await makeBookWithTableOnCanvasPage(page, ["en"]);
+            },
+        );
+        await step("Tick Language 2 in the cell's Languages menu", async () => {
+            expect(await getCellLanguages(page, ROW, COLUMN)).toEqual(["en"]);
+            await toggleCellLanguageInCellMenu(page, ROW, COLUMN, "L2");
+            expect(await getCellLanguages(page, ROW, COLUMN)).toEqual([
+                "en",
+                "fr",
+            ]);
+            await waitForCellOverflowMarks(page, ROW, COLUMN, false);
+        });
+        await step(
+            "Type in the Language 2 box until its text does not fit",
+            async () => {
+                await fillTextBoxPastItsBottom(
+                    page,
+                    await cellTextBox(page, ROW, COLUMN, "fr"),
+                );
+            },
+        );
+        await step("Check that cell is marked, and no other", async () => {
+            await waitForCellOverflowMarks(page, ROW, COLUMN, true);
+            await waitForPageToSettle(page);
+            expect(await getMarkedCells(page)).toEqual([languageCell]);
+        });
+    });
+
+    test("typing more than fits into a new row's cell marks the cell", async ({
+        page,
+        step,
+    }) => {
+        const newRow = await step(
+            "Add a row below the last one from the row menu",
+            async () => {
+                const rowsBefore = (await getTableShape(page)).rows;
+                const lastRow = rowsBefore - 1;
+                await clickCell(page, lastRow, 0);
+                await openTableMenu(page, "row", lastRow);
+                await clickTableMenuCommand(page, "Add Row Below");
+                await expect
+                    .poll(async () => (await getTableShape(page)).rows)
+                    .toBe(rowsBefore + 1);
+                return lastRow + 1;
+            },
+        );
+        if (newRow === undefined) throw new Error("No row was added.");
+        await step(
+            "Type in the new row's cell until its text does not fit",
+            async () => {
+                await waitForCellOverflowMarks(page, newRow, COLUMN, false);
+                await fillTextBoxPastItsBottom(
+                    page,
+                    await cellTextBox(page, newRow, COLUMN, "en"),
+                );
+            },
+        );
+        await step("Check that cell is marked, and no other", async () => {
+            await waitForCellOverflowMarks(page, newRow, COLUMN, true);
+            await waitForPageToSettle(page);
+            expect(await getMarkedCells(page)).toEqual([
+                languageCell,
+                { row: newRow, column: COLUMN },
+            ]);
         });
     });
 });

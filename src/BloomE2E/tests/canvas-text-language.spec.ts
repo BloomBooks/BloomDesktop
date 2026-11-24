@@ -21,13 +21,18 @@ import {
 import {
     chooseCanvasElementLanguage,
     dragPaletteItemOntoCanvas,
+    fillCanvasElementTextPastTheCanvas,
+    getActiveCanvasElementRect,
     getCanvasElementTextBoxes,
+    getCanvasRect,
     selectCanvasElement,
     typeInCanvasElement,
     type ICanvasTextBox,
 } from "../helpers/canvasElements";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import { choosePageLayout } from "../helpers/customCover";
+import { bottom, kEdgeTolerance } from "../helpers/geometry";
+import { expectTextBoxMarkedAsOverflowing } from "../helpers/overflowMarks";
 import { watchForScriptErrors } from "../helpers/scriptErrors";
 
 test.use({
@@ -112,5 +117,61 @@ test("choosing a language that a text block has no box for adds one that takes t
     await reloadPageBeingEdited(page);
     expect(await getCanvasElementTextBoxes(page, textBlock)).toEqual(
         kBoxesAfterTyping,
+    );
+});
+
+// Bloom checks a text box as it is typed in, and for a box on a canvas element that check is also
+// what grows the element to fit the text. So the box a language choice adds has to be checked as
+// it is typed in, like the box the page loaded with: the element grows with its text until it
+// reaches the bottom of the canvas, and then the box is marked as overflowing.
+test("typing more than fits into the box a language choice adds grows the text block and marks the box", async ({
+    page,
+    step,
+}) => {
+    test.setTimeout(300000);
+    const textBlock = await step(
+        "Make a book whose cover has a custom layout with a Text Block on it",
+        async () => {
+            await makeBookFromTemplate(page, "Basic Book");
+            await goToPage(page, (await getPages(page))[0].id);
+            await choosePageLayout(page, "Custom");
+            return dragPaletteItemOntoCanvas(page, "none");
+        },
+    );
+    if (textBlock === undefined) throw new Error("No Text Block was made.");
+    await step(
+        "Choose French, which the Text Block has no box for",
+        async () => {
+            await selectCanvasElement(page, textBlock);
+            await chooseCanvasElementLanguage(page, "French", "fr");
+        },
+    );
+    const box = await step(
+        "Type more lines into the French box than the canvas has room for",
+        async () => fillCanvasElementTextPastTheCanvas(page, textBlock, "fr"),
+    );
+    if (box === undefined) throw new Error("Nothing was typed.");
+    await step(
+        "Check the Text Block grew to the bottom of the canvas, and the box is marked",
+        async () => {
+            await expect
+                .poll(
+                    async () =>
+                        bottom(await getActiveCanvasElementRect(page)) -
+                        bottom(await getCanvasRect(page)),
+                    {
+                        message:
+                            "The Text Block should have grown with its text to the bottom of the canvas.",
+                    },
+                )
+                .toBeGreaterThan(-kEdgeTolerance);
+            await expectTextBoxMarkedAsOverflowing(
+                page,
+                box,
+                "the Text Block's French box",
+                // A canvas element's box shows no language label.
+                false,
+            );
+        },
     );
 });
