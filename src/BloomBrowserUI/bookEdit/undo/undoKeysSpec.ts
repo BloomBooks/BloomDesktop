@@ -14,7 +14,7 @@ vi.mock("../js/workspaceFrames", async (importOriginal) => ({
     }),
 }));
 
-import { resetChangeOrderForTests } from "./changeOrder";
+import { nextChangeOrder, resetChangeOrderForTests } from "./changeOrder";
 import { installUndoKeys } from "./undoKeys";
 import { theOneUndoStack } from "./UndoStack";
 
@@ -103,20 +103,40 @@ describe("Ctrl+Z for the entries on the one undo stack", () => {
         expect(event.defaultPrevented).toBe(false);
     });
 
-    it("leaves the key to CKEditor when typing is newer than the stack's entry", () => {
-        addRow();
-        // CKEditor as its legacy provider presents it, with no change order of its own: it has
-        // the next undo.
-        theOneUndoStack.registerLegacyProvider({
-            name: "ckeditor",
-            canUndo: () => true,
-            undo: () => true,
+    describe("with typing that CKEditor can undo", () => {
+        // When CKEditor last recorded a change, on the sequence the stack's entries share.
+        let typedAt: number;
+
+        beforeEach(() => {
+            typedAt = 0;
+            // CKEditor as its legacy provider presents it (legacyUndoProviders.ts).
+            theOneUndoStack.registerLegacyProvider({
+                name: "ckeditor",
+                canUndo: () => typedAt > 0,
+                undo: () => true,
+                lastChangeOrder: () => typedAt,
+            });
         });
 
-        const event = pressCtrlZ(editable);
+        it("leaves the key to CKEditor when the typing is newer than the stack's entry", () => {
+            addRow();
+            typedAt = nextChangeOrder();
 
-        expect(event.defaultPrevented).toBe(false);
-        expect(undoAddRow).not.toHaveBeenCalled();
+            const event = pressCtrlZ(editable);
+
+            expect(event.defaultPrevented).toBe(false);
+            expect(undoAddRow).not.toHaveBeenCalled();
+        });
+
+        it("takes the key when the stack's entry is newer than the typing", () => {
+            typedAt = nextChangeOrder();
+            addRow();
+
+            const event = pressCtrlZ(editable);
+
+            expect(event.defaultPrevented).toBe(true);
+            expect(undoAddRow).toHaveBeenCalledTimes(1);
+        });
     });
 
     it("leaves the key to the reader tools in a text block while a markup tool is selected", () => {
