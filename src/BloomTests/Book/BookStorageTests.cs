@@ -2163,6 +2163,42 @@ namespace BloomTests.Book
             AssertRequiredFeatures(requiredVersions, new[] { "comical-1", "wholeTextBoxAudio" });
         }
 
+        // A Bloom before 6.6 does not know the collection-language roles, so a book whose text boxes
+        // use them, alone or in a list, must not be opened in one.
+        [TestCase("CL1")]
+        [TestCase("CL2")]
+        [TestCase("CL1,N1")]
+        [TestCase("N1 CL3")]
+        public void GetRequiredVersions_CollectionLanguageRole_Requires6_6(string roles)
+        {
+            var storage = StorageWithOneGroupShowing(roles);
+            var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
+
+            AssertRequiredFeatures(requiredVersions, new[] { "collectionLanguageRoles" });
+            Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("6.6"));
+        }
+
+        [Test]
+        public void GetRequiredVersions_NoCollectionLanguageRole_RequiresNothing()
+        {
+            var storage = StorageWithOneGroupShowing("V,N1");
+
+            Assert.That(BookStorage.GetRequiredVersions(storage.Dom), Is.Empty);
+        }
+
+        // A book with one translation group, whose data-default-languages is `roles`.
+        private BookStorage StorageWithOneGroupShowing(string roles)
+        {
+            return GetInitialStorageWithCustomHtml(
+                @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
+			<body><div class='bloom-page'>
+				<div class='bloom-translationGroup' data-default-languages='"
+                    + roles
+                    + @"'/>
+			</div></body></html>"
+            );
+        }
+
         public const string MinimalDataBubbleValue =
             "{`version`:`1.0`,`level`:1,`style`:`none`,`tails`:[]}";
 

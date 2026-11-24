@@ -1,7 +1,7 @@
 // Choosing which languages a table's text cells show (BL-17105). Each of the table's menus (Cell,
 // Row, Column, Table) has a Languages section with one check box per collection language,
-// labelled "L1 - English" and so on. A new cell shows L1, the first language ticked in the
-// toolbar, and no other, until the user ticks other languages.
+// labelled "L1 - English" and so on. A new cell shows L1, the collection's first language, and no
+// other, whatever the toolbar shows, until the user ticks other languages.
 //
 // The tests are serial and share one book: each starts from the state the one before it left, so
 // the first failure is the one to read. Tables are a Pro-tier feature behind the "tables"

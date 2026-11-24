@@ -12,8 +12,6 @@ import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { getEditablePageBundleExports } from "../../js/workspaceFrames";
 import { IControlContext, IControlMenuCommandRow } from "./canvasControlTypes";
 
-const fieldsControlledByAppearanceSystem = ["bookTitle"];
-
 // The labelL10nId of each of these is used to localize its item in the "Field Type:" menu.
 // Two of them reuse strings that were created for other purposes but say exactly the right
 // thing; the other two have ids of their own in BloomLowPriority.xlf.
@@ -73,22 +71,14 @@ const fieldTypeData: Array<{
     },
 ];
 
-function removeClassesByPrefix(element: HTMLElement, prefix: string): void {
-    Array.from(element.classList).forEach((className) => {
-        if (className.startsWith(prefix)) {
-            element.classList.remove(className);
-        }
-    });
-}
-
-// Make the canvas element's text show `langCode` alone. A box for that language is added if the
-// group has none, set up as page load sets up every box.
+// Make the canvas element's text store `dataDefaultLang` and show, at once, `langCode`, the
+// language page load will show for that setting. A box for that language is added if the group has
+// none, set up as page load sets up every box, and every box of the group gets the classes page
+// load would give it (on a custom cover, bloom-contentFirst and the like among them).
 function updateTranslationGroupLanguage(
     translationGroup: HTMLElement,
-    langCode: string,
     dataDefaultLang: string,
-    classes: string[],
-    appearanceClasses: string[],
+    langCode: string,
 ): void {
     translationGroup.setAttribute("data-default-languages", dataDefaultLang);
     if (
@@ -102,21 +92,6 @@ function updateTranslationGroupLanguage(
         translationGroup,
         [langCode],
     );
-    const editableInLang = translationGroup.querySelector<HTMLElement>(
-        `:scope > .bloom-editable[lang="${langCode}"]`,
-    )!;
-    removeClassesByPrefix(editableInLang, "bloom-content");
-    classes.forEach((className) => editableInLang.classList.add(className));
-
-    const dataBookValue = editableInLang.getAttribute("data-book");
-    if (
-        dataBookValue &&
-        fieldsControlledByAppearanceSystem.includes(dataBookValue)
-    ) {
-        appearanceClasses.forEach((className) =>
-            editableInLang.classList.add(className),
-        );
-    }
     page.setUpBoxesBuiltAfterLoad(added, shown);
 }
 
@@ -199,85 +174,45 @@ export function makeLanguageMenuItem(
                 | undefined
         )?.getAttribute("lang");
     const { languageNameValues } = ctx;
+    // The collection's languages by tag, for naming each entry.
+    const nameOfTag = new Map<string | undefined, string | undefined>([
+        [languageNameValues.language1Tag, languageNameValues.language1Name],
+        [languageNameValues.language2Tag, languageNameValues.language2Name],
+        [languageNameValues.language3Tag, languageNameValues.language3Name],
+    ]);
+    const page = getEditablePageBundleExports()!;
 
-    const subMenuItems: IControlMenuCommandRow[] = [
-        {
-            id: "language",
-            englishLabel: languageNameValues.language1Name,
-            icon:
-                activeLangTag === languageNameValues.language1Tag
-                    ? React.createElement(CheckIcon, null)
-                    : undefined,
-            onSelect: (rowCtx) => {
-                if (!translationGroup) {
-                    return;
-                }
-                updateTranslationGroupLanguage(
-                    translationGroup,
-                    languageNameValues.language1Tag,
-                    "V",
-                    ["bloom-content1"],
-                    ["bloom-contentFirst"],
-                );
-                getCanvasElementManager()?.setActiveElement(
-                    rowCtx.canvasElement,
-                );
-            },
-        },
-    ];
-
-    if (
-        languageNameValues.language2Tag &&
-        languageNameValues.language2Tag !== languageNameValues.language1Tag
-    ) {
+    // One entry for each setting the menu stores, named for the language that setting shows (V is
+    // the toolbar's first language, N1 and N2 the collection's second and third), so the entry
+    // shows what the box will show after the page is next loaded too. A language two settings
+    // share is listed once, under the setting that keeps it whatever the toolbar does: N1 or N2
+    // rather than V, when the toolbar puts the collection's second or third language first.
+    const entries = ["V", "N1", "N2"].map((setting) => ({
+        setting,
+        tag: page.languagesShownBySetting(setting)[0],
+    }));
+    const subMenuItems: IControlMenuCommandRow[] = [];
+    const tagsListed: string[] = [];
+    for (const { setting, tag } of entries) {
+        const name = nameOfTag.get(tag);
+        if (!tag || !name || tagsListed.includes(tag)) continue;
+        const fixedRoleHasIt = entries.some(
+            (other) => other.setting !== "V" && other.tag === tag,
+        );
+        if (setting === "V" && fixedRoleHasIt) continue;
+        tagsListed.push(tag);
         subMenuItems.push({
             id: "language",
-            englishLabel: languageNameValues.language2Name,
+            englishLabel: name,
             icon:
-                activeLangTag === languageNameValues.language2Tag
+                activeLangTag === tag
                     ? React.createElement(CheckIcon, null)
                     : undefined,
             onSelect: (rowCtx) => {
                 if (!translationGroup) {
                     return;
                 }
-                updateTranslationGroupLanguage(
-                    translationGroup,
-                    languageNameValues.language2Tag,
-                    "N1",
-                    ["bloom-contentNational1"],
-                    ["bloom-contentSecond"],
-                );
-                getCanvasElementManager()?.setActiveElement(
-                    rowCtx.canvasElement,
-                );
-            },
-        });
-    }
-
-    if (
-        languageNameValues.language3Tag &&
-        languageNameValues.language3Tag !== languageNameValues.language1Tag &&
-        languageNameValues.language3Tag !== languageNameValues.language2Tag
-    ) {
-        subMenuItems.push({
-            id: "language",
-            englishLabel: languageNameValues.language3Name,
-            icon:
-                activeLangTag === languageNameValues.language3Tag
-                    ? React.createElement(CheckIcon, null)
-                    : undefined,
-            onSelect: (rowCtx) => {
-                if (!translationGroup) {
-                    return;
-                }
-                updateTranslationGroupLanguage(
-                    translationGroup,
-                    languageNameValues.language3Tag!,
-                    "N2",
-                    ["bloom-contentNational2"],
-                    ["bloom-contentThird"],
-                );
+                updateTranslationGroupLanguage(translationGroup, setting, tag);
                 getCanvasElementManager()?.setActiveElement(
                     rowCtx.canvasElement,
                 );
