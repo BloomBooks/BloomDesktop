@@ -287,18 +287,28 @@ export async function cancelCollectionSettings(page) {
  */
 export async function saveCollectionSettings(bloom) {
     const label = await okLabel(bloom.page);
+    const restarting = /restart/i.test(label);
+    // Bloom closes the collection, and with it this shell page, before it reopens it. Until the
+    // page has closed, the settings still come from the old collection. Listen before clicking:
+    // the page can close before the click returns.
+    const closed = restarting
+        ? bloom.page.waitForEvent("close", { timeout: 90000 })
+        : undefined;
+    closed?.catch(() => {});
     await collectionSettingsDialog(bloom.page)
         .getByRole("button", { name: /^(OK|Restart)$/i })
-        .click();
-    if (!/restart/i.test(label)) {
+        .click()
+        .catch((error) => {
+            // A "closed" error means the click landed and the page went with the Restart.
+            if (!(restarting && /closed/i.test(String(error)))) throw error;
+        });
+    if (!restarting) {
         await collectionSettingsDialog(bloom.page).waitFor({
             state: "detached",
         });
         return label;
     }
-    // Bloom closes the collection, and with it this shell page, before it reopens it. Until the
-    // page has closed, the settings still come from the old collection.
-    await bloom.page.waitForEvent("close", { timeout: 90000 });
+    await closed;
     await bloom.close().catch(() => {});
     for (let i = 0; i < 60; i++) {
         try {
@@ -314,7 +324,8 @@ export async function saveCollectionSettings(bloom) {
 /**
  * In the Edit tab, show the page whose page-list caption is `caption` (e.g. "1", "Title Page"),
  * through the same editView/jumpToPage the e2e goToPage uses. The page list must have loaded
- * (Bloom started with --vite-port 5173).
+ * (Bloom started with --vite-port 5173). When that page alone is already showing it does nothing,
+ * so it does not save the page as leaving it would: to save, go to another page and back.
  */
 export async function goToPageCaptioned(page, caption) {
     const pageList = page.frames().find((f) => f.name() === "pageList");
