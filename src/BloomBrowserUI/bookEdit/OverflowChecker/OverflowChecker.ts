@@ -13,7 +13,10 @@ import {
 } from "../toolbox/canvas/canvasElementConstants";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 import { removeScrollOffset } from "../js/scrollOffset";
-import { refreshOverflowIndicatorsSoon } from "./overflowIndicators";
+import {
+    kBoxSelector,
+    refreshOverflowIndicatorsSoon,
+} from "./overflowIndicators";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -88,55 +91,51 @@ function clearOverflowMarks(container: HTMLElement): void {
 // CheckPageAncestorOverflowSoon).
 const pageChecksWaiting = new WeakMap<Element, ReturnType<typeof setTimeout>>();
 
-// Whether this page has its typing handler (see addTypingHandler).
-let typingHandlerAdded = false;
-
 // Checks a text box for overflow as it is typed or pasted in: every box of the page, including
 // ones added or shown after it loaded (a new table row, a language shown in a table cell or a
-// canvas text box), through one handler on the page's body. It listens as the event comes down
-// to the box, so nothing that handles the key or paste at the box (CKEditor, say) can stop it
-// from seeing it.
-function addTypingHandler(doc: Document): void {
-    if (typingHandlerAdded) {
+// canvas text box), as one handler on the page's body (addTypingHandler).
+function checkTheBoxTypedIn(e: Event): void {
+    // Don't test for overflow on navigation keys.
+    if (e instanceof KeyboardEvent && e.keyCode >= 33 && e.keyCode <= 40) {
         return;
     }
-    typingHandlerAdded = true;
-    const checkTheBoxTypedIn = (e: Event) => {
-        // Don't test for overflow on navigation keys.
-        if (e instanceof KeyboardEvent && e.keyCode >= 33 && e.keyCode <= 40) {
-            return;
+    // BL-2892 The box, not the paste target, which may be inside it (e.g. a <p>): tested for
+    // overflow, that would overflow artificially. Boxes in game targets are duplicates that
+    // don't need to show overflow (as in getElementsThatCanOverflowOrNeedToBeResized).
+    const editable =
+        e.target instanceof Element
+            ? e.target.closest<HTMLElement>(kBoxSelector)
+            : null;
+    if (!editable || editable.closest("[data-target-of]")) {
+        return;
+    }
+    // Give the browser time to get the pasted text into the DOM first, before testing for overflow
+    // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
+    //        At first I was concerned that this might slow typing, but it doesn't seem to.
+    setTimeout(() => {
+        if (e.type === "paste") {
+            // If we're pasting, show as much of the text as possible even it can't all be shown.
+            // See BL-14632.
+            OverflowChecker.AdjustSizeOrMarkOverflow(editable, false, true);
+        } else {
+            OverflowChecker.AdjustSizeOrMarkOverflow(editable);
         }
-        // BL-2892 The box, not the paste target, which may be inside it (e.g. a <p>): tested for
-        // overflow, that would overflow artificially. Boxes in game targets are duplicates that
-        // don't need to show overflow (as in getElementsThatCanOverflowOrNeedToBeResized).
-        const editable =
-            e.target instanceof Element
-                ? e.target.closest<HTMLElement>(".bloom-editable, textarea")
-                : null;
-        if (!editable || editable.closest("[data-target-of]")) {
-            return;
-        }
-        // Give the browser time to get the pasted text into the DOM first, before testing for overflow
-        // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
-        //        At first I was concerned that this might slow typing, but it doesn't seem to.
-        setTimeout(() => {
-            if (e.type === "paste") {
-                // If we're pasting, show as much of the text as possible even it can't all be shown.
-                // See BL-14632.
-                OverflowChecker.AdjustSizeOrMarkOverflow(editable, false, true);
-            } else {
-                OverflowChecker.AdjustSizeOrMarkOverflow(editable);
-            }
 
-            //REVIEW: why is this here, in the overflow detection?
+        //REVIEW: why is this here, in the overflow detection?
 
-            // This will make sure that any language tags on this div stay in position with editing.
-            // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
-            (<qtipInterface>(
-                $(getElementsThatCanOverflowOrNeedToBeResized(document.body))
-            )).qtip("reposition");
-        }, 100); // 100 milliseconds
-    };
+        // This will make sure that any language tags on this div stay in position with editing.
+        // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
+        (<qtipInterface>(
+            $(getElementsThatCanOverflowOrNeedToBeResized(document.body))
+        )).qtip("reposition");
+    }, 100); // 100 milliseconds
+}
+
+// Gives the page its typing handler. It listens as the event comes down to the box, so nothing
+// that handles the key or paste at the box (CKEditor, say) can stop it from seeing it. Page setup
+// calls this for every container it sets up; the browser adds the same listener to a document
+// only once.
+function addTypingHandler(doc: Document): void {
     doc.body.addEventListener("keyup", checkTheBoxTypedIn, true);
     doc.body.addEventListener("paste", checkTheBoxTypedIn, true);
 }

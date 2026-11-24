@@ -1258,7 +1258,7 @@ export async function isCanvasMarkedAsOverflowed(page: Page): Promise<boolean> {
  * One language's box of the text in canvas element `index` (in document order, as canvasElement
  * counts), shown or not.
  */
-export function canvasElementTextBox(
+function canvasElementTextBox(
     page: Page,
     index: number,
     languageTag: string,

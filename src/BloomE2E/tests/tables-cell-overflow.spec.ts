@@ -39,7 +39,6 @@ import {
     getCellTextBottom,
     getCellTextClipping,
     getCellTextCutOffIn,
-    getMarkedCells,
     getTableShape,
     makeBookWithTableOnCanvasPage,
     measureTable,
@@ -564,8 +563,9 @@ test.describe("a box added or shown after the page loaded is checked as it is ty
         );
         await step("Check that cell is marked, and no other", async () => {
             await waitForCellOverflowMarks(page, ROW, COLUMN, true);
-            await waitForPageToSettle(page);
-            expect(await getMarkedCells(page)).toEqual([languageCell]);
+            expect(await expectOverflowMarksMatchWhatFits(page)).toEqual([
+                languageCell,
+            ]);
         });
     });
 
@@ -600,8 +600,7 @@ test.describe("a box added or shown after the page loaded is checked as it is ty
         );
         await step("Check that cell is marked, and no other", async () => {
             await waitForCellOverflowMarks(page, newRow, COLUMN, true);
-            await waitForPageToSettle(page);
-            expect(await getMarkedCells(page)).toEqual([
+            expect(await expectOverflowMarksMatchWhatFits(page)).toEqual([
                 languageCell,
                 { row: newRow, column: COLUMN },
             ]);
