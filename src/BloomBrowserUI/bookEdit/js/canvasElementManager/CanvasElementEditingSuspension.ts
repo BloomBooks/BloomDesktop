@@ -1,7 +1,7 @@
 import { getImageFromCanvasElement } from "../bloomImages";
 import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 
-export type ComicEditingSuspendedState =
+export type CanvasElementEditingSuspendedState =
     | "none"
     | "forDrag"
     | "forTool"
@@ -41,7 +41,7 @@ export class CanvasElementEditingSuspension {
     // tool suspension a game page can have, disable Play while they are showing, and never show
     // during it (GameTool's isGamePageInPlay); drags of origami splitters and jQuery resizes don't
     // happen on game pages.
-    private suspendedState: ComicEditingSuspendedState = "none";
+    private suspendedState: CanvasElementEditingSuspendedState = "none";
 
     // The page's text boxes that Play made uneditable, to make editable again when it ends.
     private textDisabledForPlay: Element[] = [];
