@@ -14,9 +14,13 @@
 // button reaches CKEditor's history another way, through the stack's CKEditor provider, which
 // calls the undo manager directly; the stack itself ignores discardRedo while that runs.
 //
+// Each box keeps its own history, so this also records which boxes changed and when, so that an
+// Undo of typing goes to the box typed in most recently, wherever the focus is now, and the stack
+// compares its entries with when that typing was done (getCkeditorsToUndo, getCkeditorUndoOrder).
+//
 // This goes away in Stage 3, when typing moves onto the stack itself.
 
-import { noteCkeditorChange } from "./changeOrder";
+import { getCkeditorChangeOrder, noteCkeditorChange } from "./changeOrder";
 import { theOneUndoStack, UndoStack } from "./UndoStack";
 
 /** The part of a CKEditor instance this needs. Kept small so a test can fake it. */
@@ -33,31 +37,103 @@ export interface ICkeditorChangeSource {
     element?: { $: HTMLElement };
 }
 
-// The editor that recorded the most recent change a person could undo. Typing is undone in the
-// box it was typed in, which is not always the box that has the focus: "add a row, type in it,
-// click another cell" leaves the typing in the new row's editor while the focus is elsewhere.
-let lastChangedEditor: ICkeditorChangeSource | undefined;
+// The editors that recorded a change a person could undo, the most recent first, each with when it
+// last did, on the sequence the stack's entries share (changeOrder.ts). Typing is undone in the box
+// it was typed in, which is not always the box that has the focus: "add a row, type in it, click
+// another cell" leaves the typing in the new row's editor while the focus is elsewhere.
+let changedEditors: Array<{ editor: ICkeditorChangeSource; order: number }> =
+    [];
+
+// How many of them are kept: enough for a person working through a page, few enough that removed
+// boxes' editors are not held on to for long.
+const kMaxChangedEditors = 10;
 
 /**
- * The CKEditor whose history the next Undo of typing should take from: the one that recorded the
- * most recent change, while it is still in the page and has something to undo, and otherwise
- * `focusedEditor` (CKEditor's current instance), if it has. Undefined when neither has anything
- * to undo, or an editor has gone from the page (a table undo rebuilds its cells, for instance):
- * undoing there would change nothing anyone can see.
+ * The CKEditors whose history an Undo of typing may take from, in the order to try them: the one
+ * whose typing is the most recent first (orderOf). Each has something to undo and is still in the
+ * page; an editor whose box a table undo rebuilt, for instance, is left out, since undoing there
+ * would change nothing anyone can see.
+ *
+ * The editor that has the focus (CKEditor's current instance) is among them even when it recorded
+ * no change: a change CKEditor makes without a keystroke, such as a first paste into a box, is
+ * reported before CKEditor counts it as undoable, so it is missing from the record. Such an editor
+ * counts as having made the latest change, and on a tie the focused editor goes first, so a box
+ * with typing of its own keeps its Undo.
  */
-export function getCkeditorToUndo(
-    focusedEditor?: ICkeditorChangeSource,
-): ICkeditorChangeSource | undefined {
-    return [lastChangedEditor, focusedEditor].find(
-        (editor) =>
-            !!editor?.undoManager?.undoable() &&
-            !!editor.element?.$.isConnected,
+export function getCkeditorsToUndo(): ICkeditorChangeSource[] {
+    // C# may call into this before the module that defines CKEDITOR is even loaded, so it is read
+    // from the window, where a missing one is undefined rather than an error.
+    const focusedEditor = (
+        window as unknown as {
+            CKEDITOR?: { currentInstance?: ICkeditorChangeSource | null };
+        }
+    ).CKEDITOR?.currentInstance;
+    // Editors with nothing left to undo, or whose boxes have left the page, are dropped here, so
+    // removed boxes' editors are not kept alive.
+    changedEditors = changedEditors.filter((e) => canUndoIn(e.editor));
+    const candidates = changedEditors
+        .map((e) => e.editor)
+        .filter((e) => e !== focusedEditor);
+    if (focusedEditor && canUndoIn(focusedEditor))
+        candidates.unshift(focusedEditor);
+    // A stable sort, so the focused editor, put first above, stays first among equals.
+    return candidates.sort((a, b) => orderOf(b) - orderOf(a));
+}
+
+// Whether `editor` has something to undo and its box is still in the page.
+function canUndoIn(editor: ICkeditorChangeSource): boolean {
+    return !!editor.undoManager?.undoable() && !!editor.element?.$.isConnected;
+}
+
+/** The CKEditor an Undo of typing would try first (see getCkeditorsToUndo), if any. */
+export function getCkeditorToUndo(): ICkeditorChangeSource | undefined {
+    return getCkeditorsToUndo()[0];
+}
+
+/**
+ * When the typing an Undo would take back first was done, on the sequence the stack's entries
+ * share, so that the stack can tell whether it or its own newest entry is the more recent.
+ */
+export function getCkeditorUndoOrder(): number {
+    return orderOf(getCkeditorToUndo());
+}
+
+// When `editor` recorded its latest change; for an editor whose change went unrecorded (a first
+// paste), or none, the last change CKEditor recorded anywhere.
+function orderOf(editor: ICkeditorChangeSource | undefined): number {
+    return (
+        changedEditors.find((e) => e.editor === editor)?.order ??
+        getCkeditorChangeOrder()
     );
 }
 
-/** Forget which editor changed last. For tests. */
+/**
+ * Undo typing in the first of getCkeditorsToUndo whose undo finds something to restore, and say
+ * whether any did. Typing done no later than `newerThan` (by default, when the stack's newest entry
+ * was recorded) is left alone: that entry comes before it.
+ *
+ * An editor's undo() answers false when it finds nothing to restore, which happens even when its
+ * undoable() said yes: CKEditor sets its hasUndo flag on the first keystroke of a group and clears
+ * it only when it next refreshes its state, so a manager whose snapshots have already been
+ * restored keeps claiming an undo it cannot perform. Such an editor is forgotten and the next one
+ * gets its turn, rather than the Undo passing over newer typing to an older change on the stack;
+ * and the caller learns when none undid anything, so that an Undo the person pressed is not
+ * swallowed. (See the CKEditor provider in legacyUndoProviders.ts.)
+ */
+export function undoCkeditorTyping(
+    newerThan: number = theOneUndoStack.getNewestEntryOrder(),
+): boolean {
+    for (const editor of getCkeditorsToUndo()) {
+        if (orderOf(editor) <= newerThan) return false;
+        if (editor.undoManager?.undo?.()) return true;
+        changedEditors = changedEditors.filter((e) => e.editor !== editor);
+    }
+    return false;
+}
+
+/** Forget which editors changed. For tests. */
 export function resetCkeditorChangesForTests(): void {
-    lastChangedEditor = undefined;
+    changedEditors = [];
 }
 
 // Run after every other beforeCommandExec listener. One that runs earlier can cancel the command,
@@ -94,7 +170,16 @@ export function trackCkeditorChanges(
     editor.on("change", () => {
         if (!editor.undoManager?.undoable()) return;
         noteCkeditorChange();
-        lastChangedEditor = editor;
+        const order = getCkeditorChangeOrder();
+        // Usually the box typed in is already the most recent.
+        if (changedEditors[0]?.editor === editor) {
+            changedEditors[0].order = order;
+        } else {
+            changedEditors = [
+                { editor, order },
+                ...changedEditors.filter((e) => e.editor !== editor),
+            ].slice(0, kMaxChangedEditors);
+        }
         if (!runningUndoOrRedo) stack.discardRedo();
     });
 }

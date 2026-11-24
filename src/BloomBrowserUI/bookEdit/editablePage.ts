@@ -49,10 +49,8 @@ import {
     setUpPageUndo,
 } from "./undo/pageUndo";
 import { tableCanUndo } from "./undo/tableUndo";
-import {
-    getCkeditorToUndo,
-    ICkeditorChangeSource,
-} from "./undo/ckeditorChanges";
+import { getCkeditorsToUndo, undoCkeditorTyping } from "./undo/ckeditorChanges";
+import { isInChangeLayoutMode } from "./undo/undoKeys";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -428,36 +426,20 @@ function e2eClearCanExpandToFillSpaceOverride(): void {
 // be the only way to get at whether ckeditor thinks there is something it can undo.
 // And we really NEED to get at the ckeditor undo mechanism, since ckeditor intercepts paste
 // in such a way that after a paste the C# browser object answers false to CanUndo.
+// Which box's typing an Undo takes back is decided in undo/ckeditorChanges.ts (getCkeditorsToUndo):
+// the box typed in most recently, wherever the focus is now.
 export function ckeditorCanUndo(): boolean {
-    return !!ckeditorToUndo();
+    return getCkeditorsToUndo().length > 0 && typingUndoIsAvailable();
 }
 
-// The editor the next undo of typing belongs to (see getCkeditorToUndo): the box typed in last,
-// which need not be the one with the focus.
-function ckeditorToUndo(): ICkeditorChangeSource | undefined {
-    // C# may apparently call this before the module that defines CKEDITOR is even loaded, so it
-    // is read from the window, where a missing one is undefined rather than an error.
-    const ckeditor = (
-        window as unknown as {
-            CKEDITOR?: { currentInstance?: ICkeditorChangeSource | null };
-        }
-    ).CKEDITOR;
-    return getCkeditorToUndo(ckeditor?.currentInstance ?? undefined);
-}
-
-/**
- * Undo the most recent change ckeditor knows about, and say whether it undid anything.
- *
- * undo() answers false when it finds nothing to restore, which happens even after
- * ckeditorCanUndo() said yes: ckeditor sets its hasUndo flag on the first keystroke of a
- * group and clears it only when it next refreshes its state, so a manager whose snapshots
- * have already been restored keeps claiming an undo it cannot perform. The caller needs to
- * know, so that an Undo the person pressed is not swallowed here. (See the CKEditor provider in
- * undo/legacyUndoProviders.ts.)
- */
+/** Undo typing (see undoCkeditorTyping), and say whether anything was undone. */
 export function ckeditorUndo(): boolean {
-    const editor = ckeditorToUndo();
-    return !!editor?.undoManager?.undo?.();
+    return typingUndoIsAvailable() && undoCkeditorTyping();
+}
+
+// Not in Change Layout mode, where the text cannot be edited and an Undo belongs to the layout.
+function typingUndoIsAvailable(): boolean {
+    return !isInChangeLayoutMode(document);
 }
 
 // The bloom-table library's undo is an entry on the one undo stack (undo/tableUndo.ts). This is

@@ -164,7 +164,7 @@ export class UndoStack {
         if (!provider.lastChangeOrder || this.currentIndex < 0) {
             return true;
         }
-        return this.entryOrders[this.currentIndex] < provider.lastChangeOrder();
+        return this.getNewestEntryOrder() < provider.lastChangeOrder();
     }
 
     /**
@@ -193,6 +193,14 @@ export class UndoStack {
     public getLegacyProviderForNextUndo(): string | undefined {
         return this.legacyProviders.find((p) => this.providerHasTheNextUndo(p))
             ?.name;
+    }
+
+    /**
+     * When the entry the next undo would apply was recorded, on the sequence in changeOrder.ts; 0
+     * when there is none. For the CKEditor provider, which must not undo typing older than it.
+     */
+    public getNewestEntryOrder(): number {
+        return this.entryOrders[this.currentIndex] ?? 0;
     }
 
     /** Whether our own newest entry can be undone just now. */
