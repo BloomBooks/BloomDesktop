@@ -2048,6 +2048,23 @@ namespace Bloom.Edit
             return outcome == SaveOutcome.Saved;
         }
 
+        /// <summary>
+        /// For a page click that MergeCurrentPageThenSave declined because the Edit tab is still
+        /// loading another page: go to the clicked page instead, so that however quickly the user
+        /// clicks through the page list, they end up on the page they clicked last. Nothing is lost
+        /// by leaving the page that is loading: a page sends Bloom its content only once Bloom has
+        /// accepted its load (see pageSnapshot.ts), so it has nothing to save yet, and its own load
+        /// notification, when it comes, is ignored (EditingStateMachine.ToEditing).
+        /// </summary>
+        public void GoToClickedPageInsteadOfTheOneLoading(string pageId)
+        {
+            // Declined for some other reason, such as the page layout update needing the book to
+            // itself (see CannotSavePage).
+            if (!_stateMachine.Navigating || CannotSavePage())
+                return;
+            _stateMachine.ToNavigating(pageId);
+        }
+
         private bool CannotSavePage()
         {
             return _bookSelection == null
@@ -2830,27 +2847,7 @@ namespace Bloom.Edit
                 // than a save in this tab (a save is declined while a page loads), such as work on
                 // another thread.
                 ShowPageAgainIfFromAnotherFolderSoon();
-                // The user clicked another page while this one was loading (see
-                // EditingStateMachine.GoToOnceLoaded), so go there now, the way a click does. Not
-                // inside this notification, which the page is waiting on before it starts sending
-                // its content.
-                var clickedWhileLoading = _stateMachine.TakePageToGoToOnceLoaded();
-                if (clickedWhileLoading != null)
-                    RunOffTheApiLock(() => GoToPageClickedWhileLoading(clickedWhileLoading));
             }
-        }
-
-        /// <summary>
-        /// Go to a page the user clicked while another was loading, as the click itself would have
-        /// (PageListController.OnPageSelectedChanged): save the page now being edited and go. If
-        /// that is declined again, because the user has since clicked yet another page or left the
-        /// tab, the latest request stands and this one is dropped.
-        /// </summary>
-        private void GoToPageClickedWhileLoading(string pageId)
-        {
-            if (_currentlyDisplayedBook?.GetPage(pageId) == null)
-                return; // the page has gone, or the book has changed
-            MergeCurrentPageThenSave(() => pageId, actionChangesTheBook: false);
         }
 
         // The one action queued by RunAfterNextPageLoad, or null.

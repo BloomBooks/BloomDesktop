@@ -138,16 +138,13 @@ namespace Bloom.web
 
         /// <summary>
         /// True if the Edit tab is on its way to the page with this id: a click on it has been taken
-        /// and the page has not loaded yet, or the click came while another page was loading and the
-        /// tab will go there once that one has (EditingStateMachine.GoToOnceLoaded). The page cannot
-        /// finish loading while a click is being handled, because the browser's report that it has
-        /// loaded (editView/pageDomLoaded) waits for the same API lock, so straight after a click this
-        /// says whether the click was taken.
+        /// and the page has not loaded yet. The page cannot finish loading while a click is being
+        /// handled, because the browser's report that it has loaded (editView/pageDomLoaded) waits for
+        /// the same API lock, so straight after a click this says whether the click was taken.
         /// </summary>
         internal static bool IsOnTheWayToPage(EditingStateMachine stateMachine, string pageId)
         {
-            return (stateMachine.Navigating && stateMachine.CurrentPageId == pageId)
-                || stateMachine.PageToGoToOnceLoaded == pageId;
+            return stateMachine.Navigating && stateMachine.CurrentPageId == pageId;
         }
 
         private void HandleContextMenuItemEnabled(ApiRequest request)

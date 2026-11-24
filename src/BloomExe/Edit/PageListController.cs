@@ -47,10 +47,8 @@ namespace Bloom.Edit
 
             _model.MergeCurrentPageThenSave(
                 () => pageId,
-                // A click that arrives while another page is still loading is declined, since that
-                // page cannot be saved yet. Remember it and go there once that page has loaded
-                // (see EditingModel.HandlePageDomLoadedEvent), so a quick click is not lost.
-                ifNotInAStateToSave: () => _model.StateMachine.GoToOnceLoaded(pageId),
+                // Declined while another page is still loading: go to this one instead.
+                ifNotInAStateToSave: () => _model.GoToClickedPageInsteadOfTheOneLoading(pageId),
                 // Clicking a thumbnail changes nothing in the book, so that an unedited page is
                 // not written.
                 actionChangesTheBook: false
