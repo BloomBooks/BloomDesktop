@@ -19,12 +19,6 @@ House rules:
 
 ---
 
-## 2026-11-24 — pnpm install says "Already up to date" after master moves the lockfile
-
-- **Cut:** After merging a master that bumped `bloom-player` (alpha.2 → alpha.3) in `src/BloomBrowserUI/pnpm-lock.yaml`, `pnpm install` (and `--frozen-lockfile`) printed "Already up to date" and left alpha.2 installed, so two of master's new `gamePlayMode.spec.ts` tests failed as if the branch had broken them. pnpm 11's optimistic repeat-install check skipped the install.
-- **Idea:** After a merge that touches the lockfile, run `pnpm install --config.optimistic-repeat-install=false` (or have the setup scripts do so); worth a line in `src/BloomBrowserUI/AGENTS.md`.
-- **Context:** BL-17110 follow-ups (PR #8609). Claude Opus 5.5 following a prompt from John Thomson.
-
 ## 2026-11-05 — No supported way to run a worktree's Bloom on the production bundle
 
 - **Cut:** `go.sh` (and so the run-bloom skill) always serves the front end from the Vite dev server, which loads about 600 separate modules for every page document. That makes page changes several times slower than a released Bloom's, so measuring or feeling performance needs the built bundle. The only way to get it was to run `output/Debug/AnyCPU/Bloom.exe` directly, which AGENTS.md forbids because it may be stale; the e2e fixture runs it that way, with a staleness check.
@@ -135,6 +129,10 @@ House rules:
   installed tree against the lockfile resolution rather than trusting the message.
 - **Context:** BloomDesktop BL-16748-pseudo-english, PR #8283. Andrew noticed the symptom ("we don't
   seem to be getting the latest image-chooser-gallery") — nothing in the tooling flagged it.
+- seen again 2026-11-24 (BL-17110, PR #8609): after merging a master that moved bloom-player
+  alpha.2 -> alpha.3, `pnpm install --frozen-lockfile` said "Already up to date", and two of
+  master's new `gamePlayMode.spec.ts` tests failed as if the branch had broken them.
+  `pnpm install --frozen-lockfile --config.optimistic-repeat-install=false` installed it.
 
 ## 2026-09-11 — switchWorkspaceTab.mjs drives whichever Bloom page it happens to find first
 
