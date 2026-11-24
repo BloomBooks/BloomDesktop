@@ -500,15 +500,25 @@ export async function waitForEditablePage(
 }
 
 /** What e2e/editState replies with: what the Edit tab is doing. */
-interface IEditTabState {
+export interface IEditTabState {
     /** A name from Bloom's State enum: NoPage, Navigating, Editing. */
     state: string;
     /** The page that state is about, or "". */
     pageId: string;
     /** Whether the Edit tab is the tab being shown. */
     visible: boolean;
+    /**
+     * A page clicked while another was loading, which the Edit tab goes to once that one has
+     * (EditingStateMachine.GoToOnceLoaded), or "".
+     */
+    pageToGoToOnceLoaded: string;
     /** How many times the page now shown has told Bloom its DOM had loaded. */
     pageLoadAnnouncements: number;
+}
+
+/** What the Edit tab is doing now (e2e/editState). */
+export async function getEditTabState(page: Page): Promise<IEditTabState> {
+    return apiGetJson<IEditTabState>(page, "e2e/editState");
 }
 
 /**

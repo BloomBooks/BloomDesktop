@@ -13,6 +13,7 @@ import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiPost } from "./api";
 import {
     editablePageFrame,
+    getEditTabState,
     getPages,
     getShownPageId,
     waitForEditTabSettled,
@@ -396,6 +397,56 @@ export async function clickPageThumbnail(
     const target = thumbnail(page, pageId);
     await target.scrollIntoViewIfNeeded();
     await target.click();
+}
+
+/**
+ * Hold or release Bloom's handling of the reports that a page has loaded (e2e/holdPageLoads).
+ * While held, the Edit tab stays on its way to the page it is loading, as it does while a slow
+ * page loads; releasing acts on the reports set aside, in order.
+ */
+export async function holdPageLoads(page: Page, hold: boolean): Promise<void> {
+    await apiPost(
+        page,
+        "e2e/holdPageLoads",
+        JSON.stringify(hold),
+        "application/json",
+    );
+}
+
+/**
+ * Click `first` in the page list and then `second` while `first` is still loading, whatever the
+ * machine's speed: page loads are held until both clicks are in, and this checks that Bloom
+ * remembered the second click (EditingStateMachine.GoToOnceLoaded). Returns with `first` still
+ * loading and the loads still held; `afterClicks` runs then, and the loads are released after it,
+ * even if it throws.
+ */
+export async function clickPageWhileAnotherLoads(
+    page: Page,
+    first: string,
+    second: string,
+    afterClicks: () => Promise<void> = async () => {},
+): Promise<void> {
+    await holdPageLoads(page, true);
+    try {
+        await clickPageThumbnail(page, first);
+        await expect
+            .poll(async () => (await getEditTabState(page)).pageId, {
+                message: `Bloom never started loading page ${first}.`,
+            })
+            .toBe(first);
+        await clickPageThumbnail(page, second);
+        await expect
+            .poll(
+                async () => (await getEditTabState(page)).pageToGoToOnceLoaded,
+                {
+                    message: `Bloom did not remember the click on page ${second} made while page ${first} loaded.`,
+                },
+            )
+            .toBe(second);
+        await afterClicks();
+    } finally {
+        await holdPageLoads(page, false);
+    }
 }
 
 /** The red X Bloom draws across a page while it asks to confirm removing it. */

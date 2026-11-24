@@ -2802,8 +2802,16 @@ namespace Bloom.Edit
             return WidgetHelper.AddWidgetFilesToBookFolder(CurrentBook.FolderPath, fullWidgetPath);
         }
 
+        /// <summary>
+        /// Called when the browser reports that a page's DOM has loaded (editView/pageDomLoaded).
+        /// </summary>
         public void HandlePageDomLoadedEvent(string pageId, string loadId = null)
         {
+            if (_pageLoadsHeldForTest != null)
+            {
+                _pageLoadsHeldForTest.Add((pageId, loadId));
+                return;
+            }
             // Count the announcement before acting on it. A page announces itself more than once,
             // and the e2e suite has to know that the last one has been and gone before it asks
             // this tab for anything (see the editState endpoint and PageLoadAnnouncements).
@@ -2872,6 +2880,41 @@ namespace Bloom.Edit
             if (PageBeingEditedIsFromAnotherFolder())
                 ShowPageAgainFromBookFolder();
         }
+
+        // Page-loaded notifications set aside while an e2e test holds page loads, in the order they
+        // came; null when loads are not held. See HoldPageLoadsForTest.
+        private List<(string pageId, string loadId)> _pageLoadsHeldForTest;
+
+        /// <summary>
+        /// For the e2e suite only (E2eTestingApi's holdPageLoads): from now on, set aside each
+        /// report that a page has loaded instead of acting on it, so the Edit tab stays on its way
+        /// to the page as it does while a slow page loads. A test of what happens during that time,
+        /// such as a page click (BL-17173), uses this to be sure its action lands then, whatever
+        /// the machine's speed. ReleasePageLoadsForTest acts on them.
+        /// </summary>
+        public void HoldPageLoadsForTest()
+        {
+            _pageLoadsHeldForTest ??= new List<(string pageId, string loadId)>();
+        }
+
+        /// <summary>
+        /// Stop holding page loads, and act on the reports set aside, in the order they came, as if
+        /// they had only now arrived. See HoldPageLoadsForTest.
+        /// </summary>
+        public void ReleasePageLoadsForTest()
+        {
+            var held = _pageLoadsHeldForTest;
+            _pageLoadsHeldForTest = null;
+            if (held == null)
+                return;
+            foreach (var (pageId, loadId) in held)
+                HandlePageDomLoadedEvent(pageId, loadId);
+        }
+
+        /// <summary>
+        /// Whether page loads are being held for a test (see HoldPageLoadsForTest).
+        /// </summary>
+        public bool PageLoadsAreHeldForTest => _pageLoadsHeldForTest != null;
 
         // The one action queued by RunAfterNextPageLoad, or null.
         private Action<string> _doAfterNextPageLoad;
