@@ -9,7 +9,13 @@
 // once they scroll into view, and reordering is a WinForms-side save that finishes after the
 // drag ends, so polling Bloom is the only way to know when the move has really happened.
 
-import { expect, type Frame, type Locator, type Page } from "@playwright/test";
+import {
+    expect,
+    type Frame,
+    type Locator,
+    type Page,
+    type Request,
+} from "@playwright/test";
 import { apiPost } from "./api";
 import { holdNextRequest } from "./heldRequest";
 import {
@@ -400,9 +406,6 @@ export async function clickPageThumbnail(
     await target.click();
 }
 
-/** How long clickPageWhileAnotherLoads waits for the clicked page to report that it has loaded. */
-const kLoadReportDeadlineMs = 60000;
-
 /**
  * Click `first` in the page list and then `second` while `first` is still loading, whatever the
  * machine's speed, and check that Bloom remembered the second click
@@ -423,23 +426,16 @@ export async function clickPageWhileAnotherLoads(
     );
     try {
         await clickPageThumbnail(page, first);
-        let deadline: ReturnType<typeof setTimeout> | undefined;
-        const report = await Promise.race([
-            loaded.requested,
-            new Promise<never>((_, reject) => {
-                deadline = setTimeout(
-                    () =>
-                        reject(
-                            new Error(
-                                `Page ${first} never reported that it had loaded, within ${kLoadReportDeadlineMs / 1000}s of being clicked.`,
-                            ),
-                        ),
-                    kLoadReportDeadlineMs,
-                );
-            }),
-        ]).finally(() => clearTimeout(deadline));
+        let report: Request | undefined;
+        void loaded.requested.then((request) => (report = request));
+        await expect
+            .poll(() => report !== undefined, {
+                timeout: 60000,
+                message: `Page ${first} never reported that it had loaded.`,
+            })
+            .toBe(true);
         expect(
-            report.postDataJSON().pageId,
+            report!.postDataJSON().pageId,
             `The first page to report it had loaded should be page ${first}, the one clicked.`,
         ).toBe(first);
         await clickPageThumbnail(page, second);
