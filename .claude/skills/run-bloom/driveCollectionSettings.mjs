@@ -35,14 +35,22 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * port blocks are laid out). Returns the shell page, its HTTP API helpers and close().
  */
 export async function connectToBloom(httpPort) {
-    const browser = await chromium.connectOverCDP(
-        `http://127.0.0.1:${httpPort + 2}`,
-    );
     // Bloom's dialogs that host their own WebView2 (a problem report, for one) are pages here too,
     // so take the one with the workspace tabs: Bloom's main window.
-    // Just after Bloom starts (or restarts) its page is still loading, so keep looking a while.
+    // Just after Bloom starts (or restarts) its page is still loading, so keep looking a while,
+    // connecting afresh each time: just after a Restart a connection can reach the web view that
+    // is closing, and it never learns of the new one.
+    let browser;
     let page;
-    for (let attempt = 0; attempt < 30 && !page; attempt++) {
+    for (let attempt = 0; attempt < 90 && !page; attempt++) {
+        if (attempt > 0) {
+            await browser?.close().catch(() => {});
+            await sleep(1000);
+        }
+        browser = await chromium
+            .connectOverCDP(`http://127.0.0.1:${httpPort + 2}`)
+            .catch(() => undefined);
+        if (!browser) continue;
         for (const candidate of browser.contexts().flatMap((c) => c.pages())) {
             if (candidate.url().startsWith("devtools")) continue;
             const isShell = await candidate
@@ -58,10 +66,11 @@ export async function connectToBloom(httpPort) {
                 break;
             }
         }
-        if (!page) await sleep(1000);
     }
-    if (!page)
+    if (!page) {
+        await browser?.close().catch(() => {});
         throw new Error(`No Bloom main window on CDP port ${httpPort + 2}.`);
+    }
     const api = (endpoint) =>
         `http://localhost:${httpPort}/bloom/api/${endpoint}`;
     return {
@@ -287,8 +296,10 @@ export async function saveCollectionSettings(bloom) {
         });
         return label;
     }
+    // Bloom closes the collection, and with it this shell page, before it reopens it. Until the
+    // page has closed, the settings still come from the old collection.
+    await bloom.page.waitForEvent("close", { timeout: 90000 });
     await bloom.close().catch(() => {});
-    await sleep(8000); // Bloom closes the collection before it reopens it
     for (let i = 0; i < 60; i++) {
         try {
             if ((await bloom.settings())?.values) return label;
@@ -332,19 +343,66 @@ export async function goToPageCaptioned(page, caption) {
                 `The page list has no page captioned "${caption}" (or its page id never loaded).`,
             );
         });
-    await page.evaluate(
-        (pageId) =>
-            fetch("/bloom/api/editView/jumpToPage", {
-                method: "POST",
-                headers: { "Content-Type": "text/plain" },
-                body: pageId,
-            }),
-        id,
+    const alreadyShowing = await page.evaluate((pid) => {
+        const pages = document
+            .querySelector('iframe[name="page"]')
+            ?.contentDocument?.querySelectorAll(".bloom-page");
+        return pages?.length === 1 && pages[0].id === pid;
+    }, id);
+    if (alreadyShowing) return;
+    // The Edit tab refuses a jump while it is still loading a page, so ask again when it does.
+    let status = 0;
+    for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) await sleep(3000);
+        await markPageFrame(page);
+        status = await page.evaluate(
+            (pageId) =>
+                fetch("/bloom/api/editView/jumpToPage", {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: pageId,
+                }).then((r) => r.status),
+            id,
+        );
+        if (status < 400) break;
+    }
+    if (status >= 400)
+        throw new Error(
+            `The Edit tab refused to show the page captioned "${caption}" (HTTP ${status}).`,
+        );
+    await waitForNewPageFrame(page, id);
+}
+
+/**
+ * Mark the document now in the Edit tab's page frame, so waitForNewPageFrame can tell it from the
+ * one Bloom loads next. Without the mark, a wait for a page can be met by the document already
+ * showing, which still holds that page (or, with all pages showing, every page).
+ */
+async function markPageFrame(page) {
+    await page.evaluate(() => {
+        const w = document.querySelector('iframe[name="page"]')?.contentWindow;
+        if (w) w.__driveCollectionSettingsOld = true;
+    });
+}
+
+/**
+ * Wait until the Edit tab's page frame holds a document loaded since markPageFrame, with a page
+ * in it (the page with id `pageId`, when one is given).
+ */
+async function waitForNewPageFrame(page, pageId) {
+    await page.waitForFunction(
+        (pid) => {
+            const w = document.querySelector(
+                'iframe[name="page"]',
+            )?.contentWindow;
+            if (!w || w.__driveCollectionSettingsOld) return false;
+            return !!w.document.querySelector(
+                pid ? `.bloom-page[id="${pid}"]` : ".bloom-page",
+            );
+        },
+        pageId,
+        { timeout: 90000, polling: 500 },
     );
-    await page
-        .frames()
-        .find((f) => f.name() === "page")
-        .waitForFunction((pid) => !!document.getElementById(pid), id);
 }
 
 /**
@@ -377,18 +435,13 @@ export async function enableReaderTool(page, tool) {
         "true",
         "application/json",
     );
+    // The Edit tab keeps its old page while the Collections tab shows, so mark it and wait for the
+    // one it loads on return. (The e2e suite's isEditingPage endpoint exists only under --e2e.)
+    await markPageFrame(page);
     await page.getByTestId("workspace-tab-collection").click();
     await sleep(3000);
     await page.getByTestId("workspace-tab-edit").click();
-    // (The e2e suite's isEditingPage endpoint exists only under --e2e, so wait for the page.)
-    await page.waitForFunction(
-        () =>
-            !!document
-                .querySelector('iframe[name="page"]')
-                ?.contentDocument?.querySelector(".bloom-page"),
-        null,
-        { timeout: 90000, polling: 500 },
-    );
+    await waitForNewPageFrame(page);
     const toolbox = await expandTool(page, tool);
     if (tool === "leveledReader")
         // The panel shows Set Up Levels only while the book is leveled.
@@ -412,7 +465,14 @@ export async function expandTool(page, tool) {
         .locator(`.MuiAccordionSummary-root:has([data-toolid="${tool}"])`)
         .first();
     await header.waitFor({ timeout: 30000 });
-    if ((await header.getAttribute("aria-expanded")) !== "true")
+    // A re-render while the toolbox is still loading can undo a click, so check it took.
+    for (let attempt = 0; attempt < 3; attempt++) {
+        if ((await header.getAttribute("aria-expanded")) === "true")
+            return toolbox;
         await header.click();
+        await sleep(1500);
+    }
+    if ((await header.getAttribute("aria-expanded")) !== "true")
+        throw new Error(`The toolbox would not expand the ${tool} tool.`);
     return toolbox;
 }
