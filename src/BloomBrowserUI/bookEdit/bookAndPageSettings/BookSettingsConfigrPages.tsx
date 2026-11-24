@@ -508,6 +508,8 @@ export const useBookSettingsAreaDefinition = (
                     <ConfigrCustomStringInput
                         label={coverBackgroundColorLabel}
                         control={coverColorPickerControl}
+                        // A swatch shows no text, so Config-R gives it a text line to align on.
+                        alignControlLikeTextField={true}
                         disabled={props.appearanceDisabled}
                         {...props.getAdditionalProps<string>(
                             `cover-background-color`,

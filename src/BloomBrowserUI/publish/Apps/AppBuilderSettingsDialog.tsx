@@ -552,6 +552,9 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
                                     label={iconLabel}
                                     path="iconPath"
                                     control={AppBuilderIconChooserForConfigr}
+                                    // The icon button shows no text, so Config-R gives it a
+                                    // text line to align on.
+                                    alignControlLikeTextField={true}
                                 />
                             </ConfigrGroup>
                             <ConfigrGroup>

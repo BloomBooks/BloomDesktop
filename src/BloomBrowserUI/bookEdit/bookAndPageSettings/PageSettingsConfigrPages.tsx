@@ -513,6 +513,8 @@ const PageSettingsConfigrColorInput: React.FunctionComponent<{
             path={props.path}
             description={props.description}
             control={colorControl}
+            // A swatch shows no text, so Config-R gives it a text line to align on.
+            alignControlLikeTextField={true}
             disabled={props.disabled ?? false}
         />
     );
