@@ -605,6 +605,21 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
         expect(boxes[1].classList.contains("overflow")).toBe(true);
     });
 
+    // BL-2892: a paste lands in a paragraph inside the box, and it is the box that is checked.
+    it("checks the box, not the paragraph inside it that a key or paste comes from", () => {
+        const boxes = loadPageOfTooFullBoxes(1);
+        boxes[0].innerHTML = `<p>${"words ".repeat(10)}</p>`;
+        OverflowChecker.AddTypingHandlers(boxes);
+        const check = vi.spyOn(OverflowChecker, "AdjustSizeOrMarkOverflow");
+
+        typeIn(boxes[0].querySelector("p")!);
+
+        expect(
+            check.mock.calls.map((call) => call[0]),
+            "A key in a paragraph of the box should check the box.",
+        ).toEqual([boxes[0]]);
+    });
+
     // BL-1260: Bloom does not check a page with more than 30 boxes, and AddOverflowHandlers clears
     // its marks, so marks put there by a table check would never be cleared. A page can also grow
     // past 30 while it is open (a row added to a table): its earlier marks go then. Its boxes are
