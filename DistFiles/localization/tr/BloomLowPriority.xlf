@@ -12,6 +12,21 @@
         <target xml:lang="tr" state="needs-translation">Installing...</target>
         <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
       </trans-unit>
+      <trans-unit id="Errors.FolderPartlyBlocked" translate="no">
+        <source xml:lang="en">Bloom opened the collection, but books may fail to save, be renamed or open until this is fixed.</source>
+        <target xml:lang="tr" state="needs-translation">Bloom opened the collection, but books may fail to save, be renamed or open until this is fixed.</target>
+        <note>ID: Errors.FolderPartlyBlocked</note>
+      </trans-unit>
+      <trans-unit id="Errors.FolderAntivirusProtection" translate="no">
+        <source xml:lang="en">Antivirus software, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access, may be stopping Bloom. Tell that program that you trust Bloom.</source>
+        <target xml:lang="tr" state="needs-translation">Antivirus software, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access, may be stopping Bloom. Tell that program that you trust Bloom.</target>
+        <note>ID: Errors.FolderAntivirusProtection</note>
+      </trans-unit>
+      <trans-unit id="Errors.FolderNotWritable" translate="no">
+        <source xml:lang="en">You may not have permission to change files there, or the folder may be read-only. Choose a folder you can change, or ask whoever manages this computer or network for permission.</source>
+        <target xml:lang="tr" state="needs-translation">You may not have permission to change files there, or the folder may be read-only. Choose a folder you can change, or ask whoever manages this computer or network for permission.</target>
+        <note>ID: Errors.FolderNotWritable</note>
+      </trans-unit>
       <trans-unit id="Errors.CorruptImageFile">
         <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
         <target xml:lang="tr" state="needs-translation">The image file {0} is corrupt and needs to be replaced. ({1})</target>
@@ -883,16 +898,6 @@
         <source xml:lang="en">Remove Object</source>
         <target xml:lang="tr" state="needs-translation">Remove Object</target>
         <note>ID: AiImageEditor.Tool.remove_object.Title</note>
-      </trans-unit>
-      <trans-unit id="Errors.FileAccessCheck.Blocked" translate="no">
-        <source xml:lang="en">Windows is not letting Bloom change files in this collection.</source>
-        <target xml:lang="tr" state="needs-translation">Windows is not letting Bloom change files in this collection.</target>
-        <note>ID: Errors.FileAccessCheck.Blocked</note>
-      </trans-unit>
-      <trans-unit id="Errors.FileAccessCheck.BlockedLonger" translate="no">
-        <source xml:lang="en">Windows is not letting Bloom create, change, rename or delete files in the folder where this collection is stored. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see "{0}".</source>
-        <target xml:lang="tr" state="needs-translation">Windows is not letting Bloom create, change, rename or delete files in the folder where this collection is stored. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see "{0}".</target>
-        <note>ID: Errors.FileAccessCheck.BlockedLonger</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader.Description" sil:dynamic="true">
         <source xml:lang="en">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</source>
