@@ -2834,7 +2834,9 @@ namespace Bloom.Edit
                 // under that, so the click is dropped.
                 var clickedWhileLoading = _stateMachine.TakePageToGoToOnceLoaded();
                 if (clickedWhileLoading != null && afterPageLoad == null)
-                    RunOffTheApiLock(() => GoToPageClickedWhileLoading(clickedWhileLoading));
+                    RunOffTheApiLock(() =>
+                        GoToPageClickedWhileLoading(clickedWhileLoading, pageId)
+                    );
                 else
                     // In case the book was renamed while this page was loading, by something
                     // other than a save in this tab (a save is declined while a page loads), such
@@ -2853,10 +2855,18 @@ namespace Bloom.Edit
         /// save from there would start a page load in a hidden tab), or the tab is no longer
         /// editing that page (the user has since clicked yet another page, whose request stands),
         /// or JumpToPage refuses (the page has gone). When it does not go, the page being edited
-        /// still has to come from the book's folder.
+        /// still has to come from the book's folder. One exception: if the tab is loading
+        /// <paramref name="loadedPageId"/> again, the book was renamed and EditingView.HandleBookRenamed
+        /// is showing that page again from the new folder, so the click is remembered again and
+        /// acted on once that reload is done.
         /// </summary>
-        private void GoToPageClickedWhileLoading(string pageId)
+        private void GoToPageClickedWhileLoading(string pageId, string loadedPageId)
         {
+            if (Visible && _stateMachine.Navigating && _stateMachine.CurrentPageId == loadedPageId)
+            {
+                _stateMachine.GoToOnceLoaded(pageId);
+                return;
+            }
             if (Visible && _stateMachine.Editing && JumpToPage(pageId))
                 return;
             if (PageBeingEditedIsFromAnotherFolder())
