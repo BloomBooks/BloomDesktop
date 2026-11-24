@@ -154,17 +154,20 @@ test("typing more than fits into the box a language choice adds grows the text b
     await step(
         "Check the Text Block grew to the bottom of the canvas, and the box is marked",
         async () => {
+            // How far the Text Block's bottom is from the canvas's: it grows to that and no further.
+            const pastTheCanvasBy = async () =>
+                bottom(await getActiveCanvasElementRect(page)) -
+                bottom(await getCanvasRect(page));
             await expect
-                .poll(
-                    async () =>
-                        bottom(await getActiveCanvasElementRect(page)) -
-                        bottom(await getCanvasRect(page)),
-                    {
-                        message:
-                            "The Text Block should have grown with its text to the bottom of the canvas.",
-                    },
-                )
+                .poll(pastTheCanvasBy, {
+                    message:
+                        "The Text Block should have grown with its text to the bottom of the canvas.",
+                })
                 .toBeGreaterThan(-kEdgeTolerance);
+            expect(
+                await pastTheCanvasBy(),
+                "The Text Block should stop growing at the bottom of the canvas.",
+            ).toBeLessThan(kEdgeTolerance);
             await expectTextBoxMarkedAsOverflowing(
                 page,
                 box,

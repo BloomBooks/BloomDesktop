@@ -100,13 +100,18 @@ function checkTheBoxTypedIn(e: Event): void {
         return;
     }
     // BL-2892 The box, not the paste target, which may be inside it (e.g. a <p>): tested for
-    // overflow, that would overflow artificially. Boxes in game targets are duplicates that
-    // don't need to show overflow (as in getElementsThatCanOverflowOrNeedToBeResized).
+    // overflow, that would overflow artificially. Only a box on the page: a dialog may hold a copy
+    // of one (the Letter Drag prompt). Boxes in game targets are duplicates that don't need to
+    // show overflow (as in getElementsThatCanOverflowOrNeedToBeResized).
     const editable =
         e.target instanceof Element
             ? e.target.closest<HTMLElement>(kBoxSelector)
             : null;
-    if (!editable || editable.closest("[data-target-of]")) {
+    if (
+        !editable ||
+        !editable.closest(".bloom-page") ||
+        editable.closest("[data-target-of]")
+    ) {
         return;
     }
     // Give the browser time to get the pasted text into the DOM first, before testing for overflow

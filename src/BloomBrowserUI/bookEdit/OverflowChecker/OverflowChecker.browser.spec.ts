@@ -611,6 +611,25 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
         expect(added.classList.contains("overflow")).toBe(true);
     });
 
+    // A dialog may hold a copy of a page's text box (the Letter Drag prompt); typing there is not
+    // a page's text to check.
+    it("does not check a text box that is not on the page", () => {
+        const boxes = loadPageOfTooFullBoxes(1);
+        new OverflowChecker().AddOverflowHandlers(
+            document.getElementById("fixtureRoot")!,
+        );
+        const dialogBox = boxes[0].cloneNode(true) as HTMLElement;
+        document.getElementById("fixtureRoot")!.appendChild(dialogBox);
+        // sanity check: the copy is outside the page
+        expect(dialogBox.closest(".bloom-page")).toBeNull();
+        const check = vi.spyOn(OverflowChecker, "AdjustSizeOrMarkOverflow");
+
+        typeIn(dialogBox);
+
+        expect(check).not.toHaveBeenCalled();
+        dialogBox.remove();
+    });
+
     // BL-2892: a paste lands in a paragraph inside the box, and it is the box that is checked.
     it("checks the box, not the paragraph inside it that a key or paste comes from", () => {
         const boxes = loadPageOfTooFullBoxes(1);
