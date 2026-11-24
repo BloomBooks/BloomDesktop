@@ -129,6 +129,10 @@ House rules:
   installed tree against the lockfile resolution rather than trusting the message.
 - **Context:** BloomDesktop BL-16748-pseudo-english, PR #8283. Andrew noticed the symptom ("we don't
   seem to be getting the latest image-chooser-gallery") — nothing in the tooling flagged it.
+- seen again 2026-11-24 (BL-17110, PR #8609): after merging a master that moved bloom-player
+  alpha.2 -> alpha.3, `pnpm install --frozen-lockfile` said "Already up to date", and two of
+  master's new `gamePlayMode.spec.ts` tests failed as if the branch had broken them.
+  `pnpm install --frozen-lockfile --config.optimistic-repeat-install=false` installed it.
 
 ## 2026-09-11 — switchWorkspaceTab.mjs drives whichever Bloom page it happens to find first
 

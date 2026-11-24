@@ -110,17 +110,10 @@ test.describe("the scroll bar of a text box that is too full", () => {
 
     // The scroll bar that came with the first lot of text is still the one beside the box after
     // more is typed, so it has to have learned how long the text now is.
-    //
-    // Known failure, BL-17110: once more text is typed into a box that already has a scroll bar,
-    // the mouse wheel no longer scrolls the box at all, and scrolls the page instead. The same
-    // text typed in one go gets a scroll bar that the wheel scrolls fully. Likely cause:
-    // OverflowChecker.fixScrollBarsIfNeeded rebuilds the scroll bars only when a box starts or
-    // stops fitting. Remove test.fail() when that is fixed.
     test("the mouse wheel reaches both ends of text typed after the scroll bar came", async ({
         page,
         step,
     }) => {
-        test.fail();
         await step(
             "Type until a scroll bar comes, then as much again",
             async () => {

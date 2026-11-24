@@ -582,10 +582,25 @@ function releaseTableOverflowCheckDelayIfIdle(): void {
     removeRequestPageContentDelay(kTableOverflowCheckDelayId);
 }
 
-/** Check the text of the tables that hold the cells in `entries`, at the next frame. */
+// The size each watched cell had when cellSizeObserver last reported it, as "width x height".
+const lastReportedCellSizes = new WeakMap<Element, string>();
+
+/**
+ * Check the text of the tables that hold the cells in `entries` that really changed size, at the
+ * next frame. A ResizeObserver also reports each cell once when it starts watching it; those
+ * reports are skipped, since the page's own check on loading, and the check that each table
+ * operation schedules, already cover a cell that is new to the observer.
+ */
 function onCellsResized(entries: ResizeObserverEntry[]): void {
+    const resized = entries.filter((entry) => {
+        const box = entry.borderBoxSize[0];
+        const size = `${box.inlineSize}x${box.blockSize}`;
+        const previous = lastReportedCellSizes.get(entry.target);
+        lastReportedCellSizes.set(entry.target, size);
+        return previous !== undefined && previous !== size;
+    });
     checkTableTextAtNextFrame(
-        entries
+        resized
             .map((entry) => entry.target.closest<HTMLElement>(".bloom-table"))
             .filter((table): table is HTMLElement => !!table),
     );
@@ -611,9 +626,10 @@ function observeCellSizes(root: HTMLElement): void {
     }
     const observer = cellSizeObserver;
     stopObservingCellsNotInPage();
-    // Observing a cell that is already observed does nothing.
+    // Observing a cell that is already observed does nothing. The border box, because that is
+    // the size onCellsResized compares.
     root.querySelectorAll<HTMLElement>(".bloom-cell").forEach((cell) => {
-        observer.observe(cell);
+        observer.observe(cell, { box: "border-box" });
         cellsWhoseSizeIsObserved.add(cell);
     });
 }
