@@ -6,8 +6,8 @@
 // left in the editor, after a restart too (BL-13982).
 //
 // Test Case ID 701, "Language Chooser Selection Reaches Bloom Correctly". Two of its checks are
-// not here: the sign language's round trip from the Publish tab, which
-// publish-sign-language.spec.ts covers (Test Case IDs 172 and 173), and the Country a new
+// not here: the sign language's round trip from the Publish tab, which is the last test of
+// publish-sign-language.spec.ts, since that file already makes a book with a video, and the Country a new
 // collection gets from its language, which is chosen in the New Collection wizard, a WinForms
 // dialog that the suite cannot open (AUTOMATION-DEBT.md, "WinForms surfaces are invisible to
 // CDP").
@@ -149,6 +149,15 @@ test("a right-to-left script makes the language run right to left in the editor,
     step,
 }) => {
     test.setTimeout(300000);
+    // The first test leaves Chechen in Cyrillic, so only the script changes here.
+    expect(
+        readSavedLanguageSetting(
+            bloomApp.collectionDir,
+            1,
+            "LanguageIso639Code",
+        ),
+        "sanity check: the previous test left Chechen in Cyrillic (run the whole file, in order)",
+    ).toBe("ce");
     expect(
         readSavedLanguageSetting(bloomApp.collectionDir, 1, "IsLanguageRtl"),
         "sanity check: the first language is saved as left to right",
