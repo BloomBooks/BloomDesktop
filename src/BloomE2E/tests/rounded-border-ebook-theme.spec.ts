@@ -142,6 +142,10 @@ test.describe("Rounded Border Ebook theme", () => {
         await setPageSize(page, "A5Portrait");
         await goToPage(page, contentPage.id);
         expect(await getPageSize(page)).toBe("A5Portrait");
+        // The book is still in the theme: it is the theme that leaves this size alone.
+        expect((await getBookAppearance(page)).cssThemeName).toBe(
+            kRoundedBorderTheme,
+        );
         expect(await getMarginBoxRoundedCorners(page)).toEqual([]);
     });
 });

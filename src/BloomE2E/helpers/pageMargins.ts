@@ -215,13 +215,16 @@ export async function getMarginBoxRoundedCorners(
         throw new Error("The page being edited has no margin box to measure.");
     return marginBox.evaluate((element, corners) => {
         const style = getComputedStyle(element);
-        // A computed corner radius reads "15px", or "15px 10px" when the corner is an ellipse.
-        const radius = (corner: string) =>
-            parseFloat(
-                style.getPropertyValue(
+        // A computed corner radius reads "15px", or "15px 10px" when the corner is an ellipse:
+        // its horizontal radius, then its vertical one. A corner is round only when both are
+        // more than nothing.
+        const isRounded = (corner: string) =>
+            style
+                .getPropertyValue(
                     `border-${corner.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase())}-radius`,
-                ),
-            );
-        return corners.filter((corner) => radius(corner) > 0);
+                )
+                .split(/s+/)
+                .every((radius) => parseFloat(radius) > 0);
+        return corners.filter(isRounded);
     }, kAllCorners);
 }
