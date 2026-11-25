@@ -1,7 +1,8 @@
 // A Basic Book can take every kind of page Bloom comes with. The Add Page dialog of a Basic Book
 // offers the Basic Book's own pages first and then the pages of the other templates installed with
 // Bloom (Arithmetic, Comic, Games, Sign Language, Special); this test adds each of them in turn
-// through the dialog, and then checks that the saved book holds one page made from each.
+// through the dialog, and then checks that the saved book holds one page made from each. What the dialog must offer is read
+// from the template files on disk.
 // Automates the manual test "Basic Book Add All Pages" (Test Case ID 59).
 //
 // The dialog also lists templates the person has downloaded or made, which differ from machine to
@@ -17,7 +18,6 @@ import {
 import { readPagesOnDisk } from "../helpers/bookHtml";
 import {
     getFactoryTemplateFolder,
-    getFactoryTemplatePageLabels,
     getPages,
     getShownPageId,
     goToPage,
@@ -38,6 +38,18 @@ test.use({
 });
 
 const BASIC_BOOK = "Basic Book";
+// The folders of the templates installed with Bloom whose pages Add Page offers to a Basic Book.
+// Activity and Games both show under "Games".
+const INSTALLED_TEMPLATES_WITH_PAGES = [
+    BASIC_BOOK,
+    "Activity",
+    "Arithmetic Template",
+    "Digital Comic Book",
+    "Games",
+    "Paper Comic Book",
+    "Sign Language",
+    "Special",
+];
 
 /** One page the dialog offers from a template installed with Bloom. */
 interface IOfferedPage {
@@ -93,63 +105,70 @@ test("every page of every template installed with Bloom can be added to a Basic 
                 ? "landscape"
                 : "portrait";
             await openAddPageDialog(page);
-            const groups = (await getAddPageDialogGroups(page)).filter((g) =>
-                isInsideFolder(g.templateBookFolder, installedTemplatesFolder),
-            );
-            const describeGroups = groups
-                .map(
-                    (g) =>
-                        `${Path.basename(g.templateBookFolder)}: ` +
-                        g.pages.map((p) => oneLine(p.label)).join(", "),
-                )
-                .join("; ");
-
-            // Sanity checks, so that a dialog that offered little could not pass this test: the
-            // Basic Book's own pages come first and are all there, and other templates follow.
+            const groups = await getAddPageDialogGroups(page);
+            // Go by each page's own template folder, not its group's: the dialog groups templates
+            // by title, so a downloaded template that shares a title with an installed one has its
+            // pages in the same group.
+            const offered: IOfferedPage[] = [];
+            for (const group of groups)
+                for (const offeredPage of group.pages)
+                    if (
+                        isInsideFolder(
+                            offeredPage.templateBookFolder,
+                            installedTemplatesFolder,
+                        )
+                    )
+                        offered.push({
+                            label: offeredPage.label,
+                            templateBookFolder: offeredPage.templateBookFolder,
+                            groupFolderName: Path.basename(
+                                group.templateBookFolder,
+                            ),
+                            templatePageId: "",
+                        });
             expect(
                 Path.basename(groups[0].templateBookFolder),
-                `the first group in Add Page is not ${BASIC_BOOK}'s. Groups: ${describeGroups}`,
+                `the first group in Add Page is not ${BASIC_BOOK}'s`,
             ).toBe(BASIC_BOOK);
-            expect(
-                groups[0].pages.map((p) => p.label),
-                `the ${BASIC_BOOK} group did not offer the pages its template file holds`,
-            ).toEqual(await getFactoryTemplatePageLabels(page, BASIC_BOOK));
-            expect(
-                groups.length,
-                `Add Page offered pages from too few installed templates. Groups: ${describeGroups}`,
-            ).toBeGreaterThan(3);
 
-            const offered: IOfferedPage[] = [];
-            for (const group of groups) {
-                for (const offeredPage of group.pages) {
-                    const templatePages = await readPagesOnDisk(
-                        page,
-                        offeredPage.templateBookFolder,
-                    );
-                    const matches = templatePages.filter(
-                        (p) =>
-                            p.isTemplatePage &&
-                            oneLine(p.label) === oneLine(offeredPage.label) &&
-                            ["", orientation].includes(p.onlyForOrientation),
-                    );
-                    expect(
-                        matches.map((p) => p.id).length,
-                        `the template in ${offeredPage.templateBookFolder} should hold exactly one template ` +
-                            `page labelled "${oneLine(offeredPage.label)}" for a ${orientation} book. Its pages: ` +
-                            templatePages
-                                .map((p) => oneLine(p.label))
-                                .join(", "),
-                    ).toBe(1);
-                    offered.push({
-                        label: offeredPage.label,
-                        templateBookFolder: offeredPage.templateBookFolder,
-                        groupFolderName: Path.basename(
-                            group.templateBookFolder,
-                        ),
-                        templatePageId: matches[0].id,
-                    });
-                }
+            // The oracle is the template files on disk: each template the dialog shows must have
+            // every one of its template pages for a book of this orientation on offer. Without this
+            // the test would pass when the dialog stopped offering a page.
+            const describeOffered = (pages: { label: string }[]) =>
+                pages.map((p) => oneLine(p.label));
+            const expectedByTemplate: Record<string, string[]> = {};
+            const offeredByTemplate: Record<string, string[]> = {};
+            for (const folder of new Set(
+                offered.map((o) => o.templateBookFolder),
+            )) {
+                const templatePages = (
+                    await readPagesOnDisk(page, folder)
+                ).filter(
+                    (p) =>
+                        p.isTemplatePage &&
+                        ["", orientation].includes(p.onlyForOrientation),
+                );
+                const offeredFromIt = offered.filter(
+                    (o) => o.templateBookFolder === folder,
+                );
+                const folderName = Path.basename(folder);
+                expectedByTemplate[folderName] = describeOffered(templatePages);
+                offeredByTemplate[folderName] = describeOffered(offeredFromIt);
+                // The dialog shows a template's pages in the file's order, so the two lists pair
+                // up; the comparison below fails when they do not.
+                offeredFromIt.forEach((o, i) => {
+                    o.templatePageId = templatePages[i]?.id ?? "";
+                });
             }
+            expect(
+                offeredByTemplate,
+                "Add Page did not offer exactly the template pages that the files of the templates it shows hold",
+            ).toEqual(expectedByTemplate);
+            // The files cannot say which templates the dialog should show at all, so name them.
+            expect(
+                Object.keys(offeredByTemplate),
+                "Add Page did not offer pages from every template installed with Bloom that has pages to add",
+            ).toEqual(expect.arrayContaining(INSTALLED_TEMPLATES_WITH_PAGES));
             return offered;
         },
     );
