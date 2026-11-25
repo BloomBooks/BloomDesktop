@@ -121,8 +121,8 @@ export function placeBetweenParagraphs(
             `[id="${CSS.escape(copy.id)}"]`,
         );
         if (!original) return;
-        if (original.textContent === "") original.remove();
-        else if (copy.textContent === "") copy.remove();
+        if (isEmptyElement(original)) original.remove();
+        else if (isEmptyElement(copy)) copy.remove();
         else copy.removeAttribute("id");
     });
     paragraph.after(table);
@@ -141,6 +141,11 @@ export function paragraphOf(
     const paragraph = elementOf(caret.startContainer)?.closest("p");
     if (!paragraph || paragraph.parentElement !== editable) return undefined;
     return paragraph;
+}
+
+// Whether `element` holds nothing at all: no text, and no element such as a line break.
+function isEmptyElement(element: Element): boolean {
+    return element.textContent === "" && !element.querySelector("*");
 }
 
 function isBlank(content: Node): boolean {

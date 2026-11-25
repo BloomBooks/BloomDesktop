@@ -106,6 +106,12 @@ describe("insertTableInText", () => {
             "one:First sentence. ",
             "two:Second sentence.",
         ]);
+        expect(childrenOfText()).toEqual([
+            "P:First sentence. ",
+            "[table]",
+            "P:Second sentence.",
+            "P:Last paragraph.",
+        ]);
     });
 
     it("keeps the id of a recorded sentence that the table goes just after", () => {
@@ -123,6 +129,26 @@ describe("insertTableInText", () => {
             "one:First sentence.",
             "two: Second sentence.",
         ]);
+        expect(childrenOfText()).toEqual([
+            "P:First sentence.",
+            "[table]",
+            "P: Second sentence.",
+            "P:Last paragraph.",
+        ]);
+    });
+
+    it("keeps a line break that is all the split leaves of a recorded sentence", () => {
+        element("first").innerHTML =
+            "<span id='one' class='audio-sentence'>First sentence.<br></span><span id='two' class='audio-sentence'>Second.</span>";
+        const sentenceText = element("one").firstChild as Text;
+        const caret = document.createRange();
+        caret.setStart(sentenceText, sentenceText.length);
+        caret.collapse(true);
+
+        insertTableInText(element("text"), caret);
+
+        expect(element("text").querySelectorAll("br").length).toBe(1);
+        expect(element("text").querySelectorAll("#one").length).toBe(1);
     });
 
     it("puts the table before the paragraph for a caret at its start", () => {
