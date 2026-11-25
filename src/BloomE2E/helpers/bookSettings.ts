@@ -356,39 +356,40 @@ function bloomPubResolutionSlider(page: Page): Locator {
 }
 
 /**
- * The image resolution the BloomPUB page of the open Book and Page Settings dialog shows, by the
- * name written above its slider, e.g. "HD". The page must be showing (see showBookSettingsPage).
+ * The image resolution the slider on the BloomPUB page of the open Book and Page Settings dialog is
+ * set to, e.g. "HD". The page must be showing (see showBookSettingsPage).
+ *
+ * This reads the slider's position, not the name written above it: the name is translated, so it
+ * is one of kBloomPubResolutions' names only when Bloom's UI is in English.
  */
 export async function getBloomPubResolutionInBookSettings(
     page: Page,
-): Promise<string> {
+): Promise<BloomPubResolutionName> {
     const slider = bloomPubResolutionSlider(page);
     await expect(
         slider,
         "the showing Book and Page Settings page has no image resolution slider",
     ).toHaveCount(1);
-    // The name is the heading beside the slider, in the same column.
-    return (
-        await slider.locator("xpath=preceding-sibling::*[1]").innerText()
-    ).trim();
+    const position = await slider.locator('input[type="range"]').inputValue();
+    const resolution = kBloomPubResolutions[Number(position)];
+    if (!resolution)
+        throw new Error(
+            `The image resolution slider is at "${position}", which is none of its ${kBloomPubResolutions.length} positions.`,
+        );
+    return resolution.name;
 }
 
 /**
  * Move the image resolution slider on the BloomPUB page of the open Book and Page Settings dialog
  * to `resolution`, the way a person does with the keyboard: the slider's thumb takes the arrow
- * keys, one step per press. Returns once the slider shows that name. Nothing is saved until OK.
+ * keys, one step per press. Returns once the slider is there. Nothing is saved until OK.
  */
 export async function setBloomPubResolutionInBookSettings(
     page: Page,
     resolution: BloomPubResolutionName,
 ): Promise<void> {
-    const names = kBloomPubResolutions.map((r) => r.name as string);
-    const shown = await getBloomPubResolutionInBookSettings(page);
-    const from = names.indexOf(shown);
-    if (from < 0)
-        throw new Error(
-            `The image resolution slider shows "${shown}", which is none of ${names.join(", ")}.`,
-        );
+    const names: string[] = kBloomPubResolutions.map((r) => r.name);
+    const from = names.indexOf(await getBloomPubResolutionInBookSettings(page));
     const to = names.indexOf(resolution);
     const thumb = bloomPubResolutionSlider(page).locator('input[type="range"]');
     await thumb.focus();

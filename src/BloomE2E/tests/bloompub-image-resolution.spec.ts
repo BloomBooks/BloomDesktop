@@ -2,9 +2,14 @@
 // carries each picture reduced to fit the resolution chosen, Small, HD, Full HD or 4K.
 // Automates the manual test "4K Image BloomPUB Resolutions" (Test Case ID 403).
 //
-// The book has two pictures larger than 4K: a portrait one, 2560x3840, and a landscape one,
-// 3992x2242, the sizes of the photos the manual test uses. The test makes them itself, so their
-// byte counts differ from those photos', and it checks sizes in pixels only.
+// The book has three pictures larger than 4K. Two have the sizes of the photos the manual test
+// uses: a portrait one, 2560x3840, and a landscape one, 3992x2242. The test makes them itself, so
+// their byte counts differ from those photos', and it checks sizes in pixels only.
+//
+// Bloom reduces a picture wider than 3840 when it is put in the book (ImageUtils.MaxLength), so
+// the 3992x2242 picture already fits 4K by the time it is published, and would pass at 4K even if
+// publishing left it alone. The third picture, a landscape one of 3840x2500, is there for that: it
+// goes into the book unreduced, and only publishing can make it fit 4K.
 //
 // Bloom can come out a pixel or two short of the largest size that fits (BL-16829): its resize
 // rounds the long side down before it fits the picture in the box. The card's own expected sizes
@@ -16,8 +21,11 @@
 // a native save dialog. The test reads the files Bloom stages for a BloomPUB instead, which are the
 // files an unzipped .bloompub holds (see stageBloomPub).
 //
-// The tests are serial because each one publishes the book the first one made.
+// The tests are serial because they all publish one book. Whichever runs first makes it, so one
+// of them can be run alone by its title.
 
+import * as Path from "node:path";
+import type { Page, TestInfo } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
@@ -40,6 +48,7 @@ import {
     chooseImageFile,
     getImagePlacement,
     makeJpegFile,
+    readImageFileSize,
     type IPixelSize,
 } from "../helpers/images";
 import {
@@ -55,16 +64,74 @@ test.use({
 
 test.describe.configure({ mode: "serial" });
 
-// The two pictures, by the sizes of the manual test's photos "1 Samuel.jpg" and "2 Dylan.jpg".
-const PORTRAIT: IPixelSize = { width: 2560, height: 3840 };
-const LANDSCAPE: IPixelSize = { width: 3992, height: 2242 };
+// The pictures, one to a page. The first two have the sizes of the manual test's photos
+// "1 Samuel.jpg" and "2 Dylan.jpg". `imported` is the size Bloom keeps the picture at in the book,
+// which for those two is the size the card lists "as imported".
+const PICTURES: {
+    which: string;
+    fileName: string;
+    source: IPixelSize;
+    imported: IPixelSize;
+}[] = [
+    {
+        which: "portrait",
+        fileName: "Samuel.jpg",
+        source: { width: 2560, height: 3840 },
+        imported: { width: 2560, height: 3840 },
+    },
+    {
+        which: "landscape",
+        fileName: "Dylan.jpg",
+        source: { width: 3992, height: 2242 },
+        imported: { width: 3839, height: 2156 },
+    },
+    {
+        which: "tall landscape",
+        fileName: "Tall.jpg",
+        source: { width: 3840, height: 2500 },
+        imported: { width: 3840, height: 2500 },
+    },
+];
 
 // How many pixels short of the largest size that fits a published picture may be (BL-16829).
 const ROUNDING_SHORTFALL = 2;
 
-// The names of the two pictures' files in the book. Set by the first test.
-let portraitFile: string;
-let landscapeFile: string;
+// The name of each picture's file in the book, in the order of PICTURES, once the book is made.
+let pictureFiles: string[] | undefined;
+
+/**
+ * Make the book that every test here publishes, unless an earlier test already has: a Basic Book
+ * with one page for each of PICTURES, holding that picture. Checks that each picture is in the
+ * book at its `imported` size, since a picture Bloom reduced further than that on the way in would
+ * prove nothing about publishing.
+ */
+const ensureBookWithPictures = async (page: Page, testInfo: TestInfo) => {
+    if (pictureFiles) return;
+    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
+    await addPage(page, "Basic Text & Image", PICTURES.length);
+    const pages = await getContentPages(page);
+    const files: string[] = [];
+    for (const [index, picture] of PICTURES.entries()) {
+        const path = testInfo.outputPath(picture.fileName);
+        await makeJpegFile(
+            page,
+            path,
+            picture.source.width,
+            picture.source.height,
+        );
+        await goToPage(page, pages[index].id);
+        await chooseImageFile(page, path);
+        const fileName = (await getImagePlacement(page)).fileName;
+        expect(
+            readImageFileSize(Path.join(bookFolder, fileName)),
+            `The ${picture.which} picture is not in the book at the size expected.`,
+        ).toEqual(picture.imported);
+        files.push(fileName);
+    }
+    // Leaving the page saves it.
+    await goToPage(page, pages[0].id);
+    pictureFiles = files;
+};
 
 /**
  * The size a picture of `source` size should have in a BloomPUB made at `resolution`: the largest
@@ -122,10 +189,9 @@ test.describe("BloomPUB image resolution", () => {
         step,
     }, testInfo) => {
         test.setTimeout(300000);
-        await step("Make a book with two content pages", async () => {
-            await makeBookFromTemplate(page, "Basic Book");
-            await addPage(page, "Basic Text & Image", 2);
-        });
+        await step("Make a book with a 4K picture on each page", async () =>
+            ensureBookWithPictures(page, testInfo),
+        );
 
         await step("Check the BloomPUB page of Book Settings", async () => {
             await openBookSettings(page, "BloomPUB");
@@ -139,35 +205,6 @@ test.describe("BloomPUB image resolution", () => {
             });
             await cancelBookSettings(page);
         });
-
-        await step(
-            "Put a portrait and a landscape 4K picture in the book",
-            async () => {
-                const [first, second] = await getContentPages(page);
-                const portraitPath = testInfo.outputPath("Samuel.jpg");
-                const landscapePath = testInfo.outputPath("Dylan.jpg");
-                await makeJpegFile(
-                    page,
-                    portraitPath,
-                    PORTRAIT.width,
-                    PORTRAIT.height,
-                );
-                await makeJpegFile(
-                    page,
-                    landscapePath,
-                    LANDSCAPE.width,
-                    LANDSCAPE.height,
-                );
-                await goToPage(page, first.id);
-                await chooseImageFile(page, portraitPath);
-                portraitFile = (await getImagePlacement(page)).fileName;
-                await goToPage(page, second.id);
-                await chooseImageFile(page, landscapePath);
-                landscapeFile = (await getImagePlacement(page)).fileName;
-                // Leaving the page saves it.
-                await goToPage(page, first.id);
-            },
-        );
     });
 
     // HD first, with the setting the book started with; then each other size, chosen on the slider.
@@ -175,8 +212,11 @@ test.describe("BloomPUB image resolution", () => {
         test(`a BloomPUB at ${resolution} carries each picture reduced to fit ${resolution} [Test Case ID 403]`, async ({
             page,
             step,
-        }) => {
+        }, testInfo) => {
             test.setTimeout(300000);
+            await step("Make the book, unless it is already made", async () =>
+                ensureBookWithPictures(page, testInfo),
+            );
             if (resolution !== "HD")
                 await step(
                     `Set the BloomPUB resolution to ${resolution}`,
@@ -216,18 +256,13 @@ test.describe("BloomPUB image resolution", () => {
             await step(
                 "Check the size of each picture in the BloomPUB",
                 async () => {
-                    expectPublishedSize(
-                        getStagedImageSize(staged, portraitFile),
-                        PORTRAIT,
-                        resolution,
-                        "portrait",
-                    );
-                    expectPublishedSize(
-                        getStagedImageSize(staged, landscapeFile),
-                        LANDSCAPE,
-                        resolution,
-                        "landscape",
-                    );
+                    for (const [index, picture] of PICTURES.entries())
+                        expectPublishedSize(
+                            getStagedImageSize(staged, pictureFiles![index]),
+                            picture.source,
+                            resolution,
+                            picture.which,
+                        );
                 },
             );
         });
