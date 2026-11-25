@@ -16,6 +16,7 @@
 // user to check their internet connection, which is wrong for a file on this computer (BL-17195).
 
 import * as fs from "node:fs";
+import * as Path from "node:path";
 import type { Frame, Locator, Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import { getUiString } from "../helpers/api";
@@ -29,7 +30,11 @@ import {
     cancelImageChooser,
     pickFileInImageChooser,
 } from "../helpers/imageChooser";
-import { getImagePlacement, makeJpegFile } from "../helpers/images";
+import {
+    getImagePlacement,
+    makeJpegFile,
+    readImageFileSize,
+} from "../helpers/images";
 import { watchForScriptErrors } from "../helpers/scriptErrors";
 
 test.use({
@@ -39,6 +44,9 @@ test.use({
 const PASTE_IMAGE_COMMAND = "EditTab.Image.PasteImage";
 const CHOOSE_IMAGE_COMMAND = "EditTab.Image.ChooseImage";
 const PLACEHOLDER = "placeHolder.png";
+// An odd size that no picture Bloom puts on a new book has, so a cover picture of this size is
+// the good JPEG the test supplied.
+const GOOD_JPEG_SIZE = { width: 437, height: 311 };
 
 /** The bad picture files the test offers Bloom, made at run time. */
 interface IBadFiles {
@@ -94,7 +102,12 @@ async function makeBadFiles(
         png.subarray(0, Math.floor(png.length / 2)),
     );
     fs.writeFileSync(files.textNamedPng, "This is not a picture.\r\n");
-    await makeJpegFile(page, files.goodJpeg, 400, 300);
+    await makeJpegFile(
+        page,
+        files.goodJpeg,
+        GOOD_JPEG_SIZE.width,
+        GOOD_JPEG_SIZE.height,
+    );
     fs.copyFileSync(files.goodJpeg, files.jpegNamedPng);
     return files;
 }
@@ -140,6 +153,39 @@ async function expectCoverUnchanged(page: Page, what: string): Promise<void> {
     ).toBe(PLACEHOLDER);
 }
 
+/**
+ * The cover shows the good JPEG the test supplied: it has loaded, and its file, in the book's
+ * folder, is a JPEG of GOOD_JPEG_SIZE.
+ */
+async function expectCoverShowsGoodJpeg(
+    page: Page,
+    bookFolder: string,
+    what: string,
+): Promise<void> {
+    await expect
+        .poll(
+            async () => {
+                const placement = await getImagePlacement(page);
+                return placement.fileName !== PLACEHOLDER && placement.loaded;
+            },
+            {
+                timeout: 60000,
+                message: `The cover never showed ${what}.`,
+            },
+        )
+        .toBe(true);
+    const fileName = (await getImagePlacement(page)).fileName;
+    const saved = Path.join(bookFolder, fileName);
+    expect(
+        fs.readFileSync(saved).subarray(0, 3).toString("hex"),
+        `The cover's picture ${saved} is not a JPEG, so it is not ${what}.`,
+    ).toBe("ffd8ff");
+    expect(
+        readImageFileSize(saved),
+        `The cover's picture ${saved} is not the size of ${what}.`,
+    ).toEqual(GOOD_JPEG_SIZE);
+}
+
 /** Put `contents` on Bloom's clipboard and choose Paste image on the cover picture. */
 async function pasteOnCover(
     page: Page,
@@ -155,7 +201,7 @@ test("pasting what is not a usable picture says why and leaves the picture alone
 }, testInfo) => {
     test.setTimeout(240000);
     const files = await makeBadFiles(page, (name) => testInfo.outputPath(name));
-    await makeBookFromTemplate(page, "Basic Book");
+    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
     await expectCoverUnchanged(page, "making the book (test setup)");
     const errors = watchForScriptErrors(page);
 
@@ -219,18 +265,7 @@ test("pasting what is not a usable picture says why and leaves the picture alone
 
     // The same route does paste a good picture, so the messages above are about the clipboard.
     await pasteOnCover(page, { picture: files.goodJpeg });
-    await expect
-        .poll(
-            async () => {
-                const placement = await getImagePlacement(page);
-                return placement.fileName !== PLACEHOLDER && placement.loaded;
-            },
-            {
-                timeout: 60000,
-                message: "Pasting a good picture never put it on the cover.",
-            },
-        )
-        .toBe(true);
+    await expectCoverShowsGoodJpeg(page, bookFolder, "the good JPEG pasted");
 
     errors.stop();
     expect(errors.errors(), "Bloom's UI threw script errors.").toEqual([]);
@@ -241,7 +276,7 @@ test("importing a bad picture file keeps the Image Chooser open and leaves the p
 }, testInfo) => {
     test.setTimeout(240000);
     const files = await makeBadFiles(page, (name) => testInfo.outputPath(name));
-    await makeBookFromTemplate(page, "Basic Book");
+    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
     await expectCoverUnchanged(page, "making the book (test setup)");
     const errors = watchForScriptErrors(page);
 
@@ -290,18 +325,7 @@ test("importing a bad picture file keeps the Image Chooser open and leaves the p
         chooser,
         "The Image Chooser stayed open after choosing a JPEG named .png.",
     ).toHaveCount(0, { timeout: 30000 });
-    await expect
-        .poll(
-            async () => {
-                const placement = await getImagePlacement(page);
-                return placement.fileName !== PLACEHOLDER && placement.loaded;
-            },
-            {
-                timeout: 60000,
-                message: "The cover never showed the JPEG named .png.",
-            },
-        )
-        .toBe(true);
+    await expectCoverShowsGoodJpeg(page, bookFolder, "the JPEG named .png");
 
     errors.stop();
     expect(errors.errors(), "Bloom's UI threw script errors.").toEqual([]);
