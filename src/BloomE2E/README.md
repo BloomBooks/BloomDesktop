@@ -174,6 +174,11 @@ real bug in the code under test; read the message and fix it rather than working
 - `helpers/keys.ts` — `pressKey`, `pressKeyIn`, `typeWithKeys`: real key presses, for tests whose
   subject is the key. `typeInGroup` inserts text and raises no key events, so use it for
   everything else.
+- `helpers/longPress.ts` — the panel of special characters that holding a letter down shows:
+  `holdKeyUntilLongPressPanelShows`, then `chooseLongPressCharacterWithClick`,
+  `chooseLongPressCharacterWithMouseWheel` or `chooseLongPressCharacterWithShortcut`, which
+  release the key; and `putCaretInParagraph`, `getCaretPlace`, `getParagraphTexts` for a text box
+  of several paragraphs.
 - `helpers/toolbox.ts` — `showToolbox`, `hideToolbox`, `toolboxFrame`, `openTool`,
   `getShownTools`. Nothing here turns a tool on through the toolbox's own check boxes; the page
   does that when clicked (a Canvas page's canvas opens the Canvas tool, a video box the Sign
