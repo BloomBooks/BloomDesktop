@@ -111,7 +111,8 @@
     > .horizontal-divider:before {
     content: "";
     position: absolute;
-    top: 100%;
+    // 100% is the top of the divider's 3px border-bottom (origami.less), so skip that too.
+    top: calc(100% + 3px);
     left: 0;
     width: 100%;
     // The padding is usually in em, which the text box resolves against the 12pt that it
