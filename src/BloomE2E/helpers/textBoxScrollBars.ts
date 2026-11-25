@@ -182,7 +182,8 @@ export async function waitForScrollBarOf(
     let scrollBar: ITextBoxScrollBar = { showing: !showing, handleHeight: 0 };
     // A scroll bar that has just appeared can be read before niceScroll has sized its handle (a
     // handle about one pixel high has been seen), so when waiting for one to show, also wait until
-    // two reads in a row give the same handle height.
+    // two reads in a row give the same handle height. A rail with no handle to drag is not yet a
+    // scroll bar a person can use, so that does not count as showing either.
     let previousHandleHeight = -1;
     await expect
         .poll(
@@ -191,7 +192,7 @@ export async function waitForScrollBarOf(
                 const settled = scrollBar.handleHeight === previousHandleHeight;
                 previousHandleHeight = scrollBar.handleHeight;
                 return showing
-                    ? scrollBar.showing && settled
+                    ? scrollBar.showing && settled && scrollBar.handleHeight > 0
                     : scrollBar.showing;
             },
             {
