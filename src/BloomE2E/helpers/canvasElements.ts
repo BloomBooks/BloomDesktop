@@ -16,6 +16,7 @@ import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { editablePageFrame, waitForBloomToHaveTyping } from "./bookMaking";
 import { type IRect } from "./geometry";
 import { realClick, realClickAt } from "./realClick";
+import { waitForScrollBarOfBox } from "./textBoxScrollBars";
 import { showToolbox, toolboxFrame } from "./toolbox";
 
 /**
@@ -1087,6 +1088,99 @@ export async function dragCanvasElementSide(
 }
 
 /**
+ * Whether the selected canvas element shows the side handle `side`. A text box shows its south one
+ * only while its height is not automatic.
+ */
+export async function isCanvasElementSideHandleShown(
+    page: Page,
+    side: Side,
+): Promise<boolean> {
+    return editablePageFrame(page)
+        .locator(
+            `#canvas-element-control-frame .bloom-ui-canvas-element-side-handle-${side}`,
+        )
+        .isVisible();
+}
+
+const AUTO_HEIGHT_COMMAND = "EditTab.Toolbox.ComicTool.Options.AutoHeight";
+
+/**
+ * Whether the selected canvas element's height follows its text, as the tick beside Auto Height on
+ * its "..." menu says. Bloom records the opposite on the element, as `bloom-noAutoHeight`.
+ */
+export async function isCanvasElementAutoHeight(page: Page): Promise<boolean> {
+    return activeCanvasElement(page).evaluate(
+        (element) => !element.classList.contains("bloom-noAutoHeight"),
+    );
+}
+
+/**
+ * Turn Auto Height on or off for the selected canvas element, the way a person does: click it on
+ * the element's "..." menu, which toggles it. Throws when it is already that way, since the click
+ * would then do the opposite of what the caller asked. Waits until Bloom has recorded the change.
+ */
+export async function setCanvasElementAutoHeight(
+    page: Page,
+    on: boolean,
+): Promise<void> {
+    if ((await isCanvasElementAutoHeight(page)) === on)
+        throw new Error(
+            `Auto Height is already ${on ? "on" : "off"} for the selected canvas element, so ` +
+                `clicking it would turn it ${on ? "off" : "on"}.`,
+        );
+    await clickCanvasElementMenuItem(page, AUTO_HEIGHT_COMMAND);
+    await expect
+        .poll(() => isCanvasElementAutoHeight(page), {
+            timeout: 15000,
+            message: `Clicking Auto Height did not turn it ${on ? "on" : "off"}.`,
+        })
+        .toBe(on);
+}
+
+/** How the text of the selected canvas element fits in it, as getCanvasElementTextFit reports it. */
+export interface ICanvasTextFit {
+    /** The height of the element, in the page's own pixels. */
+    elementHeight: number;
+    /** The height of everything in the box it is showing, in the page's own pixels. */
+    textHeight: number;
+    /** The height of the part of that box that shows, in the page's own pixels. */
+    shownHeight: number;
+}
+
+/**
+ * How the text of the selected canvas element fits in the box it is showing: how tall the element
+ * is, how tall the text is, and how much of the text shows.
+ */
+export async function getCanvasElementTextFit(
+    page: Page,
+): Promise<ICanvasTextFit> {
+    const elementHeight = await activeCanvasElement(page).evaluate(
+        (element) => (element as HTMLElement).offsetHeight,
+    );
+    const box = await shownTextBoxOfActiveElement(page).evaluate((box) => ({
+        textHeight: box.scrollHeight,
+        shownHeight: box.clientHeight,
+    }));
+    return { elementHeight, ...box };
+}
+
+/**
+ * Wait until the box the selected canvas element is showing has the scroll bar Bloom gives a box
+ * whose text does not fit it (`showing` true), or has none (false). Bloom adds or removes it a
+ * moment after it next checks the box for overflow (textBoxScrollBars.ts).
+ */
+export async function waitForCanvasElementScrollBar(
+    page: Page,
+    showing: boolean,
+): Promise<void> {
+    await waitForScrollBarOfBox(
+        shownTextBoxOfActiveElement(page),
+        showing,
+        "The selected canvas element's text box",
+    );
+}
+
+/**
  * Right-click the selected canvas element's own frame, outside anything inside it. Use this to ask
  * what a right-click on the element's edge does, as opposed to a right-click on what it holds.
  *
@@ -1239,16 +1333,20 @@ export async function getCanvasElementTextBoxes(
  * `text` at the end of what is there. Returns once Bloom has received the page with the text in
  * it, so a save straight after keeps it.
  *
- * Like typeInGroup, this inserts the text as one input, so it raises no key events.
+ * Like typeInGroup, this inserts the text as one input, so it raises no key events, unless
+ * `withKeys` asks for one real key press per character. Bloom fits a box's height to its text when
+ * a key comes up in it, so a test of that fitting needs the keys.
  */
 export async function typeInCanvasElement(
     page: Page,
     text: string,
+    options: { withKeys?: boolean } = {},
 ): Promise<void> {
     const box = shownTextBoxOfActiveElement(page);
     await realClick(box);
     await box.press("End");
-    await page.keyboard.insertText(text);
+    if (options.withKeys) await page.keyboard.type(text);
+    else await page.keyboard.insertText(text);
     await expect(
         box,
         `The text typed into the canvas element did not reach its box.`,
