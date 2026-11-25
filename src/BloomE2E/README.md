@@ -247,6 +247,17 @@ pnpm exec playwright test --debug    # step through it
 
 A run opens a real Bloom window on your desktop. That is expected; do not click in it.
 
+**Running a failed test again: keep the failure's evidence.** Each run empties `test-results/` as
+it starts, which deletes the trace, screenshot and Bloom log of the run that failed. When the next
+run passes, that was the only evidence of the race. So give each run of a test you are
+investigating its own output folder, outside the repo, and keep the folders until the cause is
+known:
+
+```bash
+pnpm exec playwright test tests/copy-page.spec.ts --output "$TEMP/e2e-runs/copy-page-1"
+pnpm exec playwright test tests/copy-page.spec.ts --output "$TEMP/e2e-runs/copy-page-2"
+```
+
 ### Tests that need a person: `*.manual.ts`
 
 A test that cannot pass unattended, because a person has to press real keys for instance, is named

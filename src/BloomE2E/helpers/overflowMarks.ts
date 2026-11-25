@@ -120,6 +120,13 @@ export interface ITextBoxView {
      * screen. Zero when the text fits, even if the box is still scrolled.
      */
     hidden: number;
+    /**
+     * How much further down the box can scroll, on screen. Zero once it is scrolled to its end.
+     * Not `hidden - scrolledBy`: the height of the text is measured from its glyphs, which stand
+     * a little above and below their lines, and at some zooms that leaves a pixel or two that no
+     * scrolling can reach.
+     */
+    scrollableFurther: number;
     /** The height of one line of the box's text, on screen. */
     lineHeight: number;
     /** The color of the box's text. */
@@ -160,6 +167,9 @@ export async function getTextBoxView(box: Locator): Promise<ITextBoxView> {
                 r.bottom - (parseFloat(style.borderBottomWidth) || 0) * scale,
             scrolledBy: e.scrollTop * scale,
             hidden: Math.max(0, textHeight - e.clientHeight) * scale,
+            scrollableFurther:
+                Math.max(0, e.scrollHeight - e.clientHeight - e.scrollTop) *
+                scale,
             lineHeight:
                 (isNaN(lineHeight)
                     ? parseFloat(textStyle.fontSize) * 1.2
@@ -322,9 +332,9 @@ export async function scrollTextBox(
 ): Promise<void> {
     const leftToScroll = async () => {
         const view = await getTextBoxView(box);
-        const left =
-            to === "top" ? view.scrolledBy : view.hidden - view.scrolledBy;
-        // A box stops a fraction of a pixel short of its end when the page is zoomed.
+        const left = to === "top" ? view.scrolledBy : view.scrollableFurther;
+        // Scrolling is in whole pixels of the page, so a zoomed box can stop a fraction of a
+        // pixel short of its end.
         return left < 2 ? 0 : Math.round(left);
     };
     // Three things can lose a turn of the wheel, so each try starts from the beginning:

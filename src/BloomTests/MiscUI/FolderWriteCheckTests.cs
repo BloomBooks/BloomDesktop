@@ -74,12 +74,7 @@ namespace BloomTests.MiscUI
         {
             var extra = "Bloom opened the collection, but books may fail to save.";
             var likelyCause = "Avast's Ransomware Shield may be blocking Bloom.";
-            var html = FolderWriteCheck.MakeMessageHtml(
-                @"C:\Stories",
-                extra,
-                false,
-                likelyCause
-            );
+            var html = FolderWriteCheck.MakeMessageHtml(@"C:\Stories", extra, false, likelyCause);
 
             Assert.That(html, Does.Contain(@"C:\Stories"));
             Assert.That(html, Does.Contain(extra));
@@ -151,9 +146,7 @@ namespace BloomTests.MiscUI
                 using (FolderAccessForTests.DenyWrite(folder))
                 {
                     var thrown = Assert.Throws<CollectionFolderNotWritableException>(() =>
-                        FolderWriteCheck.EnsureFolderExistsAndIsWritable(
-                            folder.FullName
-                        )
+                        FolderWriteCheck.EnsureFolderExistsAndIsWritable(folder.FullName)
                     );
                     Assert.That(thrown.FolderPath, Is.EqualTo(folder.FullName));
                 }
