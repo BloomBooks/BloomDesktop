@@ -9,7 +9,7 @@
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Locator, Page } from "@playwright/test";
+import type { Locator, Page, Response } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
@@ -25,6 +25,10 @@ import {
 } from "../helpers/copyrightAndLicense";
 import { chooseImageFile, selectImage } from "../helpers/images";
 import { realClick } from "../helpers/realClick";
+import {
+    getCurrentUiLanguageTag,
+    setUiStateViaApi,
+} from "../helpers/uiLanguage";
 
 test.use({
     collectionSpec: { name: "image-copyright-and-license", languages: ["en"] },
@@ -78,6 +82,20 @@ async function expectPictureCopyright(
         .toContain(holder);
 }
 
+/** Wait until the picture's license on the page is `license`, as ImageUpdater.cs writes it. */
+async function expectPictureLicense(
+    page: Page,
+    license: string,
+    message: string,
+): Promise<void> {
+    await expect
+        .poll(async () => (await getPictureCredits(page)).license, {
+            timeout: 30000,
+            message,
+        })
+        .toBe(license);
+}
+
 function holderField(page: Page): Locator {
     return copyrightAndLicenseDialog(page).getByLabel("Copyright Holder");
 }
@@ -120,11 +138,75 @@ async function openFromMenu(page: Page): Promise<void> {
     await waitForCopyrightDialog(page);
 }
 
+/**
+ * Do `show`, which makes the dialog show its Copyright tab, and wait until the
+ * Shortcuts list there is complete.
+ *
+ * The list fills in one row at a time (MetadataChooser.tsx): the dialog asks Bloom for the names
+ * of the book's image files, then for the credits of each in turn, and nothing on screen says
+ * when it has asked for the last. So this counts Bloom's answers until there is one for every
+ * file, then lets the dialog draw. Only after that does "this row is not in the list" mean
+ * anything.
+ */
+async function waitForShortcutsScan(
+    page: Page,
+    show: () => Promise<void>,
+): Promise<void> {
+    const answered: Response[] = [];
+    const listener = (response: Response) => {
+        if (response.url().includes("copyrightAndLicense/imageMetadataForFile"))
+            answered.push(response);
+    };
+    page.on("response", listener);
+    try {
+        const fileNamesAnswer = page.waitForResponse(
+            (response) =>
+                response
+                    .url()
+                    .includes("copyrightAndLicense/imageFileNamesInBook"),
+            { timeout: 60000 },
+        );
+        await show();
+        const fileNames = (await (await fileNamesAnswer).json()) as string[];
+        expect(
+            fileNames.length,
+            "Sanity check: the book should have both pictures' files to scan",
+        ).toBeGreaterThanOrEqual(2);
+        await expect
+            .poll(() => answered.length, {
+                timeout: 60000,
+                message:
+                    "The Shortcuts list should ask for the credits of every image file in the book",
+            })
+            .toBe(fileNames.length);
+        await Promise.all(answered.map((response) => response.finished()));
+    } finally {
+        page.off("response", listener);
+    }
+    // The last answer has reached the dialog; give it two frames to draw the row for it.
+    await page.evaluate(
+        () =>
+            new Promise<void>((resolve) =>
+                requestAnimationFrame(() =>
+                    requestAnimationFrame(() => resolve()),
+                ),
+            ),
+    );
+}
+
 /** Show the dialog's License tab. */
 async function showLicenseTab(page: Page): Promise<void> {
     await copyrightAndLicenseDialog(page)
         .getByRole("tab", { name: /license/i })
         .click();
+}
+
+/** Show the dialog's Copyright tab, which also holds the Shortcuts list. */
+async function showCopyrightTab(page: Page): Promise<void> {
+    await copyrightAndLicenseDialog(page)
+        .getByRole("tab", { name: /copyright/i })
+        .click();
+    await expect(holderField(page)).toBeVisible();
 }
 
 /** The token of the Creative Commons badge the dialog shows, e.g. "cc-by-sa", or "" for none. */
@@ -139,7 +221,9 @@ async function getBadgeToken(page: Page): Promise<string> {
 
 /** The "About ..." link under the badge, e.g. "About CC-BY-SA". */
 function aboutLink(page: Page): Locator {
-    return copyrightAndLicenseDialog(page).getByText(/^About /);
+    return copyrightAndLicenseDialog(page)
+        .locator("a")
+        .filter({ hasText: /^About / });
 }
 
 function radio(page: Page, name: string): Locator {
@@ -169,6 +253,14 @@ interface ILicenseChoice {
     radio: string;
     /** The badge's token, or "" when the license has no Creative Commons badge. */
     token: string;
+    /**
+     * Where the "About ..." link under the badge goes, without "http://" or "https://", or "" when
+     * the license has no such link. A license just chosen links with https; one read back from
+     * the picture links to the address stored there, which names the same page with http.
+     */
+    aboutUrl: string;
+    /** The picture's data-license on the page once the choice is saved (ImageUpdater.cs). */
+    savedAs: string;
 }
 
 /** Tick or untick a Creative Commons check box, and wait until it shows that. */
@@ -186,6 +278,8 @@ const kLicenseChoices: ILicenseChoice[] = [
         name: "Public Domain",
         radio: kPublicDomain,
         token: "cc0",
+        aboutUrl: "creativecommons.org/publicdomain/zero/1.0/",
+        savedAs: "cc0",
         choose: async (page) => {
             await radio(page, kPublicDomain).check();
         },
@@ -194,6 +288,8 @@ const kLicenseChoices: ILicenseChoice[] = [
         name: "CC-BY",
         radio: kCreativeCommons,
         token: "cc-by",
+        aboutUrl: "creativecommons.org/licenses/by/4.0/",
+        savedAs: "cc-by",
         choose: async (page) => {
             await radio(page, kCreativeCommons).check();
             await setCheckbox(page, kCommercial, true);
@@ -205,6 +301,8 @@ const kLicenseChoices: ILicenseChoice[] = [
         name: "CC-BY-NC-SA",
         radio: kCreativeCommons,
         token: "cc-by-nc-sa",
+        aboutUrl: "creativecommons.org/licenses/by-nc-sa/4.0/",
+        savedAs: "cc-by-nc-sa",
         choose: async (page) => {
             await radio(page, kCreativeCommons).check();
             await setCheckbox(page, kCommercial, false);
@@ -216,6 +314,8 @@ const kLicenseChoices: ILicenseChoice[] = [
         name: "CC-BY-ND",
         radio: kCreativeCommons,
         token: "cc-by-nd",
+        aboutUrl: "creativecommons.org/licenses/by-nd/4.0/",
+        savedAs: "cc-by-nd",
         choose: async (page) => {
             await radio(page, kCreativeCommons).check();
             await setCheckbox(page, kCommercial, true);
@@ -226,6 +326,10 @@ const kLicenseChoices: ILicenseChoice[] = [
         name: "All rights reserved",
         radio: kAllRightsReserved,
         token: "",
+        aboutUrl: "",
+        // "All rights reserved" is the absence of a license (libpalaso's NullLicense), which
+        // is written as nothing.
+        savedAs: "",
         choose: async (page) => {
             await radio(page, kAllRightsReserved).check();
         },
@@ -234,6 +338,9 @@ const kLicenseChoices: ILicenseChoice[] = [
         name: "a custom license",
         radio: kOther,
         token: "",
+        aboutUrl: "",
+        // libpalaso's name for any CustomLicense, whatever its text.
+        savedAs: "Custom License",
         choose: async (page) => {
             await radio(page, kOther).check();
             await customLicenseText(page).fill(kCustomLicense);
@@ -242,6 +349,58 @@ const kLicenseChoices: ILicenseChoice[] = [
 ];
 
 const kCustomLicense = "Free for use in schools";
+
+/** The license the first picture ends up with: the last one the test chooses for it. */
+const kFirstPictureLicense = kLicenseChoices[kLicenseChoices.length - 1];
+
+/** The license the second picture is given, so that the two pictures' credits differ in it too. */
+const kSecondPictureLicense = kLicenseChoices[2];
+
+/** `text` as a pattern that matches exactly that text. */
+function escapeRegExp(text: string): string {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Check the open dialog's License tab, which must be showing, against `choice`. */
+async function expectLicenseShown(
+    page: Page,
+    choice: ILicenseChoice,
+    when: string,
+): Promise<void> {
+    await expect(
+        radio(page, choice.radio),
+        `${choice.name} should be chosen ${when}`,
+    ).toBeChecked();
+    await expect
+        .poll(() => getBadgeToken(page), {
+            message: `The badge should be the one for ${choice.name} ${when}`,
+        })
+        .toBe(choice.token);
+    if (choice.aboutUrl) {
+        await expect(
+            aboutLink(page),
+            `The link under the badge should name ${choice.name} ${when}`,
+        ).toHaveText(`About ${choice.token.toUpperCase()}`);
+        await expect(
+            aboutLink(page),
+            `The link under the badge should go to the page about ${choice.name} ${when}`,
+        ).toHaveAttribute(
+            "href",
+            new RegExp(`^https?://${escapeRegExp(choice.aboutUrl)}$`),
+        );
+    } else {
+        await expect(
+            aboutLink(page),
+            `${choice.name} has no page to link to, so there should be no About link ${when}`,
+        ).toHaveCount(0);
+    }
+    if (choice.radio === kOther) {
+        await expect(
+            customLicenseText(page),
+            `The custom license's text should be shown ${when}`,
+        ).toHaveValue(kCustomLicense);
+    }
+}
 
 /**
  * The box for a custom license's text. It has no label of its own: the advice above it is a
@@ -259,10 +418,16 @@ function customLicenseText(page: Page): Locator {
 }
 
 test("image Copyright and License dialog: opening it, OK and Cancel, licenses, shortcuts and Add to all images [Test Case ID 284]", async ({
-    page,
+    bloomApp,
     step,
 }) => {
     test.setTimeout(600000);
+
+    // The dialog's fields, buttons and license choices are found by their English wording, and a
+    // freshly launched Bloom takes its UI language from the operating system.
+    if ((await getCurrentUiLanguageTag(bloomApp.page)) !== "en")
+        await setUiStateViaApi(bloomApp, "en", false);
+    const page = bloomApp.page;
 
     await step(
         "Make a book with two pictures that have no credits",
@@ -357,43 +522,26 @@ test("image Copyright and License dialog: opening it, OK and Cancel, licenses, s
             async () => {
                 await openFromMenu(page);
                 await showLicenseTab(page);
-                const licenseBefore = (await getPictureCredits(page)).license;
-                await choice.choose(page);
-                await expect(radio(page, choice.radio)).toBeChecked();
                 expect(
-                    await getBadgeToken(page),
-                    `The badge should be the one for ${choice.name}`,
-                ).toBe(choice.token);
-                if (choice.token && choice.token !== "cc0") {
-                    await expect(
-                        aboutLink(page),
-                        `The link under the badge should name ${choice.name}`,
-                    ).toHaveText(`About ${choice.token.toUpperCase()}`);
-                }
+                    (await getPictureCredits(page)).license,
+                    `Sanity check: the picture should not have ${choice.name} before it is chosen`,
+                ).not.toBe(choice.savedAs);
+                await choice.choose(page);
+                await expectLicenseShown(page, choice, "once it is chosen");
                 await pressOk(page);
-                await expect
-                    .poll(async () => (await getPictureCredits(page)).license, {
-                        timeout: 30000,
-                        message: `OK should change the picture's license to ${choice.name}`,
-                    })
-                    .not.toBe(licenseBefore);
+                await expectPictureLicense(
+                    page,
+                    choice.savedAs,
+                    `OK should change the picture's license to ${choice.name}`,
+                );
 
                 await openFromMenu(page);
                 await showLicenseTab(page);
-                await expect(
-                    radio(page, choice.radio),
-                    `${choice.name} should still be chosen when the dialog is opened again`,
-                ).toBeChecked();
-                expect(
-                    await getBadgeToken(page),
-                    `The badge should still be the one for ${choice.name}`,
-                ).toBe(choice.token);
-                if (choice.radio === kOther) {
-                    await expect(
-                        customLicenseText(page),
-                        "The custom license's text should be kept",
-                    ).toHaveValue(kCustomLicense);
-                }
+                await expectLicenseShown(
+                    page,
+                    choice,
+                    "when the dialog is opened again",
+                );
                 await pressCancel(page);
             },
         );
@@ -404,22 +552,45 @@ test("image Copyright and License dialog: opening it, OK and Cancel, licenses, s
             new RegExp(`© \\d+ ${holder}`),
         );
 
-    await step("Give the second picture another holder", async () => {
-        await goToPage(page, second.id);
-        await openFromMenu(page);
-        await typeHolder(page, HERON);
-        await pressOk(page);
-        await expectPictureCopyright(
-            page,
-            HERON,
-            "OK should put the second holder on the second picture",
-        );
-    });
+    // Every row of the Shortcuts list: each starts with its copyright.
+    const shortcuts = () =>
+        copyrightAndLicenseDialog(page).getByText(/^© \d+ /);
+
+    await step(
+        "Give the second picture another holder and another license",
+        async () => {
+            expect(
+                kSecondPictureLicense.savedAs,
+                "Sanity check: the two pictures should get different licenses",
+            ).not.toBe(kFirstPictureLicense.savedAs);
+            await goToPage(page, second.id);
+            await openFromMenu(page);
+            await typeHolder(page, HERON);
+            await showLicenseTab(page);
+            await kSecondPictureLicense.choose(page);
+            await expectLicenseShown(
+                page,
+                kSecondPictureLicense,
+                "once it is chosen",
+            );
+            await pressOk(page);
+            await expectPictureCopyright(
+                page,
+                HERON,
+                "OK should put the second holder on the second picture",
+            );
+            await expectPictureLicense(
+                page,
+                kSecondPictureLicense.savedAs,
+                "OK should put the second license on the second picture",
+            );
+        },
+    );
 
     await step(
         "See both holders in the Shortcuts list, and use one",
         async () => {
-            await openFromMenu(page);
+            await waitForShortcutsScan(page, () => openFromMenu(page));
             await expect(
                 shortcut(KINGFISHER),
                 "The Shortcuts list should offer the first picture's credits",
@@ -432,14 +603,36 @@ test("image Copyright and License dialog: opening it, OK and Cancel, licenses, s
                 shortcut(TYPED_THEN_DROPPED),
                 "The Shortcuts list should not offer credits that were never kept",
             ).toHaveCount(0);
+            await expect(
+                shortcuts(),
+                "The Shortcuts list should offer the two pictures' credits and nothing else",
+            ).toHaveCount(2);
 
             await shortcut(KINGFISHER).click();
             await expect(
                 holderField(page),
                 "Choosing a shortcut should fill in its holder",
             ).toHaveValue(KINGFISHER);
+            await showLicenseTab(page);
+            await expectLicenseShown(
+                page,
+                kFirstPictureLicense,
+                "after choosing the first picture's shortcut",
+            );
+
+            await showCopyrightTab(page);
             await shortcut(HERON).click();
-            await expect(holderField(page)).toHaveValue(HERON);
+            await expect(
+                holderField(page),
+                "Choosing the other shortcut should fill in its holder",
+            ).toHaveValue(HERON);
+            await showLicenseTab(page);
+            await expectLicenseShown(
+                page,
+                kSecondPictureLicense,
+                "after choosing the second picture's shortcut",
+            );
+            await showCopyrightTab(page);
         },
     );
 
@@ -466,18 +659,32 @@ test("image Copyright and License dialog: opening it, OK and Cancel, licenses, s
                 HERON,
                 "Add to all images should have put the holder on the first picture",
             );
+            await expectPictureLicense(
+                page,
+                kSecondPictureLicense.savedAs,
+                "Add to all images should have put the license on the first picture",
+            );
             await goToPage(page, second.id);
             await expectPictureCopyright(
                 page,
                 HERON,
                 "The second picture should keep its holder",
             );
-            await openFromMenu(page);
+            await expectPictureLicense(
+                page,
+                kSecondPictureLicense.savedAs,
+                "The second picture should keep its license",
+            );
+            await waitForShortcutsScan(page, () => openFromMenu(page));
             await expect(shortcut(HERON)).toBeVisible({ timeout: 30000 });
             await expect(
                 shortcut(KINGFISHER),
                 "Once every picture has the same credits, the Shortcuts list should not offer the old ones",
             ).toHaveCount(0);
+            await expect(
+                shortcuts(),
+                "Once every picture has the same credits, the Shortcuts list should offer only those",
+            ).toHaveCount(1);
             await pressCancel(page);
         },
     );
