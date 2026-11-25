@@ -20,7 +20,13 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import { apiPost } from "./api";
-import { editablePageFrame } from "./bookMaking";
+import {
+    addPage,
+    editablePageFrame,
+    getContentPages,
+    goToPage,
+    type IBookPage,
+} from "./bookMaking";
 import { clickCanvasElementMenuItem } from "./canvasElements";
 import { realClick } from "./realClick";
 import { expectExpandedTool, toolboxFrame } from "./toolbox";
@@ -336,4 +342,29 @@ async function openSignLanguageAdvancedSection(page: Page): Promise<void> {
                 );
         }
     }
+}
+
+/**
+ * Add a "Video Over Text" page to the book being edited, put the video file at `filePath` into its
+ * video box through the Sign Language tool (see chooseVideoFile), and return the new page. Bloom is
+ * left showing that page.
+ *
+ * This is the start state of a test about a book with a sign language video.
+ */
+export async function addPageWithVideo(
+    page: Page,
+    filePath: string,
+): Promise<IBookPage> {
+    const before = (await getContentPages(page)).map((p) => p.id);
+    await addPage(page, "Video Over Text");
+    const added = (await getContentPages(page)).filter(
+        (p) => !before.includes(p.id),
+    );
+    if (added.length !== 1)
+        throw new Error(
+            `Adding a "Video Over Text" page added ${added.length} content pages, not one.`,
+        );
+    await goToPage(page, added[0].id);
+    await chooseVideoFile(page, videoBoxes(page).first(), filePath);
+    return added[0];
 }

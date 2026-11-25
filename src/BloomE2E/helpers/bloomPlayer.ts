@@ -311,3 +311,108 @@ export async function expectPreviewSoundsPlayed(
         .poll(() => getPreviewSoundsPlayed(player), { timeout: 15000, message })
         .toEqual(expected);
 }
+
+/** Every video on the page Bloom Player is showing. */
+export function previewVideos(player: Frame): Locator {
+    return activePreviewPage(player).locator(".bloom-videoContainer video");
+}
+
+/** A video that Bloom Player played to its end. */
+export interface IPreviewVideoPlayed {
+    /** The id of the book page the video is on. */
+    pageId: string;
+    /** The video's file name, without its folder. */
+    fileName: string;
+}
+
+/**
+ * Start recording which videos Bloom Player plays to their end, from now on (see
+ * getPreviewVideosPlayed). Call it before the page with the video is shown: Bloom Player plays a
+ * page's video as soon as the reader turns to it. The record lives in the player's document, so it
+ * ends when the preview is rebuilt; call this again after that.
+ *
+ * Only reaching the end is recorded, not each start: on the way to playing a video through, Bloom
+ * Player starts it, stops it at once and starts it again a second later, so the starts say nothing
+ * a reader would notice.
+ */
+export async function startRecordingPreviewVideos(
+    player: Frame,
+): Promise<void> {
+    await player.evaluate(() => {
+        const w = window as unknown as {
+            e2eVideosPlayed?: { pageId: string; src: string }[];
+        };
+        if (w.e2eVideosPlayed) {
+            w.e2eVideosPlayed.length = 0;
+            return;
+        }
+        const played: { pageId: string; src: string }[] = [];
+        w.e2eVideosPlayed = played;
+        // A media element's events do not bubble, so this one is caught on its way down.
+        document.addEventListener(
+            "ended",
+            (e) => {
+                if (!(e.target instanceof HTMLVideoElement)) return;
+                played.push({
+                    pageId: e.target.closest(".bloom-page")?.id ?? "",
+                    src: e.target.currentSrc,
+                });
+            },
+            true,
+        );
+    });
+}
+
+/**
+ * The videos Bloom Player has played to their end since startRecordingPreviewVideos, in order. A
+ * video played through twice is there twice.
+ */
+export async function getPreviewVideosPlayed(
+    player: Frame,
+): Promise<IPreviewVideoPlayed[]> {
+    const played = await player.evaluate(
+        () =>
+            (
+                window as unknown as {
+                    e2eVideosPlayed?: { pageId: string; src: string }[];
+                }
+            ).e2eVideosPlayed,
+    );
+    if (!played)
+        throw new Error(
+            "Nothing is recording Bloom Player's videos; call startRecordingPreviewVideos first.",
+        );
+    return played.map((video) => ({
+        pageId: video.pageId,
+        fileName: decodeURIComponent(
+            Path.posix.basename(new URL(video.src).pathname),
+        ),
+    }));
+}
+
+/**
+ * Wait until Bloom Player has played exactly these videos to their end since
+ * startRecordingPreviewVideos, in this order (see getPreviewVideosPlayed).
+ */
+export async function expectPreviewVideosPlayed(
+    player: Frame,
+    expected: IPreviewVideoPlayed[],
+    message: string,
+): Promise<void> {
+    await expect
+        .poll(() => getPreviewVideosPlayed(player), { timeout: 30000, message })
+        .toEqual(expected);
+}
+
+/**
+ * Tap the only video on the page Bloom Player is showing, as a reader does to play it again once
+ * it has stopped.
+ */
+export async function tapPreviewVideo(player: Frame): Promise<void> {
+    const videos = previewVideos(player);
+    await expect(
+        videos,
+        "The page Bloom Player is showing should have one video.",
+    ).toHaveCount(1);
+    await videos.click();
+}

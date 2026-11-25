@@ -318,3 +318,56 @@ export interface IBookshelfFile {
 export function readBookshelfFile(content: Buffer): IBookshelfFile {
     return JSON.parse(content.toString("utf8").replace(/^﻿/, ""));
 }
+
+/**
+ * The video files a .bloompub carries: the files in its video folder, each named with that folder
+ * ("video/name.mp4"), sorted by name. Bloom leaves out a video no page plays, and writes a trimmed
+ * video as a new, shorter file.
+ */
+export function getBloomPubVideos(bloomPub: Buffer): IArchiveEntry[] {
+    return readZip(bloomPub)
+        .map((entry) => ({ ...entry, name: entry.name.replace(/\\/g, "/") }))
+        .filter((entry) => entry.name.startsWith("video/"))
+        .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** The videos one page of a .bloompub plays. */
+export interface IBloomPubPageVideos {
+    /** The page's id, which is the id the page has in the book. */
+    pageId: string;
+    /**
+     * What each video box on the page points to, in order, exactly as the page has it: a path
+     * from the root of the .bloompub, such as "video/name.mp4", with a "#t=" fragment when the
+     * video is trimmed. This is what a reader's device looks for in the .bloompub.
+     */
+    sources: string[];
+}
+
+/**
+ * The pages of a .bloompub that play a video, in the order of the book, with what each plays.
+ * `page` is used only as an HTML parser, as helpers/bookHtml.ts does.
+ */
+export async function getBloomPubPageVideos(
+    page: Page,
+    bloomPub: Buffer,
+): Promise<IBloomPubPageVideos[]> {
+    const bookFiles = readZip(bloomPub).filter((entry) =>
+        entry.name.toLowerCase().endsWith(".htm"),
+    );
+    if (bookFiles.length !== 1)
+        throw new Error(
+            `The .bloompub should hold one .htm file. It holds: ${bookFiles.map((entry) => entry.name).join(", ")}.`,
+        );
+    return page.evaluate((source) => {
+        const book = new DOMParser().parseFromString(source, "text/html");
+        const pages: { pageId: string; sources: string[] }[] = [];
+        for (const bookPage of book.querySelectorAll(".bloom-page")) {
+            const sources = Array.from(
+                bookPage.querySelectorAll("video source"),
+            ).map((element) => element.getAttribute("src") ?? "");
+            if (sources.length > 0)
+                pages.push({ pageId: bookPage.id, sources });
+        }
+        return pages;
+    }, bookFiles[0].content.toString("utf8"));
+}

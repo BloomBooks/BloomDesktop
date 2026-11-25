@@ -7,12 +7,7 @@
 // without them, so this test leaves them out.
 
 import { expect, test } from "../fixtures/bloomTest";
-import {
-    addPage,
-    getContentPages,
-    goToPage,
-    makeBookFromTemplate,
-} from "../helpers/bookMaking";
+import { goToPage, makeBookFromTemplate } from "../helpers/bookMaking";
 import {
     confirmLanguageChooser,
     pickLanguageInChooser,
@@ -25,7 +20,7 @@ import {
     openSignLanguageChooserFromPublish,
 } from "../helpers/publish";
 import {
-    chooseVideoFile,
+    addPageWithVideo,
     deleteVideo,
     SHORT_VIDEO,
     videoBoxes,
@@ -46,13 +41,7 @@ test("deleting the book's only video unchecks and disables Sign Language on the 
     bloomApp,
 }) => {
     await makeBookFromTemplate(page, "Basic Book");
-    const before = (await getContentPages(page)).map((p) => p.id);
-    await addPage(page, "Video Over Text");
-    const videoPage = (await getContentPages(page)).find(
-        (p) => !before.includes(p.id),
-    )!;
-    await goToPage(page, videoPage.id);
-    await chooseVideoFile(page, videoBoxes(page).first(), SHORT_VIDEO);
+    const videoPage = await addPageWithVideo(page, SHORT_VIDEO);
 
     // On Publish: Web, set the sign language, which checks Sign Language.
     await openPublishToWeb(page);
