@@ -726,7 +726,7 @@ export class ReaderToolsModel {
         ) {
             this.redoStack.push(this.undoStack.pop());
         }
-        EditableDivUtils.replaceContentKeepingLiveInlineImages(
+        EditableDivUtils.replaceContentKeepingLiveImagesAndTables(
             this.activeElement,
             this.undoStack[this.undoStack.length - 1].html,
         );
@@ -761,7 +761,7 @@ export class ReaderToolsModel {
         if (this.redoStack.length > 0) {
             this.undoStack.push(this.redoStack.pop());
         }
-        EditableDivUtils.replaceContentKeepingLiveInlineImages(
+        EditableDivUtils.replaceContentKeepingLiveImagesAndTables(
             this.activeElement,
             this.undoStack[this.undoStack.length - 1].html,
         );

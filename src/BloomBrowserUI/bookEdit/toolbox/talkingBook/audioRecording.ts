@@ -679,7 +679,9 @@ export default class AudioRecording implements IAudioRecorder {
         if (!includeCheckForText) {
             return true;
         }
-        return this.stringToSentences(element!.innerHTML).some((frag) => {
+        return this.stringToSentences(
+            EditableDivUtils.htmlOfOwnText(element!),
+        ).some((frag) => {
             return this.isRecordable(frag);
         });
     }
@@ -726,6 +728,10 @@ export default class AudioRecording implements IAudioRecorder {
                 const childElems = Array.from(
                     div.getElementsByClassName(kAudioSentence),
                     (elem) => <HTMLElement>elem,
+                ).filter(
+                    // Not the sentences of the cells of a table in the box's text: each cell's text
+                    // box is a recordable div of its own, so they are in the list already.
+                    (elem) => elem.closest(".bloom-editable") === div,
                 );
                 result = result.concat(childElems);
             }
@@ -3831,7 +3837,10 @@ export default class AudioRecording implements IAudioRecorder {
                                 if (
                                     !element.classList.contains(
                                         "bloom-editable",
-                                    )
+                                    ) &&
+                                    // Not the sentences of the cells of a table in the box's
+                                    // text: each cell's text box keeps its own recordings.
+                                    element.closest(".bloom-editable") === root
                                 ) {
                                     this.deleteElementAndPushChildNodesIntoParent(
                                         element,
@@ -3902,7 +3911,7 @@ export default class AudioRecording implements IAudioRecorder {
                         // as an inline image (bloom-inlineImage). They hold no text to record,
                         // and recursing into one reaches the img element, which this code would
                         // then treat as a leaf and add audio markup to.
-                        child.getAttribute("contenteditable") !== "false"
+                        !EditableDivUtils.isUneditablePartOfText(child)
                     ) {
                         processedChild = true;
                         updateFuncs.push(

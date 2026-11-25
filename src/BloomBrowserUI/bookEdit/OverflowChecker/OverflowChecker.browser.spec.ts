@@ -360,6 +360,41 @@ describe("OverflowChecker.overflowingAncestor in a table cell", () => {
     });
 });
 
+// A table that ends the text of a box has an empty paragraph after it, for typing below it.
+describe("OverflowChecker.IsOverflowingSelf with a table in the text", () => {
+    // A 100px box holding a 24px line of text, a 60px table with half a line (12px) of margin
+    // above and below it, and then `afterTable`, which is what the box ends with. The text and
+    // the table fit, but not with the margin below the table as well.
+    function loadBoxEndingWithTable(afterTable: string): HTMLElement {
+        // Bloom's paragraphs have no margins; the browser's default ones would add to the height.
+        const [element] = loadFixture(`
+            <style>.boxEndingWithTable p { margin: 0 }</style>
+            <div class="myTest bloom-editable boxEndingWithTable" style="height: 100px; font: 20px/1.2 Arial; overflow: hidden"><p>Text</p><div class="bloom-table bloom-tableInText" style="height: 60px; margin-block: 0.5lh"></div>${afterTable}</div>`);
+        return element;
+    }
+
+    it("does not count the empty paragraph below a table that ends the text, nor the margin above it", () => {
+        const element = loadBoxEndingWithTable("<p><br></p>");
+        expect(
+            element.scrollHeight,
+            "The empty paragraph should run past the bottom of the box, or this tests nothing.",
+        ).toBeGreaterThan(element.clientHeight);
+        expect(OverflowChecker.IsOverflowingSelf(element)).toBe(false);
+    });
+
+    it("counts that paragraph once something is typed in it", () => {
+        const element = loadBoxEndingWithTable("<p>Typed</p>");
+        expect(OverflowChecker.IsOverflowingSelf(element)).toBe(true);
+    });
+
+    it("counts an empty paragraph between two tables, which takes up room in the text", () => {
+        const element = loadBoxEndingWithTable(
+            `<p><br></p><div class="bloom-table bloom-tableInText" style="height: 0"></div><p><br></p>`,
+        );
+        expect(OverflowChecker.IsOverflowingSelf(element)).toBe(true);
+    });
+});
+
 describe("OverflowChecker.AdjustSizeAndMarkSelfOverflow", () => {
     afterEach(() => {
         vi.clearAllTimers();

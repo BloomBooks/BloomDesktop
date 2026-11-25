@@ -324,7 +324,7 @@ export async function addInlineImage(
         before.flatMap((block) => block.images.map((image) => image.id)),
     );
     await openInlineImageMenuInText(page, groupSelector, languageTag);
-    await clickInlineImageMenuCommand(page, kInsertImageCommand);
+    await clickContextMenuCommand(page, kInsertImageCommand);
     const wanted = before.length;
     await expect
         .poll(
@@ -411,7 +411,7 @@ export async function deleteInlineImage(
     id: string,
 ): Promise<void> {
     await openInlineImageMenu(page, groupSelector, languageTag, id);
-    await clickInlineImageMenuCommand(page, kDeleteCommand);
+    await clickContextMenuCommand(page, kDeleteCommand);
     await expect
         .poll(
             async () =>
@@ -476,7 +476,7 @@ export async function resetInlineImage(
     id: string,
 ): Promise<void> {
     await openInlineImageMenu(page, groupSelector, languageTag, id);
-    await clickInlineImageMenuCommand(page, kResetImageCommand);
+    await clickContextMenuCommand(page, kResetImageCommand);
     await expect
         .poll(
             async () =>
@@ -576,7 +576,7 @@ export async function openInlineImageInformation(
     id: string,
 ): Promise<void> {
     await openInlineImageMenu(page, groupSelector, languageTag, id);
-    await clickInlineImageMenuCommand(page, kSetImageInformationCommand);
+    await clickContextMenuCommand(page, kSetImageInformationCommand);
 }
 
 /** True when the block's right-click menu offers to add an inline image at all. */
@@ -1536,7 +1536,7 @@ export async function chooseInlineImagePictureFromMenu(
         `inline image ${id} should exist in at least one language before its picture changes`,
     ).toBeGreaterThan(0);
     await openInlineImageMenu(page, groupSelector, languageTag, id);
-    await clickInlineImageMenuCommand(page, kChooseImageCommand);
+    await clickContextMenuCommand(page, kChooseImageCommand);
     await chooseFileInImageChooser(page, filePath);
     // Bloom copies the file into the book under its own name, or under that name with a number
     // added when the book already has a file by that name.
@@ -2142,7 +2142,7 @@ async function openInlineImageMenu(
         picture.x + picture.width / 2,
         picture.y + picture.height / 2,
     );
-    await waitForInlineImageMenu(page, `inline image ${id}`);
+    await waitForContextMenu(page, `inline image ${id}`);
 }
 
 /**
@@ -2157,10 +2157,7 @@ async function openInlineImageMenuInText(
 ): Promise<void> {
     const clear = await clearTextPoint(page, groupSelector, languageTag);
     await rightClickAt(page, clear.x, clear.y);
-    await waitForInlineImageMenu(
-        page,
-        `the text of the "${languageTag}" block`,
-    );
+    await waitForContextMenu(page, `the text of the "${languageTag}" block`);
 }
 
 /**
@@ -2411,12 +2408,19 @@ async function putCaretAtEdgeOfBlockText(
  * A real right-click at a point in the page's own coordinates. Bloom shows its own menu in place
  * of WebView2's when it gets the contextmenu event, so the click has to be a real one.
  */
-async function rightClickAt(page: Page, x: number, y: number): Promise<void> {
+export async function rightClickAt(
+    page: Page,
+    x: number,
+    y: number,
+): Promise<void> {
     await page.mouse.move(x, y);
     await page.mouse.click(x, y, { button: "right" });
 }
 
-async function waitForInlineImageMenu(page: Page, what: string): Promise<void> {
+export async function waitForContextMenu(
+    page: Page,
+    what: string,
+): Promise<void> {
     await editablePageFrame(page)
         .locator(kMenuSelector)
         .first()
@@ -2431,7 +2435,7 @@ async function waitForInlineImageMenu(page: Page, what: string): Promise<void> {
 }
 
 /** Choose one command from the open menu, by localization id, and wait until the menu closes. */
-async function clickInlineImageMenuCommand(
+export async function clickContextMenuCommand(
     page: Page,
     l10nId: string,
 ): Promise<void> {

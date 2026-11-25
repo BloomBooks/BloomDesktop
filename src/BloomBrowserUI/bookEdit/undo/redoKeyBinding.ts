@@ -27,6 +27,16 @@ export interface IRedoTarget {
     handleRedo(): void;
 }
 
+/**
+ * Whether this key event is Ctrl+Z, Ctrl+Y or Ctrl+Shift+Z (Cmd on a Mac), the keys that undo and
+ * redo. The physical key (e.code) is checked too, so it works whatever the keyboard layout.
+ */
+export function isUndoOrRedoKey(e: KeyboardEvent): boolean {
+    if (!(e.ctrlKey || e.metaKey) || e.altKey) return false;
+    const key = e.key?.toLowerCase();
+    return key === "z" || key === "y" || e.code === "KeyZ" || e.code === "KeyY";
+}
+
 /** Whether this keydown is the Redo gesture: Ctrl+Y with no other modifier. */
 export function isRedoKeystroke(e: KeyboardEvent): boolean {
     return (

@@ -30,6 +30,13 @@ import {
 } from "./inlineImages";
 import { kInlineImageClass } from "./inlineImageConstants";
 import {
+    elementOf,
+    kTableInTextClass,
+    putBackLiveTables,
+    removeUnusedParagraphsBelowTables,
+    tablesInTextOf,
+} from "./tableInTextConstants";
+import {
     cleanupInlineImageInteractions,
     adjustInlineImageOffsetsIfBlockSizeChanged,
     inlineImagePictureChanged,
@@ -49,6 +56,12 @@ import {
     SetupTableEditing,
     removeTableEditingMarkupFromClone,
 } from "./tableEditing";
+import {
+    pasteTableIntoText,
+    pasteTableIntoTextFromEvent,
+    selectionTouchesTableInText,
+    setupTablesInText,
+} from "./tablesInText";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -826,6 +839,7 @@ export function SetupElements(
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
     SetupTableEditing(container);
+    setupTablesInText(container);
     initializeCanvasElementManager();
     initChoiceWidgetsForEditing();
 
@@ -892,7 +906,8 @@ export function SetupElements(
         .find(".bloom-translationGroup")
         .each(function () {
             //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
-            const contentElements = $(this).find(
+            // Only the group's own boxes: a table in a box's text holds groups of its own.
+            const contentElements = $(this).children(
                 "textarea, div.bloom-editable",
             );
             const originalOrder = contentElements.toArray();
@@ -1633,6 +1648,7 @@ function cleanCloneOfPageForSave(
 
     removeNiceScrollArtifacts(clonedPage);
     removeScrollOffsets(clonedPage);
+    removeUnusedParagraphsBelowTables(clonedPage);
 
     removeEditingDebrisFromClone(clonedPage);
 }
@@ -1878,7 +1894,7 @@ export const cutSelection = () => {
 
 async function cutSelectionImpl() {
     const sel = document.getSelection();
-    if (!sel) return;
+    if (!sel || selectionTouchesTableInText()) return;
     await writeClipboardText(sel.toString());
     // Using ckeditor here because it's the only way I've found to integrate clipboard
     // ops into an Undo stack that we can operate from an external button.
@@ -1951,6 +1967,11 @@ document.addEventListener("paste", pasteHandler);
 // for pasteHandler (see below), but this listener does nothing unless it pastes a picture, and
 // then it stops the event, so the paste can't happen twice.
 document.addEventListener("paste", pasteImageIntoTextAsInlineImage, {
+    capture: true,
+});
+// A table that the Table menu's Copy Table or Cut Table put on the clipboard goes into a text
+// block as a table, not as the text of its HTML. In the capture phase for the same reason.
+document.addEventListener("paste", pasteTableIntoTextFromEvent, {
     capture: true,
 });
 // We also need a handler on ctrl-V. The pasteHandler does not get invoked by
@@ -2040,6 +2061,11 @@ async function pasteImpl(imageAvailable: boolean) {
         // It shouldn't happen that we don't have an editor, but if we don't, we just don't paste.
         // Otherwise, the paste is likely to go somewhere unexpected, wherever a ckeditor last had
         // a selection.
+        return;
+    }
+    if (selectionTouchesTableInText()) return;
+    if (pasteTableIntoText(textToPaste)) {
+        scheduleMarkupUpdateAfterPaste();
         return;
     }
     const ckEditorInstance = CKEDITOR.currentInstance;
@@ -2154,11 +2180,55 @@ function updateCkEditorButtonStatus(editor: CKEDITOR.editor) {
     // This method is a placeholder for future use.
 }
 
+/**
+ * When CKEditor finishes loading a box, it writes its copy of the box's content back into the box
+ * (see keepTypingWhenCkEditorLoads.ts), which replaces every element in it. For a table in the
+ * box's text that would leave the table library and the cells' text boxes, all set up by
+ * SetupElements before the editor loads, holding elements that are no longer on the page. So this
+ * puts the live tables back in place of CKEditor's copies, before the editor's first undo
+ * snapshot.
+ */
+function keepLiveTablesWhenCkEditorLoads(
+    editor: CKEDITOR.editor,
+    element: HTMLElement,
+): void {
+    let liveTables: HTMLElement[] = [];
+    // At the default priority, this runs before the "loaded" handler that CKEDITOR.inline()
+    // registered at priority 10000, which does the rewrite.
+    editor.on("loaded", () => {
+        liveTables = tablesInTextOf(element);
+    });
+    editor.on("instanceReady", () => {
+        putBackLiveTables(element, liveTables);
+        liveTables = [];
+    });
+}
+
+/**
+ * A shortcut typed in a cell of a table in the box's text (Ctrl+B, say) reaches the box's editor,
+ * which would apply its command to the selection in the cell. The cells' text cannot be formatted,
+ * so the editor refuses any command while the selection is in such a table. A refused key that the
+ * editor blocks anyway (Ctrl+B, Ctrl+I, Ctrl+U, in CKEditor's blockedKeystrokes) then does nothing;
+ * any other goes on to the page's own handlers, such as Ctrl+Y for Redo.
+ */
+function keepEditorCommandsOutOfTables(editor: CKEDITOR.editor): void {
+    editor.on("beforeCommandExec", (evt) => {
+        const anchor = editor.document?.$.getSelection()?.anchorNode;
+        if (anchor && elementOf(anchor)?.closest("." + kTableInTextClass))
+            evt.cancel();
+    });
+}
+
 export function attachToCkEditor(element) {
     // Map from ckeditor id strings to the div the ckeditor is wrapping.
     const mapCkeditDiv = new Object();
 
     if (!element) {
+        return;
+    }
+    // The text boxes in the cells of a table in a box's text get no editor of their own, so their
+    // text cannot be formatted. CKEditor does not support an editor inside another editor's box.
+    if (element.closest("." + kTableInTextClass)) {
         return;
     }
 
@@ -2173,6 +2243,10 @@ export function attachToCkEditor(element) {
     // see bl-12448. Here we add a rule blocking visibility of the toolbar
     $("body").addClass("hideAllCKEditors");
     const ckedit = CKEDITOR.inline(element);
+    // Registered before keepTypingWhenCkEditorLoads, so that the live tables are back in the box
+    // before it looks for its caret marker, which may be in a cell.
+    keepLiveTablesWhenCkEditorLoads(ckedit, element);
+    keepEditorCommandsOutOfTables(ckedit);
     keepTypingWhenCkEditorLoads(ckedit, element);
     // Registered here, before the undo plugin's own instanceReady listener, so that CKEditor's
     // first undo snapshot is taken without the attributes this removes.

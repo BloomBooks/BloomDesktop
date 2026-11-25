@@ -52,6 +52,7 @@ import {
 import { TableCellLanguagesSection } from "./TableCellLanguagesSection";
 import { createElement } from "react";
 import { getLocalizations } from "../../lib/localizationManager/getLocalizations";
+import { tableInTextMayShowItsButtons } from "./tablesInText";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
@@ -176,7 +177,10 @@ function ensureTableLibrarySetUp(): void {
  *   right-click in a frozen table should show.
  */
 function installHostHooks(): void {
-    setStructuralChromeGate(() => tablesMayBeRestructured());
+    setStructuralChromeGate(
+        (table) =>
+            tablesMayBeRestructured() && tableInTextMayShowItsButtons(table),
+    );
     setCellMenuOpenHandler(() => !tablesMayBeRestructured());
     // The Languages item of the Cell, Row, Column and Table menus, for the text cells the menu
     // acts on. A menu over no text cell has none.
@@ -637,6 +641,23 @@ export function SetupTableEditing(container: HTMLElement): void {
  */
 export function AttachNewTable(tableDiv: HTMLElement): void {
     attachSingleTable(tableDiv);
+}
+
+/**
+ * Attach a newly-created bloom-table, with the library's own default sizing, and give its cells'
+ * content the setup that page load gives every text box. Called by insertTableInText
+ * (tablesInText.ts) for a table put into the text of a text box. A table made with the Table link
+ * gets that setup when the page is loaded again on leaving Change Layout, and one in a canvas
+ * element when the canvas element is set up, but nothing comes after Insert Table to do it.
+ * A pasted table (pasteTableIntoText) can hold tables in its cells, and they are attached too, as
+ * page load attaches every table.
+ */
+export function AttachNewTableAndSetUpItsCells(tableDiv: HTMLElement): void {
+    attachSingleTable(tableDiv);
+    tableDiv
+        .querySelectorAll<HTMLElement>(".bloom-table")
+        .forEach((nested) => attachSingleTable(nested));
+    wireBloomContentOfNewCells([tableDiv]);
 }
 
 // The size of a brand-new table. These match what attachTable gives a table

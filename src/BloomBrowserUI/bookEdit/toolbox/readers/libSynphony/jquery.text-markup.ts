@@ -13,6 +13,7 @@ import { theOneLibSynphony, LibSynphony } from "./synphony_lib";
 import "./bloomSynphonyExtensions"; //add several functions to LanguageData
 import { ReaderToolsModel } from "../readerToolsModel";
 import { TextOffsetMap } from "../../../js/textHighlightManager";
+import { EditableDivUtils } from "../../../js/editableDivUtils";
 import {
     kSentenceTooLongHighlight,
     kSightWordHighlight,
@@ -161,6 +162,10 @@ import {
             let processedChild = false; // Did we find a significant child?
             for (let i = 0; i < children.length; i++) {
                 const child = children[i];
+                // Not a part of the text that the box's editor cannot edit: a table in the text,
+                // whose cells' text boxes are checked as boxes of their own (checking it here as well
+                // would count its text twice), or an inline image, which has no text.
+                if (EditableDivUtils.isUneditablePartOfText(child)) continue;
                 const name = child.nodeName.toLowerCase();
                 // Review: is there a better way to pick out the elements that can occur within content elements?
                 if (

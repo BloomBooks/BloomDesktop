@@ -24,6 +24,28 @@ export interface IApiResponse {
 }
 
 /**
+ * Do `click`, and return once Bloom has answered the POST to `endpoint` (the part after
+ * /bloom/api/) that it sends. For a click whose effect cannot be waited for, such as one that
+ * should change nothing.
+ */
+export async function clickAndWaitForApiPost(
+    page: Page,
+    endpoint: string,
+    click: () => Promise<void>,
+): Promise<void> {
+    // Awaited together, so that a click that fails does not leave the wait to time out unhandled.
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.request().method() === "POST" &&
+                new URL(response.url()).pathname.endsWith(`/${endpoint}`),
+            { timeout: 30000 },
+        ),
+        click(),
+    ]);
+}
+
+/**
  * GET a Bloom API endpoint, e.g. apiGet(page, "workspace/tabs"). `endpoint` is the part after
  * /bloom/api/. Throws when Bloom answers with an error status.
  */

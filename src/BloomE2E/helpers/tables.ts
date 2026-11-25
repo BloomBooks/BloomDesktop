@@ -1596,7 +1596,9 @@ export async function endBoundaryDrag(page: Page): Promise<void> {
 // ── Internals ───────────────────────────────────────────────────────────
 
 /** How far the page's iframe is from the top left of the window Playwright's mouse works in. */
-async function pageFrameOffset(page: Page): Promise<{ x: number; y: number }> {
+export async function pageFrameOffset(
+    page: Page,
+): Promise<{ x: number; y: number }> {
     const element = await editablePageFrame(page).frameElement();
     const box = await element.boundingBox();
     if (!box)

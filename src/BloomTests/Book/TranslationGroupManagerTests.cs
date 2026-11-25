@@ -2419,6 +2419,44 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void MakeElementWithLanguageForOneGroup_TableInText_NotCopiedToNewLanguage()
+        {
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup' id='outer'>
+       <div class='bloom-editable normal-style' lang='en'><p>Above</p><div class='bloom-table bloom-tableInText' contenteditable='false'><div class='bloom-cell'><div class='bloom-translationGroup'><div class='bloom-editable' lang='en'><p>Cell</p></div></div></div></div><p>Below</p></div>
+   </div>
+</div></body></html>"
+            );
+            var group = (SafeXmlElement)doc.SelectSingleNode("//div[@id='outer']");
+            // Sanity check: the English box holds the table.
+            AssertThatXmlIn
+                .Element(group)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "./div[@lang='en']/div[contains(@class,'bloom-tableInText')]",
+                    1
+                );
+
+            var french = TranslationGroupManager.MakeElementWithLanguageForOneGroup(group, "fr");
+
+            Assert.That(french.GetAttribute("lang"), Is.EqualTo("fr"));
+            Assert.That(
+                french.SafeSelectNodes(".//div[contains(@class,'bloom-table')]"),
+                Is.Empty,
+                "The new language's box should not get a copy of the table in the English text"
+            );
+            // And the English box still has its table.
+            AssertThatXmlIn
+                .Element(group)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "./div[@lang='en']/div[contains(@class,'bloom-tableInText')]",
+                    1
+                );
+        }
+
+        [Test]
         public void MakeElementWithLanguageForOneGroup_EnsuresStyleClassExists()
         {
             var bookDom = new HtmlDom(

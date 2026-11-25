@@ -15,6 +15,7 @@ import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import "../../lib/jquery.easytabs.js"; //load into global space
 import BloomHintBubbles from "../js/BloomHintBubbles";
+import { EditableDivUtils } from "../js/editableDivUtils";
 import { postJson, postString } from "../../utils/bloomApi";
 import CopyContentButton from "../../react_components/CopyContentButton";
 
@@ -108,6 +109,16 @@ export default class BloomSourceBubbles {
         divForBubble.find("label.bubble").each((index, element) => {
             $(element).remove();
         });
+        // The parts of each box's text that its editor cannot edit: a table in the text, whose
+        // cells' text boxes are a group of their own with their own bubble (the code below would
+        // take each of the table's divs for a source text), and inline images.
+        divForBubble
+            .find(".bloom-editable")
+            .children()
+            .filter((index, child) =>
+                EditableDivUtils.isUneditablePartOfText(child),
+            )
+            .remove();
 
         //make the source texts in the bubble read-only and remove any user font size adjustments
         divForBubble.find("textarea, div").each(function (): boolean {

@@ -10,6 +10,7 @@ import $ from "jquery";
 import { isLongPressEvaluating } from "../longPressShared";
 import type { ToolBox } from "./toolbox";
 import { EditableDivUtils } from "../js/editableDivUtils";
+import { tablesInTextOf } from "../js/tableInTextConstants";
 import {
     boxParticipatesInMarkup,
     restoreAndResaveSelectionForMarkup,
@@ -605,10 +606,21 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
         EditableDivUtils.removeTrackedCkEditorFillingChar(editableDiv);
     }
 
-    let editableDivHtml = editableDiv.innerHTML;
+    // The cells of a table in the box's text are text boxes of their own, and the rewrite below
+    // keeps the live tables (replaceContentKeepingLiveImagesAndTables), so the tables' text is left
+    // out here: an nbsp in a cell would otherwise make every pass rewrite the box for nothing.
+    // The emptied copies of the tables mark where the live ones go back.
+    let boxWithEmptyTables = editableDiv;
+    if (tablesInTextOf(editableDiv).length > 0) {
+        boxWithEmptyTables = editableDiv.cloneNode(true) as HTMLElement;
+        tablesInTextOf(boxWithEmptyTables).forEach((table) =>
+            table.replaceChildren(),
+        );
+    }
+    let editableDivHtml = boxWithEmptyTables.innerHTML;
     // innerText does not include hidden text; innerHTML does.
     // So we use textContent -- which includes hidden text -- to ensure the html and text are in sync.
-    let editableDivText = editableDiv.textContent;
+    let editableDivText = boxWithEmptyTables.textContent;
     if (!editableDivText) return;
 
     const preserveNbspAfter = [" ", "«", "—"];
@@ -674,7 +686,11 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
             replacedAnNbsp = true;
         }
     }
-    if (replacedAnNbsp) editableDiv.innerHTML = editableDivHtml;
+    if (replacedAnNbsp)
+        EditableDivUtils.replaceContentKeepingLiveImagesAndTables(
+            editableDiv,
+            editableDivHtml,
+        );
 
     // Restore the bookmarks. See comment above.
     if (originalBookMarkContent)
@@ -729,6 +745,9 @@ export function removeCommentsFromEditableHtml(editable: HTMLElement) {
         // removeTrackedCkEditorFillingChar, and the same step in cleanUpNbsps. Taking it out
         // changes the html, so read it again afterwards.
         EditableDivUtils.removeTrackedCkEditorFillingChar(editable);
-        editable.innerHTML = editable.innerHTML.replace(commentRegex, "");
+        EditableDivUtils.replaceContentKeepingLiveImagesAndTables(
+            editable,
+            editable.innerHTML.replace(commentRegex, ""),
+        );
     }
 }

@@ -10,6 +10,7 @@ import $ from "jquery";
 import { getWorkspaceBundleExports } from "../js/workspaceFrames";
 import { getLocalization } from "../../react_components/l10n";
 import { kNoIndentClass } from "../textContextMenu/noIndent";
+import { isUndoOrRedoKey } from "../undo/redoKeyBinding";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -918,7 +919,7 @@ export default class BloomField {
         let heldUndoOrRedoKey: string | undefined;
         $(field).keydown((e) => {
             const event = e.originalEvent as KeyboardEvent;
-            if (BloomField.isUndoOrRedoKey(event))
+            if (isUndoOrRedoKey(event))
                 heldUndoOrRedoKey = BloomField.whichKey(event);
             // If Ctrl is let go while Z is still held, Z's auto-repeat types the letter, which
             // can replace a selected picture, so from then on the keystroke is ordinary typing.
@@ -938,7 +939,7 @@ export default class BloomField {
             // The page takes Ctrl+Z and Ctrl+Y for a picture change before they reach the field
             // (onUndoOrRedoKeyDown in inlineImageInteractions.ts), so their keydown never comes
             // here, only their keyup. A keyup that is itself an undo or redo is left alone too.
-            if (BloomField.isUndoOrRedoKey(event)) {
+            if (isUndoOrRedoKey(event)) {
                 BloomField.UpdateProtectedElementCount(field);
                 return;
             }
@@ -972,16 +973,6 @@ export default class BloomField {
                 );
             }
         });
-    }
-
-    // Whether this key event is Ctrl+Z, Ctrl+Y or Ctrl+Shift+Z (Cmd on a Mac), the keys that undo
-    // and redo. The physical key (e.code) is checked too, so it works whatever the keyboard layout.
-    private static isUndoOrRedoKey(e: KeyboardEvent): boolean {
-        if (!(e.ctrlKey || e.metaKey) || e.altKey) return false;
-        const key = e.key?.toLowerCase();
-        return (
-            key === "z" || key === "y" || e.code === "KeyZ" || e.code === "KeyY"
-        );
     }
 
     // Identifies the key of a keydown or keyup, so a keyup can be matched to its keydown: the

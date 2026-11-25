@@ -1,4 +1,4 @@
-/// <reference path="./BloomSourceBubbles.tsx" />
+﻿/// <reference path="./BloomSourceBubbles.tsx" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import $ from "jquery";
@@ -230,6 +230,40 @@ describe("SourceBubbles", () => {
         // ...but no trace of the image.
         expect(result.find("img").length).toBe(0);
         expect(result.find(".bloom-inlineImage").length).toBe(0);
+    });
+
+    // A table inserted into the text of one language's box (docs/insert-table/README.md). Its cells
+    // hold text boxes of their own, with their own bubbles, and each of its divs would otherwise be
+    // taken for a source text, and its cells' language boxes for extra tabs.
+    it("MakeSourceTextDivForGroup leaves out a table in a box's text", () => {
+        const table =
+            "<div class='bloom-table bloom-tableInText' contenteditable='false'><div class='bloom-cell'><div class='bloom-translationGroup'><div class='bloom-editable' lang='fr'><p>Cell text</p></div></div></div></div>";
+        const testHtml = $(
+            [
+                "<div id='testTarget' class='bloom-translationGroup'>",
+                `   <div class='bloom-editable' lang='es'><p>Spanish above</p>${table}<p>Spanish below</p></div>`,
+                "   <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'><p>English text</p></div>",
+                "</div>",
+            ].join("\n"),
+        );
+        $("body").append(testHtml);
+        // Sanity check: the table is in the group we are about to copy.
+        expect($("#testTarget .bloom-tableInText").length).toBe(1);
+
+        const result = BloomSourceBubbles.MakeSourceTextDivForGroup(
+            $("body").find("#testTarget")[0],
+        );
+
+        // Only the Spanish box is a source text, with its own text and not the cell's.
+        expect(
+            result
+                .find("div.source-text")
+                .toArray()
+                .map((div) => div.getAttribute("lang")),
+        ).toEqual(["es"]);
+        expect(result.find("div.source-text").text()).not.toContain(
+            "Cell text",
+        );
     });
 
     it("Run CreateDropdownIfNecessary with pre-defined settings", () => {

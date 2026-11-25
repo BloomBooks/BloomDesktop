@@ -1151,6 +1151,16 @@ namespace Bloom.Book
                 newElementInThisLanguage.RemoveAttribute("data-audiorecordingendtimes");
                 newElementInThisLanguage.RemoveClass("bloom-postAudioSplit");
 
+                // A table inserted into a box's text belongs to that language's text alone, not to
+                // the group, so the new language does not get a copy of it.
+                RemoveXmlChildren(
+                    newElementInThisLanguage
+                        .SafeSelectNodes(
+                            "./div[contains(concat(' ', @class, ' '), ' bloom-tableInText ')]"
+                        )
+                        .ToList()
+                );
+
                 //OK, now any text in there will belong to the prototype language, so remove it, while retaining everything else
                 StripOutText(newElementInThisLanguage);
                 EnsureStyleClassOnElement(

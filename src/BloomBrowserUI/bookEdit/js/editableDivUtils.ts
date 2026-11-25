@@ -4,6 +4,11 @@ import $ from "jquery";
 import { getPageIFrame, getPageIframeBody } from "../../utils/shared";
 import { kInlineImageClass, kInlineImageIdAttr } from "./inlineImageConstants";
 import {
+    kTableInTextClass,
+    putBackLiveTables,
+    tablesInTextOf,
+} from "./tableInTextConstants";
+import {
     postAfterSendingSnapshot,
     saveChangesAndRethinkPage,
 } from "./pageSnapshot";
@@ -459,8 +464,8 @@ export class EditableDivUtils {
 
         // Inline images (inlineImages.ts) are contenteditable=false, so CKEditor cannot have
         // changed anything inside them, and with the Decodable or Leveled Reader open this runs
-        // whenever the text loses focus. See replaceContentKeepingLiveInlineImages.
-        EditableDivUtils.replaceContentKeepingLiveInlineImages(
+        // whenever the text loses focus. See replaceContentKeepingLiveImagesAndTables.
+        EditableDivUtils.replaceContentKeepingLiveImagesAndTables(
             div,
             ckEditorData,
         );
@@ -515,16 +520,24 @@ export class EditableDivUtils {
      * takes them off when the editor is ready, before its first undo snapshot. After that, Bloom
      * inserts and changes pictures in the page itself, and CKEditor's undo puts back copies of the
      * page taken after the removal.
+     *
+     * A table in the editable's text (kTableInTextClass) is kept the same way, for the same reason:
+     * the table library and the cells' own text boxes hold the live elements. The cells have no
+     * CKEditor (see attachToCkEditor), so the live table, not the HTML, has what was last typed in
+     * them. Tables have no id, so they are matched by their order in the editable.
      */
-    public static replaceContentKeepingLiveInlineImages(
+    public static replaceContentKeepingLiveImagesAndTables(
         div: HTMLElement,
         html: string,
     ): void {
         const liveInlineImages = Array.from(
             div.querySelectorAll<HTMLElement>(`:scope > .${kInlineImageClass}`),
         );
+        const liveTables = tablesInTextOf(div);
 
         div.innerHTML = html;
+
+        putBackLiveTables(div, liveTables);
 
         liveInlineImages.forEach((live) => {
             // Every wrapper is given an id when it is inserted or when the page is set up, and the
@@ -911,6 +924,33 @@ export class EditableDivUtils {
         });
     }
 
+    /**
+     * Whether `element`, a child of a text box, is a part of its text that the box's editor cannot
+     * edit (contenteditable="false"): an inline image, or a table in the text, whose cells are text
+     * boxes of their own. Neither holds text of the box's own.
+     */
+    public static isUneditablePartOfText(element: Element): boolean {
+        return element.getAttribute("contenteditable") === "false";
+    }
+
+    /**
+     * The HTML of `editable`'s own text: its innerHTML without the children that its editor cannot
+     * edit (isUneditablePartOfText).
+     */
+    public static htmlOfOwnText(editable: HTMLElement): string {
+        if (
+            !Array.from(editable.children).some(
+                EditableDivUtils.isUneditablePartOfText,
+            )
+        )
+            return editable.innerHTML;
+        const copy = editable.cloneNode(true) as HTMLElement;
+        Array.from(copy.children)
+            .filter(EditableDivUtils.isUneditablePartOfText)
+            .forEach((child) => child.remove());
+        return copy.innerHTML;
+    }
+
     public static isInHiddenLanguageBlock(elem: Element) {
         // Spans (and probably other inline elements?) can have display=inline even if they're inside a div that's display=none
         let elemToCheck: Element | null = elem;
@@ -927,6 +967,10 @@ export class EditableDivUtils {
             );
             elemToCheck = parentEditable || elem;
         }
+        // The text box of a cell of a table in a box's text is shown or hidden with that box,
+        // which may be more levels up than isInDisplayNone looks.
+        const tableInText = elemToCheck.closest(`.${kTableInTextClass}`);
+        if (tableInText) elemToCheck = tableInText.parentElement!;
         // elemToCheck is typically a bloom-editable. Originally, this check was used to consider
         // which languages were hidden. But with drag-activity, there are cases where a containing
         // text-over-picture element is hidden. Checking a small number of ancestors is usually
