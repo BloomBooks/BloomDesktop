@@ -7,8 +7,11 @@
 // The box is made "just" too small the way a person makes it: by dragging the divider between the
 // picture and the text of a Basic Text & Image page. Bloom checks a box for overflow when a key
 // comes up in it (OverflowChecker.AddOverflowHandlers), so after each change the test makes a small
-// change to the text, as the manual case asks. The test waits for the marks to appear; it never
-// waits to see that they do not.
+// change to the text, as the manual case asks. Each check starts from a box whose text fits and
+// shows no mark, so a mark the test sees is Bloom's answer to the marginal overflow, not one left
+// from before; and with nothing overflowing, a center or bottom alignment is really in force (a box
+// that overflows gets a scroll bar, and Bloom then takes the alignment off). The test waits for
+// marks to appear or go; it never waits a fixed time.
 //
 // One A5 book with one Basic Text & Image page. The tests are serial: each works on the box the
 // one before it left.
@@ -37,11 +40,15 @@ import { kEdgeTolerance, right } from "../helpers/geometry";
 import { setChangeLayoutMode } from "../helpers/origami";
 import {
     emptyTextBox,
+    expectNoOverflowMarks,
     getOverflowMarks,
     getTextBoxView,
 } from "../helpers/overflowMarks";
 import { getPageSize } from "../helpers/pageSize";
-import { type VerticalAlignment } from "../helpers/textBoxScrollBars";
+import {
+    waitForVerticalAlignment,
+    type VerticalAlignment,
+} from "../helpers/textBoxScrollBars";
 
 test.use({
     collectionSpec: { name: "text-overflow-alignments", languages: ["en"] },
@@ -53,20 +60,18 @@ const GROUP = ".bloom-translationGroup";
 const LANG = "en";
 
 /**
- * How much of the text was out of sight once the box was made marginally too small, in the page's
- * own pixels. Set by the second test; the later ones check that the overflow is still that.
- */
-let marginalHidden: number;
-
-/**
  * How much of the text, in the page's own pixels, the test leaves out of sight: the manual case's
  * "a pixel or two", plus what Bloom's measuring allows. What is out of sight is the bottom of the
- * last line's box, below its descenders. Bloom compares whole-pixel heights, and it leaves out
- * the part of the font's descent that no letter reaches (OverflowChecker.getSelfOverflowAmounts),
- * so it first marks this text at about 3 pixels (at a 24px line height). A change that made it
- * mark later than MARGINAL_OVERFLOW.most fails the test.
+ * last line's box, below its descenders. Bloom compares whole-pixel heights, and it leaves out the
+ * part of the font's descent that no letter reaches (OverflowChecker.getSelfOverflowAmounts), so
+ * it first marks this text at about 3 pixels (at a 24px line height). A change that made it mark
+ * later than MARGINAL_OVERFLOW.most fails the test. The box's height changes in whole pixels, so
+ * the range is wider than a pixel, or a drag could step over it.
  */
-const MARGINAL_OVERFLOW = { least: 3.2, most: 4 };
+const MARGINAL_OVERFLOW = { least: 3.5, most: 5 };
+
+/** How far the text of a box that fits is left short of its bottom, in the page's own pixels. */
+const ROOM_TO_SPARE = 8;
 
 /** The book's one content page. Set by the first test. */
 let textPage: IBookPage;
@@ -84,9 +89,23 @@ async function pageScale(box: Locator): Promise<number> {
     );
 }
 
-/** How much of the box's text is out of sight, in the page's own pixels. */
-async function hiddenPagePixels(box: Locator): Promise<number> {
-    return (await getTextBoxView(box)).hidden / (await pageScale(box));
+/**
+ * How far the box's text runs past its bottom, in the page's own pixels: negative when it fits,
+ * by how much room is left. Measured as getTextBoxView measures what is out of sight.
+ */
+async function overflowPagePixels(box: Locator): Promise<number> {
+    return box.evaluate((element) => {
+        const e = element as HTMLElement;
+        const style = getComputedStyle(e);
+        const scale = e.getBoundingClientRect().height / e.offsetHeight;
+        const text = e.ownerDocument.createRange();
+        text.selectNodeContents(e);
+        const textHeight =
+            text.getBoundingClientRect().height / scale +
+            (parseFloat(style.paddingTop) || 0) +
+            (parseFloat(style.paddingBottom) || 0);
+        return textHeight - e.clientHeight;
+    });
 }
 
 /**
@@ -116,7 +135,7 @@ async function expectMarkedAsOverflowing(
     what: string,
 ): Promise<void> {
     expect(
-        await hiddenPagePixels(box),
+        await overflowPagePixels(box),
         `test setup: ${what}, some of the text should be out of sight`,
     ).toBeGreaterThan(0);
     await expect(async () => {
@@ -158,7 +177,7 @@ async function typeParagraphsPastTheBottom(
 ): Promise<void> {
     await emptyTextBox(box);
     for (let paragraph = 1; paragraph <= 100; paragraph++) {
-        if ((await hiddenPagePixels(box)) > 0) return;
+        if ((await overflowPagePixels(box)) > 0) return;
         if (paragraph > 1) await box.press("Enter");
         await page.keyboard.insertText(
             `Paragraph ${paragraph}: jumpy gypsy quip`,
@@ -167,17 +186,6 @@ async function typeParagraphsPastTheBottom(
     throw new Error(
         "A hundred paragraphs did not fill the text box past its bottom, so it is not a box of fixed height.",
     );
-}
-
-/** Check that the overflow is still the pixel or two that makeOverflowMarginal left. */
-async function expectOverflowStillMarginal(
-    box: Locator,
-    what: string,
-): Promise<void> {
-    expect(
-        Math.abs((await hiddenPagePixels(box)) - marginalHidden),
-        `test setup: ${what}, the text should still run past the box by the same pixel or two`,
-    ).toBeLessThanOrEqual(1);
 }
 
 /**
@@ -210,29 +218,77 @@ async function dragDivider(page: Page, dy: number): Promise<void> {
 }
 
 /**
- * Size the text box with the divider so that its text runs past the bottom by an amount within
- * MARGINAL_OVERFLOW. Each drag aims at the middle of that range from how much is out of sight
- * now; the page's zoom makes one pixel of the mouse more or less than one of the page's. Returns
- * how much of the text is then out of sight, in the page's pixels.
+ * Drag the divider until the box's text runs past its bottom by between `least` and `most` of the
+ * page's pixels (negative numbers: falls short of it by that much). Each drag aims at the middle
+ * of the range from where the text is now; the page's zoom makes one pixel of the mouse more or
+ * less than one of the page's.
  */
-async function makeOverflowMarginal(page: Page, box: Locator): Promise<number> {
-    const target = (MARGINAL_OVERFLOW.least + MARGINAL_OVERFLOW.most) / 2;
-    for (let attempt = 1; attempt <= 12; attempt++) {
-        const hidden = await hiddenPagePixels(box);
-        if (
-            hidden >= MARGINAL_OVERFLOW.least &&
-            hidden <= MARGINAL_OVERFLOW.most
-        )
-            return hidden;
-        // With nothing out of sight, how far the box is too tall is unknown; a pixel at a time.
-        const tooMuch = hidden > 0 ? hidden - target : -1;
-        await dragDivider(page, -tooMuch * (await pageScale(box)));
+async function dragUntilOverflowIsBetween(
+    page: Page,
+    box: Locator,
+    least: number,
+    most: number,
+    what: string,
+): Promise<void> {
+    const target = (least + most) / 2;
+    for (let drag = 0; ; drag++) {
+        const overflow = await overflowPagePixels(box);
+        if (overflow >= least && overflow <= most) return;
+        if (drag === 12)
+            throw new Error(
+                `Twelve drags of the divider never left ${what}: the text runs past the box's ` +
+                    `bottom by ${overflow} pixels, not between ${least} and ${most}.`,
+            );
+        await dragDivider(page, -(overflow - target) * (await pageScale(box)));
     }
-    throw new Error(
-        `Twelve drags of the divider never left between ${MARGINAL_OVERFLOW.least} and ` +
-            `${MARGINAL_OVERFLOW.most} pixels of the text out of sight; ` +
-            `${await hiddenPagePixels(box)} pixels are.`,
+}
+
+/**
+ * Make the box tall enough for all its text, with the divider, and wait until Bloom shows no mark,
+ * so that whatever mark comes next is Bloom's answer to what the test does next.
+ */
+async function makeTextFit(page: Page): Promise<void> {
+    const box = await textBox(page);
+    await dragUntilOverflowIsBetween(
+        page,
+        box,
+        -ROOM_TO_SPARE - 2,
+        -ROOM_TO_SPARE + 2,
+        "room to spare below the text",
     );
+    await makeSmallChange(page, box);
+    // The box may still be scrolled to its last line, and Bloom's first check after it has grown
+    // can still find it overflowing (see the ENHANCE note in
+    // OverflowChecker.AdjustSizeAndMarkSelfOverflow); it settles a moment later.
+    await expectNoOverflowMarks(
+        page,
+        "test setup: with room to spare below the text, Bloom should show no overflow mark",
+    );
+}
+
+/**
+ * Shorten the box with the divider until its text runs past the bottom by MARGINAL_OVERFLOW, make
+ * the small change the manual case asks for, and check that Bloom marks the box as overflowing.
+ * Expects a box whose text fits and has no mark, as makeTextFit leaves it.
+ */
+async function expectMarginalOverflowMarked(
+    page: Page,
+    what: string,
+): Promise<void> {
+    const box = await textBox(page);
+    await dragUntilOverflowIsBetween(
+        page,
+        box,
+        MARGINAL_OVERFLOW.least,
+        MARGINAL_OVERFLOW.most,
+        "the text running past the box by a pixel or two",
+    );
+    await makeSmallChange(page, box);
+    expect(
+        await overflowPagePixels(box),
+        `test setup: ${what}, the small change should leave the text running past the box by a pixel or two`,
+    ).toBeLessThanOrEqual(MARGINAL_OVERFLOW.most);
+    await expectMarkedAsOverflowing(page, box, what);
 }
 
 /** Choose a paragraph alignment for the box with the Format dialog's Paragraph tab. */
@@ -285,24 +341,15 @@ async function setVerticalAlignment(
     await frame.locator("body").click({ position: { x: 2, y: 2 } });
     await expect(dialog).toBeHidden({ timeout: 15000 });
     await setChangeLayoutMode(page, false);
-    // While the box has a scroll bar, which a box with too much text has, Bloom stops aligning the
-    // text and keeps the choice as bloom-vertical-align-<alignment>-removed
-    // (niceScrollCleanup.ts), so either class shows that the choice took.
-    await expect
-        .poll(
-            async () =>
-                editablePageFrame(page)
-                    .locator(GROUP)
-                    .first()
-                    .evaluate((group) => [...group.classList].join(" ")),
-            {
-                timeout: 15000,
-                message: `The text box did not get the ${alignment} vertical alignment.`,
-            },
-        )
-        .toMatch(
-            new RegExp(`\\bbloom-vertical-align-${alignment}(-removed)?\\b`),
-        );
+    // The text fits, so the box has no scroll bar and the alignment is in force. (A box with a
+    // scroll bar keeps the choice only as bloom-vertical-align-<alignment>-removed; see
+    // niceScrollCleanup.ts.)
+    await waitForVerticalAlignment(
+        page,
+        GROUP,
+        alignment,
+        `With its text fitting, the text box should be aligned to the ${alignment}.`,
+    );
 }
 
 test.describe("Text Overflow All Alignments", () => {
@@ -321,33 +368,29 @@ test.describe("Text Overflow All Alignments", () => {
         page,
         step,
     }) => {
-        const box = await textBox(page);
         await step("Type paragraphs until they do not fit", async () => {
+            const box = await textBox(page);
             await typeParagraphsPastTheBottom(page, box);
             expect(
                 await box.locator("p").count(),
                 "test setup: the text should be in several paragraphs",
             ).toBeGreaterThan(2);
         });
+        await step("Drag the divider until the text fits", async () => {
+            await makeTextFit(page);
+        });
         await step(
             "Drag the divider until the text runs past the box by a pixel or two",
             async () => {
-                marginalHidden = await makeOverflowMarginal(page, box);
+                await expectMarginalOverflowMarked(
+                    page,
+                    "with the text a pixel or two too long",
+                );
             },
         );
-        await step("Check the box is marked as overflowing", async () => {
-            const boxNow = await textBox(page);
-            await makeSmallChange(page, boxNow);
-            await expectOverflowStillMarginal(boxNow, "after the small change");
-            await expectMarkedAsOverflowing(
-                page,
-                boxNow,
-                "with the text a pixel or two too long",
-            );
-        });
     });
 
-    test("marginal overflow stays marked for every paragraph alignment [Test Case ID 376]", async ({
+    test("marginal overflow is marked for every paragraph alignment [Test Case ID 376]", async ({
         page,
         step,
     }) => {
@@ -358,38 +401,26 @@ test.describe("Text Overflow All Alignments", () => {
             "left",
         ] satisfies Alignment[]) {
             await step(`Align the paragraphs ${alignment}`, async () => {
+                await makeTextFit(page);
                 await setParagraphAlignment(page, alignment);
-                const box = await textBox(page);
-                await makeSmallChange(page, box);
-                await expectOverflowStillMarginal(
-                    box,
-                    `with the paragraphs aligned ${alignment}`,
-                );
-                await expectMarkedAsOverflowing(
+                await expectMarginalOverflowMarked(
                     page,
-                    box,
                     `with the paragraphs aligned ${alignment}`,
                 );
             });
         }
     });
 
-    test("marginal overflow stays marked with the box aligned to the center and to the bottom [Test Case ID 376]", async ({
+    test("marginal overflow is marked with the box aligned to the center and to the bottom [Test Case ID 376]", async ({
         page,
         step,
     }) => {
         for (const alignment of ["center", "bottom"] as const) {
             await step(`Align the box's text to the ${alignment}`, async () => {
+                await makeTextFit(page);
                 await setVerticalAlignment(page, alignment);
-                const box = await textBox(page);
-                await makeSmallChange(page, box);
-                await expectOverflowStillMarginal(
-                    box,
-                    `with the box aligned to the ${alignment}`,
-                );
-                await expectMarkedAsOverflowing(
+                await expectMarginalOverflowMarked(
                     page,
-                    box,
                     `with the box aligned to the ${alignment}`,
                 );
             });
