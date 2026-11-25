@@ -1149,9 +1149,12 @@ export async function clearCanvasElementSelection(page: Page): Promise<void> {
     const bloomPage = editablePageFrame(page).locator(".bloom-page").first();
     // In a window shorter than the page, an earlier step may have scrolled the page's top corner
     // out of view, where a press lands on nothing. A person would scroll back up to it first.
-    await bloomPage.evaluate((el) =>
-        el.ownerDocument.defaultView?.scrollTo(0, 0),
-    );
+    await bloomPage.evaluate((el) => {
+        const pageWindow = el.ownerDocument.defaultView;
+        if (!pageWindow)
+            throw new Error("The page being edited has no window.");
+        pageWindow.scrollTo(0, 0);
+    });
     const pageBox = await requireBox(bloomPage, "the page being edited");
     await realClickAt(page, pageBox.x + 3, pageBox.y + 3);
     await expect(
