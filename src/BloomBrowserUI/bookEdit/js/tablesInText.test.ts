@@ -137,6 +137,23 @@ describe("insertTableInText", () => {
         ]);
     });
 
+    it("gives a recorded sentence's id to the half with its words when the other half is only a line break", () => {
+        element("first").innerHTML =
+            "<span id='one' class='audio-sentence'><span class='bloom-linebreak'></span>Good morning.</span>";
+        const words = element("one").lastChild as Text;
+        const caret = document.createRange();
+        caret.setStart(words, 0);
+        caret.collapse(true);
+
+        const table = insertTableInText(element("text"), caret);
+
+        expect(
+            table.previousElementSibling!.querySelector("span.bloom-linebreak"),
+        ).not.toBeNull();
+        expect(element("one").textContent).toBe("Good morning.");
+        expect(table.nextElementSibling!.contains(element("one"))).toBe(true);
+    });
+
     it.each([
         [
             "after",

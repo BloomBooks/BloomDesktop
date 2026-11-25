@@ -116,7 +116,8 @@ export function placeBetweenParagraphs(
     // An element that the caret was inside (a recorded sentence, say) is now in both halves, and
     // the copy in the second half has the same id. A half that the split left empty is removed,
     // so a sentence that the caret was at the edge of keeps its id, and with it its recording.
-    // When both halves have text, only the first keeps the id.
+    // When both halves show something, the id goes with the words: to the first half, unless
+    // only the second has words (the first holding only a line break, say).
     restOfParagraph.querySelectorAll("[id]").forEach((copy) => {
         const original = paragraph.querySelector(
             `[id="${CSS.escape(copy.id)}"]`,
@@ -124,6 +125,8 @@ export function placeBetweenParagraphs(
         if (!original) return;
         if (isEmptyElement(original)) original.remove();
         else if (isEmptyElement(copy)) copy.remove();
+        else if (!hasWords(original) && hasWords(copy))
+            original.removeAttribute("id");
         else copy.removeAttribute("id");
     });
     paragraph.after(table);
@@ -165,13 +168,16 @@ function isEmptyElement(element: Element): boolean {
     );
 }
 
+// Whether `content` has text other than white space and the zero-width non-joiner that
+// Shift+Enter puts after its line break.
+function hasWords(content: Element | DocumentFragment): boolean {
+    return (content.textContent ?? "").replace(/\u200C/g, "").trim() !== "";
+}
+
 // Whether `content` is no more than white space, empty formatting and a <br>, the browser's
 // placeholder in an empty paragraph.
 function isBlank(content: Element | DocumentFragment): boolean {
-    return (
-        (content.textContent ?? "").trim() === "" &&
-        !content.querySelector(kShowsWithoutText)
-    );
+    return !hasWords(content) && !content.querySelector(kShowsWithoutText);
 }
 
 /**
