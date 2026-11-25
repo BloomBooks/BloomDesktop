@@ -29,3 +29,32 @@
 body:has(.origami-layout-mode) [data-table-overlay] {
     display: none !important;
 }
+
+// The grip for dragging a table in the text of a text box, and the mark that shows where it would
+// land (tableInTextDrag.ts). Both are on the body, outside the page, so nothing here is saved.
+.bloom-tableInTextGrip {
+    position: absolute;
+    width: 12px;
+    height: 18px;
+    padding: 1px;
+    border-radius: 3px;
+    cursor: grab;
+    // Above the page, but below the library's own buttons and menus.
+    z-index: 1000;
+    background-color: white;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+    touch-action: none;
+    svg {
+        display: block;
+        fill: #6a6a6a;
+    }
+    &:active {
+        cursor: grabbing;
+    }
+}
+.bloom-tableInTextDropMark {
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none;
+    background-color: #1d94a4;
+}

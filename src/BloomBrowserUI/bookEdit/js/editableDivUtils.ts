@@ -3,6 +3,7 @@ import { get, postString } from "../../utils/bloomApi";
 import $ from "jquery";
 import { getPageIFrame, getPageIframeBody } from "../../utils/shared";
 import { kInlineImageClass, kInlineImageIdAttr } from "./inlineImageConstants";
+import { kTableInTextClass } from "./tableInTextConstants";
 import {
     postAfterSendingSnapshot,
     saveChangesAndRethinkPage,
@@ -459,8 +460,8 @@ export class EditableDivUtils {
 
         // Inline images (inlineImages.ts) are contenteditable=false, so CKEditor cannot have
         // changed anything inside them, and with the Decodable or Leveled Reader open this runs
-        // whenever the text loses focus. See replaceContentKeepingLiveInlineImages.
-        EditableDivUtils.replaceContentKeepingLiveInlineImages(
+        // whenever the text loses focus. See replaceContentKeepingLiveImagesAndTables.
+        EditableDivUtils.replaceContentKeepingLiveImagesAndTables(
             div,
             ckEditorData,
         );
@@ -515,16 +516,35 @@ export class EditableDivUtils {
      * takes them off when the editor is ready, before its first undo snapshot. After that, Bloom
      * inserts and changes pictures in the page itself, and CKEditor's undo puts back copies of the
      * page taken after the removal.
+     *
+     * A table in the editable's text (kTableInTextClass) is kept the same way, for the same reason:
+     * the table library and the cells' own text boxes hold the live elements. The cells have no
+     * CKEditor (see attachToCkEditor), so the live table, not the HTML, has what was last typed in
+     * them. Tables have no id, so they are matched by their order in the editable.
      */
-    public static replaceContentKeepingLiveInlineImages(
+    public static replaceContentKeepingLiveImagesAndTables(
         div: HTMLElement,
         html: string,
     ): void {
         const liveInlineImages = Array.from(
             div.querySelectorAll<HTMLElement>(`:scope > .${kInlineImageClass}`),
         );
+        const liveTables = Array.from(
+            div.querySelectorAll<HTMLElement>(`:scope > .${kTableInTextClass}`),
+        );
 
         div.innerHTML = html;
+
+        const rebuiltTables = Array.from(
+            div.querySelectorAll<HTMLElement>(`:scope > .${kTableInTextClass}`),
+        );
+        if (rebuiltTables.length !== liveTables.length)
+            throw new Error(
+                `The new content of the text block has ${rebuiltTables.length} tables, but it had ${liveTables.length}`,
+            );
+        rebuiltTables.forEach((rebuilt, index) =>
+            rebuilt.replaceWith(liveTables[index]),
+        );
 
         liveInlineImages.forEach((live) => {
             // Every wrapper is given an id when it is inserted or when the page is set up, and the

@@ -679,7 +679,7 @@ export default class AudioRecording implements IAudioRecorder {
         if (!includeCheckForText) {
             return true;
         }
-        return this.stringToSentences(element!.innerHTML).some((frag) => {
+        return this.stringToSentences(htmlOfOwnText(element!)).some((frag) => {
             return this.isRecordable(frag);
         });
     }
@@ -726,6 +726,10 @@ export default class AudioRecording implements IAudioRecorder {
                 const childElems = Array.from(
                     div.getElementsByClassName(kAudioSentence),
                     (elem) => <HTMLElement>elem,
+                ).filter(
+                    // Not the sentences of the cells of a table in the box's text: each cell's text
+                    // box is a recordable div of its own, so they are in the list already.
+                    (elem) => elem.closest(".bloom-editable") === div,
                 );
                 result = result.concat(childElems);
             }
@@ -3831,7 +3835,10 @@ export default class AudioRecording implements IAudioRecorder {
                                 if (
                                     !element.classList.contains(
                                         "bloom-editable",
-                                    )
+                                    ) &&
+                                    // A table in the box's text has cells whose own text boxes
+                                    // keep their own recordings.
+                                    !element.closest(".bloom-tableInText")
                                 ) {
                                     this.deleteElementAndPushChildNodesIntoParent(
                                         element,
@@ -5089,4 +5096,18 @@ export function bumpDown(whichPositionToBump: number) {
         return; // paranoia
     }
     audioRecorder.bumpDown(whichPositionToBump);
+}
+
+/**
+ * The HTML of a text box's own text: its innerHTML without any table in its text, whose cells are
+ * text boxes of their own (see docs/insert-table/README.md).
+ */
+function htmlOfOwnText(editable: HTMLElement): string {
+    if (!editable.querySelector(":scope > .bloom-tableInText"))
+        return editable.innerHTML;
+    const copy = editable.cloneNode(true) as HTMLElement;
+    copy.querySelectorAll(":scope > .bloom-tableInText").forEach((table) =>
+        table.remove(),
+    );
+    return copy.innerHTML;
 }

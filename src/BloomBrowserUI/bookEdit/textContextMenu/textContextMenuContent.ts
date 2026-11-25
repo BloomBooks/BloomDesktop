@@ -7,6 +7,7 @@ import {
     getInlineImageMenuItemsForClick,
 } from "../js/inlineImageInteractions";
 import { findParagraphForTextContextMenu } from "./noIndent";
+import { getInsertTableMenuItem } from "../js/tablesInText";
 
 export interface ITextContextMenuContent {
     // The paragraph that commands such as "No Indent" act on, or undefined when the
@@ -18,6 +19,8 @@ export interface ITextContextMenuContent {
     // submenus, which is why the type is IMenuItemWithSubmenu and not
     // ILocalizableMenuItemProps.
     inlineImageItems: IMenuItemWithSubmenu[];
+    // Insert Table, or an empty array where it is not offered (see getInsertTableMenuItem).
+    tableItems: IMenuItemWithSubmenu[];
 }
 
 /**
@@ -41,6 +44,12 @@ export function getTextContextMenuContent(
         target instanceof HTMLElement ? target : undefined,
         closeMenu,
     );
-    if (!paragraph && inlineImageItems.length === 0) return undefined;
-    return { paragraph, inlineImageItems };
+    const insertTable = getInsertTableMenuItem(
+        target instanceof HTMLElement ? target : undefined,
+        closeMenu,
+    );
+    const tableItems = insertTable ? [insertTable] : [];
+    if (!paragraph && inlineImageItems.length === 0 && tableItems.length === 0)
+        return undefined;
+    return { paragraph, inlineImageItems, tableItems };
 }

@@ -161,6 +161,9 @@ import {
             let processedChild = false; // Did we find a significant child?
             for (let i = 0; i < children.length; i++) {
                 const child = children[i];
+                // A table in the text of a box: each of its cells' text boxes is checked as a box of
+                // its own, so checking it here as well would count its text twice.
+                if (child.classList?.contains("bloom-tableInText")) continue;
                 const name = child.nodeName.toLowerCase();
                 // Review: is there a better way to pick out the elements that can occur within content elements?
                 if (

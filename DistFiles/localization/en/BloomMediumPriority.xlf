@@ -221,6 +221,11 @@
         <note>ID: EditTab.InlineImage.InsertImage</note>
         <note>Command in the menu you get by right-clicking a block of text in the Edit tab. It puts a picture inside the text block, with the text wrapping around it (like an inline image in Word).</note>
       </trans-unit>
+      <trans-unit id="EditTab.TableInText.InsertTable" translate="no">
+        <source xml:lang="en">Insert Table</source>
+        <note>ID: EditTab.TableInText.InsertTable</note>
+        <note>Command in the menu you get by right-clicking a block of text in the Edit tab. It puts a table into the text where the cursor is, between two paragraphs.</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>

@@ -108,6 +108,9 @@ export default class BloomSourceBubbles {
         divForBubble.find("label.bubble").each((index, element) => {
             $(element).remove();
         });
+        // A table in a box's text: its cells' text boxes are a group of their own with their own
+        // bubble, and the code below would take each of the table's divs for a source text.
+        divForBubble.find(".bloom-tableInText").remove();
 
         //make the source texts in the bubble read-only and remove any user font size adjustments
         divForBubble.find("textarea, div").each(function (): boolean {

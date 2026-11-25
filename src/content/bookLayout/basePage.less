@@ -1130,3 +1130,17 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     overflow: clip;
     overflow-clip-margin: content-box;
 }
+
+// A table in the text of a text box (docs/insert-table/README.md) sits between two paragraphs and is
+// as tall as its rows. The library's own rule makes a table fill its container, which is right for
+// a page-layout section or a canvas element but here would push the text after it out of the box.
+.bloom-table.bloom-tableInText {
+    height: auto;
+    // Half a line of the surrounding text above and below, so that the table adds exactly one
+    // line of space to the text, in whatever font size and line spacing its style has. The
+    // margin above overlaps the paragraph spacing of the paragraph before, so a style with
+    // more paragraph spacing than half a line keeps its own spacing there. The em value is
+    // for readers that do not know the lh unit (0.5lh at the default line-height of 1.5).
+    margin-block: 0.75em;
+    margin-block: 0.5lh;
+}

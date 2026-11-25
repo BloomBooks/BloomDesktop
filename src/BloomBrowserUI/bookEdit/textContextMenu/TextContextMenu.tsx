@@ -88,6 +88,7 @@ const TextContextMenu: React.FunctionComponent<{
                     props.content.inlineImageItems,
                     props.open,
                 )}
+                {renderContextMenuItems(props.content.tableItems, props.open)}
             </Menu>
         </ThemeProvider>
     );

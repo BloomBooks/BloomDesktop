@@ -13,6 +13,7 @@ import {
 } from "../toolbox/canvas/canvasElementConstants";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 import { removeScrollOffset } from "../js/scrollOffset";
+import { unusedParagraphBelowLastTable } from "../js/tableInTextConstants";
 import { refreshOverflowIndicatorsSoon } from "./overflowIndicators";
 
 interface qtipInterface extends JQuery {
@@ -355,6 +356,17 @@ export default class OverflowChecker {
         // The clone is not scrolled, so it must not keep the original's scroll offset, which would
         // move its language label down and add to its height.
         removeScrollOffset(elementClone);
+        // A table that ends the text has an empty paragraph after it, so that the user can type
+        // below it. Until they do, that paragraph is not text that has to fit, and a box whose
+        // table reaches the bottom must not be reported as overflowing because of it. Nor
+        // must the table's margin below, which is there to separate it from that paragraph.
+        const unusedParagraph = unusedParagraphBelowLastTable(elementClone);
+        if (unusedParagraph) {
+            (
+                unusedParagraph.previousElementSibling as HTMLElement
+            ).style.marginBottom = "0";
+            unusedParagraph.remove();
+        }
         elementClone.style.position = "absolute"; // prevent any inadvertent layout effects
         // position:absolute is not enough for accurate layout, we also need to make sure the width
         // of the cloned element is the same as the original.  This is because position:absolute

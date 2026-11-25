@@ -84,6 +84,18 @@ describe("jquery.text-markup", function () {
         ]);
     });
 
+    it("checkLeveledReader leaves out a table in the box's text, whose cells are boxes of their own", function () {
+        var input =
+            '<p>Two words.</p><div class="bloom-table bloom-tableInText" contenteditable="false"><div class="bloom-cell"><div class="bloom-translationGroup"><div class="bloom-editable"><p>This cell sentence is long.</p></div></div></div></div><p>Also two.</p>';
+
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxWordsPerSentence: 2 });
+
+        // The cell's five-word sentence would be marked if the box's check went into the table.
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([]);
+    });
+
     it("checkLeveledReader.handlesDivsWithEmbeddedParas", function () {
         var input =
             '<p>Two-word sentence. Three <span class="bold">"word"</span> sentence.<br></p><p>"This is a six word sentence."</p>';

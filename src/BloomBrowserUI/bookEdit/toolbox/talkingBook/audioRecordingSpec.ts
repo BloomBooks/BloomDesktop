@@ -476,6 +476,79 @@ describe("audio recording tests", () => {
     });
 
     describe("- MakeAudioSentenceElements()", () => {
+        // A table inserted into a box's text (docs/insert-table/README.md). Its cells' text boxes are
+        // recorded as boxes of their own, so the outer box's markup must leave them alone.
+        const boxWithTableInText = (cellInner: string) =>
+            $(
+                "<div class='bloom-editable' id='outer'><p>Above the table.</p>" +
+                    "<div class='bloom-table bloom-tableInText' contenteditable='false'><div class='bloom-cell'><div class='bloom-translationGroup'>" +
+                    `<div class='bloom-editable' id='cellBox'>${cellInner}</div>` +
+                    "</div></div></div><p>Below the table.</p></div>",
+            );
+
+        it("leaves the sentence spans of a table's cells alone when its box is set to Text Box mode", () => {
+            const div = boxWithTableInText(
+                "<p><span id='cellSentence' class='audio-sentence'>In the cell.</span></p>",
+            );
+            expect(div.find("#cellSentence").length).toBe(1);
+            const recording = new AudioRecording();
+
+            recording.makeAudioSentenceElementsTest(
+                div,
+                RecordingMode.TextBox,
+                RecordingMode.TextBox,
+            );
+
+            expect(div.hasClass("audio-sentence")).toBe(true);
+            const cellSentence = div.find("#cellSentence");
+            expect(cellSentence.length).toBe(1);
+            expect(cellSentence.hasClass("audio-sentence")).toBe(true);
+        });
+
+        it("splits the text around a table into sentences but not the table's cells", () => {
+            const div = boxWithTableInText("<p>In the cell.</p>");
+            const recording = new AudioRecording();
+
+            recording.makeAudioSentenceElementsTest(
+                div,
+                RecordingMode.Sentence,
+            );
+
+            expect(
+                div
+                    .find("span.audio-sentence")
+                    .toArray()
+                    .map((span) => span.textContent),
+            ).toEqual(["Above the table.", "Below the table."]);
+            expect(div.find("#cellBox").html()).toBe("<p>In the cell.</p>");
+        });
+
+        it("lists each sentence of a table's cells once, under the cell's own box", () => {
+            SetupIFrameFromHtml(
+                "<div id='page1'><div class='bloom-translationGroup'>" +
+                    "<div class='bloom-editable bloom-visibility-code-on' id='outer' data-audiorecordingmode='Sentence'>" +
+                    "<p><span id='above' class='audio-sentence'>Above.</span></p>" +
+                    "<div class='bloom-table bloom-tableInText' contenteditable='false'><div class='bloom-cell'><div class='bloom-translationGroup'>" +
+                    "<div class='bloom-editable bloom-visibility-code-on' id='cellBox' data-audiorecordingmode='Sentence'><p><span id='inCell' class='audio-sentence'>In the cell.</span></p></div>" +
+                    "</div></div></div>" +
+                    "<p><span id='below' class='audio-sentence'>Below.</span></p>" +
+                    "</div></div></div>",
+            );
+            const recording = new AudioRecording();
+
+            const ids = (
+                recording as unknown as {
+                    getAudioElements: () => HTMLElement[];
+                }
+            )
+                .getAudioElements()
+                .map((element) => element.id);
+
+            expect(ids.filter((id) => id === "inCell").length).toBe(1);
+            expect(ids).toContain("above");
+            expect(ids).toContain("below");
+        });
+
         it("inserts sentence spans with ids and class when none exist", () => {
             const div = $("<div>This is a sentence. This is another</div>");
             const recording = new AudioRecording();

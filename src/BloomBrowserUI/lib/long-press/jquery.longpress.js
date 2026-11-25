@@ -196,6 +196,17 @@ import "./jquery.mousewheel.js";
     }
 
     function onKeyDown(e) {
+        // A text box can hold a table whose cells are text boxes with their own handler, and a
+        // key typed in a cell bubbles up to the outer box's handler too. activationKey is shared
+        // by every box, so the outer handler would take the cell's key for one being held down
+        // and cancel it. So a handler deals only with keys typed in its own box.
+        var boxTypedIn = $(e.target).closest(".bloom-editable")[0];
+        if (
+            boxTypedIn &&
+            boxTypedIn !== e.currentTarget &&
+            e.currentTarget.contains(boxTypedIn)
+        )
+            return;
         // A keystroke with Ctrl or the Windows/Cmd key held down is a shortcut, not
         // typing, so it never enters a character for us to offer alternates for.
         // Without this check, holding a shortcut like Ctrl+Shift+Space (show hidden
