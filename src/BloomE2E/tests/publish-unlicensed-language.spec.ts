@@ -13,13 +13,15 @@
 // first test reads the spreadsheet itself and checks that it has rows and that none names this
 // book's content id. The denial the later tests see is then the spreadsheet's answer.
 //
-// Not checked here: "publishing an Android App stops with a licensing message before building".
-// The Apps screen's Prepare installs Reading App Builder before it gets as far as the license
-// check; see AUTOMATION-DEBT.md, "The Apps screen installs Reading App Builder before it checks
-// anything".
+// The Apps step runs only on a machine that already has Reading App Builder at the version this
+// Bloom asks for, with its JDK and Android SDK: Prepare installs or updates those before it gets
+// as far as the license check, and a test must not run an installer. Elsewhere that test skips
+// and says why; see AUTOMATION-DEBT.md, "The Apps screen installs Reading App Builder before it
+// checks anything".
 
 import { type Locator, type Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
+import { apiGetJson } from "../helpers/api";
 import { setBookMeta } from "../helpers/bookHtml";
 import {
     addPage,
@@ -160,6 +162,31 @@ async function waitForTextToSettle(locator: Locator): Promise<void> {
             },
         )
         .toBe(true);
+}
+
+/** What publish/rab/status says, as far as these tests need it (RabProjectStatus in C#). */
+interface IRabStatus {
+    rabInstalled: boolean;
+    rabUpdateVersion: string | null;
+    projectExists: boolean;
+    activeAction: string | null;
+    prepareSteps: { id: string; complete: boolean }[];
+}
+
+/**
+ * Why Prepare on the Apps screen would have to install something before it reached the license
+ * check on this machine, or undefined when it would not.
+ */
+function whyPrepareWouldInstall(status: IRabStatus): string | undefined {
+    if (!status.rabInstalled) return "Reading App Builder is not installed";
+    if (status.rabUpdateVersion)
+        return `Bloom would first update Reading App Builder to ${status.rabUpdateVersion}`;
+    const buildTools = status.prepareSteps.find(
+        (step) => step.id === "build-tools-installed",
+    );
+    if (!buildTools?.complete)
+        return "Reading App Builder's JDK and Android SDK are not installed";
+    return undefined;
 }
 
 /**
@@ -405,5 +432,71 @@ test.describe("a book not licensed for the collection's language cannot be publi
             page.getByRole("button", { name: "Record", exact: true }),
             "Audio or Video offered Record for a book it may not publish.",
         ).toBeDisabled();
+    });
+
+    test("Apps stops Prepare with the licensing message before making the app [Test Case ID 619]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        await selectBook(page, bookFolder);
+        const status = await apiGetJson<IRabStatus>(page, "publish/rab/status");
+        const reason = whyPrepareWouldInstall(status);
+        test.skip(
+            reason !== undefined,
+            `${reason}, and a test must not install it. Install Reading App Builder (Publish > Apps > Prepare does it) to run this test.`,
+        );
+        expect(
+            status.projectExists,
+            "The collection already had an app project before Prepare.",
+        ).toBe(false);
+
+        await selectPublishDestination(page, "Apps");
+        const prepare = page.getByRole("button", {
+            name: "Prepare",
+            exact: true,
+        });
+        await expect(
+            prepare,
+            "The Apps screen did not offer Prepare.",
+        ).toBeEnabled({ timeout: 60000 });
+        // THE ACTION UNDER TEST: Prepare, which exports the books that go into the app.
+        await prepare.click();
+        const log = page.getByTestId("prepare-log-accordion");
+        await expect(
+            log,
+            "Prepare wrote no message saying the book is not licensed for publishing.",
+        ).toContainText(NOT_LICENSED, { timeout: 240000 });
+        const said = ((await log.textContent()) ?? "").replace(/\s+/g, " ");
+        expect(
+            said,
+            "Prepare's licensing message did not name the collection's language.",
+        ).toContain(LANGUAGE_NAME);
+        expect(
+            said,
+            "Prepare's licensing message did not name the book, which an app with several books needs.",
+        ).toContain(TITLE);
+
+        // Prepare stopped there: once it has finished, Bloom has made no app project.
+        let finalStatus: IRabStatus | undefined;
+        await expect
+            .poll(
+                async () => {
+                    finalStatus = await apiGetJson<IRabStatus>(
+                        page,
+                        "publish/rab/status",
+                    );
+                    return finalStatus.activeAction ?? null;
+                },
+                {
+                    timeout: 120000,
+                    message:
+                        "Prepare never finished after the licensing message.",
+                },
+            )
+            .toBeNull();
+        expect(
+            finalStatus!.projectExists,
+            "Prepare made an app project for a book it may not publish.",
+        ).toBe(false);
     });
 });
