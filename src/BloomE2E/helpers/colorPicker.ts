@@ -30,6 +30,8 @@ export interface IColorPickerState {
     saturationPointer: { left: number; top: number };
     /** Where the hue slider's pointer is, in percent of the slider's width. */
     huePointer: number;
+    /** Where the alpha slider's pointer is, in percent of the slider's width. */
+    alphaPointer: number;
     /** The percentage beside the alpha slider, e.g. 100. */
     alphaPercentage: number;
 }
@@ -89,6 +91,15 @@ export async function readColorPicker(
         if (!sample) throw new Error("The color picker has no sample swatch.");
         const saturation = one(".saturation-white");
         const saturationPointer = one(".saturation-white > div:last-child");
+        // react-color's Alpha draws a checkerboard, a gradient, and last a container whose only
+        // child is the pointer, which it places with a "left" in percent.
+        const alphaPointer = one(
+            ".alpha-slider-track > div > div:last-child > div",
+        ).style.left;
+        if (!alphaPointer.endsWith("%"))
+            throw new Error(
+                `The alpha slider's pointer has left "${alphaPointer}", not a percentage.`,
+            );
         return {
             hex: (one('input[type="text"]') as HTMLInputElement).value,
             sample: getComputedStyle(sample.lastElementChild as HTMLElement)
@@ -102,6 +113,7 @@ export async function readColorPicker(
             huePointer: parseFloat(
                 one('.hue-horizontal > div[style*="left"]').style.left,
             ),
+            alphaPointer: parseFloat(alphaPointer),
             alphaPercentage: parseFloat(
                 one(".alpha-slider-percentage").textContent ?? "",
             ),
@@ -208,13 +220,18 @@ export async function appendToHexBox(
     await input.pressSequentially(text);
 }
 
-/** Close the picker with its OK or Cancel button, and wait for it to go. */
+/**
+ * Close the picker with its OK or Cancel button, and wait for it to go. The buttons are found by
+ * their test ids, so this works whatever language Bloom is showing.
+ */
 export async function closeColorPickerWith(
     frame: Frame,
     button: "OK" | "Cancel",
 ): Promise<void> {
     const dialog = colorPicker(frame);
-    await dialog.getByRole("button", { name: button }).click();
+    await dialog
+        .getByTestId(button === "OK" ? "dialog-ok" : "dialog-cancel")
+        .click();
     await expect(
         dialog,
         `The color picker did not close after ${button}.`,

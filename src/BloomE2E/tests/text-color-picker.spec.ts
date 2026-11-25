@@ -130,6 +130,10 @@ async function expectControlsMatchHexBox(page: Page): Promise<IRgba> {
         Math.abs(state.alphaPercentage - Math.round(color.a * 100)),
         `the alpha slider's percentage (${state.alphaPercentage}%) should be the hex box's alpha`,
     ).toBeLessThanOrEqual(1);
+    expect(
+        Math.abs(state.alphaPointer - color.a * 100),
+        `the alpha slider's pointer (${state.alphaPointer}%) should be at the hex box's alpha`,
+    ).toBeLessThanOrEqual(kPointerTolerancePercent);
     // The saturation box and the hue slider show the hue, which a gray does not have.
     if (hsv.s > 0) {
         expect(
@@ -169,7 +173,9 @@ async function openTextColorPicker(page: Page): Promise<void> {
     await colorPicker(frame).waitFor({ state: "visible", timeout: 15000 });
 }
 
-test.describe("Text Color Picker", () => {
+// The id is in the describe's title so that `-g "Test Case ID 365"` also runs the test that builds
+// the book, which the others cannot do without.
+test.describe("Text Color Picker [Test Case ID 365]", () => {
     test("builds a book with a page of text", async ({ page }) => {
         test.setTimeout(300000);
         await makeBookFromTemplate(page, "Basic Book");
@@ -185,7 +191,7 @@ test.describe("Text Color Picker", () => {
             ).toBeGreaterThan(kChannelTolerance);
     });
 
-    test("clicking palette colors changes every control and the text; Cancel puts the old color back [Test Case ID 365]", async ({
+    test("clicking palette colors changes every control and the text; Cancel puts the old color back", async ({
         page,
     }) => {
         await openTextColorPicker(page);
@@ -198,7 +204,7 @@ test.describe("Text Color Picker", () => {
         await expectTextColor(page, originalColor, "after Cancel");
     });
 
-    test("Escape closes the picker and puts the old color back [Test Case ID 365]", async ({
+    test("Escape closes the picker and puts the old color back", async ({
         page,
     }) => {
         await openTextColorPicker(page);
@@ -209,7 +215,7 @@ test.describe("Text Color Picker", () => {
         await expectTextColor(page, originalColor, "after Escape");
     });
 
-    test("OK keeps the new color, and so does a click outside the picker [Test Case ID 365]", async ({
+    test("OK keeps the new color, and so does a click outside the picker", async ({
         page,
     }) => {
         await openTextColorPicker(page);
@@ -230,7 +236,7 @@ test.describe("Text Color Picker", () => {
         );
     });
 
-    test("a color made with the hue slider and the saturation box shows in every control and the text, and can be canceled or kept [Test Case ID 365]", async ({
+    test("a color made with the hue slider and the saturation box shows in every control and the text, and can be canceled or kept", async ({
         page,
     }) => {
         const frame = editablePageFrame(page);
@@ -264,7 +270,7 @@ test.describe("Text Color Picker", () => {
         }
     });
 
-    test("the alpha slider changes the hex box, the sample and the text [Test Case ID 365]", async ({
+    test("the alpha slider changes the hex box, the sample and the text", async ({
         page,
     }) => {
         await openTextColorPicker(page);
@@ -284,6 +290,10 @@ test.describe("Text Color Picker", () => {
             "a click in the middle of the alpha slider should give about 50%",
         ).toBeLessThanOrEqual(3);
         expect(
+            Math.abs(state.alphaPointer - 50),
+            "the alpha slider's pointer should be where it was clicked",
+        ).toBeLessThanOrEqual(3);
+        expect(
             state.hex.slice(0, 7).toLowerCase(),
             "the alpha slider should change only the alpha of the hex code",
         ).toBe(RED);
@@ -291,7 +301,7 @@ test.describe("Text Color Picker", () => {
         await closeColorPickerWith(frame, "OK");
     });
 
-    test("a hex code typed in, and then '80' added to it, changes every control and the text [Test Case ID 365]", async ({
+    test("a hex code typed in, and then '80' added to it, changes every control and the text", async ({
         page,
     }) => {
         await openTextColorPicker(page);
@@ -299,13 +309,23 @@ test.describe("Text Color Picker", () => {
         await typeInHexBox(frame, TYPED);
         // A six-digit code stays as typed, without an alpha channel.
         await expectEverythingShows(page, TYPED);
+        // Sanity check: the pointer starts at the opaque end, so the 50% below is a move.
+        expect(
+            (await readColorPicker(frame)).alphaPointer,
+            "the alpha slider's pointer should be at 100% for an opaque color",
+        ).toBe(100);
 
         await appendToHexBox(frame, "80");
         await expectEverythingShows(page, `${TYPED}80`);
+        const withAlpha = await readColorPicker(frame);
         expect(
-            (await readColorPicker(frame)).alphaPercentage,
-            "the alpha slider should be at 50%",
+            withAlpha.alphaPercentage,
+            "the alpha slider's percentage should be 50%",
         ).toBe(50);
+        expect(
+            Math.abs(withAlpha.alphaPointer - 50),
+            "the alpha slider's pointer should have moved to 50%",
+        ).toBeLessThanOrEqual(kPointerTolerancePercent);
         await closeColorPickerWith(frame, "OK");
         await expectTextColor(page, hexToRgba(`${TYPED}80`), "after OK");
     });
