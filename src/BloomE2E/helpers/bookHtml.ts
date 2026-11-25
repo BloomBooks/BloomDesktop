@@ -172,6 +172,62 @@ export function bookHtmlPath(bookFolder: string): string {
     return Path.join(bookFolder, `${Path.basename(bookFolder)}.htm`);
 }
 
+/** One page of a book's HTML file on disk, front and back matter included. */
+export interface IPageOnDisk {
+    id: string;
+    label: string;
+    /** The ids of the pages this page was made from, oldest first (data-pagelineage). */
+    lineage: string[];
+    /** True for a page the Add Page dialog can offer: a template page (data-page="extra"). */
+    isTemplatePage: boolean;
+    /**
+     * "portrait" or "landscape" for a template page offered only to books of that orientation
+     * (data-initial-page-orientation), and "" for a page offered to both.
+     */
+    onlyForOrientation: string;
+}
+
+/**
+ * Every page in the HTML file of the book in `bookFolder`, in order, read from disk. It finds the
+ * file by its extension, so it reads a template book (.html) as well as a book Bloom saved
+ * (.htm). `page` is used only as a DOM parser.
+ */
+export async function readPagesOnDisk(
+    page: Page,
+    bookFolder: string,
+): Promise<IPageOnDisk[]> {
+    const allHtmlFiles = fs
+        .readdirSync(bookFolder)
+        .filter((name) => /\.html?$/i.test(name));
+    // A template installed with Bloom can hold a ReadMe beside the book's own file, which is the
+    // one named after the folder.
+    const folderName = Path.basename(bookFolder).toLowerCase();
+    const namedAfterFolder = allHtmlFiles.filter(
+        (name) => Path.parse(name).name.toLowerCase() === folderName,
+    );
+    const htmlFiles =
+        namedAfterFolder.length > 0 ? namedAfterFolder : allHtmlFiles;
+    if (htmlFiles.length !== 1)
+        throw new Error(
+            `Expected one HTML file in ${bookFolder}, or one named after the folder, found: ` +
+                `${allHtmlFiles.join(", ") || "(none)"}.`,
+        );
+    const html = fs.readFileSync(Path.join(bookFolder, htmlFiles[0]), "utf8");
+    return page.evaluate((source) => {
+        const dom = new DOMParser().parseFromString(source, "text/html");
+        return Array.from(dom.querySelectorAll(".bloom-page[id]")).map((p) => ({
+            id: p.id,
+            label: p.querySelector(".pageLabel")?.textContent?.trim() ?? "",
+            lineage: (p.getAttribute("data-pagelineage") ?? "")
+                .split(/[;,]/)
+                .filter((id) => id),
+            isTemplatePage: p.getAttribute("data-page") === "extra",
+            onlyForOrientation:
+                p.getAttribute("data-initial-page-orientation") ?? "",
+        }));
+    }, html);
+}
+
 /**
  * The side of the printed spread each page of the saved book falls on, by page id, as Bloom marks
  * it (side-left or side-right; see UpdateSideClass in HtmlDom.cs). The PDF takes each page's margins
