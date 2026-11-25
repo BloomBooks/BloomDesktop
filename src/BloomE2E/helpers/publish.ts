@@ -12,7 +12,7 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
-import { apiGetJson, apiPost } from "./api";
+import { apiGetJson, apiPost, getUiString } from "./api";
 import { readImageFileSize, type IPixelSize } from "./images";
 import { waitForLanguageChooser } from "./languageChooser";
 import { switchTab } from "./workspace";
@@ -513,7 +513,9 @@ export interface ISignLanguageFeature {
 export async function getSignLanguageFeature(
     page: Page,
 ): Promise<ISignLanguageFeature> {
-    const checkbox = page.getByRole("checkbox", { name: "Sign Language" });
+    const checkbox = page.getByRole("checkbox", {
+        name: await getSignLanguageLabel(page),
+    });
     await checkbox.waitFor({ state: "attached", timeout: 30000 });
     const tooltip = await hoverSignLanguageFeature(page);
     return {
@@ -568,11 +570,43 @@ export async function getCollectionSignLanguage(
     );
 }
 
+/**
+ * What the Sign Language row's tooltip says, in the UI language, when the book has no videos, or
+ * when its videos are in the sign language named `signLanguageName`.
+ */
+export async function getSignLanguageTooltipText(
+    page: Page,
+    tooltip: "noVideos" | { signLanguageName: string },
+): Promise<string> {
+    if (tooltip === "noVideos")
+        return getUiString(
+            page,
+            "PublishTab.Feature.SignLanguage.NoVideos",
+            "This is disabled because this book does not have any videos.",
+        );
+    const present = await getUiString(
+        page,
+        "PublishTab.Feature.SignLanguage.Present",
+        "The videos in this book contain {N}",
+    );
+    return present.replace("{N}", tooltip.signLanguageName);
+}
+
+/**
+ * The Sign Language row's label in the UI language. A test Bloom starts in the Windows UI
+ * language, so the row is found by what Bloom calls it, not by its English name.
+ */
+function getSignLanguageLabel(page: Page): Promise<string> {
+    return getUiString(page, "PublishTab.Upload.SignLanguage", "Sign Language");
+}
+
 /** Hover the Sign Language row and return its tooltip once it shows. */
-function hoverSignLanguageFeature(page: Page): Promise<Locator> {
+async function hoverSignLanguageFeature(page: Page): Promise<Locator> {
     return hoverForTooltip(
         page,
-        page.getByText("Sign Language", { exact: true }).first(),
+        page
+            .getByText(await getSignLanguageLabel(page), { exact: true })
+            .first(),
     );
 }
 

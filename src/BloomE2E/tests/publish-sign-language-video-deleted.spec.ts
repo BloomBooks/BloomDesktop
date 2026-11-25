@@ -21,6 +21,7 @@ import { openPublishToWeb } from "../helpers/libraryPublish";
 import {
     expectSignLanguageFeature,
     getCollectionSignLanguage,
+    getSignLanguageTooltipText,
     openSignLanguageChooserFromPublish,
 } from "../helpers/publish";
 import {
@@ -67,7 +68,9 @@ test("deleting the book's only video unchecks and disables Sign Language on the 
     await expectSignLanguageFeature(page, {
         enabled: true,
         checked: true,
-        tooltip: "The videos in this book contain American Sign Language",
+        tooltip: await getSignLanguageTooltipText(page, {
+            signLanguageName: "American Sign Language",
+        }),
     });
 
     // Back in Edit, delete the video.
@@ -75,10 +78,28 @@ test("deleting the book's only video unchecks and disables Sign Language on the 
     await goToPage(page, videoPage.id);
     await deleteVideo(page, bloomApp.bloomPid, videoBoxes(page).first());
 
+    // Until Bloom answers whether the book has videos and whether its sign language is published,
+    // the row shows its defaults, which are what this test expects: so wait for both answers
+    // before reading the row, or a row that Bloom never updated would pass.
+    const answered = Promise.all(
+        ["publish/hasVideo", "publish/signLanguage"].map((endpoint) =>
+            page.waitForResponse(
+                (response) =>
+                    response.url().includes(`/bloom/api/${endpoint}`) &&
+                    response.request().method() === "GET",
+                { timeout: 60000 },
+            ),
+        ),
+    );
     await openPublishToWeb(page);
+    const answers = await answered;
+    expect(
+        await Promise.all(answers.map((answer) => answer.text())),
+        "sanity check: Bloom says the book has no videos and does not publish a sign language",
+    ).toEqual(["false", "false"]);
     await expectSignLanguageFeature(page, {
         enabled: false,
         checked: false,
-        tooltip: "This is disabled because this book does not have any videos.",
+        tooltip: await getSignLanguageTooltipText(page, "noVideos"),
     });
 });
