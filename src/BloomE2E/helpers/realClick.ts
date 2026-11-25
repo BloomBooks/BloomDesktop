@@ -40,6 +40,29 @@ export async function realClick(
 }
 
 /**
+ * Right-click the element with a real press and release of the right mouse button at its centre,
+ * after scrolling it into view, as a person does to raise a context menu. Throws a message naming
+ * the locator when the element has no on-screen box.
+ */
+export async function realRightClick(
+    locator: Locator,
+    timeoutMs = 15000,
+): Promise<void> {
+    await locator.waitFor({ state: "visible", timeout: timeoutMs });
+    await locator.scrollIntoViewIfNeeded({ timeout: timeoutMs });
+    const box = await locator.boundingBox({ timeout: timeoutMs });
+    if (!box)
+        throw new Error(
+            `${locator} is visible but has no bounding box, so there is nowhere to right-click. ` +
+                `It may be inside a collapsed or zero-size container.`,
+        );
+    const page = locator.page();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down({ button: "right" });
+    await page.mouse.up({ button: "right" });
+}
+
+/**
  * Click at a point in the page's own coordinates, with a real mouse press and release. Use this
  * for a target that has no locator of its own, such as a spot on a canvas.
  */

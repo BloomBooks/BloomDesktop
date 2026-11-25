@@ -37,6 +37,8 @@ const PrintSaveButton: React.FunctionComponent<{
             `}
             onClick={props.onClick}
             disabled={!props.enabled}
+            // For tests, which cannot go by the label: it is localized.
+            data-testid={props.l10nId}
         >
             <img src={props.imgSrc} />
             <span

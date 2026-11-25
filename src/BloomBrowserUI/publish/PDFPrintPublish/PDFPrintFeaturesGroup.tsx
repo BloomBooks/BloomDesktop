@@ -269,6 +269,8 @@ const PdfModeButton: React.FunctionComponent<{
     return (
         <ToggleButton
             value="foo" // We're not using this, but some value required
+            // For tests, which cannot go by the label: it is localized.
+            data-testid={props.labelId}
             selected={props.selected}
             disabled={props.disabled}
             onChange={() => {
