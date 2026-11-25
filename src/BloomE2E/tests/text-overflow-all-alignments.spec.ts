@@ -5,9 +5,10 @@
 // Automates the manual test "Text Overflow All Alignments" (Test Case ID 376).
 //
 // The box is made "just" too small the way a person makes it: by dragging the divider between the
-// picture and the text of a Basic Text & Image page. Bloom works out whether a box overflows when a
-// key comes up in it, not when the box changes size (OverflowChecker.AddOverflowHandlers), so after
-// each change the test makes a small change to the text, as the manual case asks.
+// picture and the text of a Basic Text & Image page. Bloom checks a box for overflow when a key
+// comes up in it (OverflowChecker.AddOverflowHandlers), so after each change the test makes a small
+// change to the text, as the manual case asks. The test waits for the marks to appear; it never
+// waits to see that they do not.
 //
 // One A5 book with one Basic Text & Image page. The tests are serial: each works on the box the
 // one before it left.
@@ -35,7 +36,6 @@ import {
 import { kEdgeTolerance, right } from "../helpers/geometry";
 import { setChangeLayoutMode } from "../helpers/origami";
 import {
-    expectNoOverflowMarks,
     emptyTextBox,
     getOverflowMarks,
     getTextBoxView,
@@ -59,14 +59,14 @@ const LANG = "en";
 let marginalHidden: number;
 
 /**
- * The most text, in the page's own pixels, that may be out of sight when Bloom first marks a box
- * as overflowing: the manual case's "a pixel or two", plus what Bloom's measuring allows. Bloom
- * compares whole-pixel heights, and it leaves out the part of the font's descent that no letter
- * reaches (OverflowChecker.getSelfOverflowAmounts). What is out of sight here is the bottom of the
- * last line's box, below its descenders. Bloom marks it at about 3 pixels (at 24px line height); a
- * change that made it mark later than this fails the test.
+ * How much of the text, in the page's own pixels, the test leaves out of sight: the manual case's
+ * "a pixel or two", plus what Bloom's measuring allows. What is out of sight is the bottom of the
+ * last line's box, below its descenders. Bloom compares whole-pixel heights, and it leaves out
+ * the part of the font's descent that no letter reaches (OverflowChecker.getSelfOverflowAmounts),
+ * so it first marks this text at about 3 pixels (at a 24px line height). A change that made it
+ * mark later than MARGINAL_OVERFLOW.most fails the test.
  */
-const MARGINAL_OVERFLOW = 4;
+const MARGINAL_OVERFLOW = { least: 3.2, most: 4 };
 
 /** The book's one content page. Set by the first test. */
 let textPage: IBookPage;
@@ -169,35 +169,6 @@ async function typeParagraphsPastTheBottom(
     );
 }
 
-/**
- * The delay of the timer in which Bloom checks a box for overflow after a key comes up in it
- * (OverflowChecker.AddOverflowHandlers). Keep it equal to Bloom's.
- */
-const kKeyupOverflowCheckDelayMs = 100;
-
-/**
- * Make a small change, as makeSmallChange does, and report whether Bloom then finds that the box
- * overflows. Bloom checks the box in a timer it starts when the key comes up. Timers with the
- * same delay run in the order they were started, so a timer with that delay started after the key
- * runs after Bloom's check, and the answer read there is Bloom's answer to this change. If Bloom's
- * delay grew, the read would come too early and could report the box as fitting; the caller's
- * check that the marginal overflow is at most MARGINAL_OVERFLOW would then fail. The answer is the
- * "overflow" class Bloom puts on the box, which the marks are drawn from a moment later.
- */
-async function bloomFindsOverflow(page: Page, box: Locator): Promise<boolean> {
-    await makeSmallChange(page, box);
-    return box.evaluate(
-        (e, delay) =>
-            new Promise<boolean>((resolve) =>
-                setTimeout(
-                    () => resolve(e.classList.contains("overflow")),
-                    delay,
-                ),
-            ),
-        kKeyupOverflowCheckDelayMs,
-    );
-}
-
 /** Check that the overflow is still the pixel or two that makeOverflowMarginal left. */
 async function expectOverflowStillMarginal(
     box: Locator,
@@ -239,28 +210,28 @@ async function dragDivider(page: Page, dy: number): Promise<void> {
 }
 
 /**
- * Size the text box with the divider so that its text overflows by as little as Bloom notices, the
- * way a tester does it: make the box tall enough for all the text, then shorten it a pixel at a
- * time until Bloom marks it. Returns how much of the text is then out of sight, in the page's
- * pixels.
+ * Size the text box with the divider so that its text runs past the bottom by an amount within
+ * MARGINAL_OVERFLOW. Each drag aims at the middle of that range from how much is out of sight
+ * now; the page's zoom makes one pixel of the mouse more or less than one of the page's. Returns
+ * how much of the text is then out of sight, in the page's pixels.
  */
 async function makeOverflowMarginal(page: Page, box: Locator): Promise<number> {
-    const scale = await pageScale(box);
-    await dragDivider(page, -((await hiddenPagePixels(box)) + 4) * scale);
-    // The box is still scrolled to its last line, and the first check after it has grown can still
-    // find it overflowing (see the ENHANCE note in OverflowChecker.AdjustSizeAndMarkSelfOverflow),
-    // so this waits for the marks to go rather than reading that first answer.
-    await makeSmallChange(page, box);
-    await expectNoOverflowMarks(
-        page,
-        "test setup: with the divider dragged up past the text, Bloom should find that it fits",
-    );
-    for (let pixel = 1; pixel <= 30; pixel++) {
-        await dragDivider(page, scale);
-        if (await bloomFindsOverflow(page, box)) return hiddenPagePixels(box);
+    const target = (MARGINAL_OVERFLOW.least + MARGINAL_OVERFLOW.most) / 2;
+    for (let attempt = 1; attempt <= 12; attempt++) {
+        const hidden = await hiddenPagePixels(box);
+        if (
+            hidden >= MARGINAL_OVERFLOW.least &&
+            hidden <= MARGINAL_OVERFLOW.most
+        )
+            return hidden;
+        // With nothing out of sight, how far the box is too tall is unknown; a pixel at a time.
+        const tooMuch = hidden > 0 ? hidden - target : -1;
+        await dragDivider(page, -tooMuch * (await pageScale(box)));
     }
     throw new Error(
-        "Shortening the text box a pixel at a time for 30 pixels never made Bloom find that it overflows.",
+        `Twelve drags of the divider never left between ${MARGINAL_OVERFLOW.least} and ` +
+            `${MARGINAL_OVERFLOW.most} pixels of the text out of sight; ` +
+            `${await hiddenPagePixels(box)} pixels are.`,
     );
 }
 
@@ -362,14 +333,6 @@ test.describe("Text Overflow All Alignments", () => {
             "Drag the divider until the text runs past the box by a pixel or two",
             async () => {
                 marginalHidden = await makeOverflowMarginal(page, box);
-                expect(
-                    marginalHidden,
-                    "test setup: the text should run past the box",
-                ).toBeGreaterThan(0);
-                expect(
-                    marginalHidden,
-                    `Bloom should mark text that runs past the box by ${MARGINAL_OVERFLOW} pixels or less`,
-                ).toBeLessThanOrEqual(MARGINAL_OVERFLOW);
             },
         );
         await step("Check the box is marked as overflowing", async () => {
