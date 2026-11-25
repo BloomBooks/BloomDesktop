@@ -12,7 +12,11 @@ import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet, apiGetJson, apiPost } from "./api";
-import { selectBook, waitForCollectionReady } from "./collection";
+import {
+    chooseFromSelectedBookMenuByTestId,
+    selectBook,
+    waitForCollectionReady,
+} from "./collection";
 import { markEditablePage, waitForEditablePageReload } from "./pageThumbnails";
 import { switchTab } from "./workspace";
 
@@ -178,26 +182,42 @@ export async function makeBookFromBookInCollection(
 }
 
 /**
+ * Make a new book from a template book in the editable collection the way a person does: right-click
+ * its tile on the Collections tab and choose "Make a book using this source" (found by its test id,
+ * not its words). Returns the new
+ * book's folder; Bloom lands in the Edit tab, showing the new book's cover. Fails, naming what the
+ * menu offered, when the menu has no such command, as it has none for a book that is not a
+ * template.
+ *
+ * makeBookFromBookInCollection gets the same result through the API, for a test whose subject is
+ * not the menu.
+ */
+export async function makeBookFromBookInCollectionWithItsMenu(
+    page: Page,
+    bookFolder: string,
+): Promise<string> {
+    await switchTab(page, "collection");
+    await selectBook(page, bookFolder);
+    return makeBookFromSelectedBook(page, Path.basename(bookFolder), () =>
+        chooseFromSelectedBookMenuByTestId(
+            page,
+            "CollectionTab.MakeBookUsingThisTemplate",
+        ),
+    );
+}
+
+/**
  * Ask Bloom to make a book from whatever book is selected, and wait for the new book to exist.
- * `sourceName` only names the source in the failure message.
+ * `sourceName` only names the source in the failure message. `askBloom` makes the request; by
+ * default it goes straight to the API.
  */
 async function makeBookFromSelectedBook(
     page: Page,
     sourceName: string,
+    askBloom: () => Promise<void> = () => postMakeFromSelectedBook(page),
 ): Promise<string> {
     const before = await listEditableBooks(page);
-    // Bloom answers this and then reloads the shell document into the Edit tab, and under load
-    // that reload can abort our fetch before the reply arrives. The request itself got through
-    // - the poll below is what confirms the book really appeared - and a retry would make a
-    // second book, so tolerate exactly the two lost-reply errors a reload produces.
-    await apiPost(page, "app/makeFromSelectedBook").catch((error) => {
-        if (
-            !/Failed to fetch|Execution context was destroyed/i.test(
-                String(error),
-            )
-        )
-            throw error;
-    });
+    await askBloom();
 
     // Bloom makes the book, selects it, and switches to the Edit tab. Wait for the book to exist
     // rather than for the tab, so the folder we return is real.
@@ -219,6 +239,23 @@ async function makeBookFromSelectedBook(
         .toBe(true);
     await waitForEditablePage(page);
     return made!.folderPath;
+}
+
+/** Ask Bloom's API to make a book from the selected book, as the Make a book buttons do. */
+async function postMakeFromSelectedBook(page: Page): Promise<void> {
+    // Bloom answers this and then reloads the shell document into the Edit tab, and under load
+    // that reload can abort our fetch before the reply arrives. The request itself got through
+    // - the poll in makeBookFromSelectedBook is what confirms the book really appeared - and a
+    // retry would make a second book, so tolerate exactly the two lost-reply errors a reload
+    // produces.
+    await apiPost(page, "app/makeFromSelectedBook").catch((error) => {
+        if (
+            !/Failed to fetch|Execution context was destroyed/i.test(
+                String(error),
+            )
+        )
+            throw error;
+    });
 }
 
 /**
@@ -321,6 +358,20 @@ async function listEditableBooks(page: Page): Promise<IBookInfo[]> {
         page,
         `collections/books?collection-id=${encodeURIComponent(editable.id)}`,
     );
+}
+
+/**
+ * Which of the collection's languages the book shows, by tag, as the Edit tab's
+ * Monolingual/Bilingual/Trilingual dropdown has them. The reading side of setContentLanguages.
+ */
+export async function getContentLanguages(page: Page): Promise<string[]> {
+    const usage = await apiGetJson<IContentLanguageUsage>(
+        page,
+        "editView/topBar/contentLanguageUsage",
+    );
+    return usage.languages
+        .filter((language) => language.isUsedForContent)
+        .map((language) => language.id);
 }
 
 /**
@@ -838,7 +889,7 @@ export async function waitForPageToSettle(page: Page): Promise<void> {
  * Only for a page known to be loaded and editable; a frame still loading its page has no stream to
  * ask, and this fails rather than guess.
  */
-async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
+export async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
     await expect
         .poll(
             () =>
@@ -941,6 +992,47 @@ export async function typeInGroup(
     // as one change, so a save straight after it would lose all of it. A test whose subject is an
     // action taken straight after typing passes false.
     if (thenWaitForBloomToHaveIt) await waitForSnapshotStreamIdle(page);
+}
+
+/**
+ * The languages whose box is showing in the translation groups that `groupSelector` picks on the
+ * page being edited, in document order. A box that Bloom hides (display: none) is left out, and so
+ * is the "z" box, which is only a pattern Bloom copies to make the others.
+ */
+export async function getLanguagesShownInGroup(
+    page: Page,
+    groupSelector: string,
+): Promise<string[]> {
+    return editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang]`)
+        .evaluateAll((boxes) =>
+            boxes
+                .filter(
+                    (box) =>
+                        box.getAttribute("lang") !== "z" &&
+                        getComputedStyle(box).display !== "none",
+                )
+                .map((box) => box.getAttribute("lang") ?? ""),
+        );
+}
+
+/**
+ * Wait until the translation groups that `groupSelector` picks show exactly the boxes of these
+ * languages, in any order. Fails with `message` when they do not within 30 seconds.
+ */
+export async function expectLanguagesShownInGroup(
+    page: Page,
+    groupSelector: string,
+    languages: string[],
+    message: string,
+): Promise<void> {
+    await expect
+        .poll(
+            async () =>
+                (await getLanguagesShownInGroup(page, groupSelector)).sort(),
+            { timeout: 30000, message },
+        )
+        .toEqual([...languages].sort());
 }
 
 /**

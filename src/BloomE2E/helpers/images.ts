@@ -14,6 +14,7 @@
 // element that holds a picture box and everything below applies to the picture in it instead.
 
 import { expect, type Locator, type Page } from "@playwright/test";
+import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiPost } from "./api";
 import { editablePageFrame } from "./bookMaking";
@@ -317,4 +318,122 @@ export async function getPictureInlineLayout(
 function imageIn(page: Page, within?: Locator): Locator {
     if (within) return within.locator(".bloom-imageContainer img").first();
     return editablePageFrame(page).locator(FIRST_IMAGE).first();
+}
+
+/** The size of a picture in pixels. */
+export interface IPixelSize {
+    width: number;
+    height: number;
+}
+
+/**
+ * Write a photo-like JPEG of exactly `width` by `height` pixels to `filePath`, for a test that
+ * needs a picture of a given size, such as one larger than any size Bloom publishes. The picture
+ * is a colour gradient with soft blobs of colour across it, so that it compresses, and shrinks
+ * when scaled down, the way a photo does. It is drawn by the browser in `page`, because Node has no JPEG
+ * encoder; nothing is added to Bloom or the book.
+ */
+export async function makeJpegFile(
+    page: Page,
+    filePath: string,
+    width: number,
+    height: number,
+): Promise<void> {
+    const base64 = await page.evaluate(
+        async ({ width, height }) => {
+            const canvas = new OffscreenCanvas(width, height);
+            const context = canvas.getContext("2d")!;
+            const gradient = context.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, "#2a6f97");
+            gradient.addColorStop(0.5, "#f4a259");
+            gradient.addColorStop(1, "#5b8e7d");
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, width, height);
+            // Soft blobs, as in a photo, not hard edges. Bloom keeps a picture at its own size when
+            // shrinking it would make the file larger (BL-11441, ImageUtils
+            // .TryResizeImageWithGraphicsMagick), and a picture full of hard edges does grow when
+            // GraphicsMagick scales it down and re-encodes it.
+            const blobSize = Math.max(width, height) / 12;
+            for (let i = 0; i < 160; i++) {
+                const x = (i * 7919) % width;
+                const y = (i * 104729) % height;
+                const blob = context.createRadialGradient(
+                    x,
+                    y,
+                    0,
+                    x,
+                    y,
+                    blobSize,
+                );
+                blob.addColorStop(
+                    0,
+                    `rgba(${(i * 37) % 256},${(i * 91) % 256},${(i * 53) % 256},0.6)`,
+                );
+                blob.addColorStop(1, "rgba(0,0,0,0)");
+                context.fillStyle = blob;
+                context.fillRect(
+                    x - blobSize,
+                    y - blobSize,
+                    2 * blobSize,
+                    2 * blobSize,
+                );
+            }
+            const blob = await canvas.convertToBlob({
+                type: "image/jpeg",
+                quality: 0.92,
+            });
+            const bytes = new Uint8Array(await blob.arrayBuffer());
+            let binary = "";
+            for (let i = 0; i < bytes.length; i += 0x8000)
+                binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+            return btoa(binary);
+        },
+        { width, height },
+    );
+    fs.mkdirSync(Path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, Buffer.from(base64, "base64"));
+    const made = readImageFileSize(filePath);
+    if (made.width !== width || made.height !== height)
+        throw new Error(
+            `The JPEG made for the test is ${made.width}x${made.height}, not ${width}x${height}.`,
+        );
+}
+
+/**
+ * The size in pixels of a JPEG or PNG file on disk, read from the file's own header. Throws,
+ * naming the file, when it is neither.
+ */
+export function readImageFileSize(filePath: string): IPixelSize {
+    const bytes = fs.readFileSync(filePath);
+    if (bytes.subarray(0, 8).toString("hex") === "89504e470d0a1a0a")
+        return {
+            width: bytes.readUInt32BE(16),
+            height: bytes.readUInt32BE(20),
+        };
+    if (bytes[0] !== 0xff || bytes[1] !== 0xd8)
+        throw new Error(`${filePath} is neither a JPEG nor a PNG.`);
+    // Walk the JPEG's segments to its start-of-frame, which holds the height and then the width.
+    // Every segment but the markers without a length (none occur before the frame) is
+    // 0xFF, a marker byte, and a two-byte length that counts itself.
+    let offset = 2;
+    while (offset + 9 < bytes.length) {
+        if (bytes[offset] !== 0xff)
+            throw new Error(
+                `${filePath} has a broken JPEG segment at byte ${offset}.`,
+            );
+        const marker = bytes[offset + 1];
+        const isStartOfFrame =
+            marker >= 0xc0 &&
+            marker <= 0xcf &&
+            marker !== 0xc4 &&
+            marker !== 0xc8 &&
+            marker !== 0xcc;
+        if (isStartOfFrame)
+            return {
+                height: bytes.readUInt16BE(offset + 5),
+                width: bytes.readUInt16BE(offset + 7),
+            };
+        offset += 2 + bytes.readUInt16BE(offset + 2);
+    }
+    throw new Error(`${filePath} is a JPEG with no start-of-frame segment.`);
 }

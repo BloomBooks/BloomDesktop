@@ -217,6 +217,60 @@ export async function fillTextBoxPastItsBottom(
 }
 
 /**
+ * Give the text of a canvas element that has Auto Height on (a speech bubble, a text block) more
+ * than the element can show: type a line and press Enter, again and again, until Bloom can make
+ * the element no taller and at least `linesTooMany` lines are out of sight.
+ *
+ * Unlike a box of fixed height, such a box grows with its text, a moment after each key (Bloom
+ * checks a box a tenth of a second after a key comes up), until the element reaches the bottom of
+ * its canvas. So after each line this waits for Bloom's answer to it: either the box now shows its
+ * new line, or Bloom has classed it as overflowing, which it does only when it could not make the
+ * element tall enough. Measuring sooner would count lines as out of sight that Bloom is about to
+ * make room for. (A box Bloom has sized to its text can still measure a few pixels short of it,
+ * so less than half a line out of sight counts as showing the line.)
+ *
+ * `box` is the element's text box (canvasElementTextBox). It is left with the caret at the end.
+ */
+export async function fillGrowingTextBoxPastItsBottom(
+    page: Page,
+    box: Locator,
+    linesTooMany = 4,
+): Promise<void> {
+    await box.press("Control+End");
+    const maxLines = 150;
+    for (let line = 1; line <= maxLines; line++) {
+        await page.keyboard.insertText(`Line ${line}`);
+        // A real key, so that Bloom checks the box for overflow.
+        await box.press("Enter");
+        let cannotGrow = false;
+        let view = await getTextBoxView(box);
+        await expect
+            .poll(
+                async () => {
+                    view = await getTextBoxView(box);
+                    cannotGrow = await box.evaluate((e) =>
+                        e.classList.contains("overflow"),
+                    );
+                    return cannotGrow || view.hidden < view.lineHeight / 2;
+                },
+                {
+                    timeout: 15000,
+                    message: `After line ${line}, Bloom neither made room for the text nor classed the box as overflowing.`,
+                },
+            )
+            .toBe(true);
+        if (
+            cannotGrow &&
+            view.hidden >= linesTooMany * view.lineHeight - kEdgeTolerance
+        )
+            return;
+    }
+    throw new Error(
+        `${maxLines} lines did not fill the text box past its bottom, so nothing stops it growing.`,
+    );
+}
+
+/**
  * Press a key into the text box that has the focus, again and again, until all its text fits or
  * until at least a line of it does not: for example Ctrl+Z until the lines that did not fit are
  * taken back. Each press is a real key, so Bloom checks the box for overflow after it. Throws when
@@ -316,6 +370,8 @@ export async function scrollTextBox(
  *  - not scrolled: the last line that fits fades out, and nothing is washed red;
  *  - scrolled: a red wash from that line down to the box's bottom, as wide as the box, and no fade;
  *  - the gray language label is placed at the bottom of what the box shows, scrolled or not.
+ *    Pass `hasLanguageLabel` false for a box that has no such label, as the text of a speech
+ *    bubble has none.
  *
  * Waits for the marks, because Bloom draws them a moment after the typing or scrolling.
  */
@@ -323,6 +379,7 @@ export async function expectTextBoxMarkedAsOverflowing(
     page: Page,
     box: Locator,
     what: string,
+    hasLanguageLabel = true,
 ): Promise<void> {
     await expect(async () => {
         const view = await getTextBoxView(box);
@@ -384,7 +441,12 @@ export async function expectTextBoxMarkedAsOverflowing(
             );
         }
 
-        expectLanguageLabelAtBottom(view, what);
+        if (hasLanguageLabel) expectLanguageLabelAtBottom(view, what);
+        else
+            expect(
+                view.languageLabelAboveBottom,
+                `test setup: ${what} should have no language label`,
+            ).toBeUndefined();
     }).toPass({ timeout: 15000 });
 }
 

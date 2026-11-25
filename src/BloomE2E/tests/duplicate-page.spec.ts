@@ -2,10 +2,8 @@
 // own page, so that changing the copy leaves the original alone. Automates the manual test
 // "Duplicate Page" (Test Case ID 349).
 //
-// The manual test also re-records audio and trims a video on the copy. Neither can be automated
-// today: recording needs a microphone, and a video arrives only through a native file picker (see
-// AUTOMATION-DEBT.md). "Duplicate Page Many Times" has its own spec,
-// duplicate-page-many-times.spec.ts.
+// The manual test also re-records audio and trims a video on the copy; duplicate-page-media.spec.ts
+// covers those. "Duplicate Page Many Times" has its own spec, duplicate-page-many-times.spec.ts.
 //
 // The tests are serial because each one starts from the book the one before it left behind.
 

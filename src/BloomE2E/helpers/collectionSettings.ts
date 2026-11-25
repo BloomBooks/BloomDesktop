@@ -1,17 +1,12 @@
 // Change the settings of the collection Bloom has open: its languages, its front/back matter
 // pack, its branding.
 //
-// A person changes these in the collection Settings dialog. That dialog is a WinForms surface CDP
-// cannot reach, and the settings have no API while it is closed (see AUTOMATION-DEBT.md, "WinForms
-// surfaces are invisible to CDP"), so every helper here takes the route that IS open to a test:
-// rewrite the .bloomCollection while Bloom is stopped, or use an E2eTestingApi hook. None of this
-// is the behavior any test measures; a test that wanted to measure the Settings dialog itself could
-// not be written today.
-//
-// The exception is the NEW, React Collection Settings dialog (the "Settings" button beside "Old
-// Settings" while the two coexist), which lives in the shell document and so is reachable. The
-// helpers at the bottom of this file drive it; only the pages that have real content so far can
-// change anything.
+// A person changes these in the Collection Settings dialog, a React dialog in the shell document,
+// which the helpers from collectionSettingsDialog on drive; the collection-settings-*.spec.ts files
+// use them to test its journeys. The helpers above that are for a test whose subject is something
+// else and that just needs the collection set up: they rewrite the .bloomCollection while Bloom is
+// stopped, or use an E2eTestingApi hook, which is quicker than a trip through the dialog and its
+// restart. None of that is the behavior any test measures.
 
 import * as fs from "node:fs";
 import * as Path from "node:path";
@@ -23,6 +18,12 @@ import {
 } from "../fixtures/launchBloom";
 import { apiGetJson, apiPost } from "./api";
 import { waitForCollectionReady } from "./collection";
+import {
+    confirmLanguageChooser,
+    pickLanguageInChooser,
+    waitForLanguageChooser,
+    type IChooserLanguage,
+} from "./languageChooser";
 import { realClick } from "./realClick";
 
 /** The collection settings a test can rewrite. Everything else keeps Bloom's defaults. */
@@ -196,7 +197,7 @@ export function describeCollectionFolder(
     };
 }
 
-/** The new (React) Collection Settings dialog, by the title it shows. */
+/** The Collection Settings dialog, by the title it shows. */
 function collectionSettingsDialog(page: Page): Locator {
     // Not getByRole's name option: the dialog's aria-labelledby="title" does not give it the
     // accessible name "Collection Settings".
@@ -204,9 +205,8 @@ function collectionSettingsDialog(page: Page): Locator {
 }
 
 /**
- * Open the new Collection Settings dialog the way a person does: click "Settings" on the
- * Collections tab's top bar (not "Old Settings", the WinForms dialog CDP cannot reach). Returns
- * once the dialog shows its pages.
+ * Open the Collection Settings dialog the way a person does: click "Settings" on the Collections
+ * tab's top bar. Returns once the dialog shows its pages.
  */
 export async function openCollectionSettings(page: Page): Promise<void> {
     await realClick(
@@ -971,4 +971,58 @@ export function readSavedLanguageSetting(
     return new RegExp(`<${elementName}>([^<]*)</${elementName}>`).exec(
         language,
     )?.[1];
+}
+
+/**
+ * Pick a language for one language group on the Languages page, as a person does: click its
+ * Change… (or Set…, when the collection has none), then search, click the result, pick a script if
+ * the chooser asks for one, optionally give it a custom name, and click OK. Returns once the
+ * chooser has closed. Nothing is saved until the Collection Settings dialog's OK.
+ */
+export async function chooseCollectionSettingsLanguage(
+    page: Page,
+    heading: string,
+    language: IChooserLanguage,
+): Promise<void> {
+    await openCollectionSettingsLanguageChooser(page, heading);
+    await pickLanguageInChooser(page, language);
+    await confirmLanguageChooser(page);
+}
+
+/**
+ * Open the language chooser for one language group on the Languages page, as a person does by
+ * clicking its Change… (or Set…, when the collection has none). Returns once the chooser shows;
+ * the helpers in languageChooser.ts drive it from there.
+ */
+export async function openCollectionSettingsLanguageChooser(
+    page: Page,
+    heading: string,
+): Promise<void> {
+    await expectLanguageGroup(page, heading);
+    await realClick(
+        languageGroup(page, heading).getByRole("button", {
+            name: /^(Change|Set)/,
+        }),
+    );
+    await waitForLanguageChooser(page);
+}
+
+/**
+ * Click Remove at the right of an optional language's heading on the Languages page (Written
+ * Language 3 or Sign Language), and return once the button has gone, as it does when the group
+ * no longer has a language. Nothing is saved until OK.
+ */
+export async function removeCollectionSettingsLanguage(
+    page: Page,
+    heading: string,
+): Promise<void> {
+    await expectLanguageGroup(page, heading);
+    const remove = collectionSettingsDialog(page)
+        .locator(`xpath=.//h3[normalize-space(.)="${heading}"]/..`)
+        .getByRole("button", { name: /^remove$/i });
+    await realClick(remove);
+    await expect(
+        remove,
+        `Remove at the "${heading}" heading did not go away`,
+    ).toHaveCount(0);
 }

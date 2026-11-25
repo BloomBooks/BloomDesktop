@@ -18,16 +18,12 @@ namespace Bloom
         /// but under --e2e only what the command line asked for (--experimental-features), which
         /// may be nothing.
         ///
-        /// A test cannot turn a feature on the way a person does: they live in the Advanced tab of
-        /// the collection Settings dialog, which is a WinForms surface CDP cannot reach. Nor can it
-        /// write the setting, because Settings.Default lives in one user.config per build version,
-        /// shared with the developer's own Bloom (see AUTOMATION-DEBT.md, "Every Bloom of one build
-        /// shares one user.config"), so a test that saved a feature would leave it on for them.
-        /// So under --e2e the command line is the whole answer: nothing is saved, the setting dies
-        /// with the process, and the developer's own saved experiments do not reach the run, so a
-        /// test that needs a feature OFF gets it off by not naming the token. Program refuses the
-        /// argument without --e2e. A feature named here stays enabled for the whole run: SetValue
-        /// edits only the saved setting, so it cannot turn such a feature off.
+        /// A person turns a feature on in the Experimental page of the Collection Settings dialog,
+        /// which a test can drive too (collection-settings-experimental.spec.ts). A test that only
+        /// needs a feature on from the start names it on the command line instead; Program refuses
+        /// the argument without --e2e. Under --e2e a feature named there stays enabled for the
+        /// whole run, and one saved on the Experimental page is saved but does not take effect:
+        /// SetValue edits only the saved setting.
         /// </summary>
         public static string TokensOfEnabledFeatures
         {

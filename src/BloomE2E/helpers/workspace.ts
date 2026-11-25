@@ -6,9 +6,11 @@
 // UI-vs-API policy in README.md, and it is also the only way to know that the WinForms side has
 // finished the switch rather than merely started it.
 
-import { expect, type Page } from "@playwright/test";
+import { expect, type Page, type Response } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
 import { editablePageFrame } from "./bookMaking";
+import { pageListFrame } from "./pageList";
+import { toolboxFrame } from "./toolbox";
 
 /** The three workspace tabs, named as Bloom's API names them. */
 export type WorkspaceTabId = "collection" | "edit" | "publish";
@@ -85,6 +87,15 @@ export async function getZoom(page: Page): Promise<IZoomInfo> {
     return apiGetJson<IZoomInfo>(page, "workspace/zoom");
 }
 
+/** The top bar's − ("out") or + ("in") zoom button. */
+function zoomButton(page: Page, direction: "in" | "out") {
+    // The − is an en dash in the top bar.
+    return page.getByRole("button", {
+        name: direction === "in" ? "+" : "–",
+        exact: true,
+    });
+}
+
 /**
  * Click the top bar's − ("out") or + ("in") zoom button once, as a person does, and return once
  * Bloom reports a different zoom. Returns the new zoom. Throws when the zoom is already at that end
@@ -103,13 +114,7 @@ export async function clickZoomButton(
         throw new Error(
             `The zoom is already ${before.zoom}%, the ${direction === "in" ? "largest" : "smallest"} Bloom allows.`,
         );
-    // The − is an en dash in the top bar.
-    await page
-        .getByRole("button", {
-            name: direction === "in" ? "+" : "–",
-            exact: true,
-        })
-        .click();
+    await zoomButton(page, direction).click();
     await expect
         .poll(async () => (await getZoom(page)).zoom, {
             timeout: 5000,
@@ -149,9 +154,112 @@ export async function setZoom(page: Page, percent: number): Promise<void> {
             message: `Bloom never reported the zoom as ${percent}%.`,
         })
         .toBe(percent);
-    // Bloom draws the zoom by scaling a container it wraps around the page (see SetupPageZoom in
-    // EditingModel.cs and setZoom in workspaceRoot.ts). Wait for that to show the new zoom, or a
-    // measurement taken right after this returns would see the old size.
+    // A measurement taken right after this returns would otherwise see the old size.
+    await expectPageDrawnAtZoom(page, percent);
+}
+
+/**
+ * Click the top bar's − ("out") or + ("in") zoom button once while the zoom is already at that end
+ * of its range, as a person does who keeps clicking, and return the zoom Bloom then reports. Returns
+ * once Bloom has answered the request that the click sends, since a click that should change
+ * nothing leaves no change to wait for. Throws when the zoom is not at that end of its range.
+ */
+export async function clickZoomButtonAtEndOfRange(
+    page: Page,
+    direction: "in" | "out",
+): Promise<number> {
+    const before = await getZoom(page);
+    const end = direction === "in" ? before.maxZoom : before.minZoom;
+    if (before.zoom !== end)
+        throw new Error(
+            `The zoom is ${before.zoom}%, not ${end}%, the ${direction === "in" ? "largest" : "smallest"} Bloom allows. Use clickZoomButton.`,
+        );
+    // Awaited together, so that a click that fails does not leave the wait to time out unhandled.
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.request().method() === "POST" &&
+                new URL(response.url()).pathname.endsWith("/workspace/zoom"),
+            { timeout: 30000 },
+        ),
+        zoomButton(page, direction).click(),
+    ]);
+    return (await getZoom(page)).zoom;
+}
+
+/** The zoom that the top bar shows between its − and + buttons, as a percentage. */
+export async function getZoomShownInTopBar(page: Page): Promise<number> {
+    const text = await zoomButton(page, "in")
+        .locator("xpath=preceding-sibling::span[1]")
+        .innerText();
+    const match = /^(\d+)%$/.exec(text.trim());
+    if (!match)
+        throw new Error(
+            `The top bar shows "${text}" between its zoom buttons, which is not a percentage.`,
+        );
+    return Number(match[1]);
+}
+
+/**
+ * Hold Ctrl and turn the mouse wheel over the page being edited, `notches` notches: a positive
+ * number turns it away from the user, which zooms in, and a negative number zooms out. The notches
+ * go out as fast as a quick spin of the wheel. Returns the zoom Bloom reports once it has answered
+ * for every notch.
+ *
+ * The page sends the notches of a quick spin in fewer requests than notches (setupWheelZooming in
+ * bloomEditing.ts), and a notch at the end of the zoom's range changes nothing, so this counts the
+ * notches in the requests Bloom has answered rather than waiting for a zoom.
+ */
+export async function turnWheelToZoom(
+    page: Page,
+    notches: number,
+): Promise<number> {
+    if (notches === 0 || !Number.isInteger(notches))
+        throw new Error(
+            `Turn the wheel a whole number of notches, not ${notches}.`,
+        );
+    let answeredNotches = 0;
+    const countAnswered = (response: Response) => {
+        const match = /\/pageControls\/zoomBy\?notches=(-?\d+)/.exec(
+            response.url(),
+        );
+        if (match && response.ok()) answeredNotches += Number(match[1]);
+    };
+    page.on("response", countAnswered);
+    try {
+        // Near the top left corner of the page, which stays in view at any zoom.
+        await editablePageFrame(page)
+            .locator(".bloom-page")
+            .first()
+            .hover({ position: { x: 30, y: 30 } });
+        await page.keyboard.down("Control");
+        try {
+            for (let i = 0; i < Math.abs(notches); i++)
+                await page.mouse.wheel(0, notches > 0 ? -100 : 100);
+        } finally {
+            await page.keyboard.up("Control");
+        }
+        await expect
+            .poll(() => answeredNotches, {
+                timeout: 15000,
+                message: `Bloom did not answer for ${notches} notches of Ctrl+mouse wheel over the page being edited.`,
+            })
+            .toBe(notches);
+    } finally {
+        page.off("response", countAnswered);
+    }
+    return (await getZoom(page)).zoom;
+}
+
+/**
+ * Wait until the page being edited is drawn at `percent`. Bloom draws the zoom by scaling a
+ * container it wraps around the page (see SetupPageZoom in EditingModel.cs and setZoom in
+ * workspaceRoot.ts), a moment after it reports the new zoom.
+ */
+export async function expectPageDrawnAtZoom(
+    page: Page,
+    percent: number,
+): Promise<void> {
     await expect
         .poll(
             async () =>
@@ -169,4 +277,79 @@ export async function setZoom(page: Page, percent: number): Promise<void> {
             },
         )
         .toBe(percent);
+}
+
+/** The width and height on screen of the page being edited, in the page frame's pixels. */
+export async function getSizeOfPageBeingEdited(
+    page: Page,
+): Promise<{ width: number; height: number }> {
+    return editablePageFrame(page)
+        .locator(".bloom-page")
+        .first()
+        .evaluate((element) => {
+            const rect = element.getBoundingClientRect();
+            return { width: rect.width, height: rect.height };
+        });
+}
+
+/** How large one part of the Edit tab that the zoom leaves alone is drawn. */
+export interface IUnzoomedPart {
+    /** The width of the part's document, in its own pixels. */
+    viewportWidth: number;
+    /** How many device pixels one of its pixels takes, which a zoom of the browser changes. */
+    pixelRatio: number;
+    /** The width and height of one thing in it: a tab, the first page thumbnail, the tool list. */
+    landmark: { width: number; height: number };
+    /**
+     * The width and height on screen of the whole part: the top bar itself, or the frame the page
+     * list or the toolbox is drawn in, which scaling the frame changes while everything measured
+     * inside it stays the same.
+     */
+    onScreen: { width: number; height: number };
+}
+
+/**
+ * How large the parts of the Edit tab around the page being edited are drawn: the top bar, the
+ * page list and the toolbox. The zoom is for the page alone, so a test reads this before and after
+ * a zoom and expects no difference.
+ */
+export async function getSizesOfUnzoomedParts(page: Page): Promise<{
+    topBar: IUnzoomedPart;
+    pageList: IUnzoomedPart;
+    toolbox: IUnzoomedPart;
+}> {
+    const measure = (landmark: Element) => {
+        const rect = landmark.getBoundingClientRect();
+        return {
+            viewportWidth: window.innerWidth,
+            pixelRatio: window.devicePixelRatio,
+            landmark: { width: rect.width, height: rect.height },
+        };
+    };
+    const sizeOnScreen = (element: Element) => {
+        const rect = element.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+    };
+    const pageList = pageListFrame(page);
+    const toolbox = toolboxFrame(page);
+    return {
+        topBar: {
+            ...(await page.getByTestId(tabTestId("edit")).evaluate(measure)),
+            onScreen: await page
+                .getByTestId("workspace-top-bar")
+                .evaluate(sizeOnScreen),
+        },
+        pageList: {
+            ...(await pageList.locator(".gridItem").first().evaluate(measure)),
+            onScreen: await (
+                await pageList.frameElement()
+            ).evaluate(sizeOnScreen),
+        },
+        toolbox: {
+            ...(await toolbox.locator("body").evaluate(measure)),
+            onScreen: await (
+                await toolbox.frameElement()
+            ).evaluate(sizeOnScreen),
+        },
+    };
 }

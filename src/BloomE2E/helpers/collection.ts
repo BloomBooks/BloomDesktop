@@ -94,6 +94,40 @@ export async function chooseFromSelectedBookMenu(
 }
 
 /**
+ * Choose a top-level command from the menu a person gets by right-clicking the selected book's
+ * tile on the Collections tab, which must be showing. `testId` is the command's `data-testid`, which
+ * is its localization id (LocalizableMenuItem), e.g. "CollectionTab.MakeBookUsingThisTemplate", so
+ * this works whatever language Bloom's UI is in. Fails naming what the menu offered when the
+ * command is not there.
+ */
+export async function chooseFromSelectedBookMenuByTestId(
+    page: Page,
+    testId: string,
+): Promise<void> {
+    await page
+        .locator(".bookButton.selected")
+        .click({ button: "right", timeout: 15000 });
+    // The menu stays mounted when closed, so only a showing entry counts. Only a menu item counts:
+    // the book pane beside the grid can show a button with the same test id.
+    const item = page.locator(
+        `[role="menuitem"][data-testid="${testId}"]:visible`,
+    );
+    try {
+        await item.waitFor({ state: "visible", timeout: 15000 });
+    } catch {
+        const offered = await page
+            .locator('[role="menuitem"]:visible')
+            .evaluateAll((items) =>
+                items.map((i) => i.getAttribute("data-testid") ?? "(no id)"),
+            );
+        throw new Error(
+            `The book menu has no "${testId}"; it offers: ${offered.join(", ")}.`,
+        );
+    }
+    await realClick(item);
+}
+
+/**
  * Close the selected book's menu with Escape, as a person does, and wait until it has gone. A
  * command the subscription tier lacks opens the Settings dialog but leaves this menu open behind
  * it, and the menu's backdrop then takes every click aimed at the Collections tab.
