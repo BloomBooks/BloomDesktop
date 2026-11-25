@@ -146,6 +146,14 @@ real bug in the code under test; read the message and fix it rather than working
   dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
   `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
   screen.
+- `helpers/selectionToolbar.ts` — the toolbar that shows above a text box while text in it is
+  selected: `selectLastWordIn`, `toggleSelectionFormatting` (bold, italic, underline,
+  superscript), `chooseSelectionTextColor`, and `getTextRunFormatting`, which reads how one run
+  of a box's text is drawn.
+- `helpers/colorPicker.ts` — Bloom's color picker dialog: `readColorPicker` reads every control
+  (hex box, sample, saturation box, hue and alpha sliders) so a test can check they agree;
+  `clickPaletteSwatch`, `clickHueSlider`, `clickSaturationBox`, `clickAlphaSliderMiddle`,
+  `typeInHexBox`, `appendToHexBox`; and closing it with OK, Cancel, Escape or a click outside.
 - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`, and the selected book's
   right-click menu (`chooseFromSelectedBookMenu`, `closeBookMenu`).
 - `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
@@ -182,9 +190,11 @@ real bug in the code under test; read the message and fix it rather than working
   does that when clicked (a Canvas page's canvas opens the Canvas tool, a video box the Sign
   Language tool), which is the route a person takes.
 - `helpers/canvasToolOptions.ts` — the Canvas tool's options for the selected text element
-  (`setRoundedCorners`, `roundedCornersBox`, `chooseCanvasElementBackgroundColor`), and
-  `readSavedCanvasShapes`, which measures the shapes ComicalJS saved for a page
-  (svg.comical-generated), such as whether each covers the corners of its box.
+  (`setRoundedCorners`, `roundedCornersBox`, `chooseCanvasElementBackgroundColor`,
+  `typeCanvasElementBackgroundColor` for a color the background palette lacks,
+  `chooseCanvasElementType`/`getCanvasElementTypeShown` by ComicalJS style), `readSavedCanvasShapes`,
+  which measures the shapes ComicalJS saved for a page (svg.comical-generated), such as whether each
+  covers the corners of its box, and `readSavedBubbleSpecs`, each element's saved data-bubble.
 - `helpers/canvasElements.ts` — `openCanvasTool`, `dragPaletteItemOntoCanvas`,
   `selectCanvasElement`, the selected element's toolbar and "..." menu by localization id,
   `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`; the menu's groups
@@ -195,6 +205,10 @@ real bug in the code under test; read the message and fix it rather than working
   and its results (`expectRotateHandleShown`, `dragRotateHandle`, `getCanvasElementRotation`,
   `getCanvasElementPlacement`). The palette drag is dispatched rather than pressed, for a reason the
   file and AUTOMATION-DEBT.md give.
+- `helpers/speechBubbleTail.ts` — a speech bubble's tail as its data-bubble spec holds it
+  (`readTail`), and the handles ComicalJS draws for it: `dragTailMidpoint`,
+  `doubleClickTailMidpoint`, and `expectMidpointHandle`, which reads the drawing to tell a
+  filled midpoint handle from an open one or a missing one.
 - `helpers/images.ts` — `chooseImageFile`, `cropImage`, `getImagePlacement`; `getPictureRotation`,
   which says how a picture is rotated and mirrored on screen, box and picture together, with
   `kUprightPicture` and `mirroredAboutOwnAxis` to build the expected answer; `getPictureInlineLayout`,
