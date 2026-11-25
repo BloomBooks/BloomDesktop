@@ -72,9 +72,12 @@ public static class BloomWindows {
     IntPtr after;
     if (toBottom) after = new IntPtr(1);
     else {
-      // SetWindowPos places a window below the one it is given, so give it the window above other
-      // (or HWND_TOP when other is on top).
+      // SetWindowPos places a window below the one it is given, so give it the window above other.
+      // None means other is on top of every window, or has closed; either way the move would put
+      // the window on top of the desktop (HWND_TOP is 0), over whatever the user is working in.
       after = GetWindow(new IntPtr(other), GW_HWNDPREV);
+      if (after == IntPtr.Zero)
+        return "refused: no window lies above " + other + " (it is on top of every window, or has closed)";
     }
     if (!SetWindowPos(new IntPtr(hwnd), after, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE))
       return "error " + Marshal.GetLastWin32Error();
@@ -188,7 +191,8 @@ export async function moveWindowToBottom(hwnd: number): Promise<void> {
  * Move window `hwnd` to just above window `other` without activating it, as switching back to a
  * program brings its window up past the ones that covered it. Windows moves the windows it owns
  * along with it. Only windows that lay at or below `other` end up below `hwnd`, so a window that
- * lay above `other` stays above.
+ * lay above `other` stays above. Fails, moving nothing, when `other` is on top of every window or
+ * has closed, rather than put `hwnd` on top of the desktop.
  */
 export async function moveWindowJustAbove(
     hwnd: number,
