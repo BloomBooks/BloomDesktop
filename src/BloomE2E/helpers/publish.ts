@@ -343,6 +343,55 @@ export async function showBloomPubPreview(page: Page): Promise<Frame> {
 }
 
 /**
+ * Click the BloomPUB screen's refresh button again, as a person does to rebuild the preview, and
+ * return bloom-player's frame once it is showing the rebuilt book. `player` is the frame the preview
+ * showed before; the rebuilt book is recognized by being a different document, so nothing read
+ * from the old one is mistaken for the new.
+ */
+export async function refreshBloomPubPreview(
+    page: Page,
+    player: Frame,
+): Promise<Frame> {
+    await player.evaluate(() => {
+        (window as unknown as { e2eStalePreview?: boolean }).e2eStalePreview =
+            true;
+    });
+    await page.locator('[aria-label="refresh preview"]').click();
+    let rebuilt: Frame | undefined;
+    await expect
+        .poll(
+            async () => {
+                for (const frame of page.frames()) {
+                    if (!frame.url().includes("bloomplayer.htm")) continue;
+                    const ready = await frame
+                        .evaluate(
+                            () =>
+                                !(
+                                    window as unknown as {
+                                        e2eStalePreview?: boolean;
+                                    }
+                                ).e2eStalePreview &&
+                                document.querySelectorAll(".bloom-page")
+                                    .length > 0,
+                        )
+                        .catch(() => false);
+                    if (ready) {
+                        rebuilt = frame;
+                        return true;
+                    }
+                }
+                return false;
+            },
+            {
+                timeout: 120000,
+                message: "The BloomPUB preview never showed the rebuilt book.",
+            },
+        )
+        .toBe(true);
+    return rebuilt!;
+}
+
+/**
  * Turn the pages of a BloomPUB preview (the frame showBloomPubPreview returns) forward with
  * bloom-player's own next-page button until it is showing the book page with id `pageId`, and
  * return that page. bloom-player finishes a page only when it is the one showing (a text box gets
