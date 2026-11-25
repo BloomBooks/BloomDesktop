@@ -30,7 +30,9 @@ export type PaletteItem =
     | "speech"
     | "caption"
     | "sound"
-    | "none";
+    | "none"
+    // A picture button, in the Navigation section; see openCanvasToolNavigationSection.
+    | "navigation-image-button";
 
 /** The controls the Canvas tool shows once it is open. */
 const CANVAS_TOOL_CONTROLS = "#canvasToolControls";
@@ -314,6 +316,34 @@ export async function dragPaletteItemOntoCanvas(
         })
         .toBe(countBefore + 1);
     return countBefore;
+}
+
+/**
+ * Open the Canvas tool, and its Navigation section, which holds the buttons that take a reader to
+ * another page or book (the picture button among them). The section starts shut, and a shut
+ * section keeps its items in the document but hidden, so dragPaletteItemOntoCanvas cannot drag
+ * them until it is open.
+ */
+export async function openCanvasToolNavigationSection(
+    page: Page,
+): Promise<void> {
+    const toolbox = await openCanvasTool(page);
+    const item = toolbox
+        .locator(
+            `${CANVAS_TOOL_CONTROLS} [data-testid="palette-navigation-image-button"]`,
+        )
+        .first();
+    if (await item.isVisible()) return;
+    // The section's toggle is the button above the collapsing part that holds the item. It is
+    // found by that place rather than by its label, which is in the UI language.
+    await toolbox
+        .locator(
+            `${CANVAS_TOOL_CONTROLS} div:has(> .MuiCollapse-root ` +
+                `[data-testid="palette-navigation-image-button"]) > div > button`,
+        )
+        .first()
+        .click();
+    await item.waitFor({ state: "visible", timeout: 15000 });
 }
 
 /**

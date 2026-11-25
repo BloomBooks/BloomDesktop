@@ -21,6 +21,7 @@ import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import { apiPost } from "./api";
 import { editablePageFrame } from "./bookMaking";
+import { clickCanvasElementMenuItem } from "./canvasElements";
 import { realClick } from "./realClick";
 import { toolboxFrame } from "./toolbox";
 import { confirmRecycleBox } from "./winformsConfirmRecycle";
@@ -66,7 +67,42 @@ export async function chooseVideoFile(
     await realClick(videoBox);
     await openSignLanguageAdvancedSection(page);
     await toolboxFrame(page).locator("#videoImport").click();
+    return waitForVideoInBox(videoBox, filePath);
+}
 
+/**
+ * Put the video file at `filePath` into the video box of the selected canvas element, with the
+ * "Choose Video from your Computer..." command of the element's "..." menu, and wait until the box
+ * shows it. This is how a person fills a video on a Canvas page, where clicking the box selects
+ * the element rather than opening the Sign Language tool.
+ */
+export async function chooseVideoFileFromCanvasMenu(
+    page: Page,
+    videoBox: Locator,
+    filePath: string,
+): Promise<string> {
+    if (!fs.existsSync(filePath))
+        throw new Error(`There is no video file at ${filePath}.`);
+    await apiPost(
+        page,
+        "e2e/nextFileToChoose",
+        Path.resolve(filePath),
+        "text/plain",
+    );
+    await clickCanvasElementMenuItem(
+        page,
+        "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
+    );
+    return waitForVideoInBox(videoBox, filePath);
+}
+
+/**
+ * Wait until Bloom has put the imported `filePath` into `videoBox`, and return the video's src.
+ */
+async function waitForVideoInBox(
+    videoBox: Locator,
+    filePath: string,
+): Promise<string> {
     const source = videoBox.locator("video source");
     await expect
         .poll(
