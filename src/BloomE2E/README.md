@@ -186,9 +186,11 @@ real bug in the code under test; read the message and fix it rather than working
   does that when clicked (a Canvas page's canvas opens the Canvas tool, a video box the Sign
   Language tool), which is the route a person takes.
 - `helpers/canvasToolOptions.ts` — the Canvas tool's options for the selected text element
-  (`setRoundedCorners`, `roundedCornersBox`, `chooseCanvasElementBackgroundColor`), and
-  `readSavedCanvasShapes`, which measures the shapes ComicalJS saved for a page
-  (svg.comical-generated), such as whether each covers the corners of its box.
+  (`setRoundedCorners`, `roundedCornersBox`, `chooseCanvasElementBackgroundColor`,
+  `typeCanvasElementBackgroundColor` for a color the background palette lacks,
+  `chooseCanvasElementType`/`getCanvasElementTypeShown` by ComicalJS style), `readSavedCanvasShapes`,
+  which measures the shapes ComicalJS saved for a page (svg.comical-generated), such as whether each
+  covers the corners of its box, and `readSavedBubbleSpecs`, each element's saved data-bubble.
 - `helpers/canvasElements.ts` — `openCanvasTool`, `dragPaletteItemOntoCanvas`,
   `selectCanvasElement`, the selected element's toolbar and "..." menu by localization id,
   `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`; the menu's groups
