@@ -23,6 +23,7 @@ import { apiPost } from "./api";
 import { editablePageFrame } from "./bookMaking";
 import { realClick } from "./realClick";
 import { toolboxFrame } from "./toolbox";
+import { confirmRecycleBox } from "./winformsConfirmRecycle";
 
 /** A one-second, 160x120 video that ships with the suite, for filling a video box. */
 export const SHORT_VIDEO = Path.join(
@@ -63,37 +64,8 @@ export async function chooseVideoFile(
     // Clicking the box is what takes Bloom to the Sign Language tool, and it is also what tells the
     // tool which box to import into, so it cannot be skipped by opening the tool directly.
     await realClick(videoBox);
-    const toolbox = toolboxFrame(page);
-    const importButton = toolbox.locator("#videoImport");
-    // Import lives in the tool's Advanced section, which starts collapsed to zero height. Its
-    // heading label opens it; the triangle beside the label has no size of its own, so a click
-    // aimed there has nothing to hit. The section's height is the only honest sign that it is
-    // open: Playwright counts the clipped button as visible while the section is still shut.
-    // Right after the tool comes up, a click on the heading can be lost (the tool renders again
-    // as it settles, and a fresh render starts shut), so open it again until it stays open.
-    const advancedHeading = toolbox.locator(".expandable > label");
-    const advancedContent = toolbox.locator(".expandable > .contentWrap");
-    await advancedHeading.waitFor({ state: "visible", timeout: 30000 });
-    const contentHeight = () =>
-        advancedContent.evaluate((el) => getComputedStyle(el).height);
-    for (let attempt = 1; ; attempt++) {
-        if ((await contentHeight()) === "0px") await advancedHeading.click();
-        try {
-            await expect.poll(contentHeight, { timeout: 3000 }).not.toBe("0px");
-            // Let the 0.3s height animation finish, so the click below lands on a still button.
-            await expect
-                .poll(contentHeight, { timeout: 3000 })
-                .toBe(await advancedContent.evaluate((el) => el.style.height));
-            break;
-        } catch (e) {
-            if (attempt >= 5)
-                throw new Error(
-                    `The Sign Language tool's Advanced section would not stay open after ${attempt} tries.`,
-                    { cause: e },
-                );
-        }
-    }
-    await importButton.click();
+    await openSignLanguageAdvancedSection(page);
+    await toolboxFrame(page).locator("#videoImport").click();
 
     const source = videoBox.locator("video source");
     await expect
@@ -115,6 +87,41 @@ export async function chooseVideoFile(
         "The video box still says it has no video selected.",
     ).not.toHaveClass(/bloom-noVideoSelected/, { timeout: 30000 });
     return (await source.first().getAttribute("src")) ?? "";
+}
+
+/**
+ * Delete the video in `videoBox` with the Delete command of the Sign Language tool, the way a
+ * person does: click the box, which opens the tool on that video, open the tool's Advanced
+ * section, press Delete, and answer Delete in the box where Bloom asks whether to move the video to
+ * the Recycle Bin. Waits until the video box says it has no video.
+ *
+ * That box is a native WinForms window, which helpers/winformsConfirmRecycle.ts answers over UI
+ * Automation; `bloomPid` is the Bloom that shows it (bloomApp.bloomPid).
+ */
+export async function deleteVideo(
+    page: Page,
+    bloomPid: number,
+    videoBox: Locator,
+): Promise<void> {
+    await expect(
+        videoBox,
+        "There is no video in the box to delete.",
+    ).not.toHaveClass(/bloom-noVideoSelected/);
+    await realClick(videoBox);
+    await openSignLanguageAdvancedSection(page);
+    const toolbox = toolboxFrame(page);
+    // The tool turns Delete on only once it has read the selected video and is idle.
+    await expect(
+        toolbox.locator("#deleteRecordingWrapper"),
+        "The Sign Language tool never turned on its Delete command for the selected video.",
+    ).not.toHaveClass(/\bdisabled\b/, { timeout: 30000 });
+    await toolbox.locator("#videoDelete").click();
+    await confirmRecycleBox(bloomPid, 30000);
+    await expect(
+        videoBox,
+        "Pressing Delete never took the video out of the box.",
+    ).toHaveClass(/bloom-noVideoSelected/, { timeout: 30000 });
+    await expect(videoBox.locator("video")).toHaveCount(0);
 }
 
 /**
@@ -241,4 +248,40 @@ export async function getVideoSource(videoBox: Locator): Promise<string> {
     const source = videoBox.locator("video source");
     if ((await source.count()) === 0) return "";
     return (await source.first().getAttribute("src")) ?? "";
+}
+
+/**
+ * Open the Advanced section of the Sign Language tool, which the toolbox must already be showing
+ * (clicking a video box takes it there), and wait until the section is open and still.
+ */
+async function openSignLanguageAdvancedSection(page: Page): Promise<void> {
+    const toolbox = toolboxFrame(page);
+    // Import and Delete live in the tool's Advanced section, which starts collapsed to zero
+    // height. Its heading label opens it; the triangle beside the label has no size of its own, so
+    // a click aimed there has nothing to hit. The section's height is the only honest sign that it is
+    // open: Playwright counts the clipped button as visible while the section is still shut.
+    // Right after the tool comes up, a click on the heading can be lost (the tool renders again
+    // as it settles, and a fresh render starts shut), so open it again until it stays open.
+    const advancedHeading = toolbox.locator(".expandable > label");
+    const advancedContent = toolbox.locator(".expandable > .contentWrap");
+    await advancedHeading.waitFor({ state: "visible", timeout: 30000 });
+    const contentHeight = () =>
+        advancedContent.evaluate((el) => getComputedStyle(el).height);
+    for (let attempt = 1; ; attempt++) {
+        if ((await contentHeight()) === "0px") await advancedHeading.click();
+        try {
+            await expect.poll(contentHeight, { timeout: 3000 }).not.toBe("0px");
+            // Let the 0.3s height animation finish, so the click below lands on a still button.
+            await expect
+                .poll(contentHeight, { timeout: 3000 })
+                .toBe(await advancedContent.evaluate((el) => el.style.height));
+            break;
+        } catch (e) {
+            if (attempt >= 5)
+                throw new Error(
+                    `The Sign Language tool's Advanced section would not stay open after ${attempt} tries.`,
+                    { cause: e },
+                );
+        }
+    }
 }
