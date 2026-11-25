@@ -42,11 +42,12 @@ const kDefaultGoal = 200;
 /**
  * A goal other than the default that this many books fill only part of, so the bar's percentage
  * shows which goal it was measured against. Chosen from the sandbox's count at the time, since that
- * changes.
+ * changes. A few more than the count, rather than a multiple of it, so the expected fill is not
+ * the same fraction every run but moves with the count (13 books of 20 is 65%, 30 of 37 is 81%).
  */
 function customGoalFor(count: number): number {
-    const goal = count * 2;
-    return goal === kDefaultGoal ? count * 3 : goal;
+    const goal = count + 7;
+    return goal === kDefaultGoal ? count + 11 : goal;
 }
 
 interface IProgressBarShown {
