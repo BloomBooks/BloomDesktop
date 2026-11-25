@@ -193,6 +193,24 @@ describe("replaceContentKeepingLiveImagesAndTables", () => {
     beforeEach(setupPage);
     afterEach(() => (document.body.innerHTML = ""));
 
+    it("fills an empty scratch div with HTML that holds a table, as Talking Book does with CKEditor's data", () => {
+        insertTableInText(element("text"), caretIn("first", 10));
+        const html = element("text").innerHTML;
+        const scratch = document.createElement("div");
+        // Sanity check: the HTML has a table and the scratch div has none to keep.
+        expect(html).toContain(kTableInTextClass);
+
+        EditableDivUtils.replaceContentKeepingLiveImagesAndTables(
+            scratch,
+            html,
+        );
+
+        expect(scratch.querySelectorAll(`.${kTableInTextClass}`).length).toBe(
+            1,
+        );
+        expect(scratch.textContent).toContain("Last paragraph.");
+    });
+
     it("keeps the live table, with what was typed in its cells, in place of the copy in the new HTML", () => {
         const table = insertTableInText(element("text"), caretIn("first", 10));
         table.innerHTML = `<div class="bloom-cell"><p>typed in the cell</p></div>`;

@@ -45,12 +45,14 @@ export function tablesInTextOf(box: HTMLElement): HTMLElement[] {
 /**
  * After something has rewritten `box`'s content from HTML, put `liveTables` (from tablesInTextOf
  * before the rewrite) back in place of the copies the HTML made. Tables have no id, so they are
- * matched by their order in the box.
+ * matched by their order in the box. A box that had no live tables, such as an empty scratch div
+ * that Talking Book fills with CKEditor's data, has nothing to keep and takes the HTML as it is.
  */
 export function putBackLiveTables(
     box: HTMLElement,
     liveTables: HTMLElement[],
 ): void {
+    if (liveTables.length === 0) return;
     const copies = tablesInTextOf(box);
     if (copies.length !== liveTables.length)
         throw new Error(
