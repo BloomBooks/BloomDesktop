@@ -146,6 +146,10 @@ real bug in the code under test; read the message and fix it rather than working
   dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
   `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
   screen.
+- `helpers/selectionToolbar.ts` — the toolbar that shows above a text box while text in it is
+  selected: `selectLastWordIn`, `toggleSelectionFormatting` (bold, italic, underline,
+  superscript), `chooseSelectionTextColor`, and `getTextRunFormatting`, which reads how one run
+  of a box's text is drawn.
 - `helpers/colorPicker.ts` — Bloom's color picker dialog: `readColorPicker` reads every control
   (hex box, sample, saturation box, hue and alpha sliders) so a test can check they agree;
   `clickPaletteSwatch`, `clickHueSlider`, `clickSaturationBox`, `clickAlphaSliderMiddle`,
