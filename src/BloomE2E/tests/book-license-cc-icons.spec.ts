@@ -11,9 +11,9 @@
 // the one Bloom serves for the license's token (copyrightAndLicense/ccImage, which the dialog's own
 // badge uses), so a stale or wrong license.png fails the test.
 //
-// The tests are serial: each starts from the license the one before it left the book with.
+// Each test makes a book of its own, so any one of them can run alone.
 
-import { expect, test } from "../fixtures/bloomTest";
+import { expect, test, type IBloomApp } from "../fixtures/bloomTest";
 import type { Locator, Page } from "@playwright/test";
 import { editablePageFrame, makeBookFromTemplate } from "../helpers/bookMaking";
 import { copyrightAndLicenseDialog } from "../helpers/copyrightAndLicense";
@@ -29,8 +29,6 @@ import {
 test.use({
     collectionSpec: { name: "book-license-cc-icons", languages: ["en"] },
 });
-
-test.describe.configure({ mode: "serial" });
 
 // A copyright holder unusual enough that finding it on the page cannot be a coincidence. OK stays
 // disabled until the book has one.
@@ -59,6 +57,11 @@ interface ILicenseChoice {
     token: string;
     /** What the credits page's license URL must be, or undefined when it must be empty. */
     url?: RegExp;
+    /**
+     * The custom license's text, which the credits page shows under the license; undefined when
+     * the page must not show it.
+     */
+    notes?: string;
 }
 
 function dialog(page: Page): Locator {
@@ -202,6 +205,7 @@ const kLicenseChoices: ILicenseChoice[] = [
             await expect(text).toHaveValue(kCustomLicenseText);
         },
         token: "",
+        notes: kCustomLicenseText,
     },
 ];
 
@@ -245,6 +249,9 @@ async function clickOk(page: Page): Promise<void> {
 /** What the credits page shows of the book's license. */
 interface ICreditsLicense {
     licenseUrl: string;
+    licenseNotes: string;
+    /** The license image's src; "" when the page has no license image. */
+    imageSrc: string;
     /** Whether the license image is on the page with a picture loaded in it. */
     imageShown: boolean;
     /**
@@ -254,6 +261,8 @@ interface ICreditsLicense {
     imageMatchesToken?: boolean;
     /** The image's src and size, for the failure message. */
     image: string;
+    /** Why the credits page could not be read, when it could not. */
+    error?: string;
 }
 
 /** Read the book's license off the credits page, comparing its image with the one for `token`. */
@@ -272,6 +281,13 @@ async function getCreditsLicense(
                     ) as HTMLElement | null
                 )?.innerText ?? ""
             ).trim();
+            const notes = (
+                (
+                    block.querySelector(
+                        '[data-derived="licenseNotes"]',
+                    ) as HTMLElement | null
+                )?.innerText ?? ""
+            ).trim();
             const img = block.querySelector(
                 'img[data-derived="licenseImage"]',
             ) as HTMLImageElement | null;
@@ -285,8 +301,14 @@ async function getCreditsLicense(
             const describe = img
                 ? `src="${src}" ${img.naturalWidth}x${img.naturalHeight}`
                 : "no image element";
-            if (!shown || !token)
-                return { licenseUrl: url, imageShown: shown, image: describe };
+            const read = {
+                licenseUrl: url,
+                licenseNotes: notes,
+                imageSrc: src,
+                imageShown: shown,
+                image: describe,
+            };
+            if (!shown || !token) return read;
 
             const pixels = (
                 source: CanvasImageSource,
@@ -315,8 +337,7 @@ async function getCreditsLicense(
                     matches = a[i] === b[i];
             }
             return {
-                licenseUrl: url,
-                imageShown: shown,
+                ...read,
                 imageMatchesToken: matches,
                 image: `${describe}; the ${token} image is ${expected.width}x${expected.height}`,
             };
@@ -324,7 +345,8 @@ async function getCreditsLicense(
 }
 
 /**
- * Wait until the credits page shows `choice`: its license URL (or none) and its icon (or none).
+ * Wait until the credits page shows `choice`: its license URL (or none), its icon (or no license
+ * image at all) and the custom license's text (or not).
  * Saving the dialog makes Bloom rebuild the page, so for a moment the old one is still showing.
  */
 async function expectCreditsShow(
@@ -334,18 +356,23 @@ async function expectCreditsShow(
     let last: ICreditsLicense | undefined;
     const matches = () =>
         !!last &&
+        !last.error &&
         (choice.url
             ? choice.url.test(last.licenseUrl)
             : last.licenseUrl === "") &&
         (choice.token
             ? last.imageShown && last.imageMatchesToken === true
-            : !last.imageShown);
+            : last.imageSrc === "") &&
+        (choice.notes
+            ? last.licenseNotes.includes(choice.notes)
+            : !last.licenseNotes.includes(kCustomLicenseText));
     try {
         await expect
             .poll(
                 async () => {
                     last = await getCreditsLicense(page, choice.token).catch(
-                        () => undefined,
+                        (error) =>
+                            ({ error: String(error) }) as ICreditsLicense,
                     );
                     return matches();
                 },
@@ -360,7 +387,10 @@ async function expectCreditsShow(
                     : "no license URL") +
                 (choice.token
                     ? ` and the ${choice.token} icon`
-                    : " and no license icon") +
+                    : " and no license image") +
+                (choice.notes
+                    ? `, with "${choice.notes}" under it`
+                    : ", without the custom license's text") +
                 `.\nLast seen: ${JSON.stringify(last)}`,
         );
     }
@@ -381,18 +411,24 @@ async function chooseAndCheck(
     await expectCreditsShow(page, choice);
 }
 
+/** Make a new Basic Book with Bloom's UI in English, and show its credits page. */
+async function startBook(bloomApp: IBloomApp): Promise<Page> {
+    // The dialog's choices are found by their English wording, and a freshly launched Bloom
+    // takes its UI language from the operating system.
+    if ((await getCurrentUiLanguageTag(bloomApp.page)) !== "en")
+        await setUiStateViaApi(bloomApp, "en", false);
+    const page = bloomApp.page;
+    await makeBookFromTemplate(page, "Basic Book");
+    await goToCreditsPage(page);
+    return page;
+}
+
 test.describe("a book's license on the credits page", () => {
     test("each license shows its own Creative Commons icon and version on the credits page [Test Case ID 86]", async ({
         bloomApp,
     }) => {
         test.setTimeout(600000);
-        // The dialog's choices are found by their English wording, and a freshly launched Bloom
-        // takes its UI language from the operating system.
-        if ((await getCurrentUiLanguageTag(bloomApp.page)) !== "en")
-            await setUiStateViaApi(bloomApp, "en", false);
-        const page = bloomApp.page;
-        await makeBookFromTemplate(page, "Basic Book");
-        await goToCreditsPage(page);
+        const page = await startBook(bloomApp);
 
         for (const choice of kLicenseChoices) {
             await test.step(choice.name, async () => {
@@ -410,9 +446,10 @@ test.describe("a book's license on the credits page", () => {
         "a custom license",
     ]) {
         test(`choosing Creative Commons after ${from} gives CC BY 4.0 (BL-11032) [Test Case ID 86]`, async ({
-            page,
+            bloomApp,
         }) => {
             test.setTimeout(300000);
+            const page = await startBook(bloomApp);
             const before = kLicenseChoices.find((c) => c.name === from)!;
             const ccBy = kLicenseChoices.find((c) => c.name === "CC BY")!;
             await openLicenseTab(page);
