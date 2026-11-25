@@ -18,7 +18,7 @@
 // check; see AUTOMATION-DEBT.md, "The Apps screen installs Reading App Builder before it checks
 // anything".
 
-import { type Page } from "@playwright/test";
+import { type Locator, type Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import { setBookMeta } from "../helpers/bookHtml";
 import {
@@ -139,8 +139,38 @@ async function expectNoPreview(page: Page, where: string): Promise<void> {
     ).toBe(true);
 }
 
-/** Click PREVIEW on a screen that makes a preview of the publication. */
+/**
+ * Wait until `locator`'s text has stayed the same for a second, for a log that something else
+ * keeps adding to and that has no "finished" marker of its own.
+ */
+async function waitForTextToSettle(locator: Locator): Promise<void> {
+    let previous: string | undefined;
+    await expect
+        .poll(
+            async () => {
+                const current = await locator.innerText();
+                const settled = current === previous;
+                previous = current;
+                return settled;
+            },
+            {
+                intervals: [1000],
+                timeout: 30000,
+                message: "The progress log never stopped changing.",
+            },
+        )
+        .toBe(true);
+}
+
+/**
+ * Click PREVIEW on a screen that makes a preview of the publication, once the screen has loaded:
+ * the Audio or Video screen keeps its device frame hidden until its settings have arrived.
+ */
 async function clickPreview(page: Page): Promise<void> {
+    await page
+        .locator(".deviceFrame")
+        .first()
+        .waitFor({ state: "visible", timeout: 60000 });
     const preview = page.locator('[aria-label="refresh preview"]');
     await preview.waitFor({ state: "visible", timeout: 60000 });
     await preview.click();
@@ -255,15 +285,21 @@ test.describe("a book not licensed for the collection's language cannot be publi
                 "A signed-in user with the agreements ticked was not offered the Upload Book button.",
             );
 
-            // Bloom answers the upload request only when the whole attempt is over, so waiting
-            // for that answer lets the check below see everything the attempt wrote.
-            const uploadAttemptOver = page.waitForResponse(
-                (response) =>
-                    /\/libraryPublish\/upload$/.test(
-                        new URL(response.url()).pathname,
-                    ),
-                { timeout: 120000 },
-            );
+            // Bloom answers the upload request only when the whole attempt is over. The waiter
+            // keeps its own failure, so that a click that never reached Bloom is reported by the
+            // licensing check below rather than by this waiter timing out on its own.
+            const uploadAttemptOver = page
+                .waitForResponse(
+                    (response) =>
+                        /\/libraryPublish\/upload$/.test(
+                            new URL(response.url()).pathname,
+                        ),
+                    { timeout: 120000 },
+                )
+                .then(
+                    () => undefined,
+                    (error: Error) => error,
+                );
             // THE ACTION UNDER TEST: Upload Book.
             await clickUploadBook(page);
             const message = await expectLicensingMessageShowing(
@@ -274,10 +310,18 @@ test.describe("a book not licensed for the collection's language cannot be publi
                 message,
                 "The upload's licensing message did not name the collection's language.",
             ).toContain(LANGUAGE_NAME);
-            await uploadAttemptOver;
+            const waitError = await uploadAttemptOver;
+            if (waitError)
+                throw new Error(
+                    `Bloom never answered the upload request: ${waitError.message}`,
+                );
+            // The progress log is filled from a WebSocket, not from that answer, so let it
+            // settle before checking what it holds.
+            const log = page.getByTestId("progress-box-log");
+            await waitForTextToSettle(log);
             // The check comes before anything is sent, and Bloom says nothing more after it.
             await expect(
-                page.getByTestId("progress-box-log"),
+                log,
                 "Bloom went on to upload after saying the book is not licensed.",
             ).not.toContainText(
                 /Uploading|Upload complete|bloomlibrary\.org\/book/i,
