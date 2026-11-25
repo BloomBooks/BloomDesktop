@@ -125,11 +125,24 @@ async function expectSourceBubble(
         editablePageFrame(page).locator(GROUP),
         "A text group with a source bubble should be marked as having one",
     ).toHaveAttribute("data-hasqtip");
-    for (const language of inBubble)
+    // The bubble shows one language at a time, with a tab for each. A language whose text is
+    // behind another's is brought forward by its tab, as a person would, so that each text is
+    // checked as something that can be read and not only as something in the bubble's HTML.
+    for (const language of inBubble) {
+        const text = bubble.locator(`.source-text[lang="${language}"]`);
         await expect(
-            bubble,
+            text,
             `${language} should be in the source bubble`,
         ).toContainText(TEXT[language]);
+        if (!(await text.isVisible()))
+            await bubble
+                .locator(`li[id="${language}"] a.sourceTextTab`)
+                .click();
+        await expect(
+            text,
+            `The source bubble should show the ${language} text`,
+        ).toBeVisible();
+    }
     for (const language of notInBubble)
         await expect(
             bubble,
