@@ -1099,6 +1099,61 @@ export async function rightClickCanvasElementEdge(page: Page): Promise<void> {
     await page.mouse.click(rect.x + 2, rect.y + 2, { button: "right" });
 }
 
+/**
+ * The large Change Image button over the canvas's background image, which a person clicks to choose
+ * the background picture. Bloom puts it in the canvas once (SetupChangeImageButton in
+ * bloomImages.ts) and leaves the stylesheet to decide whether it shows (`.bloom-canvas:hover` in
+ * editMode.less), so it is always in the page and only its visibility changes.
+ */
+function changeImageButton(page: Page): Locator {
+    return canvas(page).locator(":scope > .changeImageButton");
+}
+
+/**
+ * Rest the pointer on the canvas of the page being edited, without clicking, the way a person moves
+ * the mouse over it. `at` is the point as a fraction of the canvas's width and height; pick one away
+ * from any element on it when the test is about the canvas itself.
+ *
+ * Playwright's hover is told not to check what is under the pointer, because Bloom lays a drawing
+ * surface over the canvas and Playwright would wait for ever for the canvas to be "uncovered". The
+ * pointer still arrives through real mouse events, which is what the stylesheet's :hover follows.
+ */
+export async function hoverOverCanvas(
+    page: Page,
+    at: { xFraction: number; yFraction: number },
+): Promise<void> {
+    const box = await getCanvasRect(page);
+    await canvas(page).hover({
+        position: { x: box.width * at.xFraction, y: box.height * at.yFraction },
+        force: true,
+        timeout: 30000,
+    });
+}
+
+/** Take the pointer off the page being edited altogether, onto Bloom's top bar. */
+export async function movePointerOffPage(page: Page): Promise<void> {
+    await page.mouse.move(0, 0);
+}
+
+/**
+ * Wait until the canvas's Change Image button is showing, or is hidden, as `showing` says, and fail
+ * with `why` when it does not get there. The button is checked to be in the page first, so "hidden"
+ * can never pass merely because Bloom did not add the button at all.
+ */
+export async function expectChangeImageButton(
+    page: Page,
+    showing: boolean,
+    why: string,
+): Promise<void> {
+    const button = changeImageButton(page);
+    await expect(
+        button,
+        "The canvas has no Change Image button at all.",
+    ).toHaveCount(1, { timeout: 30000 });
+    if (showing) await expect(button, why).toBeVisible({ timeout: 15000 });
+    else await expect(button, why).toBeHidden({ timeout: 15000 });
+}
+
 async function requireBox(locator: Locator, what: string): Promise<IRect> {
     await locator.waitFor({ state: "visible", timeout: 30000 });
     const box = await locator.boundingBox({ timeout: 30000 });
