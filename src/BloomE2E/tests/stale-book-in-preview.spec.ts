@@ -3,16 +3,17 @@
 // book selection for the whole application, so it outlives the collection; the preview must
 // ignore it until a book of the new collection is selected.
 //
-// The change of collection is made with the call that a click on a collection's card makes. The
-// dialog with the cards, behind the Other Collection button, is in a WebView2 that a test cannot
-// reach (AUTOMATION-DEBT.md: "WinForms surfaces are invisible to CDP").
+// The Other Collection dialog offers the collections Bloom opened recently, so the test first
+// visits a second collection, and makes its book there. The collection it then chooses in the
+// dialog is the one it started in, which has no books.
 
-import { expect, test } from "../fixtures/bloomTest";
-import { makeBookFromTemplate } from "../helpers/bookMaking";
+import type { Page } from "@playwright/test";
+import { test } from "../fixtures/bloomTest";
+import { makeBookFromTemplate, typeInGroup } from "../helpers/bookMaking";
 import {
+    chooseOtherCollection,
     expectBookInPreview,
     expectNoBookInPreview,
-    getSelectedBookId,
     makeAnotherCollection,
     openOtherCollection,
 } from "../helpers/collection";
@@ -22,35 +23,42 @@ test.use({
     collectionSpec: { name: "stale-preview-first", languages: ["en"] },
 });
 
+/**
+ * Make a book with `title` on its cover in the collection Bloom has open, and go back to the
+ * Collections tab, where the new book is the selected one.
+ */
+async function makeTitledBookAndShowCollection(
+    page: Page,
+    title: string,
+): Promise<void> {
+    await makeBookFromTemplate(page, "Basic Book");
+    await typeInGroup(page, ".bookTitle", "en", title);
+    await switchTab(page, "collection");
+}
+
 test("a book selected in one collection is not previewed in the next [Test Case ID 770]", async ({
     bloomApp,
     step,
 }) => {
-    // Two books made, and a whole workspace closed and built again in between.
-    test.setTimeout(300000);
+    // Two books made, and a whole workspace closed and built again twice.
+    test.setTimeout(400000);
+    const firstCollection = bloomApp.collectionDir;
+    const leftBehindTitle = "Left Behind";
+    const newTitle = "Newly Made";
 
-    const firstBookId = await step(
-        "Select a book in the current collection",
-        async () => {
-            await makeBookFromTemplate(bloomApp.page, "Basic Book");
-            await switchTab(bloomApp.page, "collection");
-            const id = await getSelectedBookId(bloomApp.page);
-            if (!id)
-                throw new Error(
-                    "Test setup: Bloom has no book selected after making one.",
-                );
-            // Sanity check: the preview does show this book, so its absence below means something.
-            await expectBookInPreview(bloomApp.page, id);
-            return id;
-        },
-    );
-
-    await step("Choose a collection that does not have that book", async () => {
-        const otherCollection = makeAnotherCollection(bloomApp, {
+    await step("Select a book in the current collection", async () => {
+        const secondCollection = makeAnotherCollection(bloomApp, {
             name: "stale-preview-second",
             languages: ["en"],
         });
-        await openOtherCollection(bloomApp, otherCollection);
+        await openOtherCollection(bloomApp, secondCollection);
+        await makeTitledBookAndShowCollection(bloomApp.page, leftBehindTitle);
+        // Sanity check: the preview does show this book, so its absence below means something.
+        await expectBookInPreview(bloomApp.page, leftBehindTitle);
+    });
+
+    await step("Choose a collection that does not have that book", async () => {
+        await chooseOtherCollection(bloomApp, firstCollection);
     });
 
     await step("See that the preview is empty", async () => {
@@ -60,18 +68,8 @@ test("a book selected in one collection is not previewed in the next [Test Case 
     await step(
         "Select a book in this collection and see it previewed",
         async () => {
-            await makeBookFromTemplate(bloomApp.page, "Basic Book");
-            await switchTab(bloomApp.page, "collection");
-            const secondBookId = await getSelectedBookId(bloomApp.page);
-            expect(
-                secondBookId,
-                "the book made in the second collection should be a different book",
-            ).not.toBe(firstBookId);
-            if (!secondBookId)
-                throw new Error(
-                    "Bloom has no book selected after making one in the second collection.",
-                );
-            await expectBookInPreview(bloomApp.page, secondBookId);
+            await makeTitledBookAndShowCollection(bloomApp.page, newTitle);
+            await expectBookInPreview(bloomApp.page, newTitle);
         },
     );
 });
