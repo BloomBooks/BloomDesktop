@@ -2802,6 +2802,9 @@ namespace Bloom.Edit
             return WidgetHelper.AddWidgetFilesToBookFolder(CurrentBook.FolderPath, fullWidgetPath);
         }
 
+        /// <summary>
+        /// Called when the browser reports that a page's DOM has loaded (editView/pageDomLoaded).
+        /// </summary>
         public void HandlePageDomLoadedEvent(string pageId, string loadId = null)
         {
             // Count the announcement before acting on it. A page announces itself more than once,
@@ -2826,11 +2829,51 @@ namespace Bloom.Edit
                 var afterPageLoad = _doAfterNextPageLoad;
                 _doAfterNextPageLoad = null;
                 afterPageLoad?.Invoke(pageId);
-                // In case the book was renamed while this page was loading, by something other
-                // than a save in this tab (a save is declined while a page loads), such as work on
-                // another thread.
-                ShowPageAgainIfFromAnotherFolderSoon();
+                // The user clicked another page while this one was loading (see
+                // EditingStateMachine.GoToOnceLoaded), so go there now. Not inside this
+                // notification, which the page is waiting on before it starts sending its content.
+                // Not at all when something was waiting for this very page to load (afterPageLoad,
+                // e.g. opening the AI image editor on it): leaving the page would pull it out from
+                // under that, so the click is dropped.
+                var clickedWhileLoading = _stateMachine.TakePageToGoToOnceLoaded();
+                if (clickedWhileLoading != null && afterPageLoad == null)
+                    RunOffTheApiLock(() =>
+                        GoToPageClickedWhileLoading(clickedWhileLoading, pageId)
+                    );
+                else
+                    // In case the book was renamed while this page was loading, by something
+                    // other than a save in this tab (a save is declined while a page loads), such
+                    // as work on another thread. Going to a clicked page does this too (see
+                    // GoToPageClickedWhileLoading).
+                    ShowPageAgainIfFromAnotherFolderSoon();
             }
+        }
+
+        /// <summary>
+        /// Go to a page the user clicked while another was loading: save the page now being edited
+        /// and go, as JumpToPage does. The clicked page is shown from the book's folder as it is
+        /// now, so if the book was renamed while the other page loaded, this also takes the place
+        /// of showing that page again from the new folder. It runs a moment after that page
+        /// loaded, and does not go if things have moved on since: the user has left the tab (a
+        /// save from there would start a page load in a hidden tab), or the tab is no longer
+        /// editing that page (the user has since clicked yet another page, whose request stands),
+        /// or JumpToPage refuses (the page has gone). When it does not go, the page being edited
+        /// still has to come from the book's folder. One exception: if the tab is loading
+        /// <paramref name="loadedPageId"/> again, the book was renamed and EditingView.HandleBookRenamed
+        /// is showing that page again from the new folder, so the click is remembered again and
+        /// acted on once that reload is done.
+        /// </summary>
+        private void GoToPageClickedWhileLoading(string pageId, string loadedPageId)
+        {
+            if (Visible && _stateMachine.Navigating && _stateMachine.CurrentPageId == loadedPageId)
+            {
+                _stateMachine.GoToOnceLoaded(pageId);
+                return;
+            }
+            if (Visible && _stateMachine.Editing && JumpToPage(pageId))
+                return;
+            if (PageBeingEditedIsFromAnotherFolder())
+                ShowPageAgainFromBookFolder();
         }
 
         // The one action queued by RunAfterNextPageLoad, or null.

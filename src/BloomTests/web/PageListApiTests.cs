@@ -168,8 +168,9 @@ namespace BloomTests.web
             Assert.That(PageListApi.IsOnTheWayToPage(machine, "b"), Is.True);
         }
 
-        // A click on page c that arrives while the Edit tab is still loading page b is declined, and
-        // the reply to the click must say so: the tab is on its way to a page, but not to c.
+        // A click on page c that arrives while the Edit tab is still loading page b is declined by the
+        // state machine: until the click is remembered (see the next test) the tab is on its way to a
+        // page, but not to c.
         [Test]
         public void IsOnTheWayToPage_ClickArrivesWhileLoadingAnotherPage_False()
         {
@@ -185,6 +186,25 @@ namespace BloomTests.web
 
             Assert.That(outcome, Is.EqualTo(SaveOutcome.Declined));
             Assert.That(PageListApi.IsOnTheWayToPage(machine, "c"), Is.False);
+        }
+
+        // The page click handler remembers a click declined that way (GoToOnceLoaded), and the tab
+        // goes there once page b has loaded, so the reply must say the click is opening page c: the
+        // All Pages view keeps its wait cursor until c opens.
+        [Test]
+        public void IsOnTheWayToPage_ClickRememberedWhileLoadingAnotherPage_True()
+        {
+            var machine = MakeStateMachineEditingPageA();
+            machine.SaveThenNavigate(null, () => "b", _ => { });
+            Assert.That(
+                machine.SaveThenNavigate(null, () => "c", _ => { }),
+                Is.EqualTo(SaveOutcome.Declined),
+                "Setup failed: a click while page b loads should be declined."
+            );
+
+            Assert.That(machine.GoToOnceLoaded("c"), Is.True);
+
+            Assert.That(PageListApi.IsOnTheWayToPage(machine, "c"), Is.True);
         }
 
         [Test]

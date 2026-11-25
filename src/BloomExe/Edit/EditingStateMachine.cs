@@ -42,6 +42,8 @@ public enum SaveOutcome
 ///   - a "page finished loading" notification for a page we are no longer going to is ignored,
 ///     since those arrive asynchronously and can be late.
 ///   - a save arriving while a page is still loading is declined: there is no settled page to save.
+///     A page click declined that way is remembered (GoToOnceLoaded) and acted on once the page
+///     has loaded, so that clicking quickly through pages does not lose the last click.
 ///   - a save requested from inside another save's own action is declined rather than re-entered.
 ///     Reordering a page does exactly this, by changing the page selection (see _saveInProgress).
 /// </summary>
@@ -63,6 +65,9 @@ public class EditingStateMachine
     // we go to the page the action named.
     private bool _saveInProgress;
     private Action _hidePage;
+
+    // A page the user asked for while another was still loading; see GoToOnceLoaded.
+    private string _pageToGoToOnceLoaded;
 
     /// <summary>
     /// Set up a state machine. It must be passed four actions:
@@ -110,6 +115,9 @@ public class EditingStateMachine
     /// </summary>
     public bool ToNoPage()
     {
+        // No page will load now, and a page asked for while one was loading (the only time
+        // GoToOnceLoaded remembers one) is not wanted on coming back to the tab.
+        _pageToGoToOnceLoaded = null;
         switch (_currentState)
         {
             case State.NoPage:
@@ -206,8 +214,49 @@ public class EditingStateMachine
         LogTransition("navigating", pageId);
         _currentState = State.Navigating;
         _pageId = pageId;
+        if (_pageToGoToOnceLoaded == pageId)
+            _pageToGoToOnceLoaded = null; // we are on the way there now
         _navigate(pageId);
     }
+
+    /// <summary>
+    /// Remember that the user asked for <paramref name="pageId"/> (by clicking it in the page list)
+    /// while another page was still loading, when a save, and so a page change, is declined. Once
+    /// the loading page reaches Editing, the caller takes it (TakePageToGoToOnceLoaded) and goes
+    /// there, so a click is not lost however quickly the user clicks. Only the latest is kept: it
+    /// is where the user wants to end up. Returns false, remembering nothing, when no page is
+    /// loading, so the request was declined for some other reason.
+    /// </summary>
+    public bool GoToOnceLoaded(string pageId)
+    {
+        if (_currentState != State.Navigating)
+            return false;
+        if (pageId == _pageId)
+        {
+            // The page that is loading is already where the user will end up.
+            _pageToGoToOnceLoaded = null;
+            return true;
+        }
+        Log($"Will go to {pageId} once {_pageId} has loaded");
+        _pageToGoToOnceLoaded = pageId;
+        return true;
+    }
+
+    /// <summary>
+    /// The page GoToOnceLoaded remembered, or null, and forget it. The caller asks this when the
+    /// loading page has reached Editing.
+    /// </summary>
+    public string TakePageToGoToOnceLoaded()
+    {
+        var pageId = _pageToGoToOnceLoaded;
+        _pageToGoToOnceLoaded = null;
+        return pageId;
+    }
+
+    /// <summary>
+    /// The page GoToOnceLoaded remembered, or null. Read only.
+    /// </summary>
+    public string PageToGoToOnceLoaded => _pageToGoToOnceLoaded;
 
     /// <summary>
     /// Called after we hear from the browser JS that the dom is finished loading

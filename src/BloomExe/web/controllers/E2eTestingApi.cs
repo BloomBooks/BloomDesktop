@@ -279,6 +279,8 @@ namespace Bloom.web.controllers
                     state = (model?.EditTabState ?? State.NoPage).ToString(),
                     pageId = model?.EditTabStatePageId ?? "",
                     visible = model?.Visible ?? false,
+                    // A page clicked while another loads, which the tab goes to once that one has.
+                    pageToGoToOnceLoaded = model?.StateMachine.PageToGoToOnceLoaded ?? "",
                     pageLoadAnnouncements = model?.PageLoadAnnouncements ?? 0,
                 }
             );
