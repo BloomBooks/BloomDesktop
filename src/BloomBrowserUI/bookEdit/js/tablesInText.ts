@@ -9,6 +9,7 @@ import * as React from "react";
 import { default as InsertTableIcon } from "@mui/icons-material/TableChartOutlined";
 import { refreshStructuralChrome } from "bloom-table";
 import { elementOf, kTableInTextClass } from "./tableInTextConstants";
+import { kBlockElementSelector } from "../bloomField/BloomField";
 import { isUndoOrRedoKey } from "../undo/redoKeyBinding";
 import { AttachNewTableAndSetUpItsCells } from "./tableEditing";
 import { setupTableInTextDragging } from "./tableInTextDrag";
@@ -127,32 +128,44 @@ export function placeBetweenParagraphs(
     });
     paragraph.after(table);
     if (!isBlank(restOfParagraph)) {
-        const secondHalf = editable.ownerDocument.createElement("p");
+        // The same kind of paragraph (a heading stays a heading), with the same style.
+        const secondHalf = paragraph.cloneNode(false) as HTMLElement;
+        secondHalf.removeAttribute("id");
         secondHalf.appendChild(restOfParagraph);
         table.after(secondHalf);
     }
 }
 
-/** The paragraph of `editable` that holds the caret, if the caret is in one of its own paragraphs. */
+/**
+ * The paragraph of `editable` that holds the caret, if the caret is in one of its own paragraphs.
+ * A heading counts as a paragraph, as it does for the rest of Bloom's text code
+ * (kBlockElementSelector).
+ */
 export function paragraphOf(
     editable: HTMLElement,
     caret: Range,
 ): HTMLElement | undefined {
-    const paragraph = elementOf(caret.startContainer)?.closest("p");
+    const paragraph = elementOf(caret.startContainer)?.closest<HTMLElement>(
+        kBlockElementSelector,
+    );
     if (!paragraph || paragraph.parentElement !== editable) return undefined;
     return paragraph;
 }
 
-// Whether `element` holds nothing at all: no text, and no element such as a line break.
+// Whether `element` holds nothing that shows: no text, no line break and no picture. Empty
+// formatting elements (an empty <strong>, say) do not count.
 function isEmptyElement(element: Element): boolean {
-    return element.textContent === "" && !element.querySelector("*");
+    return element.textContent === "" && !element.querySelector("br, img");
 }
 
 function isBlank(content: Node): boolean {
     return (content.textContent ?? "").trim() === "";
 }
 
-/** Make sure `table` has a paragraph right before it and right after it, adding empty ones. */
+/**
+ * Make sure `table` has a paragraph (or heading) right before it and right after it, adding empty
+ * paragraphs where it does not.
+ */
 export function ensureParagraphOnEachSide(table: HTMLElement): void {
     const doc = table.ownerDocument;
     const emptyParagraph = () => {
@@ -160,9 +173,9 @@ export function ensureParagraphOnEachSide(table: HTMLElement): void {
         p.appendChild(doc.createElement("br"));
         return p;
     };
-    if (table.previousElementSibling?.tagName !== "P")
+    if (!table.previousElementSibling?.matches(kBlockElementSelector))
         table.before(emptyParagraph());
-    if (table.nextElementSibling?.tagName !== "P")
+    if (!table.nextElementSibling?.matches(kBlockElementSelector))
         table.after(emptyParagraph());
 }
 

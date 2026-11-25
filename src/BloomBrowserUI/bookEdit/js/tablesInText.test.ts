@@ -145,10 +145,64 @@ describe("insertTableInText", () => {
         caret.setStart(sentenceText, sentenceText.length);
         caret.collapse(true);
 
-        insertTableInText(element("text"), caret);
+        const table = insertTableInText(element("text"), caret);
 
+        // The line break was after the caret, so it is in the second half, in that half's part of
+        // the sentence, and not a placeholder added for an empty paragraph.
+        expect(
+            table.nextElementSibling!.querySelector("span.audio-sentence br"),
+        ).not.toBeNull();
         expect(element("text").querySelectorAll("br").length).toBe(1);
-        expect(element("text").querySelectorAll("#one").length).toBe(1);
+    });
+
+    it("keeps the id of a recorded sentence when the table goes in at the start of its bold text", () => {
+        element("first").innerHTML =
+            "<span id='one' class='audio-sentence'>First sentence. </span><span id='two' class='audio-sentence'><strong id='bold'>Bold</strong> rest.</span>";
+
+        insertTableInText(element("text"), caretIn("bold", 0));
+
+        const sentences = Array.from(
+            element("text").querySelectorAll<HTMLElement>(
+                "span.audio-sentence",
+            ),
+        );
+        expect(sentences.map((s) => `${s.id}:${s.textContent}`)).toEqual([
+            "one:First sentence. ",
+            "two:Bold rest.",
+        ]);
+        expect(childrenOfText()).toEqual([
+            "P:First sentence. ",
+            "[table]",
+            "P:Bold rest.",
+            "P:Last paragraph.",
+        ]);
+    });
+
+    it("splits a heading like a paragraph, and the second half stays a heading", () => {
+        element("text").innerHTML =
+            "<h2 id='heading'>Heading text</h2><p id='second'>Last paragraph.</p>";
+
+        insertTableInText(element("text"), caretIn("heading", 7));
+
+        expect(childrenOfText()).toEqual([
+            "H2:Heading",
+            "[table]",
+            "H2: text",
+            "P:Last paragraph.",
+        ]);
+    });
+
+    it("adds no empty paragraph between a table and a heading next to it", () => {
+        element("text").innerHTML =
+            "<h2 id='heading'>Heading text</h2><p id='second'>Last paragraph.</p>";
+
+        insertTableInText(element("text"), caretIn("heading", 12));
+
+        expect(childrenOfText()).toEqual([
+            "H2:Heading text",
+            "[table]",
+            "P:Last paragraph.",
+        ]);
     });
 
     it("puts the table before the paragraph for a caret at its start", () => {

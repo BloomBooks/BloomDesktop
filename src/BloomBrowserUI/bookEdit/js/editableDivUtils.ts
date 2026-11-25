@@ -924,6 +924,33 @@ export class EditableDivUtils {
         });
     }
 
+    /**
+     * Whether `element`, a child of a text box, is a part of its text that the box's editor cannot
+     * edit (contenteditable="false"): an inline image, or a table in the text, whose cells are text
+     * boxes of their own. Neither holds text of the box's own.
+     */
+    public static isUneditablePartOfText(element: Element): boolean {
+        return element.getAttribute("contenteditable") === "false";
+    }
+
+    /**
+     * The HTML of `editable`'s own text: its innerHTML without the children that its editor cannot
+     * edit (isUneditablePartOfText).
+     */
+    public static htmlOfOwnText(editable: HTMLElement): string {
+        if (
+            !Array.from(editable.children).some(
+                EditableDivUtils.isUneditablePartOfText,
+            )
+        )
+            return editable.innerHTML;
+        const copy = editable.cloneNode(true) as HTMLElement;
+        Array.from(copy.children)
+            .filter(EditableDivUtils.isUneditablePartOfText)
+            .forEach((child) => child.remove());
+        return copy.innerHTML;
+    }
+
     public static isInHiddenLanguageBlock(elem: Element) {
         // Spans (and probably other inline elements?) can have display=inline even if they're inside a div that's display=none
         let elemToCheck: Element | null = elem;

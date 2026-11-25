@@ -295,6 +295,7 @@ export const CutButton: React.FunctionComponent<{
             l10nKey="EditTab.CutButton"
             tooltipL10nKey="EditTab.CutButton.ToolTip"
             onClickAction="cut"
+            testId="cut-button"
             enabledIcon={enabledIcon}
             disabledIcon={disabledIcon}
             iconBeforeText={false}
@@ -324,6 +325,7 @@ export const PasteButton: React.FunctionComponent<{
             tooltipL10nKey="EditTab.PasteButton.ToolTip"
             disabledTooltipL10nKey="EditTab.PasteButton.ToolTipWhenDisabled"
             onClickAction="paste"
+            testId="paste-button"
             enabledIcon={enabledIcon}
             disabledIcon={disabledIcon}
             iconBeforeText={true}

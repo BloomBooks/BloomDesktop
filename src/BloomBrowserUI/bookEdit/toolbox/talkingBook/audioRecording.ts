@@ -57,7 +57,6 @@ import Recordable from "./recordable";
 import { getChecksum } from "./talkingBookChecksum";
 import { setupImageDescriptions } from "../imageDescription/imageDescription";
 import { EditableDivUtils } from "../../js/editableDivUtils";
-import { tablesInTextOf } from "../../js/tableInTextConstants";
 import { createValidXhtmlUniqueId } from "../../js/xhtmlIdUtils";
 import { doesNarrationExist, kAnyRecordingApiUrl } from "./audioUtils";
 import { wrapWithRequestPageContentDelay } from "../../js/pageContentDelays";
@@ -680,7 +679,9 @@ export default class AudioRecording implements IAudioRecorder {
         if (!includeCheckForText) {
             return true;
         }
-        return this.stringToSentences(htmlOfOwnText(element!)).some((frag) => {
+        return this.stringToSentences(
+            EditableDivUtils.htmlOfOwnText(element!),
+        ).some((frag) => {
             return this.isRecordable(frag);
         });
     }
@@ -3910,7 +3911,7 @@ export default class AudioRecording implements IAudioRecorder {
                         // as an inline image (bloom-inlineImage). They hold no text to record,
                         // and recursing into one reaches the img element, which this code would
                         // then treat as a leaf and add audio markup to.
-                        child.getAttribute("contenteditable") !== "false"
+                        !EditableDivUtils.isUneditablePartOfText(child)
                     ) {
                         processedChild = true;
                         updateFuncs.push(
@@ -5097,15 +5098,4 @@ export function bumpDown(whichPositionToBump: number) {
         return; // paranoia
     }
     audioRecorder.bumpDown(whichPositionToBump);
-}
-
-/**
- * The HTML of a text box's own text: its innerHTML without any table in its text, whose cells are
- * text boxes of their own (see docs/insert-table/README.md).
- */
-function htmlOfOwnText(editable: HTMLElement): string {
-    if (tablesInTextOf(editable).length === 0) return editable.innerHTML;
-    const copy = editable.cloneNode(true) as HTMLElement;
-    tablesInTextOf(copy).forEach((table) => table.remove());
-    return copy.innerHTML;
 }

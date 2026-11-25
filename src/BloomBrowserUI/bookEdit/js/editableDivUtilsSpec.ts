@@ -850,3 +850,31 @@ describe("EditableDivUtils.isInHiddenLanguageBlock", () => {
         document.body.innerHTML = "";
     });
 });
+
+describe("EditableDivUtils.htmlOfOwnText", () => {
+    it("leaves out a table in the text and an inline image, and keeps the rest", () => {
+        const box = document.createElement("div");
+        box.innerHTML =
+            "<p>Above</p><div class='bloom-table bloom-tableInText' contenteditable='false'><p>Cell</p></div><div class='bloom-inlineImage' contenteditable='false'><img src='a.png'></div><p>Below</p>";
+        // Sanity check: the box's own HTML has both.
+        expect(box.innerHTML).toContain("Cell");
+        expect(box.innerHTML).toContain("a.png");
+
+        const html = EditableDivUtils.htmlOfOwnText(box);
+
+        expect(html).toBe("<p>Above</p><p>Below</p>");
+        // The box itself is unchanged.
+        expect(box.querySelectorAll("[contenteditable='false']").length).toBe(
+            2,
+        );
+    });
+
+    it("gives the box's own HTML when there is nothing to leave out", () => {
+        const box = document.createElement("div");
+        box.innerHTML = "<p>Just <b>text</b></p>";
+
+        expect(EditableDivUtils.htmlOfOwnText(box)).toBe(
+            "<p>Just <b>text</b></p>",
+        );
+    });
+});
