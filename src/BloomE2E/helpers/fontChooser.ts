@@ -289,18 +289,28 @@ export async function openFontList(
     page: Page,
     place: IFontChooserPlace = formatDialogFontChooser(page),
 ): Promise<void> {
-    const frame = place.scope;
-    // Until the chooser has its fonts its list is empty, and in the Collection Settings dialog the
-    // fonts' arrival makes the chooser anew, which closes a list opened before then. So open the
-    // list again whenever it is shut, until it shows a font.
-    await expect(async () => {
-        if (!(await frame.locator(LIST).isVisible()))
-            await place.chooser.click({ timeout: 5000 });
+    const list = place.scope.locator(LIST);
+    const firstFont = place.scope.locator(`${LIST} ${LIST_ITEM}`).first();
+    const clickToOpen = async () => {
+        await place.chooser.click({ timeout: 30000 });
         await expect(
-            frame.locator(`${LIST} ${LIST_ITEM}`).first(),
-            "The font list is not showing any font.",
-        ).toBeVisible({ timeout: 5000 });
+            list,
+            "Clicking the font chooser did not open its list.",
+        ).toBeVisible({ timeout: 30000 });
+    };
+    await clickToOpen();
+    // Until the chooser has its fonts its list is empty, and in the Collection Settings dialog the
+    // fonts' arrival makes the chooser anew, once, which shuts a list opened before then. So wait
+    // for the list to show a font or to shut, and open it the once more that the shutting needs.
+    await expect(async () => {
+        if ((await firstFont.isVisible()) || !(await list.isVisible())) return;
+        throw new Error("The font list opened but never listed a font.");
     }).toPass({ timeout: 30000 });
+    if (!(await list.isVisible())) await clickToOpen();
+    await expect(
+        firstFont,
+        "The font list opened but never listed a font.",
+    ).toBeVisible({ timeout: 30000 });
 }
 
 /** True while the font list is pulled down. */
