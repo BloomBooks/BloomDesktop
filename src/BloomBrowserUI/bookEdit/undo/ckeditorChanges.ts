@@ -54,12 +54,11 @@ function focusedCkeditor(): ICkeditorChangeSource | undefined {
 // last did, on the sequence the stack's entries share (changeOrder.ts). Typing is undone in the box
 // it was typed in, which is not always the box that has the focus: "add a row, type in it, click
 // another cell" leaves the typing in the new row's editor while the focus is elsewhere.
+// It has no size limit: it never holds more than the page's text boxes, and getCkeditorsToUndo
+// drops the ones with nothing left to undo. A box dropped while it still had typing would lose
+// its place in the order, and its older typing would be undone ahead of newer changes.
 let changedEditors: Array<{ editor: ICkeditorChangeSource; order: number }> =
     [];
-
-// How many of them are kept: enough for a person working through a page, few enough that removed
-// boxes' editors are not held on to for long.
-const kMaxChangedEditors = 10;
 
 /**
  * The CKEditors whose history an Undo of typing may take from, in the order to try them: the one
@@ -206,7 +205,7 @@ function recordChange(
         changedEditors = [
             { editor, order },
             ...changedEditors.filter((e) => e.editor !== editor),
-        ].slice(0, kMaxChangedEditors);
+        ];
     }
     if (!duringUndoOrRedo) stack.discardRedo();
 }

@@ -102,6 +102,20 @@ describe("which CKEditor an undo of typing goes to", () => {
         expect(getCkeditorToUndo()).toBe(newRow);
     });
 
+    // "Type in cell A, add a row, type in many other cells, click A": A's typing is the oldest,
+    // however many boxes changed since.
+    it("keeps the place of typing in a box however many boxes change after it", () => {
+        const cellA = makeEditor();
+        cellA.typed();
+        nextChangeOrder(); // the row
+        const others = Array.from({ length: 15 }, () => makeEditor());
+        others.forEach((cell) => cell.typed());
+        focus(cellA);
+
+        expect(getCkeditorToUndo()).toBe(others[others.length - 1]);
+        expect(getCkeditorsToUndo()[others.length]).toBe(cellA);
+    });
+
     // A first paste into a box is reported before CKEditor counts it as undoable, so it is not
     // in the record of changes; the focused box's own Undo still has to come first.
     it("goes to the focused box when it has something to undo of its own", () => {
