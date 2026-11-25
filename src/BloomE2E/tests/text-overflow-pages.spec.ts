@@ -21,7 +21,6 @@ import {
     getPages,
     goToPage,
     makeBookFromTemplate,
-    waitForPageToSettle,
     type IBookPage,
 } from "../helpers/bookMaking";
 import { goToCreditsPage } from "../helpers/creditsPage";
@@ -51,16 +50,6 @@ const TEXT_GROUP = ".bloom-translationGroup";
 let contentPages: IBookPage[];
 let titlePage: IBookPage;
 let creditsPage: IBookPage;
-
-/**
- * Go to another page after the pause a person takes before moving on. Bloom saves the page as the
- * browser last sent it, which is a moment after the last change, and the page list's thumbnail is
- * made from what Bloom saved.
- */
-async function leavePage(page: Page, toPageId: string): Promise<void> {
-    await waitForPageToSettle(page);
-    await goToPage(page, toPageId);
-}
 
 /**
  * Check, on the page list, that the thumbnail of `pageId` shows the overflow zigzag (and not the
@@ -186,7 +175,7 @@ test.describe("text overflow on content pages, the Title Page and the Credits Pa
             await step(
                 `Leave "${layout}" and look at its thumbnail`,
                 async () => {
-                    await leavePage(page, titlePage.id);
+                    await goToPage(page, titlePage.id);
                     await expectThumbnailMarked(
                         page,
                         contentPage.id,
@@ -225,7 +214,7 @@ test.describe("text overflow on content pages, the Title Page and the Credits Pa
         await step(
             "Leave the Title Page and look at its thumbnail",
             async () => {
-                await leavePage(page, contentPages[0].id);
+                await goToPage(page, contentPages[0].id);
                 await expectThumbnailMarked(
                     page,
                     titlePage.id,
@@ -266,7 +255,7 @@ test.describe("text overflow on content pages, the Title Page and the Credits Pa
         await step(
             "Leave the Credits Page and look at its thumbnail",
             async () => {
-                await leavePage(page, contentPages[0].id);
+                await goToPage(page, contentPages[0].id);
                 await expectThumbnailMarked(
                     page,
                     creditsPage.id,
