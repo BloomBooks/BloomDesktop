@@ -95,6 +95,30 @@
     }
 }
 
+// Lets the user grab the splitter anywhere in the empty top padding of a text box just
+// below it, not just on the 3px line. The selector and the height match the basePage.less
+// rule that gives that text box its padding-top. A pseudo-element gets the divider's
+// mouse events without changing its offsetHeight, which split-pane.ts uses to position
+// the panes. Don't extend it upward: that covers the crop control of a picture just
+// above the split.
+.marginBox
+    > .split-pane.horizontal-percent:has(
+        > .split-pane-component.position-bottom
+            > .split-pane-component-inner
+            > .bloom-translationGroup
+    )
+    > .horizontal-divider[data-splitter-label]:before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    // The padding is usually in em, which the text box resolves against the 12pt that it
+    // inherits from .split-pane-component-inner in origami.less, so resolve it against that too.
+    font-size: 12pt;
+    height: var(--topLevel-text-padding-top);
+}
+
 .split-pane.horizontal-percent > .horizontal-divider {
     &:hover[data-splitter-label]:after,
     &.dragged[data-splitter-label]:after {
