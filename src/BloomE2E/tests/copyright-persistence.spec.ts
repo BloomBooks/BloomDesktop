@@ -28,7 +28,6 @@ import {
 } from "../helpers/bookMaking";
 import {
     copyrightAndLicenseDialog,
-    setCopyrightHolder,
     setNotATranslation,
 } from "../helpers/copyrightAndLicense";
 import {
@@ -55,15 +54,20 @@ const DERIVATIVE_HOLDER = "Osprey Translation Team";
 // LicensePanel.tsx has them for a book.
 const CREATIVE_COMMONS = "Everyone is allowed to:";
 const ALLOW_COMMERCIAL = "use the book in a commercial way";
-// The license a new Basic Book gets, which the original keeps: its URL on the credits page, and how
-// the sentence about the original names it.
-const ORIGINAL_LICENSE_URL_PART = "/licenses/by/4.0";
-const ORIGINAL_LICENSE_NAME = "CC BY 4.0";
+// The original's license, CC BY-NC, which is not the CC BY a new book starts with, so a derivative
+// that kept its default license could not pass for one that took the original's: its URL on the
+// credits page, and how the sentence about the original names it.
+const ORIGINAL_LICENSE_URL_PART = "/licenses/by-nc/4.0";
+const ORIGINAL_LICENSE_NAME = "CC BY-NC 4.0";
+// The derivative's own license, CC BY.
+const DERIVATIVE_LICENSE_URL_PART = "/licenses/by/4.0";
 
 // Filled in as the tests go.
 let originalFolder = "";
 let otherFolder = "";
 let derivativeFolder = "";
+// The original's copyright and license as its credits page shows them.
+let originalCredits: ICreditsCopyright | undefined;
 
 /** What the credits page shows of the book's own copyright and license. */
 interface ICreditsCopyright {
@@ -141,6 +145,33 @@ function holderField(page: Page) {
     return copyrightAndLicenseDialog(page).getByLabel("Copyright Holder");
 }
 
+/**
+ * In the open Copyright and License dialog, give the book `holder` as its copyright holder and a
+ * Creative Commons license that does or does not allow commercial use, and click OK. The holder
+ * goes first: on a derivative, coming back to the Copyright tab from the License tab ticks "Not a
+ * translation or new version" again (BL-17181). Returns once the dialog has closed.
+ */
+async function setCopyrightAndLicense(
+    page: Page,
+    holderName: string,
+    allowCommercial: boolean,
+): Promise<void> {
+    const dialog = copyrightAndLicenseDialog(page);
+    const holder = holderField(page);
+    await expect(holder).toBeEnabled({ timeout: 15000 });
+    await holder.fill(holderName);
+    await expect(holder).toHaveValue(holderName);
+    await dialog.getByRole("tab", { name: /license/i }).click();
+    await dialog.getByRole("radio", { name: CREATIVE_COMMONS }).check();
+    await dialog
+        .getByRole("checkbox", { name: ALLOW_COMMERCIAL })
+        .setChecked(allowCommercial);
+    const ok = dialog.getByRole("button", { name: "OK", exact: true });
+    await expect(ok).toBeEnabled({ timeout: 15000 });
+    await ok.click();
+    await expect(dialog).toHaveCount(0, { timeout: 30000 });
+}
+
 /** Close the open Copyright and License dialog with Cancel, changing nothing. */
 async function cancelCopyrightDialog(page: Page): Promise<void> {
     await copyrightAndLicenseDialog(page)
@@ -170,22 +201,26 @@ test.describe("copyright persistence, in a book and in its derivative", () => {
             before.copyright,
             "A new Basic Book already names the copyright holder the test is about to set",
         ).not.toContain(ORIGINAL_HOLDER);
+        expect(
+            before.licenseUrl,
+            "A new Basic Book already has the license the test is about to give the original",
+        ).not.toContain(ORIGINAL_LICENSE_URL_PART);
 
-        // As BL-7518 did: fill in nothing else on the credits page, only the copyright holder.
+        // As BL-7518 did: fill in nothing else on the credits page, only the copyright and license.
         await openCopyrightDialogFromCreditsPage(page);
-        await setCopyrightHolder(page, ORIGINAL_HOLDER);
+        await setCopyrightAndLicense(page, ORIGINAL_HOLDER, false);
         await expectCreditsCopyright(
             page,
             {
                 holder: ORIGINAL_HOLDER,
                 licenseUrlPart: ORIGINAL_LICENSE_URL_PART,
             },
-            "After OK in the Copyright and License dialog, the credits page did not show the copyright and the CC BY license.",
+            "After OK in the Copyright and License dialog, the credits page did not show the copyright and license.",
         );
 
         // THE ACTION UNDER TEST: select another book, then this one again.
         await leaveAndComeBack(page, originalFolder);
-        await expectCreditsCopyright(
+        originalCredits = await expectCreditsCopyright(
             page,
             {
                 holder: ORIGINAL_HOLDER,
@@ -236,7 +271,7 @@ test.describe("copyright persistence, in a book and in its derivative", () => {
         ).toContainText(ORIGINAL_HOLDER);
         await setNotATranslation(page, true);
 
-        const own = await expectCreditsCopyright(
+        await expectCreditsCopyright(
             page,
             {
                 holder: ORIGINAL_HOLDER,
@@ -244,6 +279,10 @@ test.describe("copyright persistence, in a book and in its derivative", () => {
             },
             "With \"Not a translation or new version\" ticked, the credits page did not give the original's copyright as the book's own.",
         );
+        expect(
+            await getCreditsCopyright(page),
+            `With "Not a translation or new version" ticked, the derivative's copyright and license are not the original's, unchanged`,
+        ).toEqual(originalCredits);
         await expectOriginalCopyrightSentence(
             page,
             { text: "", hasHintBubble: false },
@@ -261,8 +300,8 @@ test.describe("copyright persistence, in a book and in its derivative", () => {
         );
         expect(
             kept,
-            "The derivative's copyright and license changed after selecting another book and coming back",
-        ).toEqual(own);
+            "After selecting another book and coming back, the derivative's copyright and license are not the original's, unchanged",
+        ).toEqual(originalCredits);
         await expectOriginalCopyrightSentence(
             page,
             { text: "", hasHintBubble: false },
@@ -279,29 +318,14 @@ test.describe("copyright persistence, in a book and in its derivative", () => {
         await dialog
             .getByRole("checkbox", { name: "Not a translation or new version" })
             .setChecked(false);
-        // THE ACTION UNDER TEST: a copyright holder of its own, then a license of its own, and
-        // OK. The holder goes first: coming back to the Copyright tab from the License tab ticks
-        // "Not a translation or new version" again (BL-17181).
-        const holder = holderField(page);
-        await expect(holder).toBeEnabled();
-        await holder.fill(DERIVATIVE_HOLDER);
-        await expect(holder).toHaveValue(DERIVATIVE_HOLDER);
-        // Creative Commons without commercial use, where the original has the plain CC BY a new
-        // Basic Book gets.
-        await dialog.getByRole("tab", { name: /license/i }).click();
-        await dialog.getByRole("radio", { name: CREATIVE_COMMONS }).check();
-        await dialog
-            .getByRole("checkbox", { name: ALLOW_COMMERCIAL })
-            .setChecked(false);
-        const ok = dialog.getByRole("button", { name: "OK", exact: true });
-        await expect(ok).toBeEnabled();
-        await ok.click();
-        await expect(dialog).toHaveCount(0, { timeout: 30000 });
+        // THE ACTION UNDER TEST: a copyright holder and license of its own (CC BY, where the
+        // original has CC BY-NC), and OK.
+        await setCopyrightAndLicense(page, DERIVATIVE_HOLDER, true);
 
         const expectedOwn = {
             holder: DERIVATIVE_HOLDER,
             notHolder: ORIGINAL_HOLDER,
-            licenseUrlPart: "/by-nc/",
+            licenseUrlPart: DERIVATIVE_LICENSE_URL_PART,
         };
         await expectCreditsCopyright(
             page,
@@ -342,10 +366,14 @@ test.describe("copyright persistence, in a book and in its derivative", () => {
         // The original book is left as it was.
         await editBook(page, originalFolder);
         await goToCreditsPage(page);
-        await expectCreditsCopyright(
+        const originalAfter = await expectCreditsCopyright(
             page,
             { holder: ORIGINAL_HOLDER, notHolder: DERIVATIVE_HOLDER },
             "Giving the derivative a copyright of its own changed the original book's copyright.",
         );
+        expect(
+            originalAfter,
+            "Giving the derivative a copyright and license of its own changed the original book's",
+        ).toEqual(originalCredits);
     });
 });
