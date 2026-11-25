@@ -13,9 +13,13 @@
 // machine where this test was written, so that part was never seen to work.
 
 import { expect, test } from "../fixtures/bloomTest";
+import type { IBloomApp } from "../fixtures/bloomTest";
 import type { Page } from "@playwright/test";
 import { apiGet, apiGetJson } from "../helpers/api";
-import { restartWithCollectionSettings } from "../helpers/collectionSettings";
+import {
+    restartWithCollectionSettings,
+    type ICollectionSettings,
+} from "../helpers/collectionSettings";
 import { countBooksInLanguageOnDevServer } from "../helpers/bloomLibraryServer";
 
 test.use({
@@ -31,6 +35,12 @@ test.describe.configure({ mode: "serial" });
 // American Sign Language: the sandbox has some books in it, far fewer than in English, so the two
 // counts cannot be mistaken for each other.
 const kSignLanguageTag = "ase";
+// Bloom's default goal (CollectionSettings.kDefaultBooksOnWebGoal), which a collection that says
+// nothing about its goal gets.
+const kDefaultGoal = 200;
+// A goal other than the default, small enough that the sandbox's sign language books fill only part
+// of the bar.
+const kCustomGoal = 50;
 
 interface IProgressBarShown {
     /** The label above the bar, e.g. "612 English books on BloomLibrary.org". */
@@ -41,10 +51,22 @@ interface IProgressBarShown {
     percentage: number;
 }
 
+interface IProgressBarRead {
+    shown: IProgressBarShown;
+    /** The sandbox's count just before Bloom started, and just after the bar was read. */
+    countBefore: number;
+    countAfter: number;
+    /** What Bloom says the bar is for. */
+    languageName: string;
+    languageCode: string;
+}
+
 /**
- * Wait for the progress bar to be ready, which the component marks by setting its percentage once
- * it has the count, the goal and the language name, and read what it shows. The label's wording is
- * localized, so only its number is read from it; the language name is checked separately.
+ * Wait for the progress bar to be ready and revealed, and read what it shows. The component sets
+ * its percentage only once it has the count, the goal and the language name, and until then keeps
+ * the bar and its label clipped out of sight; so this waits for the percentage, and then for the
+ * whole bar to come into view as the clip opens. The label's wording is localized, so only its
+ * number is read from it; the language name is checked by the caller.
  */
 async function readProgressBar(page: Page): Promise<IProgressBarShown> {
     const container = page.getByTestId("books-on-blorg-progress");
@@ -56,6 +78,27 @@ async function readProgressBar(page: Page): Promise<IProgressBarShown> {
             timeout: 60000,
         })
         .toBeGreaterThanOrEqual(0);
+    // The bar is the last thing in the clipping box, so it is in view only once the box has opened
+    // all the way.
+    await expect
+        .poll(
+            () =>
+                bar.evaluate((element) => {
+                    const clip = element.parentElement!.getBoundingClientRect();
+                    const box = element.getBoundingClientRect();
+                    return (
+                        clip.height > 0 &&
+                        box.top >= clip.top &&
+                        box.bottom <= clip.bottom
+                    );
+                }),
+            {
+                message:
+                    "Once it has a percentage, the progress bar should be revealed, not left clipped out of sight.",
+                timeout: 10000,
+            },
+        )
+        .toBe(true);
     const label = (
         await container.getByTestId("books-on-blorg-count").innerText()
     ).trim();
@@ -71,83 +114,108 @@ async function readProgressBar(page: Page): Promise<IProgressBarShown> {
     };
 }
 
+/**
+ * Start Bloom on these collection settings and read its progress bar, with the sandbox's count of
+ * books in `languageTag` taken just before the start and just after the read. Bloom asks the
+ * sandbox for its count somewhere in between, so on a shared sandbox whose count moved meanwhile
+ * the bar may rightly show either; when it did not move, the bar must show exactly that count.
+ */
+async function startAndReadProgressBar(
+    bloomApp: IBloomApp,
+    settings: ICollectionSettings,
+    languageTag: string,
+): Promise<IProgressBarRead> {
+    const countBefore = await countBooksInLanguageOnDevServer(languageTag);
+    const page = await restartWithCollectionSettings(bloomApp, settings);
+    const shown = await readProgressBar(page);
+    const countAfter = await countBooksInLanguageOnDevServer(languageTag);
+    const languageData = await apiGetJson<{
+        languageName: string;
+        languageCode: string;
+    }>(page, "settings/languageData");
+    expect(
+        Number((await apiGet(page, "settings/webGoal")).body),
+        "sanity check: Bloom has the goal the collection was given",
+    ).toBe(settings.booksOnWebGoal ?? kDefaultGoal);
+    return { shown, countBefore, countAfter, ...languageData };
+}
+
+/** Check that the bar showed the sandbox's live count of books in `languageTag`. */
+function expectLiveCount(read: IProgressBarRead, languageTag: string): void {
+    const low = Math.min(read.countBefore, read.countAfter);
+    const high = Math.max(read.countBefore, read.countAfter);
+    const sandboxCount = low === high ? `${low}` : `between ${low} and ${high}`;
+    expect(
+        read.shown.count >= low && read.shown.count <= high,
+        `The bar should show dev.bloomlibrary.org's count of "${languageTag}" books (${sandboxCount}): "${read.shown.label}"`,
+    ).toBe(true);
+}
+
 /** The bar's percentage for this many books against this goal: full at the goal and beyond. */
 function expectedPercentage(count: number, goal: number): number {
     return goal === 0 ? 100 : Math.min((count / goal) * 100, 100);
 }
 
-async function getWebGoal(page: Page): Promise<number> {
-    return Number((await apiGet(page, "settings/webGoal")).body);
-}
-
 test("the progress bar shows the sandbox's live count of Language 1 books [Test Case ID 100]", async ({
-    page,
+    bloomApp,
 }) => {
-    const expectedCount = await countBooksInLanguageOnDevServer("en");
-    const shown = await readProgressBar(page);
+    const read = await startAndReadProgressBar(
+        bloomApp,
+        { languages: ["en"], signLanguage: "" },
+        "en",
+    );
+    expectLiveCount(read, "en");
     expect(
-        shown.count,
-        `The bar should show dev.bloomlibrary.org's count of English books (${expectedCount}): "${shown.label}"`,
-    ).toBe(expectedCount);
-    const languageData = await apiGetJson<{
-        languageName: string;
-        languageCode: string;
-    }>(page, "settings/languageData");
-    expect(
-        languageData.languageCode,
+        read.languageCode,
         "sanity check: with no sign language, the bar is for Language 1",
     ).toBe("en");
     expect(
-        shown.label,
+        read.shown.label,
         "The bar's label should name the collection's language.",
-    ).toContain(languageData.languageName);
-    const goal = await getWebGoal(page);
+    ).toContain(read.languageName);
     expect(
-        shown.percentage,
-        `The bar should be filled to ${shown.count} books of the goal of ${goal}.`,
-    ).toBeCloseTo(expectedPercentage(shown.count, goal), 5);
+        read.shown.percentage,
+        `The bar should be filled to ${read.shown.count} books of the default goal of ${kDefaultGoal}.`,
+    ).toBeCloseTo(expectedPercentage(read.shown.count, kDefaultGoal), 5);
 });
 
-test("with a sign language, the progress bar counts the sign language's books, not Language 1's [Test Case ID 100]", async ({
+test("with a sign language, the progress bar counts the sign language's books, not Language 1's, against the collection's goal [Test Case ID 100]", async ({
     bloomApp,
 }) => {
-    const page = await restartWithCollectionSettings(bloomApp, {
-        languages: ["en"],
-        signLanguage: kSignLanguageTag,
-    });
-    const signLanguageCount =
-        await countBooksInLanguageOnDevServer(kSignLanguageTag);
     const language1Count = await countBooksInLanguageOnDevServer("en");
+    const read = await startAndReadProgressBar(
+        bloomApp,
+        {
+            languages: ["en"],
+            signLanguage: kSignLanguageTag,
+            booksOnWebGoal: kCustomGoal,
+        },
+        kSignLanguageTag,
+    );
     expect(
-        signLanguageCount,
+        read.countBefore,
         "sanity check: the sandbox's sign language and English counts differ, so the bar can only match one",
     ).not.toBe(language1Count);
+    expect(
+        read.countBefore,
+        "sanity check: the sandbox's sign language books fill only part of the goal, so the percentage depends on the goal",
+    ).toBeLessThan(kCustomGoal);
 
-    const shown = await readProgressBar(page);
+    expectLiveCount(read, kSignLanguageTag);
     expect(
-        shown.count,
-        `The bar should show the sandbox's count of ${kSignLanguageTag} books (${signLanguageCount}), ` +
-            `not of English books (${language1Count}): "${shown.label}"`,
-    ).toBe(signLanguageCount);
-    const languageData = await apiGetJson<{
-        languageName: string;
-        languageCode: string;
-    }>(page, "settings/languageData");
-    expect(
-        languageData.languageCode,
+        read.languageCode,
         "The bar should be for the collection's sign language.",
     ).toBe(kSignLanguageTag);
     expect(
-        shown.label,
+        read.shown.label,
         "The bar's label should name the sign language.",
-    ).toContain(languageData.languageName);
+    ).toContain(read.languageName);
     expect(
-        languageData.languageName,
+        read.languageName,
         "sanity check: the sign language's name is not Language 1's",
     ).not.toBe("English");
-    const goal = await getWebGoal(page);
     expect(
-        shown.percentage,
-        `The bar should be filled to ${shown.count} books of the goal of ${goal}.`,
-    ).toBeCloseTo(expectedPercentage(shown.count, goal), 5);
+        read.shown.percentage,
+        `The bar should be filled to ${read.shown.count} books of the collection's goal of ${kCustomGoal}.`,
+    ).toBeCloseTo(expectedPercentage(read.shown.count, kCustomGoal), 5);
 });

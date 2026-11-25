@@ -707,6 +707,11 @@ export interface ICollectionXmlExtras {
     rightToLeftLanguages?: string[];
     /** See ICollectionSpec.signLanguage. */
     signLanguage?: string;
+    /**
+     * The goal the Collection tab's progress bar measures the language's books on Bloom Library
+     * against. Left out, the file says nothing and Bloom uses its default.
+     */
+    booksOnWebGoal?: number;
 }
 
 /**
@@ -764,6 +769,9 @@ export function makeCollectionXml(
             ? `  <SignLanguageName>${nameForTag(extras.signLanguage)}</SignLanguageName>\n` +
               `  <SignLanguageIsCustomName>false</SignLanguageIsCustomName>\n` +
               `  <SignLanguageIso639Code>${extras.signLanguage}</SignLanguageIso639Code>\n`
+            : "") +
+        (extras.booksOnWebGoal !== undefined
+            ? `  <BooksOnWebGoal>${extras.booksOnWebGoal}</BooksOnWebGoal>\n`
             : "") +
         `  <AllowNewBooks>True</AllowNewBooks>\n` +
         `  <PageNumberStyle>Decimal</PageNumberStyle>\n` +

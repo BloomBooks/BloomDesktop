@@ -45,6 +45,8 @@ export interface ICollectionSettings {
     bookshelf?: string;
     /** The sign language, by tag, or "" for none; see ICollectionSpec.signLanguage. */
     signLanguage?: string;
+    /** The progress bar's goal of books on Bloom Library; see ICollectionXmlExtras.booksOnWebGoal. */
+    booksOnWebGoal?: number;
 }
 
 /**
