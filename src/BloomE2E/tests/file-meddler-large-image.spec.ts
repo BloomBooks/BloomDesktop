@@ -32,6 +32,7 @@ import {
 import { copyToClipboard } from "../helpers/clipboard";
 import {
     getImagePlacement,
+    type IPixelSize,
     makeJpegFile,
     readImageFileSize,
 } from "../helpers/images";
@@ -198,14 +199,66 @@ async function expectCoverInPreview(
         .toEqual({ file: pictureFile, loaded: true });
 }
 
-/** The file name of the cover picture in the book's saved .htm, or "" when it has none. */
+/**
+ * `read()`, or `whileLocked` when it throws because meddle.exe holds the file it reads. Any other
+ * error is thrown on.
+ */
+function unlessLocked<T>(read: () => T, whileLocked: T): T {
+    try {
+        return read();
+    } catch (error) {
+        if (LOCKED_CODES.includes((error as NodeJS.ErrnoException).code ?? ""))
+            return whileLocked;
+        throw error;
+    }
+}
+
+/** `read()`, once meddle.exe has let go of the file it reads. */
+async function readWhenFree<T>(read: () => T, what: string): Promise<T> {
+    let value: T | undefined;
+    await expect
+        .poll(
+            () =>
+                unlessLocked(() => {
+                    value = read();
+                    return true;
+                }, false),
+            {
+                timeout: 30000,
+                message: `meddle.exe never let go of ${what}.`,
+            },
+        )
+        .toBe(true);
+    return value as T;
+}
+
+/**
+ * The file name of the cover picture in the book's saved .htm, or "" when it has none yet or
+ * meddle.exe is holding the file.
+ */
 function readSavedCoverPicture(bookFolder: string): string {
     const htmlPath = bookHtmlPath(bookFolder);
     if (!fs.existsSync(htmlPath)) return "";
-    const html = fs.readFileSync(htmlPath, "utf8");
+    const html = unlessLocked(() => fs.readFileSync(htmlPath, "utf8"), "");
     const coverImg = /<img\b[^>]*\bdata-book="coverImage"[^>]*>/.exec(html);
     const src = coverImg && /\bsrc="([^"]*)"/.exec(coverImg[0]);
     return src ? decodeURIComponent(src[1].split("?")[0]) : "";
+}
+
+/**
+ * The size of the book's thumbnail.png if Bloom wrote it at or after `since`, else undefined.
+ * Undefined too while meddle.exe holds it.
+ */
+function readFreshThumbnailSize(
+    thumbnailPath: string,
+    since: number,
+): IPixelSize | undefined {
+    if (!fs.existsSync(thumbnailPath)) return undefined;
+    if (fs.statSync(thumbnailPath).mtimeMs < since) return undefined;
+    return unlessLocked<IPixelSize | undefined>(
+        () => readImageFileSize(thumbnailPath),
+        undefined,
+    );
 }
 
 /**
@@ -231,48 +284,69 @@ async function expectBookSaved(
         fs.existsSync(saved),
         `The cover shows ${pictureFile}, but it is not in the book's folder ${bookFolder}.`,
     ).toBe(true);
+    const savedSize = await readWhenFree(() => readImageFileSize(saved), saved);
     expect(
-        readImageFileSize(saved).width,
+        savedSize.width,
         "Bloom kept the pasted picture at its full size instead of shrinking it",
     ).toBeLessThan(LARGE_WIDTH);
 
+    // Bloom makes the thumbnail from the cover picture, so it has the pasted photo's 16:9 shape.
+    // When Bloom cannot make one, it writes its square error icon to thumbnail.png instead.
     const thumbnailPath = Path.join(bookFolder, "thumbnail.png");
+    const pictureShape = LARGE_WIDTH / LARGE_HEIGHT;
     await expect
         .poll(
-            () =>
-                fs.existsSync(thumbnailPath) &&
-                fs.statSync(thumbnailPath).mtimeMs >= pastedAt,
+            () => {
+                const size = readFreshThumbnailSize(thumbnailPath, pastedAt);
+                return size
+                    ? Math.abs(size.width / size.height - pictureShape) < 0.05
+                    : false;
+            },
             {
                 timeout: 60000,
-                message: `Bloom never made ${thumbnailPath} from the new cover.`,
+                message: `Bloom never made ${thumbnailPath} from the pasted picture (an old file, none, or its square error icon).`,
             },
         )
         .toBe(true);
-    const bookId = (
-        JSON.parse(
-            fs.readFileSync(Path.join(bookFolder, "meta.json"), "utf8"),
-        ) as { bookInstanceId: string }
-    ).bookInstanceId;
+    const thumbnailSize = await readWhenFree(
+        () => readImageFileSize(thumbnailPath),
+        thumbnailPath,
+    );
+
+    const bookId = await readWhenFree(
+        () =>
+            (
+                JSON.parse(
+                    fs.readFileSync(Path.join(bookFolder, "meta.json"), "utf8"),
+                ) as { bookInstanceId: string }
+            ).bookInstanceId,
+        "the book's meta.json",
+    );
     const thumbnail = page
         .locator(
             `img[src*="collections/book/thumbnail?book-id=${encodeURIComponent(bookId)}&"]`,
         )
         .first();
+    // The button shows that thumbnail: a picture of its size, not Bloom's placeholder or error icon.
     await expect
         .poll(
             async () =>
-                thumbnail.evaluate(
-                    (img) =>
-                        (img as HTMLImageElement).complete &&
-                        (img as HTMLImageElement).naturalWidth > 0,
-                ),
+                thumbnail.evaluate((img) => {
+                    const image = img as HTMLImageElement;
+                    return image.complete
+                        ? {
+                              width: image.naturalWidth,
+                              height: image.naturalHeight,
+                          }
+                        : undefined;
+                }),
             {
                 timeout: 60000,
                 message:
-                    "The book's button on the Collections tab never showed its thumbnail.",
+                    "The book's button on the Collections tab never showed its new thumbnail.",
             },
         )
-        .toBe(true);
+        .toEqual(thumbnailSize);
 }
 
 for (const titled of [false, true]) {
