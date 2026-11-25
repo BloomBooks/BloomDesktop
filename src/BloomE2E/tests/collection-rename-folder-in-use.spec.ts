@@ -91,9 +91,12 @@ test("renaming a collection whose folder another program holds leaves it as it w
     } finally {
         holder.kill();
         // When the test failed before the problem box was closed, the renaming copy is still up.
-        killBloomsWithCommandLine(renamingBloom);
-        // Bloom exits once its problem box is closed; start it again on the collection, so the
-        // worker is left with a Bloom as every test expects to find it.
-        await bloomApp.restart();
+        try {
+            killBloomsWithCommandLine(renamingBloom);
+        } finally {
+            // Bloom exits once its problem box is closed; start it again on the collection, so
+            // the worker is left with a Bloom as every test expects to find it.
+            await bloomApp.restart();
+        }
     }
 });

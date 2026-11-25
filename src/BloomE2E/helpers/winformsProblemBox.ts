@@ -110,6 +110,7 @@ do {
  * Kill every Bloom.exe whose command line contains all of `commandLineParts` (compared without
  * regard to case), with its child processes. For cleaning up a Bloom that the test did not spawn,
  * such as the copy that finishes a collection rename, when a test fails before that copy exits.
+ * Returns once none is left; throws, naming them, when some are still running after 15 seconds.
  */
 export function killBloomsWithCommandLine(commandLineParts: string[]): void {
     execFileSync(
@@ -119,7 +120,11 @@ export function killBloomsWithCommandLine(commandLineParts: string[]): void {
             "-NonInteractive",
             "-Command",
             `${kFindBloomsByCommandLine}
-foreach ($proc in (FindBlooms)) { taskkill /T /F /PID $proc.ProcessId | Out-Null }`,
+foreach ($proc in (FindBlooms)) { taskkill /T /F /PID $proc.ProcessId 2>&1 | Out-Null }
+$deadline = (Get-Date).AddSeconds(15)
+# The pause between checks of a wait that ends as soon as the processes are gone.
+while (($left = @(FindBlooms)).Count -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 250 }
+if ($left.Count) { throw "Bloom still running after it was killed: pid $($left.ProcessId -join ', ')" }`,
         ],
         {
             encoding: "utf8",
@@ -127,6 +132,9 @@ foreach ($proc in (FindBlooms)) { taskkill /T /F /PID $proc.ProcessId | Out-Null
                 ...process.env,
                 BLOOM_E2E_COMMAND_LINE_PARTS: commandLineParts.join("\n"),
             },
+            // Above the 15 seconds the script waits, so a stalled process query cannot hold the
+            // test's cleanup forever.
+            timeout: 30000,
         },
     );
 }
