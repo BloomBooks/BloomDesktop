@@ -13,19 +13,26 @@
 //
 // Under --e2e Bloom's clipboard is its own (helpers/clipboard.ts): `files` stands for a file
 // copied in File Explorer, and `picture` for a picture that another program, such as a word
-// processor, put on the clipboard.
+// processor, put on the clipboard. That `picture` is always a file on disk, so the paste of a
+// picture that has no file behind it (a screenshot, say) is not covered here.
+//
+// The JPEG test is the journey test for the picture menu's Copy Image and Paste Image: it adds its
+// pages with the Add Page dialog and goes between them by clicking their thumbnails. The other
+// tests take the API's shortcuts to their pages.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
+import { addPageFromDialog, openAddPageDialog } from "../helpers/addPageDialog";
 import {
     addPage,
     getContentPages,
     goToPage,
     makeBookFromTemplate,
-    type IBookPage,
 } from "../helpers/bookMaking";
 import { copyToClipboard, getClipboard } from "../helpers/clipboard";
+import { selectPage } from "../helpers/pageThumbnails";
 import {
     copyPictureInBox,
     getPictureInBox,
@@ -62,8 +69,56 @@ const CREDITS = {
     license: "cc-by",
 };
 
-/** The pages, each with one empty picture box. Set by the first test. */
-let pages: IBookPage[];
+/**
+ * Whether this worker's Bloom has made the book the tests share. Each test that needs the book
+ * makes it if no test before it in this worker did, so any one test can be run by itself.
+ */
+let bookMade = false;
+
+/** Make the book the tests share, unless a test before this one in this worker made it. */
+async function ensureBook(page: Page): Promise<void> {
+    if (bookMade) return;
+    await makeBookFromTemplate(page, "Basic Book");
+    bookMade = true;
+}
+
+/**
+ * Add `count` Basic Text & Image pages to the book, each with one empty picture box, through
+ * `add` (which adds one page), and return their ids in the order they were added.
+ */
+async function addPagesWithEmptyPictureBoxes(
+    page: Page,
+    count: number,
+    add: () => Promise<void>,
+): Promise<string[]> {
+    const added: string[] = [];
+    for (let i = 0; i < count; i++) {
+        const before = (await getContentPages(page)).map((p) => p.id);
+        await add();
+        const newPages = (await getContentPages(page)).filter(
+            (p) => !before.includes(p.id),
+        );
+        expect(newPages, "the page just added").toHaveLength(1);
+        added.push(newPages[0].id);
+    }
+    return added;
+}
+
+/** Add pages through the API, as every test but the journey test does. */
+async function addPagesQuickly(page: Page, count: number): Promise<string[]> {
+    await ensureBook(page);
+    return addPagesWithEmptyPictureBoxes(page, count, () =>
+        addPage(page, "Basic Text & Image"),
+    );
+}
+
+/** Check that the picture box of the page being edited is empty. */
+async function expectEmptyPictureBox(page: Page): Promise<void> {
+    expect(
+        (await getPictureInBox(page)).fileName,
+        "the picture box should be empty before the paste",
+    ).toBe("placeHolder.png");
+}
 
 const creditsOf = (picture: IPictureInBox) => ({
     copyright: picture.copyright,
@@ -93,27 +148,56 @@ function expectShrunkToFit(
 }
 
 /**
- * Paste a picture file as if copied in File Explorer into pages[first], check its size and
- * credits, then copy it with Copy Image and paste it into pages[first + 1], and check that the
- * copy has the same size and credits.
+ * Copy the picture in the page's box with Copy Image, and wait until the clipboard holds that
+ * picture. The clipboard is first given something else, so that a Copy Image that did nothing
+ * cannot leave the file copied earlier there to be pasted again.
+ */
+async function copyPictureToClipboard(
+    page: Page,
+    picture: IPictureInBox,
+): Promise<void> {
+    await copyToClipboard(page, { text: "something else" });
+    expect((await getClipboard(page)).picture).toBeUndefined();
+    await copyPictureInBox(page);
+    await expect
+        .poll(
+            async () => {
+                const copied = (await getClipboard(page)).picture;
+                return copied ? Path.win32.basename(copied) : "(no picture)";
+            },
+            {
+                timeout: 15000,
+                message: "Copy Image did not put the picture on the clipboard.",
+            },
+        )
+        .toBe(picture.fileName);
+}
+
+/**
+ * Paste a picture file as if copied in File Explorer into the box on the first page, check its
+ * size and credits, then copy it with Copy Image and paste it into the box on the second page,
+ * and check that the copy has the same size and credits. `showPage` takes the Edit tab to a page.
  */
 async function pasteFromExplorerThenCopyToNextPage(
-    page: Parameters<typeof getPictureInBox>[0],
+    page: Page,
     file: string,
-    first: number,
+    [first, second]: string[],
+    showPage: (id: string) => Promise<void>,
 ): Promise<void> {
     const original = readPictureFileSize(file);
     // Sanity check: the fixture must be too big, or nothing would need shrinking.
     expect(original.width).toBeGreaterThan(MAX_WIDTH);
 
-    await goToPage(page, pages[first].id);
+    await showPage(first);
+    await expectEmptyPictureBox(page);
     await copyToClipboard(page, { files: [file] });
     const pasted = await pasteIntoPictureBox(page);
     expectShrunkToFit(pasted, original);
     expect(creditsOf(pasted), "the credits in the file").toEqual(CREDITS);
 
-    await copyPictureInBox(page);
-    await goToPage(page, pages[first + 1].id);
+    await copyPictureToClipboard(page, pasted);
+    await showPage(second);
+    await expectEmptyPictureBox(page);
     const copy = await pasteIntoPictureBox(page);
     expect(
         { width: copy.width, height: copy.height },
@@ -123,61 +207,46 @@ async function pasteFromExplorerThenCopyToNextPage(
 }
 
 test.describe("Copy Cut Paste Pictures", () => {
-    test("builds a book with six pages that each have an empty picture box", async ({
+    test("a large JPEG from File Explorer is shrunk and keeps its credits, and so does a copy of it on another page, all through the menus [Test Case ID 281]", async ({
         page,
     }) => {
         test.setTimeout(300000);
-        await makeBookFromTemplate(page, "Basic Book");
-        for (let i = 0; i < 6; i++) await addPage(page, "Basic Text & Image");
-        pages = await getContentPages(page);
-        expect(pages).toHaveLength(6);
-        for (const bookPage of pages) {
-            await goToPage(page, bookPage.id);
-            expect((await getPictureInBox(page)).fileName).toBe(
-                "placeHolder.png",
-            );
-        }
-    });
-
-    test("a large JPEG from File Explorer is shrunk and keeps its credits, and so does a copy of it on another page [Test Case ID 281]", async ({
-        page,
-    }) => {
-        await pasteFromExplorerThenCopyToNextPage(page, LARGE_JPEG, 0);
+        await ensureBook(page);
+        const ids = await addPagesWithEmptyPictureBoxes(page, 2, async () => {
+            await openAddPageDialog(page);
+            await addPageFromDialog(page, "Basic Text & Image", "Basic Book");
+        });
+        await pasteFromExplorerThenCopyToNextPage(page, LARGE_JPEG, ids, (id) =>
+            selectPage(page, id),
+        );
     });
 
     test("a large PNG from File Explorer is shrunk and keeps its credits, and so does a copy of it on another page [Test Case ID 281]", async ({
         page,
     }) => {
-        await pasteFromExplorerThenCopyToNextPage(page, LARGE_PNG, 2);
+        test.setTimeout(300000);
+        const ids = await addPagesQuickly(page, 2);
+        await pasteFromExplorerThenCopyToNextPage(page, LARGE_PNG, ids, (id) =>
+            goToPage(page, id),
+        );
     });
 
     test("a large picture that another program put on the clipboard is shrunk to fit [Test Case ID 281]", async ({
         page,
     }) => {
-        for (const [index, file] of [
-            [4, LARGE_JPEG],
-            [5, LARGE_PNG],
+        test.setTimeout(300000);
+        const ids = await addPagesQuickly(page, 2);
+        for (const [id, file] of [
+            [ids[0], LARGE_JPEG],
+            [ids[1], LARGE_PNG],
         ] as const) {
-            await goToPage(page, pages[index].id);
+            await goToPage(page, id);
+            await expectEmptyPictureBox(page);
             await copyToClipboard(page, { picture: file });
             expectShrunkToFit(
                 await pasteIntoPictureBox(page),
                 readPictureFileSize(file),
             );
         }
-    });
-
-    test("Copy Image puts the picture on the clipboard for another program [Test Case ID 281]", async ({
-        page,
-    }) => {
-        await goToPage(page, pages[0].id);
-        await copyToClipboard(page, { text: "something else" });
-        await copyPictureInBox(page);
-        await expect
-            .poll(async () => (await getClipboard(page)).picture ?? "", {
-                timeout: 15000,
-                message: "Copy Image did not put a picture on the clipboard.",
-            })
-            .toMatch(/large-with-credits\.jpg$/);
     });
 });
