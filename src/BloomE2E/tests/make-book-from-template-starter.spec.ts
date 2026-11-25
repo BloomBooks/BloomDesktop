@@ -14,6 +14,7 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
+import type { Page } from "@playwright/test";
 import {
     addPageFromDialog,
     getAddPageDialogGroups,
@@ -48,14 +49,53 @@ const CUSTOM_THUMBNAIL_LABEL = "Just Text";
 const CUSTOM_THUMBNAIL_WIDTH = 137;
 const CUSTOM_THUMBNAIL_HEIGHT = 191;
 
-/** The width and height of a PNG file, from its IHDR chunk. */
-function pngSize(file: string): { width: number; height: number } {
+/**
+ * The width and height of a PNG file, from its IHDR chunk, or undefined while the file is missing
+ * or too short to hold them, as it is while Bloom is still writing it.
+ */
+function pngSize(file: string): { width: number; height: number } | undefined {
+    if (!fs.existsSync(file)) return undefined;
     const header = fs.readFileSync(file).subarray(0, 24);
-    expect(
-        header.subarray(1, 4).toString("latin1"),
-        `${file} is not a PNG file`,
-    ).toBe("PNG");
+    if (header.length < 24) return undefined;
+    if (header.subarray(1, 4).toString("latin1") !== "PNG")
+        throw new Error(`${file} is not a PNG file`);
     return { width: header.readUInt32BE(16), height: header.readUInt32BE(20) };
+}
+
+/** One page of a book's HTML file on disk. */
+interface IPageOnDisk {
+    id: string;
+    label: string;
+    /** The ids of the pages this page was made from, oldest first (data-pagelineage). */
+    lineage: string[];
+}
+
+/**
+ * The pages in the HTML file of the book in `bookFolder`, read from disk. Parsed in the browser,
+ * because Node has no HTML parser.
+ */
+async function readPagesOnDisk(
+    page: Page,
+    bookFolder: string,
+): Promise<IPageOnDisk[]> {
+    const htmlFiles = fs
+        .readdirSync(bookFolder)
+        .filter((name) => /\.html?$/i.test(name));
+    if (htmlFiles.length !== 1)
+        throw new Error(
+            `Expected one HTML file in ${bookFolder}, found: ${htmlFiles.join(", ") || "(none)"}.`,
+        );
+    const html = fs.readFileSync(Path.join(bookFolder, htmlFiles[0]), "utf8");
+    return page.evaluate((source) => {
+        const dom = new DOMParser().parseFromString(source, "text/html");
+        return Array.from(dom.querySelectorAll(".bloom-page[id]")).map((p) => ({
+            id: p.id,
+            label: p.querySelector(".pageLabel")?.textContent?.trim() ?? "",
+            lineage: (p.getAttribute("data-pagelineage") ?? "")
+                .split(/[;,]/)
+                .filter((id) => id),
+        }));
+    }, html);
 }
 
 /** Describe the dialog's groups for a failure message. */
@@ -185,9 +225,9 @@ test("a book made from a Template Starter template is blank and offers the templ
             await expect
                 .poll(
                     async () => {
-                        if (!fs.existsSync(generated))
-                            return `Bloom has not saved ${generated}`;
                         const expected = pngSize(generated);
+                        if (!expected)
+                            return `Bloom has not saved ${generated}`;
                         const shown = (await getAddPageDialogGroups(page))[0]
                             .pages[0];
                         return shown.naturalWidth === expected.width &&
@@ -216,5 +256,31 @@ test("a book made from a Template Starter template is blank and offers the templ
             (await getContentPages(page)).length,
             "the page added from the template did not reach the book",
         ).toBe(1);
+        // Basic Book has a page of the same label, so check where the page came from: a page
+        // Bloom adds records, last in its lineage, the id of the template page it was made from.
+        const templatePage = (await readPagesOnDisk(page, templateFolder)).find(
+            (p) => p.label === AUTOMATIC_THUMBNAIL_LABEL,
+        );
+        expect(
+            templatePage,
+            `the template's file has no "${AUTOMATIC_THUMBNAIL_LABEL}" page`,
+        ).toBeDefined();
+        await expect
+            .poll(
+                async () =>
+                    (await readPagesOnDisk(page, bookFolder))
+                        .filter(
+                            (p) =>
+                                p.lineage[p.lineage.length - 1] ===
+                                templatePage!.id,
+                        )
+                        .map((p) => p.label),
+                {
+                    timeout: 30000,
+                    message:
+                        "the book's file never held a page made from the template's page",
+                },
+            )
+            .toEqual([AUTOMATIC_THUMBNAIL_LABEL]);
     });
 });

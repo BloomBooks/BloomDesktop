@@ -13,7 +13,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet, apiGetJson, apiPost } from "./api";
 import {
-    chooseFromSelectedBookMenu,
+    chooseFromSelectedBookMenuByTestId,
     selectBook,
     waitForCollectionReady,
 } from "./collection";
@@ -183,7 +183,8 @@ export async function makeBookFromBookInCollection(
 
 /**
  * Make a new book from a template book in the editable collection the way a person does: right-click
- * its tile on the Collections tab and choose "Make a book using this source". Returns the new
+ * its tile on the Collections tab and choose "Make a book using this source" (found by its test id,
+ * not its words). Returns the new
  * book's folder; Bloom lands in the Edit tab, showing the new book's cover. Fails, naming what the
  * menu offered, when the menu has no such command, as it has none for a book that is not a
  * template.
@@ -198,7 +199,10 @@ export async function makeBookFromBookInCollectionWithItsMenu(
     await switchTab(page, "collection");
     await selectBook(page, bookFolder);
     return makeBookFromSelectedBook(page, Path.basename(bookFolder), () =>
-        chooseFromSelectedBookMenu(page, ["Make a book using this source"]),
+        chooseFromSelectedBookMenuByTestId(
+            page,
+            "CollectionTab.MakeBookUsingThisTemplate",
+        ),
     );
 }
 

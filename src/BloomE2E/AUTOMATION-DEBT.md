@@ -888,3 +888,14 @@ Two things a test cannot check at all:
 Fix direction: none from Bloom's side short of printing through `CoreWebView2.PrintAsync` with its
 settings chosen in code, which would replace the dialog. (Found 2026-11-09 while automating
 BL-16179.)
+
+## A template page's label is hidden under the controls bar, so no test can rename it
+
+The label of a page in a template book (`div.pageLabel[contenteditable=true]`) sits in the space
+above the page that the bar of controls (`.above-page-control-container.bloom-controls-bar`, fixed
+at the top of the page frame) now covers, so a click on it lands on the bar. A person cannot rename
+a template page either: this is a Bloom bug, BL-17185, not only a gap in automation.
+`make-book-from-template-starter.spec.ts` (Test Case ID 79) therefore leaves its template pages with
+the labels they came with, and does not check a label typed by the template's author. Fix
+direction: fix BL-17185, then have that test type a label of its own on each page. (Found
+2026-11-25 while automating Test Case ID 79.)
