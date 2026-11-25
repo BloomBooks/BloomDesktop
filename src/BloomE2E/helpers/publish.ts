@@ -502,58 +502,6 @@ export function getStagedNarrationIds(stagedFolder: string): string[] {
         .sort();
 }
 
-/** One video file a staged BloomPUB carries. */
-export interface IStagedVideo {
-    /** The file's name in the BloomPUB's video folder. */
-    fileName: string;
-    content: Buffer;
-}
-
-/**
- * The video files a staged BloomPUB carries (see stageBloomPub), sorted by name. Bloom leaves out
- * a video no page shows, and writes a trimmed video as a new, shorter file.
- */
-export function getStagedVideos(stagedFolder: string): IStagedVideo[] {
-    const videoFolder = Path.join(stagedFolder, "video");
-    if (!fs.existsSync(videoFolder)) return [];
-    return fs
-        .readdirSync(videoFolder)
-        .sort()
-        .map((fileName) => ({
-            fileName,
-            content: fs.readFileSync(Path.join(videoFolder, fileName)),
-        }));
-}
-
-/**
- * The video each page of a staged BloomPUB (see stageBloomPub) plays, as the file names its video
- * boxes point to, in the order of the book. This is what a reader's device will look for in the
- * BloomPUB's video folder.
- */
-export function getStagedVideoSources(stagedFolder: string): string[] {
-    const bookFiles = fs
-        .readdirSync(stagedFolder)
-        .filter((name) => name.toLowerCase().endsWith(".htm"));
-    if (bookFiles.length !== 1)
-        throw new Error(
-            `The staged BloomPUB at ${stagedFolder} should hold one .htm file. It holds: ${bookFiles.join(", ")}.`,
-        );
-    const html = fs.readFileSync(Path.join(stagedFolder, bookFiles[0]), "utf8");
-    // Bloom writes a video box as <video><source src="video/name.mp4"></video>; a picture's
-    // <source>, if a book ever has one, is not inside a <video>.
-    const sources: string[] = [];
-    for (const video of html.matchAll(/<video\b[^>]*>([\s\S]*?)<\/video>/g))
-        for (const source of video[1].matchAll(
-            /<source\b[^>]*\bsrc="([^"]*)"/g,
-        ))
-            sources.push(
-                decodeURIComponent(
-                    Path.posix.basename(source[1].split(/[?#]/)[0]),
-                ),
-            );
-    return sources;
-}
-
 /** What Bloom itself says about the languages in the selected book. */
 export async function getLanguagesInBook(
     page: Page,

@@ -1,14 +1,17 @@
 // Publishing a sign language book as a BloomPUB: a book with a video, in a collection that has a
 // sign language. The BloomPUB screen has Sign Language on, the preview plays the video when the
-// reader turns to its page and again when the reader taps it, and the BloomPUB carries the video
-// file that its page plays.
+// reader turns to its page and again when the reader taps it, and the .bloompub file carries the
+// video file that its video page plays.
 //
-// Test Case ID 594 ("Publish SL To BloomPUB"). Two lines of the card are not checked here. "Save to
-// disk": the Save button opens a native save dialog, which no test can answer (AUTOMATION-DEBT.md,
-// "Native OS dialogs hang automation"), so the test reads the files Bloom stages for the BloomPUB
-// instead, which are the files an unzipped .bloompub holds (see stageBloomPub). "Verify in BloomPUB
-// Viewer": that is another product, with no end-to-end suite.
+// Test Case ID 594 ("Publish SL To BloomPUB"). Two lines of the card are not checked as written.
+// "Save to disk": the Save button opens a native save dialog, which no test can answer
+// (AUTOMATION-DEBT.md, "Native OS dialogs hang automation"). The test makes the .bloompub with
+// "Make All BloomPUBs from Collection" instead, which writes the same file with no dialog; that
+// command needs an enterprise subscription, which is why the collection has one. "Verify in
+// BloomPUB Viewer": that is another product, with no end-to-end suite; the test reads the
+// .bloompub's own files.
 
+import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     expectPreviewVideosPlayed,
@@ -17,24 +20,27 @@ import {
     startRecordingPreviewVideos,
     tapPreviewVideo,
 } from "../helpers/bloomPlayer";
+import { makeBookFromTemplate } from "../helpers/bookMaking";
 import {
-    addPage,
-    getContentPages,
-    goToPage,
-    makeBookFromTemplate,
-} from "../helpers/bookMaking";
+    getBloomPubPageVideos,
+    getBloomPubVideos,
+    makeAllBloomPubs,
+    openMakeAllBloomPubsDialog,
+    setMakeAllBloomPubsOption,
+} from "../helpers/bulkBloomPub";
+import {
+    kEnterpriseSubscriptionCode,
+    kTestBookshelves,
+} from "../helpers/collectionSettings";
 import {
     expectSignLanguageFeature,
     getCollectionSignLanguage,
     getSignLanguageTooltipText,
-    getStagedVideoSources,
-    getStagedVideos,
     selectPublishDestination,
     showBloomPubPreview,
-    stageBloomPub,
 } from "../helpers/publish";
 import {
-    chooseVideoFile,
+    addPageWithVideo,
     getVideoFileName,
     readVideoFile,
     SHORT_VIDEO,
@@ -48,28 +54,29 @@ test.use({
         name: "publish-sign-language-bloompub",
         languages: ["en"],
         signLanguage: kSignLanguage,
+        // Make All BloomPUBs from Collection, which makes the .bloompub file, needs it.
+        subscriptionCode: kEnterpriseSubscriptionCode,
+        // In a collection with no bookshelf, Make All BloomPUBs fails (BL-17197): it tries to make
+        // a .bloomshelf file that the dialog cannot turn off. With a bookshelf the test turns it
+        // off, since the case is about one book and no bookshelf.
+        bookshelf: kTestBookshelves[0],
     },
 });
 
-test("a sign language book's video plays in the BloomPUB preview and goes into the BloomPUB [Test Case ID 594]", async ({
+test("a sign language book's video plays in the BloomPUB preview and goes into the .bloompub file [Test Case ID 594]", async ({
     page,
     step,
 }) => {
-    test.setTimeout(300000);
+    test.setTimeout(420000);
 
     const book = await step(
         "Make a book with a page that has a sign language video",
         async () => {
             const folder = await makeBookFromTemplate(page, "Basic Book");
-            const before = (await getContentPages(page)).map((p) => p.id);
-            await addPage(page, "Video Over Text");
-            const videoPage = (await getContentPages(page)).find(
-                (p) => !before.includes(p.id),
-            )!;
-            await goToPage(page, videoPage.id);
-            await chooseVideoFile(page, videoBoxes(page).first(), SHORT_VIDEO);
+            const videoPage = await addPageWithVideo(page, SHORT_VIDEO);
             const videoFile = await getVideoFileName(videoBoxes(page).first());
             return {
+                folder,
                 videoPageId: videoPage.id,
                 videoFile,
                 video: readVideoFile(folder, videoFile),
@@ -133,23 +140,40 @@ test("a sign language book's video plays in the BloomPUB preview and goes into t
         );
     });
 
+    const made = await step("Make the .bloompub file", async () => {
+        await openMakeAllBloomPubsDialog(page);
+        await setMakeAllBloomPubsOption(page, "bookshelfFile", false);
+        await setMakeAllBloomPubsOption(page, "bloomBundle", false);
+        return makeAllBloomPubs(page);
+    });
+    if (!made) throw new Error("The .bloompub file was not made.");
+
     await step(
-        "Make the BloomPUB's files: the video is there, and the page plays it",
+        "Check the .bloompub: the video is in it, and its video page plays it",
         async () => {
-            const stagedFolder = await stageBloomPub(page);
-            const stagedVideos = getStagedVideos(stagedFolder);
+            const bloomPubName = `${Path.basename(book.folder)}.bloompub`;
+            const bloomPub = made.files.get(bloomPubName);
+            if (!bloomPub)
+                throw new Error(
+                    `Bloom made no ${bloomPubName}. It made: ${[...made.files.keys()].join(", ")}. ` +
+                        `The progress box said:\n${made.log}`,
+                );
+            const videoInBloomPub = `video/${book.videoFile}`;
+            const videos = getBloomPubVideos(bloomPub);
             expect(
-                stagedVideos.map((video) => video.fileName),
-                "The BloomPUB should carry the book's one video.",
-            ).toEqual([book.videoFile]);
+                videos.map((video) => video.name),
+                "The .bloompub should carry the book's one video, in its video folder.",
+            ).toEqual([videoInBloomPub]);
             expect(
-                stagedVideos[0].content.equals(book.video),
-                "The BloomPUB's video should be the book's video file, unchanged, since it was not trimmed.",
+                videos[0].content.equals(book.video),
+                "The .bloompub's video should be the book's video file, unchanged, since it was not trimmed.",
             ).toBe(true);
             expect(
-                getStagedVideoSources(stagedFolder),
-                "The BloomPUB's video page should play the video file the BloomPUB carries.",
-            ).toEqual([book.videoFile]);
+                await getBloomPubPageVideos(page, bloomPub),
+                "Only the video page of the .bloompub should play a video, and it should play the file the .bloompub carries.",
+            ).toEqual([
+                { pageId: book.videoPageId, sources: [videoInBloomPub] },
+            ]);
         },
     );
 });
