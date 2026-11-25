@@ -256,13 +256,32 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
         ).toHaveAttribute("data-bloom-active", "true");
         await selectCanvasElementAt(heading, "the heading");
         await typeInCanvasElement(page, headingText);
-        // Typing the word also shows that in Start a click puts the insertion point in it.
         await selectTextBoxInsideAnotherItem(
             page,
             wordLabel,
             "the word in a word box",
         );
         await typeInCanvasElement(page, word);
+        // Sanity check: in Start, a click on the word, at the point the other tabs are pressed at,
+        // puts the insertion point in it. Clicking the heading first takes it out of the word.
+        await selectCanvasElementAt(heading, "the heading");
+        expect(
+            await hasCaretOrFocusInside(wordLabel),
+            "Sanity check: with the heading selected, the insertion point should not be in the word",
+        ).toBe(false);
+        const onWord = await pointOn(
+            wordLabel,
+            "the word in a word box",
+            kClearOfTabPanel,
+        );
+        await realClickAt(page, onWord.x, onWord.y);
+        await realClickAt(page, onWord.x, onWord.y);
+        await expect
+            .poll(() => hasCaretOrFocusInside(wordLabel), {
+                message:
+                    "Sanity check: in Start, clicking the word (once for its box, once for the word) should put the insertion point in it",
+            })
+            .toBe(true);
         await expect(
             pictureItem,
             "Sanity check: the leftmost target should be the target of one draggable picture",
@@ -395,10 +414,19 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
             await selectCanvasElementAt(added, "the picture added in Correct");
 
             const before = await getStylePlace(added);
+            const dragged = await dragElementBy(page, added, -40, 30);
             expect(
-                await dragElementBy(page, added, -40, 30),
-                "Dragging the picture added in Correct should move it",
-            ).not.toEqual(before);
+                dragged.left,
+                "Dragging the picture added in Correct to the left should move it sideways",
+            ).not.toBe(before.left);
+            expect(
+                dragged.top,
+                "Dragging the picture added in Correct downwards should move it down",
+            ).not.toBe(before.top);
+            expect(
+                { width: dragged.width, height: dragged.height },
+                "Dragging the picture added in Correct should not change its size",
+            ).toEqual({ width: before.width, height: before.height });
 
             const { before: smaller, after: larger } =
                 await dragCanvasElementCorner(page, "se", 30, 30);
@@ -448,15 +476,12 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
             }
             // Not even faintly: Start shows a shadow of the picture on its target, and Wrong must
             // not give the answer away.
+            // However Bloom hides it: a picture that takes up no room is not seen either.
+            const inWrong = await getPictureOnTarget(pictureTarget);
             expect(
-                await getPictureOnTarget(pictureTarget),
-                "In Wrong, the picture chosen in Start should be on its target but not show there at all",
-            ).toEqual({
-                fileName: pictureFile,
-                loaded: true,
-                laidOut: true,
-                opacity: 0,
-            });
+                inWrong.laidOut ? inWrong.opacity : 0,
+                "In Wrong, the picture chosen in Start should not show on its target at all",
+            ).toBe(0);
             await expect(
                 correctImage,
                 "In Wrong, the picture added in Correct should not show",
