@@ -249,6 +249,7 @@ async function clickOk(page: Page): Promise<void> {
 /** What the credits page shows of the book's license. */
 interface ICreditsLicense {
     licenseUrl: string;
+    /** The text under the license that a reader can see; "" when it is hidden or empty. */
     licenseNotes: string;
     /** The license image's src; "" when the page has no license image. */
     imageSrc: string;
@@ -281,13 +282,13 @@ async function getCreditsLicense(
                     ) as HTMLElement | null
                 )?.innerText ?? ""
             ).trim();
-            const notes = (
-                (
-                    block.querySelector(
-                        '[data-derived="licenseNotes"]',
-                    ) as HTMLElement | null
-                )?.innerText ?? ""
-            ).trim();
+            // Only notes a reader can see count: innerText reads hidden text too.
+            const notesElement = block.querySelector(
+                '[data-derived="licenseNotes"]',
+            ) as HTMLElement | null;
+            const notes = notesElement?.checkVisibility()
+                ? notesElement.innerText.trim()
+                : "";
             const img = block.querySelector(
                 'img[data-derived="licenseImage"]',
             ) as HTMLImageElement | null;
