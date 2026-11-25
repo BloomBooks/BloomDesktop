@@ -116,7 +116,8 @@ test.describe("the Edit tab's zoom", () => {
         expect(await turnWheelToZoom(page, -1)).toBe(100 - kStep);
         await expectZoomedTo(page, 100 - kStep, "After two notches out");
 
-        // A quick spin, which once froze Bloom (BL-16762).
+        // A quick spin lands where its notches add up to, however the page groups them into
+        // requests.
         expect(await turnWheelToZoom(page, 6)).toBe(100 + 5 * kStep);
         await expectZoomedTo(page, 100 + 5 * kStep, "After a spin in");
         expect(await turnWheelToZoom(page, -5)).toBe(100);
@@ -158,6 +159,15 @@ test.describe("the Edit tab's zoom", () => {
             kSmallestZoom + kStep,
             "After one notch in from the smallest zoom",
         );
+        // A spin that starts above the smallest zoom and would end well below it.
+        expect(await turnWheelToZoom(page, 1)).toBe(kSmallestZoom + 2 * kStep);
+        expect(await turnWheelToZoom(page, -6)).toBe(kSmallestZoom);
+        await expectZoomedTo(
+            page,
+            kSmallestZoom,
+            "After a spin out past the smallest zoom",
+        );
+        expect(await turnWheelToZoom(page, 1)).toBe(kSmallestZoom + kStep);
 
         // The largest zoom, with the button and then with the wheel.
         await setZoom(page, kLargestZoom - kStep);
@@ -190,6 +200,15 @@ test.describe("the Edit tab's zoom", () => {
             kLargestZoom - kStep,
             "After one notch out from the largest zoom",
         );
+        // A spin that starts below the largest zoom and would end well above it.
+        expect(await turnWheelToZoom(page, -1)).toBe(kLargestZoom - 2 * kStep);
+        expect(await turnWheelToZoom(page, 6)).toBe(kLargestZoom);
+        await expectZoomedTo(
+            page,
+            kLargestZoom,
+            "After a spin in past the largest zoom",
+        );
+        expect(await turnWheelToZoom(page, -1)).toBe(kLargestZoom - kStep);
     });
 
     test("Bloom keeps the zoom after it is closed and opened again [Test Case ID 353]", async ({

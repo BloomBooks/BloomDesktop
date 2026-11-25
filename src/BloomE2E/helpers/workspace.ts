@@ -174,14 +174,16 @@ export async function clickZoomButtonAtEndOfRange(
         throw new Error(
             `The zoom is ${before.zoom}%, not ${end}%, the ${direction === "in" ? "largest" : "smallest"} Bloom allows. Use clickZoomButton.`,
         );
-    const answered = page.waitForResponse(
-        (response) =>
-            response.request().method() === "POST" &&
-            new URL(response.url()).pathname.endsWith("/workspace/zoom"),
-        { timeout: 15000 },
-    );
-    await zoomButton(page, direction).click();
-    await answered;
+    // Awaited together, so that a click that fails does not leave the wait to time out unhandled.
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.request().method() === "POST" &&
+                new URL(response.url()).pathname.endsWith("/workspace/zoom"),
+            { timeout: 30000 },
+        ),
+        zoomButton(page, direction).click(),
+    ]);
     return (await getZoom(page)).zoom;
 }
 
@@ -298,6 +300,12 @@ export interface IUnzoomedPart {
     pixelRatio: number;
     /** The width and height of one thing in it: a tab, the first page thumbnail, the tool list. */
     landmark: { width: number; height: number };
+    /**
+     * The width and height on screen of the frame the part is drawn in, which scaling the frame
+     * itself changes while everything measured inside it stays the same. The top bar is in the
+     * shell document, so for it this is the size of that document's view.
+     */
+    onScreen: { width: number; height: number };
 }
 
 /**
@@ -310,7 +318,7 @@ export async function getSizesOfUnzoomedParts(page: Page): Promise<{
     pageList: IUnzoomedPart;
     toolbox: IUnzoomedPart;
 }> {
-    const measure = (landmark: Element): IUnzoomedPart => {
+    const measure = (landmark: Element) => {
         const rect = landmark.getBoundingClientRect();
         return {
             viewportWidth: window.innerWidth,
@@ -318,12 +326,31 @@ export async function getSizesOfUnzoomedParts(page: Page): Promise<{
             landmark: { width: rect.width, height: rect.height },
         };
     };
+    const sizeOnScreen = (element: Element) => {
+        const rect = element.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+    };
+    const pageList = pageListFrame(page);
+    const toolbox = toolboxFrame(page);
     return {
-        topBar: await page.getByTestId(tabTestId("edit")).evaluate(measure),
-        pageList: await pageListFrame(page)
-            .locator(".gridItem")
-            .first()
-            .evaluate(measure),
-        toolbox: await toolboxFrame(page).locator("body").evaluate(measure),
+        topBar: {
+            ...(await page.getByTestId(tabTestId("edit")).evaluate(measure)),
+            onScreen: await page.evaluate(() => ({
+                width: window.innerWidth,
+                height: window.innerHeight,
+            })),
+        },
+        pageList: {
+            ...(await pageList.locator(".gridItem").first().evaluate(measure)),
+            onScreen: await (
+                await pageList.frameElement()
+            ).evaluate(sizeOnScreen),
+        },
+        toolbox: {
+            ...(await toolbox.locator("body").evaluate(measure)),
+            onScreen: await (
+                await toolbox.frameElement()
+            ).evaluate(sizeOnScreen),
+        },
     };
 }
