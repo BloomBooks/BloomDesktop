@@ -12,7 +12,7 @@ import * as Path from "node:path";
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import { apiGet, apiGetJson } from "../helpers/api";
-import { makeBookFromTemplate } from "../helpers/bookMaking";
+import { editBook, makeBookFromTemplate } from "../helpers/bookMaking";
 import { selectBook, waitForCollectionReady } from "../helpers/collection";
 import { readSavedUserSetting } from "../helpers/userSettings";
 import { getTabs, switchTab, waitForActiveTab } from "../helpers/workspace";
@@ -175,8 +175,5 @@ test("Bloom starts without crashing when the book it reopens has lost its .htm a
             .toBe("");
     });
 
-    await step("Open the good book", async () => {
-        await selectBook(restarted, goodBook);
-        await switchTab(restarted, "edit");
-    });
+    await step("Open the good book", () => editBook(restarted, goodBook));
 });

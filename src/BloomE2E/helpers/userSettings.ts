@@ -22,9 +22,9 @@ export async function getUserSettingsFolder(page: Page): Promise<string> {
 
 /**
  * Read one user setting Bloom has saved to the user.config in `folder`, by the name it has in
- * Bloom's Settings.settings (e.g. "PageZoom"), as the string in the file; undefined when there is
- * no such file yet or Bloom has not saved that setting. Only settings serialized as a string are
- * readable this way, which is nearly all of them.
+ * Bloom's Settings.settings (e.g. "PageZoom"), as the text it stands for in the file (XML escapes
+ * undone); undefined when there is no such file yet or Bloom has not saved that setting. Only
+ * settings serialized as a string are readable this way, which is nearly all of them.
  *
  * This reads the disk rather than asking Bloom, because what a test usually wants to know is what
  * reached the file: that is what the next Bloom to use the folder starts from. Bloom writes some
@@ -55,7 +55,24 @@ export async function readSavedUserSetting(
     const match = new RegExp(
         `<setting name="${name}"[^>]*>\\s*<value>([^<]*)</value>`,
     ).exec(xml);
-    return match ? match[1] : undefined;
+    return match ? decodeXmlText(match[1]) : undefined;
+}
+
+/**
+ * The text that XML text content stands for: user.config escapes `&`, `<` and `>` (a folder path
+ * can hold an ampersand), and a test compares the setting with the value it expects.
+ */
+function decodeXmlText(text: string): string {
+    return text
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+        .replace(/&#x([0-9a-f]+);/gi, (_, code) =>
+            String.fromCharCode(parseInt(code, 16)),
+        )
+        .replace(/&amp;/g, "&");
 }
 
 /**
