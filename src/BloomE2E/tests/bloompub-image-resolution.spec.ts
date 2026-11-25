@@ -65,8 +65,9 @@ test.use({
 test.describe.configure({ mode: "serial" });
 
 // The pictures, one to a page. The first two have the sizes of the manual test's photos
-// "1 Samuel.jpg" and "2 Dylan.jpg". `imported` is the size Bloom keeps the picture at in the book,
-// which for those two is the size the card lists "as imported".
+// "1 Samuel.jpg" and "2 Dylan.jpg". `imported` is the largest size Bloom keeps the picture at in
+// the book: its own size, unless that is over Bloom's limit for a picture in a book (3840 on the
+// long side), as the second one's is.
 const PICTURES: {
     which: string;
     fileName: string;
@@ -83,7 +84,7 @@ const PICTURES: {
         which: "landscape",
         fileName: "Dylan.jpg",
         source: { width: 3992, height: 2242 },
-        imported: { width: 3839, height: 2156 },
+        imported: { width: 3840, height: 2156 },
     },
     {
         which: "tall landscape",
@@ -102,8 +103,8 @@ let pictureFiles: string[] | undefined;
 /**
  * Make the book that every test here publishes, unless an earlier test already has: a Basic Book
  * with one page for each of PICTURES, holding that picture. Checks that each picture is in the
- * book at its `imported` size, since a picture Bloom reduced further than that on the way in would
- * prove nothing about publishing.
+ * book at its `imported` size, within BL-16829's rounding, since a picture Bloom reduced further
+ * than that on the way in would prove nothing about publishing.
  */
 const ensureBookWithPictures = async (page: Page, testInfo: TestInfo) => {
     if (pictureFiles) return;
@@ -122,10 +123,22 @@ const ensureBookWithPictures = async (page: Page, testInfo: TestInfo) => {
         await goToPage(page, pages[index].id);
         await chooseImageFile(page, path);
         const fileName = (await getImagePlacement(page)).fileName;
-        expect(
-            readImageFileSize(Path.join(bookFolder, fileName)),
-            `The ${picture.which} picture is not in the book at the size expected.`,
-        ).toEqual(picture.imported);
+        const inBook = readImageFileSize(Path.join(bookFolder, fileName));
+        const described = `The ${picture.which} picture (${picture.source.width}x${picture.source.height}) is ${inBook.width}x${inBook.height} in the book, not ${picture.imported.width}x${picture.imported.height}.`;
+        // A picture Bloom reduced on the way in can be short by the same rounding as a published
+        // one (the card lists the second as 3839x2156); one it kept is exactly its own size.
+        const shortfall =
+            picture.imported.width < picture.source.width
+                ? ROUNDING_SHORTFALL
+                : 0;
+        for (const side of ["width", "height"] as const) {
+            expect(inBook[side], described).toBeLessThanOrEqual(
+                picture.imported[side],
+            );
+            expect(inBook[side], described).toBeGreaterThanOrEqual(
+                picture.imported[side] - shortfall,
+            );
+        }
         files.push(fileName);
     }
     // Leaving the page saves it.
