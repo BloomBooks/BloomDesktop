@@ -154,7 +154,7 @@ test.describe("Sign Language video on a canvas page [Test Case ID 336]", () => {
     }) => {
         test.setTimeout(300000);
         await selectCanvasElement(page, video);
-        const chosen = await getVideoSource(videoBox(page));
+        const chosen = await getVideoFileName(videoBox(page));
         expect(chosen, "test setup: the element should hold a video").not.toBe(
             "",
         );
@@ -167,15 +167,14 @@ test.describe("Sign Language video on a canvas page [Test Case ID 336]", () => {
             "The toolbar's Record yourself button did not open the Sign Language tool.",
         );
 
-        const recorded = await recordWithOpenSignLanguageTool(
-            page,
-            videoBox(page),
-        );
+        await recordWithOpenSignLanguageTool(page, videoBox(page));
+        // Compare file names, not sources: a source can differ only in the timestamp Bloom adds to
+        // make the browser load a video afresh. Bloom gives every recording a new file name.
+        const fileName = await getVideoFileName(videoBox(page));
         expect(
-            recorded,
+            fileName,
             "The recording did not replace the chosen video.",
         ).not.toBe(chosen);
-        const fileName = await getVideoFileName(videoBox(page));
         expect(
             fs.existsSync(Path.join(bookFolder, "video", fileName)),
             `The element shows ${fileName}, but the book's video folder has no such file.`,
@@ -236,6 +235,10 @@ test.describe("Sign Language video on a canvas page [Test Case ID 336]", () => {
             await getVideoFileName(videoBox(page)),
             "The element lost its video when the page was saved and opened again.",
         ).toBe(fileName);
+        expect(
+            fs.existsSync(Path.join(bookFolder, "video", fileName)),
+            `After the page was saved and opened again, the element shows ${fileName}, but the book's video folder has no such file.`,
+        ).toBe(true);
         expect(
             await getCanvasElementPlacement(canvasElement(page, video)),
             "The element's place or size changed when the page was saved and opened again.",
