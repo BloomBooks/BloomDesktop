@@ -493,27 +493,32 @@ test("Resize handles resize each kind of canvas element as it should, on the gri
                             },
                         )
                         .toBe(false);
-                    // A line along both buttons' bottoms: it runs from the resized button's left
-                    // edge, which a drag of its se corner leaves where it is, to the other's right.
-                    const lineAtOtherBottom = async () =>
+                    // The red lines at the height of the other button's bottom, of any length.
+                    const linesAtOtherBottom = async () =>
                         guidesOf(
                             await getGuidesShown(page),
                             "alignment",
                             "horizontal",
-                        ).some(
+                        ).filter(
                             (line) =>
                                 Math.abs(
                                     line.rect.y +
                                         line.rect.height / 2 -
                                         bottom(otherBox),
-                                ) <= 2 &&
+                                ) <= 2,
+                        );
+                    // A line along both buttons' bottoms: it runs from the resized button's left
+                    // edge, which a drag of its se corner leaves where it is, to the other's right.
+                    const lineAtOtherBottom = async () =>
+                        (await linesAtOtherBottom()).some(
+                            (line) =>
                                 line.rect.x <= startBox.x + 2 &&
                                 right(line.rect) >= right(otherBox) - 2,
                         );
                     expect(
-                        await lineAtOtherBottom(),
-                        "Before the bottoms line up there should be no red line along the other button's bottom.",
-                    ).toBe(false);
+                        await linesAtOtherBottom(),
+                        "Before the bottoms line up there should be no red line at the height of the other button's bottom.",
+                    ).toEqual([]);
 
                     await moveHeldHandle(
                         page,
