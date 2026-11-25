@@ -26,13 +26,14 @@ import {
     typeInGroup,
 } from "../helpers/bookMaking";
 import {
-    listZipEntries,
+    getBloomPubTitle,
     makeAllBloomPubs,
     openMakeAllBloomPubsDialog,
     readBloomBundle,
     readBookshelfFile,
+    readZip,
     setMakeAllBloomPubsOption,
-    type IBundleEntry,
+    type IArchiveEntry,
 } from "../helpers/bulkBloomPub";
 import { selectBook } from "../helpers/collection";
 import {
@@ -72,7 +73,7 @@ async function makeBookWithText(page: Page, title: string): Promise<string> {
 }
 
 /** The file of this name in the bundle; fails the test, naming what the bundle has, if none. */
-function bundleEntry(entries: IBundleEntry[], name: string): IBundleEntry {
+function bundleEntry(entries: IArchiveEntry[], name: string): IArchiveEntry {
     const entry = entries.find((candidate) => candidate.name === name);
     if (!entry) {
         throw new Error(
@@ -113,35 +114,49 @@ test("Make All BloomPUBs makes a .bloombundle named after the bookshelf [Test Ca
 
     const bundleName = `${BOOKSHELF}.bloombundle`;
     const bookshelfFileName = `${BOOKSHELF}.bloomshelf`;
-    const bloomPubNames = bookFolders.map(
-        (folder) => `${Path.basename(folder)}.bloompub`,
-    );
+    // Each book's .bloompub, by file name, with the title the book was given.
+    const bloomPubs = bookFolders.map((folder, index) => ({
+        name: `${Path.basename(folder)}.bloompub`,
+        title: BOOK_TITLES[index],
+    }));
 
     await step("Check the bundle is named after the bookshelf", () => {
         expect(
-            result.files,
-            `Bloom made these files in ${result.folder}. The progress box said:\n${result.log}`,
+            [...result.files.keys()],
+            `The progress box said:\n${result.log}`,
         ).toContain(bundleName);
     });
 
-    const entries = readBloomBundle(Path.join(result.folder, bundleName));
+    const entries = readBloomBundle(result.files.get(bundleName)!);
 
     await step("Check the bundle holds every book and the bookshelf", () => {
         expect(entries.map((entry) => entry.name).sort()).toEqual(
-            [...bloomPubNames, bookshelfFileName].sort(),
+            [
+                ...bloomPubs.map((bloomPub) => bloomPub.name),
+                bookshelfFileName,
+            ].sort(),
         );
     });
 
-    await step("Check each BloomPUB in the bundle is a whole book", () => {
-        for (const name of bloomPubNames) {
-            const files = listZipEntries(bundleEntry(entries, name).content);
-            expect(files, `${name} has no meta.json`).toContain("meta.json");
-            expect(
-                files.filter((file) => file.endsWith(".htm")),
-                `${name} should hold the book's one HTML file`,
-            ).toHaveLength(1);
-        }
-    });
+    await step(
+        "Check each BloomPUB in the bundle is its own whole book",
+        () => {
+            for (const { name, title } of bloomPubs) {
+                const bloomPub = bundleEntry(entries, name).content;
+                const files = readZip(bloomPub).map((file) => file.name);
+                expect(files, `${name} has no meta.json`).toContain(
+                    "meta.json",
+                );
+                expect(
+                    files.filter((file) => file.endsWith(".htm")),
+                    `${name} should hold the book's one HTML file`,
+                ).toHaveLength(1);
+                expect(getBloomPubTitle(bloomPub), `the title in ${name}`).toBe(
+                    title,
+                );
+            }
+        },
+    );
 
     await step("Check the bookshelf file names the bookshelf", () => {
         const shelf = readBookshelfFile(

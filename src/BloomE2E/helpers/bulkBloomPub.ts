@@ -6,16 +6,22 @@
 // compress everything into one .bloombundle. Make closes the dialog and starts the work behind the
 // BloomPUB screen's progress box (BulkBloomPubCreator.PublishAllBooksAsync).
 //
-// Bloom writes the files into a temporary folder, %TEMP%\BloomPubs, which it empties first and
-// names in the progress box ("Creating files in <folder>..."), with no save dialog. The helpers
-// read the folder from the box. Bloom then opens the folder in File Explorer, and nothing here
-// closes that window (AUTOMATION-DEBT.md, "Make All BloomPUBs opens File Explorer").
+// Bloom writes the files into %TEMP%\BloomPubs, with no save dialog, and names the folder in the
+// progress box ("Creating files in <folder>..."). It empties that folder first (TemporaryFolder),
+// and every Bloom of the same Windows user shares it, so a person's own bulk export may still be
+// sitting there. makeAllBloomPubs therefore moves any folder already there aside before Make, reads
+// what Bloom made into memory, and puts the person's folder back. Bloom then opens the folder in
+// File Explorer, and nothing here closes that window (AUTOMATION-DEBT.md, "Make All BloomPUBs opens
+// File Explorer").
 //
 // A .bloombundle is an uncompressed tar of the .bloompub files and the .bloomshelf file
 // (BloomTarArchive); a .bloompub is a zip. Bloom Reader reads both, so readBloomBundle and
-// listZipEntries check the files in the form Bloom Reader receives them.
+// readZip check the files in the form Bloom Reader receives them.
 
 import * as fs from "node:fs";
+import * as os from "node:os";
+import * as Path from "node:path";
+import { inflateRawSync } from "node:zlib";
 import { expect, type Locator, type Page } from "@playwright/test";
 import { realClick } from "./realClick";
 import { selectPublishDestination } from "./publish";
@@ -26,6 +32,9 @@ const DIALOG_TITLE = "Make All BloomPUBs from Collection";
 /** The labels of the dialog's two check boxes (BulkBloomPubDialog.tsx). */
 const BOOKSHELF_FILE_LABEL = "Produce a .bloomshelf file";
 const BLOOM_BUNDLE_LABEL = "Compress into a single .bloombundle file";
+
+/** The folder Bloom makes the files in: TemporaryFolder("BloomPubs") in BulkBloomPubCreator. */
+const OUTPUT_FOLDER = Path.join(os.tmpdir(), "BloomPubs");
 
 /** The Make All BloomPUBs dialog, once open. */
 function bulkBloomPubDialog(page: Page): Locator {
@@ -80,12 +89,10 @@ export async function setMakeAllBloomPubsOption(
     await expect(box).toBeChecked({ checked });
 }
 
-/** What one run of Make All BloomPUBs left behind. */
+/** What one run of Make All BloomPUBs made. */
 export interface IMakeAllBloomPubsResult {
-    /** The temporary folder Bloom made the files in, as it named it in the progress box. */
-    folder: string;
-    /** The files in that folder, by name, sorted. */
-    files: string[];
+    /** The files Bloom made, by name, with their contents, read before the folder was restored. */
+    files: Map<string, Buffer>;
     /** Everything the progress box said, one message to a line, for a failure message. */
     log: string;
 }
@@ -99,10 +106,38 @@ async function getProgressMessages(progressLog: Locator): Promise<string[]> {
 
 /**
  * Click Make in the open Make All BloomPUBs dialog and wait for Bloom to finish: the progress box's
- * last message is "Done." Reads which folder Bloom made the files in from the box's first message,
- * and closes the box with its Close button.
+ * last message is "Done." Returns the files Bloom made, and closes the box with its Close button.
+ *
+ * Bloom empties %TEMP%\BloomPubs before it writes there, so a folder already there is renamed
+ * aside first and put back afterwards, whether or not the run succeeds. If it cannot be put back,
+ * the error names where it is.
  */
 export async function makeAllBloomPubs(
+    page: Page,
+): Promise<IMakeAllBloomPubsResult> {
+    const setAside = fs.existsSync(OUTPUT_FOLDER)
+        ? `${OUTPUT_FOLDER}-set-aside-by-e2e-${process.pid}-${Date.now()}`
+        : undefined;
+    if (setAside) fs.renameSync(OUTPUT_FOLDER, setAside);
+    try {
+        return await makeAllBloomPubsInto(page);
+    } finally {
+        fs.rmSync(OUTPUT_FOLDER, { recursive: true, force: true });
+        if (setAside) {
+            try {
+                fs.renameSync(setAside, OUTPUT_FOLDER);
+            } catch (error) {
+                throw new Error(
+                    `Could not put the folder that was in ${OUTPUT_FOLDER} back. It is in ` +
+                        `${setAside}. (${error})`,
+                );
+            }
+        }
+    }
+}
+
+/** makeAllBloomPubs, once any earlier folder is out of the way. */
+async function makeAllBloomPubsInto(
     page: Page,
 ): Promise<IMakeAllBloomPubsResult> {
     const dialog = bulkBloomPubDialog(page);
@@ -129,6 +164,15 @@ export async function makeAllBloomPubs(
             `The progress box never named the folder it made the files in. It said:\n${log}`,
         );
     }
+    // Compared as real paths: the temp folder may be named in its short 8.3 form on one side.
+    const realPath = (path: string) =>
+        fs.existsSync(path) ? fs.realpathSync.native(path).toLowerCase() : path;
+    if (realPath(folder) !== realPath(OUTPUT_FOLDER)) {
+        throw new Error(
+            `Bloom made the files in ${folder}, not in ${OUTPUT_FOLDER}, the folder this helper ` +
+                "protects and reads.",
+        );
+    }
 
     const progressDialog = page
         .getByRole("dialog")
@@ -138,11 +182,15 @@ export async function makeAllBloomPubs(
     );
     await expect(progressDialog, "the progress box did not close").toBeHidden();
 
-    return { folder, files: fs.readdirSync(folder).sort(), log };
+    const files = new Map<string, Buffer>();
+    for (const name of fs.readdirSync(OUTPUT_FOLDER).sort()) {
+        files.set(name, fs.readFileSync(Path.join(OUTPUT_FOLDER, name)));
+    }
+    return { files, log };
 }
 
-/** One file inside a .bloombundle. */
-export interface IBundleEntry {
+/** One file inside an archive: a .bloombundle or a zip. */
+export interface IArchiveEntry {
     name: string;
     content: Buffer;
 }
@@ -152,9 +200,8 @@ export interface IBundleEntry {
  * TarOutputStream), which writes a name longer than 100 bytes as a GNU "././@LongLink" entry
  * before the file it names, so that is read too.
  */
-export function readBloomBundle(bundlePath: string): IBundleEntry[] {
-    const data = fs.readFileSync(bundlePath);
-    const entries: IBundleEntry[] = [];
+export function readBloomBundle(data: Buffer): IArchiveEntry[] {
+    const entries: IArchiveEntry[] = [];
     let offset = 0;
     let longName: string | undefined;
     while (offset + 512 <= data.length) {
@@ -185,20 +232,19 @@ export function readBloomBundle(bundlePath: string): IBundleEntry[] {
 }
 
 /**
- * The names of the files a zip holds, such as a .bloompub, read from its central directory.
- * Throws when the data is not a zip.
+ * Read the files a zip holds, such as a .bloompub: their names from its central directory, and
+ * their contents, stored or deflated. Throws when the data is not a zip or uses another method.
  */
-export function listZipEntries(zip: Buffer): string[] {
+export function readZip(zip: Buffer): IArchiveEntry[] {
     // The end-of-central-directory record is the last thing in a zip, followed by a comment of
     // up to 65535 bytes.
-    const kEndSignature = 0x06054b50;
     let end = -1;
     for (
         let i = zip.length - 22;
         i >= Math.max(0, zip.length - 22 - 65535);
         i--
     ) {
-        if (zip.readUInt32LE(i) === kEndSignature) {
+        if (zip.readUInt32LE(i) === 0x06054b50) {
             end = i;
             break;
         }
@@ -210,20 +256,52 @@ export function listZipEntries(zip: Buffer): string[] {
     }
     const count = zip.readUInt16LE(end + 10);
     let offset = zip.readUInt32LE(end + 16);
-    const names: string[] = [];
+    const entries: IArchiveEntry[] = [];
     for (let i = 0; i < count; i++) {
         if (zip.readUInt32LE(offset) !== 0x02014b50) {
             throw new Error(
                 `The zip's central directory is damaged at entry ${i}.`,
             );
         }
+        const method = zip.readUInt16LE(offset + 10);
+        const compressedSize = zip.readUInt32LE(offset + 20);
         const nameLength = zip.readUInt16LE(offset + 28);
         const extraLength = zip.readUInt16LE(offset + 30);
         const commentLength = zip.readUInt16LE(offset + 32);
-        names.push(zip.toString("utf8", offset + 46, offset + 46 + nameLength));
+        const localHeader = zip.readUInt32LE(offset + 42);
+        const name = zip.toString(
+            "utf8",
+            offset + 46,
+            offset + 46 + nameLength,
+        );
         offset += 46 + nameLength + extraLength + commentLength;
+
+        // The data follows the local header, whose name and extra field can differ in length
+        // from the central directory's.
+        const dataStart =
+            localHeader +
+            30 +
+            zip.readUInt16LE(localHeader + 26) +
+            zip.readUInt16LE(localHeader + 28);
+        const raw = zip.subarray(dataStart, dataStart + compressedSize);
+        if (method !== 0 && method !== 8) {
+            throw new Error(
+                `${name} in the zip uses compression method ${method}, which this cannot read.`,
+            );
+        }
+        entries.push({
+            name,
+            content: method === 8 ? inflateRawSync(raw) : Buffer.from(raw),
+        });
     }
-    return names;
+    return entries;
+}
+
+/** The title a .bloompub's meta.json gives its book: what Bloom Reader lists it as. */
+export function getBloomPubTitle(bloomPub: Buffer): string | undefined {
+    const meta = readZip(bloomPub).find((entry) => entry.name === "meta.json");
+    if (!meta) return undefined;
+    return JSON.parse(meta.content.toString("utf8").replace(/^﻿/, "")).title;
 }
 
 /** What a .bloomshelf file says about the bookshelf Bloom Reader groups the books under. */
@@ -238,5 +316,5 @@ export interface IBookshelfFile {
 
 /** Read a .bloomshelf file's JSON, which Bloom writes in UTF-8 with a byte order mark. */
 export function readBookshelfFile(content: Buffer): IBookshelfFile {
-    return JSON.parse(content.toString("utf8").replace(/^\uFEFF/, ""));
+    return JSON.parse(content.toString("utf8").replace(/^﻿/, ""));
 }
