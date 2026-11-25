@@ -97,16 +97,18 @@ export interface ILegacyUndoProvider {
     /**
      * Undo one step, and say whether anything was undone. Only called when `canUndo()` has just
      * returned true, but CKEditor can say it has something to undo when it has not (see
-     * editablePage.ckeditorUndo); answering false lets the stack go on to the next provider and
+     * undoCkeditorTyping in ckeditorChanges.ts); answering false lets the stack go on to the next
+     * provider and
      * then to its own entries, so the person's Undo is not swallowed.
      */
     undo(): boolean;
 
     /**
-     * When this mechanism last recorded a change, on the sequence in changeOrder.ts. Optional:
-     * only CKEditor reports it. A provider that does stands aside while the stack's newest entry
-     * is more recent than its last change, so that "add a table row, then type" undoes the typing
-     * first and "type, then add a row" the row first.
+     * When the change this mechanism's next undo would take back was made, on the sequence in
+     * changeOrder.ts. Optional: only the mechanisms that undo CKEditor typing (CKEditor's own and
+     * the reader tools') report it. A provider that does stands aside while the stack's newest
+     * entry is more recent, so that "add a table row, then type" undoes the typing first and
+     * "type, then add a row" the row first.
      */
     lastChangeOrder?(): number;
 }

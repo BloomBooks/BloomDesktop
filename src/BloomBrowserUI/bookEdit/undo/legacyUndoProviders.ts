@@ -7,9 +7,10 @@
 //
 // Know what that order governs. handleUndo() has one caller: the toolbar Undo button. Ctrl+Z is
 // claimed in the *page* frame — by origami in Change Layout mode, by the reader tools in any
-// editable while a markup tool is active (they preventDefault), and otherwise by CKEditor — and
-// never enters handleUndo() at all. So this file unifies the button, and the keyboard stays as it
-// was until those page-frame handlers are converted. See PLAN.md 3's correction.
+// editable while a markup tool is active (they preventDefault), by the page's key handler when the
+// stack's next undo is an entry of its own (undoKeys.ts), and otherwise by CKEditor — and never enters handleUndo() at all. So this file unifies the button,
+// and the keyboard's legacy undos stay as they were until those page-frame handlers are converted.
+// See PLAN.md 3's correction.
 //
 // Why no conversions yet: the four mechanisms are contextually exclusive in practice (origami only
 // in Change Layout mode, the reader undo only with an active markup tool, image undo only on an
@@ -30,6 +31,7 @@ import {
     getToolboxBundleExports,
 } from "../js/workspaceFrames";
 import { getCkeditorChangeOrder } from "./changeOrder";
+import { getCkeditorUndoOrder } from "./ckeditorChanges";
 import { theOneUndoStack, UndoStack } from "./UndoStack";
 import { ILegacyUndoProvider } from "./undoTypes";
 
@@ -110,20 +112,22 @@ export const imageUndoProvider: ILegacyUndoProvider = {
 /**
  * CKEditor's own per-editable undo manager — the mechanism this whole project exists to replace.
  *
- * Its ordering across boxes is already wrong (each editable has its own stack, so undo follows
- * focus rather than time). We reproduce that rather than fix it: fixing it here would be a
- * behaviour change in the commit whose whole value is being behaviour-neutral, and Stage 3 removes
+ * Each editable has its own history. The one undone is that of the box typed in most recently,
+ * wherever the focus is now (getCkeditorsToUndo in ckeditorChanges.ts), so typing in a box the
+ * person has since clicked out of is not passed over for an older table change. Stage 3 removes
  * the mechanism.
  */
 export const ckeditorUndoProvider: ILegacyUndoProvider = {
     name: "ckeditor",
     canUndo: () => !!getEditablePageBundleExports()?.ckeditorCanUndo(),
     // CKEditor's history and the stack's entries can both hold something (typing in a table cell
-    // after adding a row, say); whichever changed last answers the next Undo. See changeOrder.ts.
-    lastChangeOrder: getCkeditorChangeOrder,
+    // after adding a row, say); whichever changed last answers the next Undo. CKEditor's side is
+    // when the typing it would undo was done (getCkeditorUndoOrder), not its latest change
+    // anywhere, so typing that came before a row does not go ahead of it. See changeOrder.ts.
+    lastChangeOrder: getCkeditorUndoOrder,
     undo: () => {
-        // CKEditor can say it has something to undo when it has not (see
-        // editablePage.ckeditorUndo); answering false lets the stack's own entries have the turn,
+        // CKEditor can say it has something to undo when it has not (see undoCkeditorTyping in
+        // ckeditorChanges.ts); answering false lets the stack's own entries have the turn,
         // so that, for instance, a table row added before the typing is not out of reach.
         const undidSomething = !!getEditablePageBundleExports()?.ckeditorUndo();
         // As for the toolbox provider: this undo replaces the content of an editable, and there
