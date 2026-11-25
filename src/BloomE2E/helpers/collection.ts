@@ -13,7 +13,7 @@ import {
     writeNewCollection,
     type ICollectionSpec,
 } from "../fixtures/launchBloom";
-import { apiGet, apiGetJson, apiPost } from "./api";
+import { apiGet, apiGetJson, apiPost, getUiString } from "./api";
 import { realClick } from "./realClick";
 
 /**
@@ -203,8 +203,14 @@ export async function chooseOtherCollection(
     const collectionName = Path.basename(collectionFile, ".bloomCollection");
     const page = bloomApp.page;
     await waitForCollectionReady(page);
+    // The button is found by what it says, in whatever language Bloom's UI is in.
+    const buttonLabel = await getUiString(
+        page,
+        "CollectionTab.Open/CreateCollectionButton",
+        "Other Collection",
+    );
     await realClick(
-        page.getByRole("button", { name: "Other Collection", exact: true }),
+        page.getByRole("button", { name: buttonLabel, exact: true }),
     );
     // A card is one button that holds the collection's name, in a paragraph of its own, and how
     // many books it has.
