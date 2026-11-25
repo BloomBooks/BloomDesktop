@@ -9,14 +9,16 @@
 // to cope. Turning the meddler on is the test's setup, so it goes through the API that the menu
 // command posts; the paste and the trip to the Collections tab go through the real UI.
 //
-// A problem that Bloom reports instead of coping shows as its "Bloom had a problem" dialog, which
-// the fixture's watcher turns into a failure of the test.
+// Under --e2e Bloom does not show a problem it reports with NonFatalProblem (it writes it to
+// stderr), so a save that failed shows nowhere on screen. That is why the test reads what Bloom
+// saved: the book's .htm, the picture file and the thumbnail, rather than trusting the page shown.
 
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import type { FrameLocator, Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import { apiGetJson, apiPost } from "../helpers/api";
+import { bookHtmlPath } from "../helpers/bookHtml";
 import {
     editablePageFrame,
     findBookFolder,
@@ -45,21 +47,72 @@ const LARGE_WIDTH = 6000;
 const LARGE_HEIGHT = 3375;
 const PASTE_IMAGE_COMMAND = "EditTab.Image.PasteImage";
 const PLACEHOLDER = "placeHolder.png";
+// The error codes Node gives for opening a file that another process holds open without sharing.
+const LOCKED_CODES = ["EBUSY", "EPERM", "EACCES"];
+
+/** Try to open `file` for writing and close it again: "open", or the error's code. */
+function tryOpen(file: string): string {
+    try {
+        fs.closeSync(fs.openSync(file, "r+"));
+        return "open";
+    } catch (error) {
+        return (error as NodeJS.ErrnoException).code ?? String(error);
+    }
+}
+
+/**
+ * Check that meddle.exe is watching `collectionDir` and locking what changes there: write a file,
+ * see it locked for a moment, then wait until it is let go and remove it.
+ *
+ * meddle.exe takes a moment to start watching after Bloom starts it, and it never notices a
+ * change made before then. So until the lock shows, the file is written again every half second,
+ * and each write is a change it locks the file for once it is watching.
+ */
+async function expectMeddlerLocksNewFiles(
+    collectionDir: string,
+): Promise<void> {
+    const probe = Path.join(collectionDir, `meddler-probe-${Date.now()}.txt`);
+    let lastWrite = 0;
+    const lockedNow = () => {
+        if (LOCKED_CODES.includes(tryOpen(probe))) return true;
+        if (Date.now() - lastWrite >= 500) {
+            fs.appendFileSync(probe, "Is anyone meddling with this file?\n");
+            lastWrite = Date.now();
+        }
+        return false;
+    };
+    await expect
+        .poll(lockedNow, {
+            timeout: 30000,
+            intervals: [20],
+            message:
+                "meddle.exe never locked a new file in the collection's folder, so it is not meddling.",
+        })
+        .toBe(true);
+    await expect
+        .poll(() => tryOpen(probe), {
+            timeout: 30000,
+            message: "meddle.exe never let go of the file it locked.",
+        })
+        .toBe("open");
+    fs.rmSync(probe);
+}
 
 /** Start meddle.exe in the collection's folder, as "Meddle with New Files" does. */
-async function startMeddling(page: Page): Promise<void> {
+async function startMeddling(page: Page, collectionDir: string): Promise<void> {
     await apiPost(
         page,
         "app/isMeddlingWithNewFiles",
         "true",
         "application/json",
     );
-    // Bloom reports meddling only once it has started meddle.exe, and starts nothing when the
-    // build has no meddle.exe beside Bloom.exe; without it this test would prove nothing.
+    // Bloom starts nothing when the build has no meddle.exe beside Bloom.exe, and then reports
+    // that it is not meddling; without the meddler this test would prove nothing.
     expect(
         await apiGetJson<boolean>(page, "app/isMeddlingWithNewFiles"),
         "test setup: Bloom did not start meddle.exe (is it missing from the build output?)",
     ).toBe(true);
+    await expectMeddlerLocksNewFiles(collectionDir);
 }
 
 async function stopMeddling(page: Page): Promise<void> {
@@ -113,15 +166,11 @@ function collectionBookPreview(page: Page): FrameLocator {
     return page.frameLocator('iframe[src*="book-preview/index.htm"]');
 }
 
-/**
- * Go to the Collections tab and check that it shows the book's cover with the pasted picture in
- * the preview on the right, and a thumbnail on the book's button.
- */
-async function expectCoverInCollectionsTab(
+/** The Collections tab's preview shows the book's cover with the pasted picture, loaded. */
+async function expectCoverInPreview(
     page: Page,
     pictureFile: string,
 ): Promise<void> {
-    await switchTab(page, "collection");
     const coverPicture = collectionBookPreview(page)
         .locator(
             ".bloom-page.outsideFrontCover .bloom-canvas .bloom-backgroundImage img",
@@ -147,9 +196,67 @@ async function expectCoverInCollectionsTab(
             },
         )
         .toEqual({ file: pictureFile, loaded: true });
+}
 
+/** The file name of the cover picture in the book's saved .htm, or "" when it has none. */
+function readSavedCoverPicture(bookFolder: string): string {
+    const htmlPath = bookHtmlPath(bookFolder);
+    if (!fs.existsSync(htmlPath)) return "";
+    const html = fs.readFileSync(htmlPath, "utf8");
+    const coverImg = /<img\b[^>]*\bdata-book="coverImage"[^>]*>/.exec(html);
+    const src = coverImg && /\bsrc="([^"]*)"/.exec(coverImg[0]);
+    return src ? decodeURIComponent(src[1].split("?")[0]) : "";
+}
+
+/**
+ * What Bloom saved: the book's .htm has the pasted picture on its cover, the picture file is in
+ * the book's folder and Bloom shrank it, and Bloom made the book a new thumbnail, which its button
+ * on the Collections tab shows.
+ */
+async function expectBookSaved(
+    page: Page,
+    bookFolder: string,
+    pictureFile: string,
+    pastedAt: number,
+): Promise<void> {
+    await expect
+        .poll(() => readSavedCoverPicture(bookFolder), {
+            timeout: 60000,
+            message: `Bloom never saved ${bookHtmlPath(bookFolder)} with the pasted picture on its cover.`,
+        })
+        .toBe(pictureFile);
+
+    const saved = Path.join(bookFolder, pictureFile);
+    expect(
+        fs.existsSync(saved),
+        `The cover shows ${pictureFile}, but it is not in the book's folder ${bookFolder}.`,
+    ).toBe(true);
+    expect(
+        readImageFileSize(saved).width,
+        "Bloom kept the pasted picture at its full size instead of shrinking it",
+    ).toBeLessThan(LARGE_WIDTH);
+
+    const thumbnailPath = Path.join(bookFolder, "thumbnail.png");
+    await expect
+        .poll(
+            () =>
+                fs.existsSync(thumbnailPath) &&
+                fs.statSync(thumbnailPath).mtimeMs >= pastedAt,
+            {
+                timeout: 60000,
+                message: `Bloom never made ${thumbnailPath} from the new cover.`,
+            },
+        )
+        .toBe(true);
+    const bookId = (
+        JSON.parse(
+            fs.readFileSync(Path.join(bookFolder, "meta.json"), "utf8"),
+        ) as { bookInstanceId: string }
+    ).bookInstanceId;
     const thumbnail = page
-        .locator('img[src*="collections/book/thumbnail"]')
+        .locator(
+            `img[src*="collections/book/thumbnail?book-id=${encodeURIComponent(bookId)}&"]`,
+        )
         .first();
     await expect
         .poll(
@@ -162,30 +269,17 @@ async function expectCoverInCollectionsTab(
             {
                 timeout: 60000,
                 message:
-                    "The book's button on the Collections tab never showed a thumbnail.",
+                    "The book's button on the Collections tab never showed its thumbnail.",
             },
         )
         .toBe(true);
-}
-
-/** The picture Bloom saved in the book's folder: it exists, and Bloom shrank it. */
-function expectPictureSaved(bookFolder: string, pictureFile: string): void {
-    const saved = Path.join(bookFolder, pictureFile);
-    expect(
-        fs.existsSync(saved),
-        `The cover shows ${pictureFile}, but it is not in the book's folder ${bookFolder}.`,
-    ).toBe(true);
-    const size = readImageFileSize(saved);
-    expect(
-        size.width,
-        "Bloom kept the pasted picture at its full size instead of shrinking it",
-    ).toBeLessThan(LARGE_WIDTH);
 }
 
 for (const titled of [false, true]) {
     const name = titled ? "a new book with a title" : "a new book";
     test(`pasting a large picture on the cover of ${name} while files are meddled with [Test Case ID 257]`, async ({
         page,
+        bloomApp,
     }, testInfo) => {
         test.setTimeout(400000);
         const largePicture = testInfo.outputPath("large-photo.jpg");
@@ -195,7 +289,7 @@ for (const titled of [false, true]) {
             "test setup: the large picture is several megabytes",
         ).toBeGreaterThan(1000000);
 
-        await startMeddling(page);
+        await startMeddling(page, bloomApp.collectionDir);
         try {
             const untitledFolder = await makeBookFromTemplate(
                 page,
@@ -205,9 +299,11 @@ for (const titled of [false, true]) {
             if (titled) await typeInGroup(page, ".bookTitle", "en", title);
 
             await copyToClipboard(page, { picture: largePicture });
+            const pastedAt = Date.now();
             const pictureFile = await pasteOnCover(page);
 
-            await expectCoverInCollectionsTab(page, pictureFile);
+            await switchTab(page, "collection");
+            await expectCoverInPreview(page, pictureFile);
 
             const bookFolder = titled
                 ? await findBookFolder(page, title)
@@ -217,7 +313,10 @@ for (const titled of [false, true]) {
                     Path.basename(bookFolder),
                     "Bloom did not name the book's folder for its title",
                 ).toBe(title);
-            expectPictureSaved(bookFolder, pictureFile);
+            await expectBookSaved(page, bookFolder, pictureFile, pastedAt);
+
+            // The meddler is still at work after all that, so the test ran with it throughout.
+            await expectMeddlerLocksNewFiles(bloomApp.collectionDir);
         } finally {
             await stopMeddling(page);
         }
