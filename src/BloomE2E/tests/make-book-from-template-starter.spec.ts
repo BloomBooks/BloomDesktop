@@ -14,7 +14,6 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
-import type { Page } from "@playwright/test";
 import {
     addPageFromDialog,
     getAddPageDialogGroups,
@@ -31,6 +30,7 @@ import {
     makeBookFromTemplate,
     typeInGroup,
 } from "../helpers/bookMaking";
+import { readPagesOnDisk } from "../helpers/bookHtml";
 
 test.use({
     collectionSpec: { name: "template-starter-book", languages: ["en"] },
@@ -60,42 +60,6 @@ function pngSize(file: string): { width: number; height: number } | undefined {
     if (header.subarray(1, 4).toString("latin1") !== "PNG")
         throw new Error(`${file} is not a PNG file`);
     return { width: header.readUInt32BE(16), height: header.readUInt32BE(20) };
-}
-
-/** One page of a book's HTML file on disk. */
-interface IPageOnDisk {
-    id: string;
-    label: string;
-    /** The ids of the pages this page was made from, oldest first (data-pagelineage). */
-    lineage: string[];
-}
-
-/**
- * The pages in the HTML file of the book in `bookFolder`, read from disk. Parsed in the browser,
- * because Node has no HTML parser.
- */
-async function readPagesOnDisk(
-    page: Page,
-    bookFolder: string,
-): Promise<IPageOnDisk[]> {
-    const htmlFiles = fs
-        .readdirSync(bookFolder)
-        .filter((name) => /\.html?$/i.test(name));
-    if (htmlFiles.length !== 1)
-        throw new Error(
-            `Expected one HTML file in ${bookFolder}, found: ${htmlFiles.join(", ") || "(none)"}.`,
-        );
-    const html = fs.readFileSync(Path.join(bookFolder, htmlFiles[0]), "utf8");
-    return page.evaluate((source) => {
-        const dom = new DOMParser().parseFromString(source, "text/html");
-        return Array.from(dom.querySelectorAll(".bloom-page[id]")).map((p) => ({
-            id: p.id,
-            label: p.querySelector(".pageLabel")?.textContent?.trim() ?? "",
-            lineage: (p.getAttribute("data-pagelineage") ?? "")
-                .split(/[;,]/)
-                .filter((id) => id),
-        }));
-    }, html);
 }
 
 /** Describe the dialog's groups for a failure message. */
