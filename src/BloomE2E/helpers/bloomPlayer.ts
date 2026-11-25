@@ -107,7 +107,8 @@ export interface IPreviewChoice {
     text: string;
     /**
      * The file name of the picture the button shows, without its folder or extension; empty for
-     * a word button, and for a picture Bloom Player has not loaded yet.
+     * a word button, for a picture Bloom Player has not loaded yet, and for one whose file
+     * the browser cannot draw.
      */
     picture: string;
     /** Bloom Player marks a button chosen-correct when the reader picks the right answer. */
@@ -135,21 +136,30 @@ export async function getPreviewChoices(
         buttons.first(),
         "The page Bloom Player is showing has no answer buttons.",
     ).toBeVisible({ timeout: 30000 });
-    return buttons.evaluateAll((elements) =>
-        elements.map((button) => {
-            // Bloom Player draws a button's picture as the background of its canvas, once the
-            // page is near enough to showing to be worth loading.
-            const pictureName = (within: Element) => {
-                const canvas =
-                    within.querySelector<HTMLElement>(".bloom-canvas");
-                const url = /url\("(.*)"\)/.exec(
-                    canvas?.style.backgroundImage ?? "",
-                )?.[1];
-                if (!url) return "";
-                return decodeURIComponent(
-                    new URL(url).pathname.split("/").pop()!,
-                ).replace(/\.[^.]*$/, "");
-            };
+    return buttons.evaluateAll(async (elements) => {
+        // Bloom Player draws a button's picture as the background of its canvas, once the page
+        // is near enough to showing to be worth loading. A background that names a file the
+        // browser cannot draw shows the reader nothing, so the name counts only when the
+        // file decodes as a picture.
+        const pictureName = async (within: Element) => {
+            const canvas = within.querySelector<HTMLElement>(".bloom-canvas");
+            const url = /url\("(.*)"\)/.exec(
+                canvas?.style.backgroundImage ?? "",
+            )?.[1];
+            if (!url) return "";
+            const picture = new Image();
+            picture.src = url;
+            const drawable = await picture.decode().then(
+                () => true,
+                () => false,
+            );
+            if (!drawable) return "";
+            return decodeURIComponent(
+                new URL(url).pathname.split("/").pop()!,
+            ).replace(/\.[^.]*$/, "");
+        };
+        const pictures = await Promise.all(elements.map(pictureName));
+        return elements.map((button, index) => {
             const toRect = (r: DOMRect) => ({
                 x: r.x,
                 y: r.y,
@@ -206,14 +216,14 @@ export async function getPreviewChoices(
                     | "correct-answer"
                     | "wrong-answer",
                 text: shownText?.innerText.trim() ?? "",
-                picture: pictureName(button),
+                picture: pictures[index],
                 chosenCorrect: button.classList.contains("chosen-correct"),
                 chosenWrong: button.classList.contains("chosen-wrong"),
                 rect: toRect(button.getBoundingClientRect()),
                 textRect,
             };
-        }),
-    );
+        });
+    });
 }
 
 /**

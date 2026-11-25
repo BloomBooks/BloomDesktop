@@ -242,11 +242,13 @@ test("Choose Word from Image and Choose Image from Word play, shuffle and rearra
         "Check that the answers are shuffled on a page of each kind",
         async () => {
             // Whether Bloom Player shows this page's right and wrong answers in an order other
-            // than the Edit tab's, so that the right one is no longer first. Whatever the
-            // order, they must be the answers the page has in the Edit tab, each known by its
-            // word or its picture's name: a page that lost one would otherwise count as
-            // shuffled. Bloom Player loads a page's pictures as it comes to the page, so
-            // this waits for them.
+            // than the Edit tab's, so that the right one is no longer first. `answers` are
+            // the page's answers in the Edit tab's order, each known by its word or its
+            // picture's name. Whatever the order, the preview must offer those answers, with
+            // the same one right: a page that lost one would otherwise count as shuffled,
+            // and one that rewarded a wrong answer would pass the steps above, which choose
+            // by what the preview calls right. Bloom Player loads a page's pictures as it
+            // comes to the page, so this waits for them.
             const isShuffled = async (pageId: string, answers: string[]) => {
                 await goToPreviewPage(page, player, pageId);
                 let roles: string[] = [];
@@ -255,15 +257,21 @@ test("Choose Word from Image and Choose Image from Word play, shuffle and rearra
                         async () => {
                             const shown = await getPreviewChoices(player);
                             roles = shown.map((c) => c.role);
-                            return shown.map((c) => c.text || c.picture).sort();
+                            return shown
+                                .map((c) => `${c.text || c.picture}: ${c.role}`)
+                                .sort();
                         },
                         {
                             message:
-                                "Bloom Player should offer the answers the page has in the Edit tab",
+                                "Bloom Player should offer the answers the page has in the Edit tab, with the same one right",
                             timeout: 15000,
                         },
                     )
-                    .toEqual([...answers].sort());
+                    .toEqual(
+                        answers
+                            .map((answer, i) => `${answer}: ${editOrder[i]}`)
+                            .sort(),
+                    );
                 return JSON.stringify(roles) !== JSON.stringify(editOrder);
             };
             const shuffled = { word: false, picture: false };
