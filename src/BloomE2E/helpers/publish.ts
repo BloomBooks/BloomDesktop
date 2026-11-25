@@ -363,6 +363,18 @@ export async function showPreviewPage(
             .locator(".swiper-slide-active .bloom-page")
             .first()
             .getAttribute("id");
+    // A second turn asked for while the first is still sliding lands on a slide that bloom-player
+    // never fills in (BL-17188), so each turn waits for the slide to stop. Swiper keeps its
+    // instance on its container element and says there whether it is animating.
+    const turnHasFinished = async () =>
+        player.evaluate(
+            () =>
+                (
+                    document.querySelector(".swiper-container") as
+                        | (Element & { swiper?: { animating: boolean } })
+                        | null
+                )?.swiper?.animating === false,
+        );
     // A book has far fewer pages than this; the bound only stops a preview that is not turning.
     for (let turns = 0; turns < 500; turns++) {
         if ((await shown.count()) > 0) return shown;
@@ -383,6 +395,13 @@ export async function showPreviewPage(
                     "The BloomPUB preview's next-page button did not turn the page.",
             })
             .not.toBe(before);
+        await expect
+            .poll(turnHasFinished, {
+                timeout: 30000,
+                message:
+                    "The BloomPUB preview's page turn never finished sliding.",
+            })
+            .toBe(true);
     }
     throw new Error(
         `The BloomPUB preview never showed page "${pageId}", after 500 page turns.`,
