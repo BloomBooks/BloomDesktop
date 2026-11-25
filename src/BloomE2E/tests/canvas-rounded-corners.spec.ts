@@ -16,6 +16,7 @@ import {
     getPages,
     goToPage,
     makeBookFromTemplate,
+    waitForSnapshotStreamIdle,
 } from "../helpers/bookMaking";
 import {
     canvasElement,
@@ -75,6 +76,9 @@ async function expectSavedCorners(
         width: (e as HTMLElement).offsetWidth,
         height: (e as HTMLElement).offsetHeight,
     }));
+    // Leaving a page saves the last snapshot of it that Bloom received, which is sent a moment
+    // after the page last changed; let the change reach Bloom first.
+    await waitForSnapshotStreamIdle(page);
     const cover = (await getPages(page))[0];
     await goToPage(page, cover.id);
     // What the element's saved shapes say, with every saved shape, so a failure shows what was
