@@ -3,13 +3,16 @@
 // way the case does it, and the page has to show the new one alone each time.
 // Automates the manual test "Text Box Language Switching" (Test Case ID 87).
 //
-// The case also checks, after the first choice, that the page keeps it when the book leaves the
-// page and comes back, and that the dialog opens again on the language chosen.
+// After each choice the test also leaves the page and comes back, to see that the page kept it,
+// and opens the dialog again, which must have that choice selected. In this book Normal would also
+// show Language 1 alone, so the dialog is what tells the L1 choice from Normal. And the choice is
+// the text box's alone: the book must go on showing only Language 1.
 
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
     expectLanguagesShownInGroup,
+    getContentLanguages,
     getContentPages,
     getPages,
     goToPage,
@@ -58,6 +61,10 @@ test("a text box set to one collection language in Text Box Properties shows tha
             const [contentPage] = await getContentPages(page);
             await goToPage(page, contentPage.id);
             await setContentLanguages(page, [L1]);
+            expect(
+                await getContentLanguages(page),
+                "test setup: the book should show only Language 1",
+            ).toEqual([L1]);
             await expectLanguagesShownInGroup(
                 page,
                 GROUP,
@@ -68,6 +75,8 @@ test("a text box set to one collection language in Text Box Properties shows tha
         },
     );
     if (!textPage) throw new Error("The book has no content page.");
+    const otherPage = (await getPages(page)).find((p) => p.id !== textPage.id);
+    if (!otherPage) throw new Error("The book has no page but the text page.");
 
     for (const { choice, language } of CHOICES) {
         await step(
@@ -83,29 +92,27 @@ test("a text box set to one collection language in Text Box Properties shows tha
             },
         );
 
-        if (choice !== "L3") continue;
         await step(
             "Leave the page, come back, and open Text Box Properties again",
             async () => {
-                const otherPage = (await getPages(page)).find(
-                    (p) => p.id !== textPage.id,
-                );
-                if (!otherPage)
-                    throw new Error("The book has no page but the text page.");
                 await goToPage(page, otherPage.id);
                 await goToPage(page, textPage.id);
                 await expectLanguagesShownInGroup(
                     page,
                     GROUP,
-                    [L3],
-                    "After the book left the page and came back, the text box should still show the L3 box alone",
+                    [language],
+                    `After the book left the page and came back, the text box set to ${choice} should still show the ${language} box alone`,
                 );
+                expect(
+                    await getContentLanguages(page),
+                    `Setting the text box to ${choice} should not change which languages the book shows`,
+                ).toEqual([L1]);
                 await setChangeLayoutMode(page, true);
                 await openTextBoxProperties(page);
                 expect(
                     await getCheckedTextBoxLanguage(page),
                     "Text Box Properties should open again on the language the box was set to",
-                ).toBe("L3");
+                ).toBe(choice);
                 await closeTextBoxProperties(page);
                 await setChangeLayoutMode(page, false);
             },

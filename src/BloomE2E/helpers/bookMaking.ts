@@ -361,6 +361,20 @@ async function listEditableBooks(page: Page): Promise<IBookInfo[]> {
 }
 
 /**
+ * Which of the collection's languages the book shows, by tag, as the Edit tab's
+ * Monolingual/Bilingual/Trilingual dropdown has them. The reading side of setContentLanguages.
+ */
+export async function getContentLanguages(page: Page): Promise<string[]> {
+    const usage = await apiGetJson<IContentLanguageUsage>(
+        page,
+        "editView/topBar/contentLanguageUsage",
+    );
+    return usage.languages
+        .filter((language) => language.isUsedForContent)
+        .map((language) => language.id);
+}
+
+/**
  * Set exactly which of the collection's languages the book shows, by the same route as the Edit
  * tab's Monolingual/Bilingual/Trilingual dropdown. Any language can be turned off, Language 1
  * included, as long as one other stays on.
