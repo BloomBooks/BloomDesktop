@@ -113,6 +113,31 @@ export async function findBooksOnDevServer(
 }
 
 /**
+ * How many books the sandbox counts in this language, by the same Bloom Library API query that
+ * Bloom's Collection tab progress bar makes (BloomLibraryBookApiClient.GetBookCountByLanguage):
+ * the books whose language is this tag, leaving out drafts, rebrands and books out of circulation.
+ * Anonymous, like Bloom's own request.
+ */
+export async function countBooksInLanguageOnDevServer(
+    languageTag: string,
+): Promise<number> {
+    const response = await fetch(
+        `${BLOOM_LIBRARY_API_URL}/books?lang=${encodeURIComponent(languageTag)}&limit=0&count=true&env=dev`,
+    );
+    if (!response.ok)
+        throw new Error(
+            `The Bloom Library API answered ${response.status} to counting the sandbox's books in ` +
+                `"${languageTag}": ${await response.text()}`,
+        );
+    const body = (await response.json()) as { count: number };
+    if (typeof body.count !== "number")
+        throw new Error(
+            `The Bloom Library API's count of the sandbox's books in "${languageTag}" has no number: ${JSON.stringify(body)}`,
+        );
+    return body.count;
+}
+
+/**
  * Every book the signed-in account has on the sandbox, whatever a test named them. Cleanup uses
  * this so a run can delete not only the books it just uploaded but any a crashed earlier run left
  * behind, which is safe because the account exists only for these tests.
