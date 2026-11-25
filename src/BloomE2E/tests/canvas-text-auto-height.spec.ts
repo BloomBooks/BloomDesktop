@@ -103,9 +103,12 @@ test("a canvas text box fits its height to its text only while Auto Height is on
         ).toBeGreaterThan(squashed.shownHeight);
         await waitForCanvasElementScrollBar(page, true);
 
-        // With Auto Height off, typing more does not grow the box. Bloom fits a box's height in a
-        // zero-delay timeout after each key comes up, and typeInCanvasElement returns only once
-        // Bloom has received the typed text, so by then any growing would have happened.
+        // With Auto Height off, typing more does not grow the box. Bloom fits a box's height 100 ms
+        // after each key comes up (OverflowChecker.AddOverflowHandlers), and the box is too full
+        // from the first key on, so a box that wrongly grew would do so after the early keys, well
+        // before typeInCanvasElement has typed the rest and heard back from Bloom. Nothing Bloom
+        // does after that check can be waited for, so a growth only after the last key could
+        // still be missed.
         await typeInCanvasElement(page, " The sun went down.", {
             withKeys: true,
         });
