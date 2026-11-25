@@ -1088,6 +1088,41 @@ export async function dragCanvasElementSide(
 }
 
 /**
+ * Move the selected canvas element by pressing on it and dragging it `dx`, `dy` page pixels, the
+ * way a person does, and wait until it has moved. Returns the element's rect before and after.
+ *
+ * The press lands a quarter of the way in from the element's top-left corner, not at its middle:
+ * a video element has its play button in the middle, and a press there that does not move would
+ * play the video instead.
+ */
+export async function dragCanvasElementBy(
+    page: Page,
+    dx: number,
+    dy: number,
+): Promise<{ before: IRect; after: IRect }> {
+    const before = await getActiveCanvasElementRect(page);
+    const x = before.x + before.width / 4;
+    const y = before.y + before.height / 4;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + dx, y + dy, { steps: 12 });
+    await page.mouse.up();
+    await expect
+        .poll(
+            async () => {
+                const now = await getActiveCanvasElementRect(page);
+                return Math.abs(now.x - before.x) + Math.abs(now.y - before.y);
+            },
+            {
+                timeout: 30000,
+                message: `Dragging the selected canvas element by ${dx},${dy} did not move it.`,
+            },
+        )
+        .toBeGreaterThan(2);
+    return { before, after: await getActiveCanvasElementRect(page) };
+}
+
+/**
  * Right-click the selected canvas element's own frame, outside anything inside it. Use this to ask
  * what a right-click on the element's edge does, as opposed to a right-click on what it holds.
  *
