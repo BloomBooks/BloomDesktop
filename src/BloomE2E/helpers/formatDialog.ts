@@ -916,7 +916,11 @@ export async function applyStyle(page: Page, styleName: string): Promise<void> {
  * depend on the UI language.
  */
 export async function getStyleIdShown(page: Page): Promise<string> {
-    return editablePageFrame(page).locator("#styleSelect").inputValue();
+    const frame = editablePageFrame(page);
+    // The menu gets its entries, the current one marked, only once the style names have been
+    // localized; until then it has no value to read.
+    await getSelectOptions(frame, "styleSelect");
+    return frame.locator("#styleSelect").inputValue();
 }
 
 /**
