@@ -16,15 +16,16 @@
 // processor, put on the clipboard. That `picture` is always a file on disk, so the paste of a
 // picture that has no file behind it (a screenshot, say) is not covered here.
 //
-// The JPEG test is the journey test for the picture menu's Copy Image and Paste Image: it adds its
-// pages with the Add Page dialog and goes between them by clicking their thumbnails. The other
-// tests take the API's shortcuts to their pages.
+// The JPEG test is the journey test for the picture menu's Copy Image and Paste Image: it goes to
+// each page by clicking its thumbnail, selects the picture box with a click and runs both commands
+// from the picture's menu. Like the other journey tests, it makes its book and adds its pages
+// through the API, since those are other UI paths. The other tests also go to their pages through
+// the API. Each test makes what it needs, so none depends on another having run or passed.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
-import { addPageFromDialog, openAddPageDialog } from "../helpers/addPageDialog";
 import {
     addPage,
     getContentPages,
@@ -44,8 +45,6 @@ import {
 test.use({
     collectionSpec: { name: "copy-cut-paste-pictures", languages: ["en"] },
 });
-
-test.describe.configure({ mode: "serial" });
 
 const fixture = (name: string) =>
     Path.resolve(
@@ -83,18 +82,18 @@ async function ensureBook(page: Page): Promise<void> {
 }
 
 /**
- * Add `count` Basic Text & Image pages to the book, each with one empty picture box, through
- * `add` (which adds one page), and return their ids in the order they were added.
+ * Add `count` Basic Text & Image pages, each with one picture box, to the book through the API,
+ * and return their ids in the order they were added.
  */
-async function addPagesWithEmptyPictureBoxes(
+async function addPagesWithPictureBoxes(
     page: Page,
     count: number,
-    add: () => Promise<void>,
 ): Promise<string[]> {
+    await ensureBook(page);
     const added: string[] = [];
     for (let i = 0; i < count; i++) {
         const before = (await getContentPages(page)).map((p) => p.id);
-        await add();
+        await addPage(page, "Basic Text & Image");
         const newPages = (await getContentPages(page)).filter(
             (p) => !before.includes(p.id),
         );
@@ -102,14 +101,6 @@ async function addPagesWithEmptyPictureBoxes(
         added.push(newPages[0].id);
     }
     return added;
-}
-
-/** Add pages through the API, as every test but the journey test does. */
-async function addPagesQuickly(page: Page, count: number): Promise<string[]> {
-    await ensureBook(page);
-    return addPagesWithEmptyPictureBoxes(page, count, () =>
-        addPage(page, "Basic Text & Image"),
-    );
 }
 
 /** Check that the picture box of the page being edited is empty. */
@@ -211,11 +202,7 @@ test.describe("Copy Cut Paste Pictures", () => {
         page,
     }) => {
         test.setTimeout(300000);
-        await ensureBook(page);
-        const ids = await addPagesWithEmptyPictureBoxes(page, 2, async () => {
-            await openAddPageDialog(page);
-            await addPageFromDialog(page, "Basic Text & Image", "Basic Book");
-        });
+        const ids = await addPagesWithPictureBoxes(page, 2);
         await pasteFromExplorerThenCopyToNextPage(page, LARGE_JPEG, ids, (id) =>
             selectPage(page, id),
         );
@@ -225,7 +212,7 @@ test.describe("Copy Cut Paste Pictures", () => {
         page,
     }) => {
         test.setTimeout(300000);
-        const ids = await addPagesQuickly(page, 2);
+        const ids = await addPagesWithPictureBoxes(page, 2);
         await pasteFromExplorerThenCopyToNextPage(page, LARGE_PNG, ids, (id) =>
             goToPage(page, id),
         );
@@ -235,7 +222,7 @@ test.describe("Copy Cut Paste Pictures", () => {
         page,
     }) => {
         test.setTimeout(300000);
-        const ids = await addPagesQuickly(page, 2);
+        const ids = await addPagesWithPictureBoxes(page, 2);
         for (const [id, file] of [
             [ids[0], LARGE_JPEG],
             [ids[1], LARGE_PNG],
