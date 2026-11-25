@@ -984,6 +984,20 @@ export async function chooseCollectionSettingsLanguage(
     heading: string,
     language: IChooserLanguage,
 ): Promise<void> {
+    await openCollectionSettingsLanguageChooser(page, heading);
+    await pickLanguageInChooser(page, language);
+    await confirmLanguageChooser(page);
+}
+
+/**
+ * Open the language chooser for one language group on the Languages page, as a person does by
+ * clicking its Change… (or Set…, when the collection has none). Returns once the chooser shows;
+ * the helpers in languageChooser.ts drive it from there.
+ */
+export async function openCollectionSettingsLanguageChooser(
+    page: Page,
+    heading: string,
+): Promise<void> {
     await expectLanguageGroup(page, heading);
     await realClick(
         languageGroup(page, heading).getByRole("button", {
@@ -991,8 +1005,6 @@ export async function chooseCollectionSettingsLanguage(
         }),
     );
     await waitForLanguageChooser(page);
-    await pickLanguageInChooser(page, language);
-    await confirmLanguageChooser(page);
 }
 
 /**
