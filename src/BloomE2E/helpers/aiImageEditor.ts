@@ -73,7 +73,9 @@ export async function dismissLookAroundNotice(page: Page): Promise<void> {
  *
  * The groups ("Enhance", "Games" and so on) have no test id, and their names are localized, so a
  * group's button is told apart by its shape: a button whose own label is a caption. Each opens
- * its group and leaves the others as they are.
+ * its group and leaves the others as they are, so every click must add at least one card. That
+ * shows each button found opened a group; a caller that must know no group was missed checks the
+ * ids returned for a tool of each group it expects.
  */
 export async function showAllAiImageTools(page: Page): Promise<string[]> {
     const editor = aiImageEditorFrame(page);
@@ -85,9 +87,17 @@ export async function showAllAiImageTools(page: Page): Promise<string[]> {
         groupCount,
         "The editor's tool column shows no groups of tools to open.",
     ).toBeGreaterThan(0);
-    for (let i = 0; i < groupCount; i++) await groupButtons.nth(i).click();
     const toolCards = editor.locator("[data-tool-id]");
-    await expect(toolCards.first()).toBeVisible({ timeout: 30000 });
+    for (let i = 0; i < groupCount; i++) {
+        const cardsBefore = await toolCards.count();
+        await groupButtons.nth(i).click();
+        await expect
+            .poll(() => toolCards.count(), {
+                timeout: 30000,
+                message: `Group ${i + 1} of the editor's tools showed no tools when opened.`,
+            })
+            .toBeGreaterThan(cardsBefore);
+    }
     return toolCards.evaluateAll((cards) =>
         cards.map((card) => card.getAttribute("data-tool-id") ?? ""),
     );

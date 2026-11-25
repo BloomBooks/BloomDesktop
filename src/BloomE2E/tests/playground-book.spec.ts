@@ -28,6 +28,7 @@ import { makeBookFromTemplate, typeInGroup } from "../helpers/bookMaking";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import { setCopyrightHolder } from "../helpers/copyrightAndLicense";
 import { chooseImageFile } from "../helpers/images";
+import { waitForClickToSettle } from "../helpers/realClick";
 import {
     acceptAllAgreements,
     clickToFixMissingItem,
@@ -66,6 +67,16 @@ const BIRD = Path.resolve(
 // ordinary book even though no OpenRouter key is set where the test runs.
 const BROWSER_TOOL = "remove_background";
 
+// One tool from each group of the AI image editor's tools (Enhance, Localize, Text, Games, More),
+// so that a group the test failed to open shows as a missing tool.
+const A_TOOL_OF_EACH_GROUP = [
+    "improve_quality",
+    "apply_localized_characters",
+    "change_text",
+    BROWSER_TOOL,
+    "generate_image",
+];
+
 type Publishing = "enabled" | "disabled";
 
 /**
@@ -81,8 +92,9 @@ async function makeBook(page: Page, template: string): Promise<void> {
 /**
  * Open one destination of the Publish tab, and return what its screen heard when it asked Bloom
  * whether the book is a Playground book. Every screen that publishes asks this as it opens, and
- * shows its buttons as able to publish until the answer comes, so waiting for it is what makes a
- * disabled button mean the book may not be published.
+ * until the answer comes it shows its buttons as its default says (most screens start them
+ * disabled), so a button read before then says nothing about the book. This returns once the
+ * screen has had the answer and React has drawn it.
  */
 async function openDestination(
     page: Page,
@@ -94,7 +106,12 @@ async function openDestination(
     );
     if (destination === "Web") await openPublishToWeb(page);
     else await selectPublishDestination(page, destination);
-    return (await (await answer).text()) === "true";
+    const response = await answer;
+    await response.finished();
+    // The screen's handler runs as the response's body arrives in the page; two frames later
+    // React has committed what it drew from it.
+    await waitForClickToSettle(page);
+    return (await response.text()) === "true";
 }
 
 /** The button with this test id on the screen showing; screens left behind stay in the page. */
@@ -235,8 +252,8 @@ test.describe("a Playground book [Test Case ID 833]", () => {
         const tools = await showAllAiImageTools(page);
         expect(
             tools,
-            `The AI image editor did not show ${BROWSER_TOOL} among its tools.`,
-        ).toContain(BROWSER_TOOL);
+            "The AI image editor did not show a tool of every group, so a group was left shut.",
+        ).toEqual(expect.arrayContaining(A_TOOL_OF_EACH_GROUP));
         const runnable: string[] = [];
         for (const tool of tools) {
             const run = await selectAiImageTool(page, tool);
