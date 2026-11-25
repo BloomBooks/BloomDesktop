@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Utils;
 using Bloom.web.controllers;
@@ -58,7 +59,17 @@ namespace Bloom.CollectionCreating
                 var newCollectionSettings = dlg.GetNewCollectionSettings();
                 if (MiscUtils.ReportIfInvalidCollection(newCollectionSettings.PathToSettingsFile))
                     return null;
-                return new CollectionSettings(newCollectionSettings).SettingsFilePath;
+                try
+                {
+                    return new CollectionSettings(newCollectionSettings).SettingsFilePath;
+                }
+                catch (CollectionFolderNotWritableException notWritable)
+                {
+                    // Explain, and leave the user where they were (the collection chooser or the
+                    // current collection) to choose somewhere else. (BL-16728)
+                    FolderWriteCheck.ReportProblem(notWritable);
+                    return null;
+                }
             }
         }
 

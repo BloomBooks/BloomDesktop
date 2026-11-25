@@ -164,6 +164,31 @@ namespace Bloom.WebLibraryIntegration
             }
         }
 
+        /// <summary>
+        /// Work out the folder a download goes into, make sure it exists and that Bloom can write
+        /// in it, and return it: the collection for downloaded books (which startup only tries to
+        /// make), or, for a download for editing, the folder the new collection for the book will
+        /// go in. If Windows won't allow that, explain why and return null, so we don't download a
+        /// book only to fail at the last step with a vague message. (BL-16728)
+        /// </summary>
+        private static string GetReadyDownloadDestination(bool forEdit)
+        {
+            try
+            {
+                var destination = forEdit
+                    ? NewCollectionWizard.DefaultParentDirectoryForCollections
+                    : BookDownloadSupport.EnsureDownloadFolderExists();
+                // The downloads collection may have been there already, yet not be writable.
+                FolderWriteCheck.EnsureFolderExistsAndIsWritable(destination);
+                return destination;
+            }
+            catch (CollectionFolderNotWritableException notWritable)
+            {
+                FolderWriteCheck.ReportProblem(notWritable);
+                return null;
+            }
+        }
+
         private static void DisplayProblem(Exception e, string message, bool showSendReport = true)
         {
             var action = new Action(() =>
@@ -183,18 +208,15 @@ namespace Bloom.WebLibraryIntegration
                 action.Invoke();
         }
 
-        public static string DownloadFolder
-        {
-            get
-            {
-                return Environment
-                    .GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
-                    .CombineForPath(
-                        ProjectContext.GetInstalledCollectionsDirectory(),
-                        BookCollection.DownloadedBooksCollectionNameInEnglish
-                    );
-            }
-        }
+        /// <summary>
+        /// The folder of the collection that downloaded books go into. Only the path: nothing is
+        /// made (see BookDownloadSupport.EnsureDownloadFolderExists).
+        /// </summary>
+        public static string DownloadFolder =>
+            Path.Combine(
+                ProjectContext.InstalledCollectionsPath,
+                BookCollection.DownloadedBooksCollectionNameInEnglish
+            );
 
         private IProgressDialog _progressDialog;
         private string _bookOrderUrl;
@@ -340,14 +362,10 @@ namespace Bloom.WebLibraryIntegration
             if (IsUrlOrder(_bookOrderUrl))
             {
                 var link = new BloomLinkArgs(_bookOrderUrl);
-                DownloadFromOrderUrl(
-                    _bookOrderUrl,
-                    link.ForEdit
-                        ? NewCollectionWizard.DefaultParentDirectoryForCollections
-                        : DownloadFolder,
-                    link.Title,
-                    link.ForEdit
-                );
+                var destination = GetReadyDownloadDestination(link.ForEdit);
+                if (destination == null)
+                    return;
+                DownloadFromOrderUrl(_bookOrderUrl, destination, link.Title, link.ForEdit);
                 if (link.ForEdit && link.DatabaseId != null && LastBookDownloadedPath != null)
                 {
                     // Write a collection-level json file that we will read again when we reupload the book

@@ -17,6 +17,7 @@ import { CanvasElementType } from "../../toolbox/canvas/canvasElementTypes";
 import { kDraggableIdAttribute } from "../../toolbox/canvas/canvasElementDraggables";
 import { changeImageInfo } from "../bloomEditing";
 import { addSkeletonIfEmpty } from "../linkGrid";
+import { languageClassesOf } from "../translationGroupLanguages";
 import { AttachNewTableThatFillsItsSpace } from "../tableEditing";
 import { kImageContainerClass, kImageContainerSelector } from "../bloomImages";
 import { getExactClientSize } from "../../../utils/elementUtils";
@@ -601,8 +602,12 @@ export class CanvasElementFactories {
     ): string {
         const defaultNewTextLanguage = GetSettings().languageForNewTextBoxes;
         const userDefinedStyle = userDefinedStyleName ?? "Bubble";
-        // add a draggable text canvas element to the html dom of the current page
-        const editableDivClasses = `bloom-editable bloom-content1 bloom-visibility-code-on ${userDefinedStyle}-style`;
+        // add a draggable text canvas element to the html dom of the current page, its box
+        // carrying the language classes page load would give it
+        const languageClasses = languageClassesOf(defaultNewTextLanguage).join(
+            " ",
+        );
+        const editableDivClasses = `bloom-editable ${languageClasses} bloom-visibility-code-on ${userDefinedStyle}-style`;
         const editableDivHtml =
             "<div class='" +
             editableDivClasses +

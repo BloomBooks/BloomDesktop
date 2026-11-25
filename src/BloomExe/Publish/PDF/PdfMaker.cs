@@ -252,10 +252,7 @@ namespace Bloom.Publish.PDF
 
         public static string GetUserColorProfilesFolder()
         {
-            var baseFolder = Environment.GetFolderPath(
-                Environment.SpecialFolder.LocalApplicationData
-            );
-            return Path.Combine(baseFolder, "SIL", "Bloom", "ColorProfiles", "CMYK");
+            return Path.Combine(ProjectContext.AppDataPath, "ColorProfiles", "CMYK");
         }
 
         public class MakingPdfFailedException : Exception
