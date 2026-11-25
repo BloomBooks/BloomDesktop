@@ -138,7 +138,10 @@ real bug in the code under test; read the message and fix it rather than working
 ## Helpers
 
 - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`, and the zoom control's
-  `getZoom`, `setZoom`. Note that Bloom hides the Edit and Publish tabs until a book is selected.
+  `getZoom`, `setZoom`; for a test of the zoom itself, `clickZoomButton`, `turnWheelToZoom`
+  (Ctrl+mouse wheel over the page) and what they change (`getZoomShownInTopBar`,
+  `expectPageDrawnAtZoom`). Note that Bloom hides the Edit and Publish tabs until a book is
+  selected.
 - `helpers/formatDialog.ts` — the format gear beside the text box being edited, and the Format
   dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
   `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
