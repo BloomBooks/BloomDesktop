@@ -55,7 +55,7 @@ import {
     SetupTableEditing,
     removeTableEditingMarkupFromClone,
 } from "./tableEditing";
-import { setupTablesInText } from "./tablesInText";
+import { selectionTouchesTableInText, setupTablesInText } from "./tablesInText";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -1887,7 +1887,7 @@ export const cutSelection = () => {
 
 async function cutSelectionImpl() {
     const sel = document.getSelection();
-    if (!sel) return;
+    if (!sel || selectionTouchesTableInText()) return;
     await writeClipboardText(sel.toString());
     // Using ckeditor here because it's the only way I've found to integrate clipboard
     // ops into an Undo stack that we can operate from an external button.
@@ -2051,6 +2051,7 @@ async function pasteImpl(imageAvailable: boolean) {
         // a selection.
         return;
     }
+    if (selectionTouchesTableInText()) return;
     const ckEditorInstance = CKEDITOR.currentInstance;
     if (ckEditorInstance) {
         // Using ckeditor here because it's the only way I've found to integrate clipboard

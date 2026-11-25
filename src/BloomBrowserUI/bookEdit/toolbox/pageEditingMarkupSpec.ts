@@ -172,6 +172,32 @@ describe("pageEditingMarkup tests", () => {
         expect(div.querySelector("p")!.firstChild).toBe(textNodeBefore);
     });
 
+    it("cleanUpNbsps keeps the live table in the box's text when it rebuilds the content", () => {
+        const div = document.createElement("div");
+        div.innerHTML =
+            "<p>A&nbsp;b c</p><div class='bloom-table bloom-tableInText'><p>cell</p></div><p>After</p>";
+        const liveTable = div.querySelector(".bloom-tableInText");
+        // Sanity check the setup: there is an nbsp to convert, so the box is rebuilt.
+        expect(div.querySelector("p")!.textContent).toBe("A b c");
+
+        cleanUpNbsps(div);
+
+        expect(div.querySelector("p")!.textContent).toBe("A b c");
+        expect(div.querySelector(".bloom-tableInText")).toBe(liveTable);
+    });
+
+    it("removeCommentsFromEditableHtml keeps the live table in the box's text", () => {
+        const div = document.createElement("div");
+        div.innerHTML =
+            "<p>Before<!-- a comment --></p><div class='bloom-table bloom-tableInText'><p>cell</p></div>";
+        const liveTable = div.querySelector(".bloom-tableInText");
+
+        removeCommentsFromEditableHtml(div);
+
+        expect(div.innerHTML).not.toContain("<!--");
+        expect(div.querySelector(".bloom-tableInText")).toBe(liveTable);
+    });
+
     it("cleanUpNbsps does rebuild the content when there is something to convert", () => {
         const div = document.createElement("div");
         div.innerHTML = "<p>A&nbsp;b c</p>";

@@ -824,3 +824,29 @@ describe("EditableDivUtils.unlockOriginalCredits", () => {
         expect(saveChangesAndRethinkPage).toHaveBeenCalled();
     });
 });
+
+describe("EditableDivUtils.isInHiddenLanguageBlock", () => {
+    it("counts a sentence in a cell of a table in a box's text as hidden when that box is hidden", () => {
+        document.body.innerHTML = `
+            <div class="bloom-translationGroup">
+                <div class="bloom-editable" id="outer" style="display: none">
+                    <p>Above</p>
+                    <div class="bloom-table bloom-tableInText"><div class="bloom-cell"><div class="bloom-translationGroup">
+                        <div class="bloom-editable" id="cellBox"><p><span id="inCell" class="audio-sentence">In the cell.</span></p></div>
+                    </div></div></div>
+                </div>
+            </div>`;
+        const inCell = document.getElementById("inCell")!;
+        // Sanity check: the cell's own box is not itself display: none.
+        expect(
+            window.getComputedStyle(document.getElementById("cellBox")!)
+                .display,
+        ).not.toBe("none");
+
+        expect(EditableDivUtils.isInHiddenLanguageBlock(inCell)).toBe(true);
+
+        document.getElementById("outer")!.style.display = "";
+        expect(EditableDivUtils.isInHiddenLanguageBlock(inCell)).toBe(false);
+        document.body.innerHTML = "";
+    });
+});

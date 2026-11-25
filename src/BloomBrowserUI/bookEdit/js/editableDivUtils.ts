@@ -3,7 +3,11 @@ import { get, postString } from "../../utils/bloomApi";
 import $ from "jquery";
 import { getPageIFrame, getPageIframeBody } from "../../utils/shared";
 import { kInlineImageClass, kInlineImageIdAttr } from "./inlineImageConstants";
-import { putBackLiveTables, tablesInTextOf } from "./tableInTextConstants";
+import {
+    kTableInTextClass,
+    putBackLiveTables,
+    tablesInTextOf,
+} from "./tableInTextConstants";
 import {
     postAfterSendingSnapshot,
     saveChangesAndRethinkPage,
@@ -936,6 +940,10 @@ export class EditableDivUtils {
             );
             elemToCheck = parentEditable || elem;
         }
+        // The text box of a cell of a table in a box's text is shown or hidden with that box,
+        // which may be more levels up than isInDisplayNone looks.
+        const tableInText = elemToCheck.closest(`.${kTableInTextClass}`);
+        if (tableInText) elemToCheck = tableInText.parentElement!;
         // elemToCheck is typically a bloom-editable. Originally, this check was used to consider
         // which languages were hidden. But with drag-activity, there are cases where a containing
         // text-over-picture element is hidden. Checking a small number of ancestors is usually

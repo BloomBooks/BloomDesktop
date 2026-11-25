@@ -4,6 +4,7 @@ import {
     deleteAllButTables,
     getInsertTableMenuItem,
     insertTableInText,
+    selectionTouchesTableInText,
     tableInTextMayShowItsButtons,
 } from "./tablesInText";
 import { EditableDivUtils } from "./editableDivUtils";
@@ -71,6 +72,23 @@ describe("insertTableInText", () => {
             "P: and second half.",
             "P:Last paragraph.",
         ]);
+    });
+
+    it("leaves an id only in the first half of a recorded sentence that the table splits", () => {
+        element("first").innerHTML =
+            "<span id='sentence' class='audio-sentence'>First half and second half.</span>";
+        insertTableInText(element("text"), caretIn("sentence", 10));
+
+        const halves = Array.from(
+            element("text").querySelectorAll<HTMLElement>(
+                "span.audio-sentence",
+            ),
+        );
+        expect(halves.map((half) => half.textContent)).toEqual([
+            "First half",
+            " and second half.",
+        ]);
+        expect(halves.map((half) => half.id)).toEqual(["sentence", ""]);
     });
 
     it("puts the table before the paragraph for a caret at its start", () => {
@@ -388,5 +406,37 @@ describe("tableInTextMayShowItsButtons", () => {
         otherTable.className = "bloom-table";
         document.body.appendChild(otherTable);
         expect(tableInTextMayShowItsButtons(otherTable)).toBe(true);
+    });
+});
+
+describe("selectionTouchesTableInText", () => {
+    beforeEach(setupPage);
+    afterEach(() => (document.body.innerHTML = ""));
+
+    const select = (
+        start: Node,
+        startOffset: number,
+        end: Node,
+        endOffset: number,
+    ) => {
+        const range = document.createRange();
+        range.setStart(start, startOffset);
+        range.setEnd(end, endOffset);
+        document.getSelection()!.removeAllRanges();
+        document.getSelection()!.addRange(range);
+    };
+
+    it("is true for a selection from above a table to below it, and false inside a cell or in plain text", () => {
+        const table = insertTableInText(element("text"), caretIn("first", 10));
+        table.innerHTML = `<div class="bloom-cell"><div class="bloom-translationGroup"><div class="bloom-editable" lang="en"><p id="cellParagraph">Cell text</p></div></div></div>`;
+        const cellText = element("cellParagraph").firstChild!;
+        const lastText = element("second").firstChild!;
+
+        select(element("first").firstChild!, 2, lastText, 2);
+        expect(selectionTouchesTableInText()).toBe(true);
+        select(cellText, 0, cellText, 4);
+        expect(selectionTouchesTableInText()).toBe(false);
+        select(lastText, 0, lastText, 4);
+        expect(selectionTouchesTableInText()).toBe(false);
     });
 });

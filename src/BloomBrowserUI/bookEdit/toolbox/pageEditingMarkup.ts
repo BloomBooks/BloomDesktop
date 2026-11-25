@@ -674,7 +674,11 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
             replacedAnNbsp = true;
         }
     }
-    if (replacedAnNbsp) editableDiv.innerHTML = editableDivHtml;
+    if (replacedAnNbsp)
+        EditableDivUtils.replaceContentKeepingLiveImagesAndTables(
+            editableDiv,
+            editableDivHtml,
+        );
 
     // Restore the bookmarks. See comment above.
     if (originalBookMarkContent)
@@ -729,6 +733,9 @@ export function removeCommentsFromEditableHtml(editable: HTMLElement) {
         // removeTrackedCkEditorFillingChar, and the same step in cleanUpNbsps. Taking it out
         // changes the html, so read it again afterwards.
         EditableDivUtils.removeTrackedCkEditorFillingChar(editable);
-        editable.innerHTML = editable.innerHTML.replace(commentRegex, "");
+        EditableDivUtils.replaceContentKeepingLiveImagesAndTables(
+            editable,
+            editable.innerHTML.replace(commentRegex, ""),
+        );
     }
 }

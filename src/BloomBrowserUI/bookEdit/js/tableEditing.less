@@ -26,7 +26,8 @@
 
 // The library puts its buttons, menus and highlight boxes on the body, outside the
 // marginBox, so only a rule on the body can reach them.
-body:has(.origami-layout-mode) [data-table-overlay] {
+body:has(.origami-layout-mode) [data-table-overlay],
+body:has(.origami-layout-mode) .bloom-tableInTextGrip {
     display: none !important;
 }
 

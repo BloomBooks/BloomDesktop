@@ -112,6 +112,12 @@ export function placeBetweenParagraphs(
         paragraph.before(table);
         return;
     }
+    // An element that the caret was inside (a recorded sentence, say) is now in both halves, and
+    // the copy in the second half has the same id. Only the first half keeps it.
+    restOfParagraph.querySelectorAll("[id]").forEach((copy) => {
+        if (paragraph.querySelector(`[id="${CSS.escape(copy.id)}"]`))
+            copy.removeAttribute("id");
+    });
     paragraph.after(table);
     if (!isBlank(restOfParagraph)) {
         const secondHalf = editable.ownerDocument.createElement("p");
@@ -319,6 +325,21 @@ export function deleteAllButTables(editable: HTMLElement, range: Range): void {
         selection.removeAllRanges();
         selection.addRange(caret);
     }
+}
+
+/**
+ * Whether the page's selection takes in a table in the text of a text box, wholly or partly (not
+ * just text inside one of its cells). The top bar's Cut and Paste buttons refuse such a selection,
+ * as Ctrl+X and Ctrl+V do (decideTableGuard).
+ */
+export function selectionTouchesTableInText(): boolean {
+    const selection = document.getSelection();
+    if (!selection || selection.rangeCount === 0) return false;
+    const range = selection.getRangeAt(0);
+    const editable = elementOf(range.commonAncestorContainer)?.closest(
+        ".bloom-editable",
+    ) as HTMLElement | null;
+    return !!editable && tablesTouchedBy(editable, range).length > 0;
 }
 
 function afterNode(node: Node): [Node, number] {
