@@ -26,7 +26,8 @@ import { apiPost } from "../helpers/api";
 import { setCopyrightHolder } from "../helpers/copyrightAndLicense";
 import { chooseImageFile, getImagePlacement } from "../helpers/images";
 import { pageListFrame, selectPage } from "../helpers/pageThumbnails";
-import type { Page, Response } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { failedRequestsUnder } from "../helpers/failedRequests";
 
 test.use({
     collectionSpec: { name: "new-book-title-rename", languages: ["en"] },
@@ -44,37 +45,6 @@ const fixtureImage = (name: string) =>
 const failureMessage =
     "Bloom failed to serve something under the book's old folder: the next page ('Page expired'), " +
     "a picture, or a script";
-
-/**
- * Record every request that failed and named `folder` (the book's folder before the rename) while
- * `body` runs, and return them. The listener is removed afterwards, because the page outlives the
- * test.
- */
-async function failedRequestsUnder(
-    page: Page,
-    folder: string,
-    body: () => Promise<void>,
-): Promise<string[]> {
-    const folderName = Path.basename(folder);
-    const failed: string[] = [];
-    const listener = (response: Response) => {
-        const url = decodeURI(response.url());
-        if (response.status() >= 400 && url.includes(folderName)) {
-            // Which document asked says what was left on the old folder.
-            const frame = response.request().frame();
-            failed.push(
-                `${response.status()} ${url} (asked for by the '${frame.name()}' frame, ${decodeURI(frame.url())})`,
-            );
-        }
-    };
-    page.on("response", listener);
-    try {
-        await body();
-    } finally {
-        page.off("response", listener);
-    }
-    return failed;
-}
 
 /**
  * Make a book from the Big Book template (the one the reporter used) and return its folder and

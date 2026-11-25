@@ -9,10 +9,18 @@
 // once they scroll into view, and reordering is a WinForms-side save that finishes after the
 // drag ends, so polling Bloom is the only way to know when the move has really happened.
 
-import { expect, type Frame, type Locator, type Page } from "@playwright/test";
+import {
+    expect,
+    type Frame,
+    type Locator,
+    type Page,
+    type Request,
+} from "@playwright/test";
 import { apiPost } from "./api";
+import { holdNextRequest } from "./heldRequest";
 import {
     editablePageFrame,
+    getEditTabState,
     getPages,
     getShownPageId,
     waitForEditTabSettled,
@@ -396,6 +404,53 @@ export async function clickPageThumbnail(
     const target = thumbnail(page, pageId);
     await target.scrollIntoViewIfNeeded();
     await target.click();
+}
+
+/**
+ * Click `first` in the page list and then `second` while `first` is still loading, whatever the
+ * machine's speed, and check that Bloom remembered the second click
+ * (EditingStateMachine.GoToOnceLoaded). It holds back `first`'s report that it has loaded
+ * (editView/pageDomLoaded), so the Edit tab stays on its way to `first` as it does while a slow
+ * page loads. `afterClicks` runs while that report is still held; it is let go afterwards, even if
+ * `afterClicks` throws.
+ */
+export async function clickPageWhileAnotherLoads(
+    page: Page,
+    first: string,
+    second: string,
+    afterClicks: () => Promise<void> = async () => {},
+): Promise<void> {
+    const loaded = await holdNextRequest(
+        page,
+        "**/bloom/api/editView/pageDomLoaded*",
+    );
+    try {
+        await clickPageThumbnail(page, first);
+        let report: Request | undefined;
+        void loaded.requested.then((request) => (report = request));
+        await expect
+            .poll(() => report !== undefined, {
+                timeout: 60000,
+                message: `Page ${first} never reported that it had loaded.`,
+            })
+            .toBe(true);
+        expect(
+            report!.postDataJSON().pageId,
+            `The first page to report it had loaded should be page ${first}, the one clicked.`,
+        ).toBe(first);
+        await clickPageThumbnail(page, second);
+        await expect
+            .poll(
+                async () => (await getEditTabState(page)).pageToGoToOnceLoaded,
+                {
+                    message: `Bloom did not remember the click on page ${second} made while page ${first} loaded.`,
+                },
+            )
+            .toBe(second);
+        await afterClicks();
+    } finally {
+        await loaded.stop();
+    }
 }
 
 /** The red X Bloom draws across a page while it asks to confirm removing it. */

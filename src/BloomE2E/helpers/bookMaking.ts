@@ -558,8 +558,18 @@ interface IEditTabState {
     pageId: string;
     /** Whether the Edit tab is the tab being shown. */
     visible: boolean;
+    /**
+     * A page clicked while another was loading, which the Edit tab goes to once that one has
+     * (EditingStateMachine.GoToOnceLoaded), or "".
+     */
+    pageToGoToOnceLoaded: string;
     /** How many times the page now shown has told Bloom its DOM had loaded. */
     pageLoadAnnouncements: number;
+}
+
+/** What the Edit tab is doing now (e2e/editState). */
+export async function getEditTabState(page: Page): Promise<IEditTabState> {
+    return apiGetJson<IEditTabState>(page, "e2e/editState");
 }
 
 /**
@@ -593,10 +603,7 @@ export async function waitForEditTabSettled(
     await expect
         .poll(
             async () => {
-                const now = await apiGetJson<IEditTabState>(
-                    page,
-                    "e2e/editState",
-                );
+                const now = await getEditTabState(page);
                 if (!now.visible || now.state !== "Editing") {
                     lastReading = "";
                     return now.state;
