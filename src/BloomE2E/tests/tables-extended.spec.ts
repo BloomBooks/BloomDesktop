@@ -1134,7 +1134,6 @@ test.describe("more ways to use a table", () => {
         await step("Copy the page with the table on it", async () => {
             await selectBook(page, bookFolder);
             await switchTab(page, "edit");
-            await goToPage(page, canvasPage.id);
             await selectPage(page, canvasPage.id);
             await runPageMenuCommand(page, canvasPage.id, "Copy Page");
             // The page is on Bloom's clipboard once Paste Page is enabled.

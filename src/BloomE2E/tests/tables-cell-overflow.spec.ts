@@ -11,7 +11,6 @@
 
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
-import { setContentLanguages } from "../helpers/bookMaking";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
     openPublishDestination,
@@ -21,6 +20,7 @@ import {
     beginBoundaryDrag,
     clickCell,
     clickTableMenuCommand,
+    closeAnyMenu,
     dragBoundary,
     endBoundaryDrag,
     expectOverflowMarksMatchWhatFits,
@@ -34,9 +34,9 @@ import {
     moveBoundaryDragTo,
     openTableMenu,
     setRowSize,
+    toggleMenuCellLanguage,
     typeInCell,
     waitForCellOverflowMarks,
-    waitForTableAttached,
 } from "../helpers/tables";
 import { undo } from "../helpers/undo";
 import { switchTab } from "../helpers/workspace";
@@ -72,10 +72,17 @@ async function makeBookWithTwoLanguageTable(
     english: string,
 ): Promise<void> {
     await makeBookWithTableOnCanvasPage(page, ["en"]);
-    // Every text cell shows each of the book's content languages.
-    await setContentLanguages(page, ["en", "fr"]);
-    await waitForTableAttached(page);
-    expect(await getCellLanguages(page, ROW, COLUMN)).toEqual(["en", "fr"]);
+    // A new text cell shows L1 only. Tick L2 for the whole column, since a later test types French
+    // into the row below as well.
+    await clickCell(page, ROW, COLUMN);
+    await openTableMenu(page, "column", COLUMN);
+    await toggleMenuCellLanguage(page, "L2");
+    await closeAnyMenu(page);
+    for (const row of [ROW, ROW + 1])
+        expect(
+            await getCellLanguages(page, row, COLUMN),
+            `The cell in row ${row} should show L1 and L2 once L2 is ticked in its column's menu.`,
+        ).toEqual(["en", "fr"]);
     // Text to see: an empty box draws nothing, cut off or not. French first: English that takes
     // several lines can push the French box out of the cell, where a click cannot reach it.
     await typeInCell(page, ROW, COLUMN, "fr", "Français");
