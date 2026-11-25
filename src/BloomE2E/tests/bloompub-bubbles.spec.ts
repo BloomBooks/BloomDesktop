@@ -7,6 +7,7 @@
 //
 // The bubble is filled while its Auto Height is still on, as the case has it: Bloom then grows the
 // bubble down to the bottom of the canvas, and the lines after that are the ones that do not fit.
+// The filling waits for that growth line by line (fillGrowingTextBoxPastItsBottom).
 // The second, short bubble is not in the case's steps; it is there for the case's summary ("no
 // scroll bars in speech bubbles sized not to need them").
 
@@ -31,7 +32,7 @@ import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
     expectNoOverflowMarks,
     expectTextBoxMarkedAsOverflowing,
-    fillTextBoxPastItsBottom,
+    fillGrowingTextBoxPastItsBottom,
     findOverflowDrawingInPreview,
     getTextBoxView,
     getThumbnailOverflow,
@@ -110,7 +111,7 @@ test("a speech bubble with too much text scrolls unmarked on a Device page, is m
                 await getCanvasElementAutoHeight(page),
                 "test setup: a new speech bubble should have Auto Height on",
             ).toBe(true);
-            await fillTextBoxPastItsBottom(
+            await fillGrowingTextBoxPastItsBottom(
                 page,
                 canvasElementTextBox(page, bubble),
             );
@@ -128,7 +129,11 @@ test("a speech bubble with too much text scrolls unmarked on a Device page, is m
     await step(
         "See a scroll bar on the bubble, and nothing marked as overflowing",
         async () => {
-            await waitForScrollBarOf(fullBox, true, "The full bubble");
+            expect(
+                (await waitForScrollBarOf(fullBox, true, "The full bubble"))
+                    .handleHeight,
+                "The full bubble's scroll bar should have a handle to drag.",
+            ).toBeGreaterThan(0);
             expect(
                 (await getTextBoxView(fullBox)).hidden,
                 "test setup: the full bubble should have text out of sight",
@@ -220,11 +225,24 @@ test("a speech bubble with too much text scrolls unmarked on a Device page, is m
                 "test setup: the full bubble should have text out of sight in the preview too",
             ).toBeGreaterThan(1);
 
-            await waitForScrollBarOf(
-                fullInPreview,
-                true,
-                "The full bubble in the BloomPUB preview",
-            );
+            // A bubble sized to its text can measure a few pixels short of it; half a line
+            // out of sight would be text a reader cannot see.
+            const shortView = await getTextBoxView(shortInPreview);
+            expect(
+                shortView.hidden,
+                "test setup: the short bubble should show all its text in the preview",
+            ).toBeLessThan(shortView.lineHeight / 2);
+
+            expect(
+                (
+                    await waitForScrollBarOf(
+                        fullInPreview,
+                        true,
+                        "The full bubble in the BloomPUB preview",
+                    )
+                ).handleHeight,
+                "The full bubble's scroll bar in the preview should have a handle to drag.",
+            ).toBeGreaterThan(0);
             await waitForScrollBarOf(
                 shortInPreview,
                 false,
