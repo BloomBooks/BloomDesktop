@@ -1,6 +1,7 @@
 // The height of a text box on a canvas page. With Auto Height on, which a new Text Block has, the
 // box grows to fit what is typed. With it turned off on the box's "..." menu, the box gets a handle
-// in the middle of its bottom edge, and dragged smaller than its text it scrolls. Turned back on,
+// in the middle of its bottom edge, and dragged smaller than its text it scrolls; typing more then
+// leaves its height alone. Turned back on,
 // the box grows again to show all of its text.
 //
 // Automates "Canvas Text Box Height" (Test Case ID 305).
@@ -101,6 +102,22 @@ test("a canvas text box fits its height to its text only while Auto Height is on
             "The squashed box's text is not taller than the box, so it has no reason to scroll.",
         ).toBeGreaterThan(squashed.shownHeight);
         await waitForCanvasElementScrollBar(page, true);
+
+        // With Auto Height off, typing more does not grow the box. Bloom fits a box's height in a
+        // zero-delay timeout after each key comes up, and typeInCanvasElement returns only once
+        // Bloom has received the typed text, so by then any growing would have happened.
+        await typeInCanvasElement(page, " The sun went down.", {
+            withKeys: true,
+        });
+        const typedMore = await getCanvasElementTextFit(page);
+        expect(
+            typedMore.textHeight,
+            "Typing more into the squashed box did not add to its text.",
+        ).toBeGreaterThan(squashed.textHeight);
+        expect(
+            typedMore.elementHeight,
+            "With Auto Height off, typing more changed the box's height.",
+        ).toBe(squashed.elementHeight);
 
         // Turning Auto Height back on grows the box until all its text shows, with no scrollbar.
         await setCanvasElementAutoHeight(page, true);
