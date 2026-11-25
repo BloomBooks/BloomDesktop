@@ -213,29 +213,44 @@ async function getIdOfEpubPreviewPage(page: Page): Promise<string | undefined> {
 }
 
 /**
- * Wait until a page of the preview has loaded, with its fonts and every picture it shows. A
- * picture that failed to load never counts as loaded, so a page with one fails here.
+ * Wait until a page of the preview has loaded, with its fonts and every picture it shows. Throws,
+ * naming the picture, when one of them failed to load: the browser then calls it complete, but it
+ * has no picture, and the page would be measured without it.
  */
 async function waitForEpubPreviewPageToFinishLoading(
     frame: Frame,
 ): Promise<void> {
+    let broken: string[] = [];
     await expect
         .poll(
-            async () =>
-                frame.evaluate(
-                    () =>
+            async () => {
+                const state = await frame.evaluate(() => ({
+                    loaded:
                         document.readyState === "complete" &&
                         document.fonts.status === "loaded" &&
-                        [...document.images].every(
-                            (image) => image.complete && image.naturalWidth > 0,
+                        [...document.images].every((image) => image.complete),
+                    broken: [...document.images]
+                        .filter(
+                            (image) =>
+                                image.complete && image.naturalWidth === 0,
+                        )
+                        .map(
+                            (image) => image.getAttribute("src") ?? "(no src)",
                         ),
-                ),
+                }));
+                broken = state.broken;
+                return state.loaded;
+            },
             {
                 timeout: 30000,
                 message:
-                    "A page of the ePUB preview never finished loading its fonts and pictures. " +
-                    "A picture that cannot be loaded leaves it so.",
+                    "A page of the ePUB preview never finished loading its fonts and pictures.",
             },
         )
         .toBe(true);
+    if (broken.length > 0)
+        throw new Error(
+            `The ePUB preview could not load ${broken.length === 1 ? "a picture" : "pictures"} ` +
+                `of the page at ${frame.url()}: ${broken.join(", ")}.`,
+        );
 }
