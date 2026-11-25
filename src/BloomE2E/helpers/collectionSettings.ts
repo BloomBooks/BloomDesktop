@@ -18,6 +18,7 @@ import {
 } from "../fixtures/launchBloom";
 import { apiGetJson, apiPost } from "./api";
 import { waitForCollectionReady } from "./collection";
+import type { IFontChooserPlace } from "./fontChooser";
 import {
     confirmLanguageChooser,
     pickLanguageInChooser,
@@ -887,6 +888,18 @@ export async function chooseCollectionSettingsLanguageFont(
         `${heading}: Default Font`,
         font,
     );
+}
+
+/**
+ * The Default Font picker of one language on the Languages page, as the font chooser's helpers
+ * (fontChooser.ts) take it, for a test of the chooser itself: its marks and information pane.
+ */
+export async function collectionSettingsFontChooser(
+    page: Page,
+    heading: string,
+): Promise<IFontChooserPlace> {
+    await expectLanguageGroup(page, heading);
+    return { scope: page, chooser: languageFontList(page, heading) };
 }
 
 /** The "More" row at the bottom of one language's group, which opens its page of more settings. */
