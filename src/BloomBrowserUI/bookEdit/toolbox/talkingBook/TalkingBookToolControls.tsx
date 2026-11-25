@@ -167,7 +167,6 @@ const TalkingBookButton: FunctionComponent<{
     hideStepNum?: boolean;
     l10nKey: string;
     l10nText: string;
-    testId?: string;
     onMouseDown?: () => void;
     onMouseUp?: () => void;
     onClickCapture?: (event) => void; // BloomButton's onClick doesn't allow for passing in an event, so this is used by the play button to handle the ctrl + click functionality
@@ -184,7 +183,6 @@ const TalkingBookButton: FunctionComponent<{
         hideStepNum,
         l10nKey,
         l10nText,
-        testId,
         ...possibleEventHandlers // since the buttons have different kinds of clicking/mouse event handlers, just use whatever is given
     } = props;
     let imgFile = props.enabledImgFile;
@@ -201,7 +199,6 @@ const TalkingBookButton: FunctionComponent<{
     }
     return (
         <div
-            data-testid={testId}
             css={css`
                 display: flex;
                 align-items: center;
@@ -429,7 +426,7 @@ export const TalkingBookToolControls: FunctionComponent<{
                     activeImgFile="/bloom/bookEdit/toolbox/talkingBook/listen_active.svg"
                     l10nKey="EditTab.Toolbox.TalkingBookTool.Listen"
                     l10nText="Listen to the whole page"
-                    testId="talking-book-listen"
+                    data-testid="talking-book-listen"
                     onClick={() => {
                         props.audioRecorder.listenAsync();
                     }}

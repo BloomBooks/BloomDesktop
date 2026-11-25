@@ -106,42 +106,42 @@ async function setShowPlaybackOrder(page: Page, on: boolean): Promise<void> {
 }
 
 /**
- * Have every audio or video element in `frame` note the file it starts to play, so that a test
- * can read back which narration played, in what order (see getPlayedFiles). Notes nothing that
- * played before this was called.
+ * Have `frame` note the file of every audio or video that plays to its end, so that a test can
+ * read back which narration was heard, in what order (see getFinishedFiles). A file that fails to
+ * load never ends, so it is not noted. Notes nothing that finished before this was called.
  */
-async function recordPlays(frame: Frame): Promise<void> {
+async function recordFinishedPlays(frame: Frame): Promise<void> {
     await frame.evaluate(() => {
         const w = window as unknown as {
-            e2ePlayedFiles?: string[];
+            e2eFinishedFiles?: string[];
+            e2eListeningForEnded?: boolean;
         };
-        w.e2ePlayedFiles = [];
-        const proto = HTMLMediaElement.prototype as HTMLMediaElement & {
-            e2eOriginalPlay?: () => Promise<void>;
-        };
-        if (!proto.e2eOriginalPlay) {
-            proto.e2eOriginalPlay = proto.play;
-            proto.play = function (this: HTMLMediaElement) {
-                // src, not currentSrc: currentSrc changes only once the new file starts to
-                // load, so at play() it can still name the file played before.
-                w.e2ePlayedFiles?.push(this.src || this.currentSrc);
-                return proto.e2eOriginalPlay!.call(this);
-            };
-        }
+        w.e2eFinishedFiles = [];
+        if (w.e2eListeningForEnded) return;
+        w.e2eListeningForEnded = true;
+        // "ended" does not bubble, so listen while it is on its way down to the media element.
+        document.addEventListener(
+            "ended",
+            (event) => {
+                const media = event.target as HTMLMediaElement;
+                w.e2eFinishedFiles?.push(media.currentSrc || media.src);
+            },
+            true,
+        );
     });
 }
 
 /**
- * The base names of the files that media in `frame` started to play since recordPlays, in the
- * order they started, without a file played again straight after itself.
+ * The base names of the files that media in `frame` played to the end since recordFinishedPlays,
+ * in the order they finished.
  */
-async function getPlayedFiles(frame: Frame): Promise<string[]> {
+async function getFinishedFiles(frame: Frame): Promise<string[]> {
     const urls = await frame.evaluate(
         () =>
-            (window as unknown as { e2ePlayedFiles?: string[] })
-                .e2ePlayedFiles ?? [],
+            (window as unknown as { e2eFinishedFiles?: string[] })
+                .e2eFinishedFiles ?? [],
     );
-    const names = urls.map((url) => {
+    return urls.map((url) => {
         // The Edit tab plays a narration through Bloom's audio/wavFile API, which names the file
         // in its `id` parameter.
         const parsed = new URL(url);
@@ -150,7 +150,6 @@ async function getPlayedFiles(frame: Frame): Promise<string[]> {
         );
         return Path.basename(path, Path.extname(path));
     });
-    return names.filter((name, i) => i === 0 || names[i - 1] !== name);
 }
 
 /** The text of the sentences narrated by these files, which are named by sentence id. */
@@ -161,8 +160,8 @@ function textsOf(fileNames: string[], textById: Map<string, string>): string[] {
 }
 
 /**
- * Wait until media in the frames have played `count` narration files, and return the sentences
- * they narrate, in the order they played.
+ * Wait until media in the frames have played `count` narration files to their end, and return
+ * the sentences they narrate, in the order they were heard.
  */
 async function waitForPlayedSentences(
     frames: Frame[],
@@ -177,7 +176,7 @@ async function waitForPlayedSentences(
                 async () => {
                     played = [];
                     for (const frame of frames)
-                        played.push(...(await getPlayedFiles(frame)));
+                        played.push(...(await getFinishedFiles(frame)));
                     return played.length;
                 },
                 { timeout: 120000 },
@@ -238,30 +237,66 @@ async function getStagedPlaybackOrder(
     );
 }
 
-/**
- * The sentence ids, in order, that the staged ePUB's media overlay for the page reads: each
- * <par> of a SMIL file names the element its text is in by the fragment of its <text src>.
- */
-function getEpubOverlayIds(stagingFolder: string): string[] {
-    const smilFiles: string[] = [];
-    const walk = (folder: string) => {
-        for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
-            const full = Path.join(folder, entry.name);
-            if (entry.isDirectory()) walk(full);
-            else if (entry.name.toLowerCase().endsWith(".smil"))
-                smilFiles.push(full);
-        }
-    };
-    walk(stagingFolder);
-    const ids: string[] = [];
-    for (const file of smilFiles.sort()) {
-        const smil = fs.readFileSync(file, "utf8");
-        for (const match of smil.matchAll(
-            /<text\b[^>]*\bsrc="[^"#]*#([^"]+)"/g,
-        ))
-            ids.push(match[1]);
+/** Every file under `folder` whose name ends with `extension`. */
+function findFiles(folder: string, extension: string): string[] {
+    const found: string[] = [];
+    for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
+        const full = Path.join(folder, entry.name);
+        if (entry.isDirectory()) found.push(...findFiles(full, extension));
+        else if (entry.name.toLowerCase().endsWith(extension)) found.push(full);
     }
-    return ids;
+    return found;
+}
+
+/** The value of attribute `name` in the start tag `tag`, or undefined. */
+function attribute(tag: string, name: string): string | undefined {
+    return tag.match(new RegExp(`\\s${name}="([^"]*)"`))?.[1];
+}
+
+/**
+ * The sentence ids, in order, that the staged ePUB's media overlay reads for the page holding
+ * sentence `sentenceId`. The overlay is the SMIL file that the page's entry in the package
+ * document (content.opf) names as its media-overlay, which is how a reader finds it; each <par>
+ * there names the element its text is in by the fragment of its <text src>. Returns an
+ * explanation instead when the page or its overlay is missing, so the comparison shows it.
+ */
+function getEpubOverlayIds(
+    stagingFolder: string,
+    sentenceId: string,
+): string[] {
+    const [opfFile] = findFiles(stagingFolder, ".opf");
+    if (!opfFile) return [`(no package document in ${stagingFolder})`];
+    const opfFolder = Path.dirname(opfFile);
+    const items = (
+        fs.readFileSync(opfFile, "utf8").match(/<item\s[^>]*>/g) ?? []
+    ).map((tag) => ({
+        id: attribute(tag, "id"),
+        href: decodeURIComponent(attribute(tag, "href") ?? ""),
+        overlay: attribute(tag, "media-overlay"),
+    }));
+    const pageItem = items.find(
+        (item) =>
+            item.href.endsWith("html") &&
+            fs
+                .readFileSync(Path.join(opfFolder, item.href), "utf8")
+                .includes(`id="${sentenceId}"`),
+    );
+    if (!pageItem)
+        return ["(no page of the ePUB holds the narrated sentences)"];
+    const overlayItem = items.find((item) => item.id === pageItem.overlay);
+    if (!overlayItem)
+        return [`(the ePUB's page ${pageItem.href} names no media overlay)`];
+    const smil = fs.readFileSync(
+        Path.join(opfFolder, overlayItem.href),
+        "utf8",
+    );
+    const pageFile = Path.basename(pageItem.href);
+    return Array.from(smil.matchAll(/<text\s[^>]*>/g)).map(([tag]) => {
+        const [file, id] = (attribute(tag, "src") ?? "").split("#");
+        return Path.basename(decodeURIComponent(file)) === pageFile
+            ? id
+            : `(text in ${file}, not the page)`;
+    });
 }
 
 /**
@@ -409,7 +444,7 @@ test("the playback order set on a Canvas page is the order it plays in Edit, Blo
         "Click Listen to the whole page and hear the boxes in the order chosen",
         async () => {
             const frames = [editablePageFrame(page), toolboxFrame(page)];
-            for (const frame of frames) await recordPlays(frame);
+            for (const frame of frames) await recordFinishedPlays(frame);
             await toolboxFrame(page)
                 .locator('[data-testid="talking-book-listen"] img')
                 .click();
@@ -450,19 +485,10 @@ test("the playback order set on a Canvas page is the order it plays in Edit, Blo
         "See the ePUB's media overlay read the boxes in the order chosen",
         async () => {
             const stagingFolder = await stageEpub(page);
-            let ids: string[] = [];
-            await expect
-                .poll(
-                    () => {
-                        ids = getEpubOverlayIds(stagingFolder);
-                        return ids.length;
-                    },
-                    {
-                        timeout: 60000,
-                        message: `The staged ePUB in ${stagingFolder} has no media overlay.`,
-                    },
-                )
-                .toBe(kChosenOrder.length);
+            const ids = getEpubOverlayIds(
+                stagingFolder,
+                [...textById.keys()][0],
+            );
             expect(textsOf(ids, textById)).toEqual(kChosenOrder);
         },
     );
