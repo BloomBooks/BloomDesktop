@@ -12,7 +12,11 @@
 
 import { expect, type Locator, type Page } from "@playwright/test";
 import * as Path from "node:path";
-import { getPages, waitForEditablePage } from "./bookMaking";
+import {
+    getPages,
+    waitForEditablePage,
+    waitForEditTabSettled,
+} from "./bookMaking";
 
 /** One thumbnail in the Add Page dialog. */
 export interface IAddPageThumbnail {
@@ -307,6 +311,10 @@ export async function addPageFromDialog(
         templateBookFolderName,
     );
     const before = (await getPages(page)).length;
+    // Adding a page changes the page being edited, and such a request must not arrive while the
+    // Edit tab is still loading one (see waitForEditTabSettled). The dialog can be open, with a
+    // page selected, before the tab has settled on the page added just before.
+    await waitForEditTabSettled(page);
     await dialog.getByRole("button", { name: "Add Page", exact: true }).click();
     await expect
         .poll(() => isAddPageDialogOpen(page), {

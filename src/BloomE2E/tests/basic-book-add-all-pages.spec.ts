@@ -159,24 +159,32 @@ test("every page of every template installed with Bloom can be added to a Basic 
                 offeredByTemplate,
                 "Add Page did not offer exactly the template pages that the files of the templates it shows hold",
             ).toEqual(expectedByTemplate);
-            // The book's own template comes first: the first group is the Basic Book's pages, all
-            // of them and nothing else.
-            expect(
-                groups[0].pages.map(
-                    (p) =>
-                        `${Path.basename(p.templateBookFolder)}: ${oneLine(p.label)}`,
-                ),
-                `the first group in Add Page is not exactly ${BASIC_BOOK}'s pages`,
-            ).toEqual(
-                expectedByTemplate[BASIC_BOOK].map(
-                    (label) => `${BASIC_BOOK}: ${label}`,
-                ),
-            );
             // The files cannot say which templates the dialog should show at all, so name them.
             expect(
                 Object.keys(offeredByTemplate),
                 "Add Page did not offer pages from every template installed with Bloom that has pages to add",
             ).toEqual(expect.arrayContaining(INSTALLED_TEMPLATES_WITH_PAGES));
+            // The book's own template comes first: every one of the Basic Book's pages is in the
+            // first group. A template of the person's own with the same title would share that
+            // group, so look only at the pages from the templates installed with Bloom.
+            expect(
+                groups[0].pages
+                    .filter((p) =>
+                        isInsideFolder(
+                            p.templateBookFolder,
+                            installedTemplatesFolder,
+                        ),
+                    )
+                    .map(
+                        (p) =>
+                            `${Path.basename(p.templateBookFolder)}: ${oneLine(p.label)}`,
+                    ),
+                `the first group in Add Page does not hold exactly ${BASIC_BOOK}'s pages`,
+            ).toEqual(
+                expectedByTemplate[BASIC_BOOK].map(
+                    (label) => `${BASIC_BOOK}: ${label}`,
+                ),
+            );
             return offered;
         },
     );
