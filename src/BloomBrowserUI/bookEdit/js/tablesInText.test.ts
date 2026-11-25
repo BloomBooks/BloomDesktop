@@ -139,10 +139,11 @@ describe("insertTableInText", () => {
 
     it("gives a recorded sentence's id to the half with its words when the other half is only a line break", () => {
         element("first").innerHTML =
-            "<span id='one' class='audio-sentence'><span class='bloom-linebreak'></span>Good morning.</span>";
+            "<span id='one' class='audio-sentence'><span class='bloom-linebreak'></span>\u200CGood morning.</span>";
+        // After the zero-width non-joiner that Shift+Enter puts after its line break.
         const words = element("one").lastChild as Text;
         const caret = document.createRange();
-        caret.setStart(words, 0);
+        caret.setStart(words, 1);
         caret.collapse(true);
 
         const table = insertTableInText(element("text"), caret);
