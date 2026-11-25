@@ -147,13 +147,11 @@ test.describe("Bloom relinquishes the camera", () => {
         page,
     }) => {
         await selectPage(page, textPage.id);
-        await waitForEditablePage(page);
         await expectCameraReleased(
             page,
             "Bloom kept the camera on a page with no video box.",
         );
         await selectPage(page, videoPage.id);
-        await waitForEditablePage(page);
         await expectCameraHeld(
             page,
             "Going back to the video page with the Sign Language tool expanded did not take the camera.",
