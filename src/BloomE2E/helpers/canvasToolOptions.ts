@@ -8,11 +8,7 @@
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { bookHtmlPath } from "./bookHtml";
-import {
-    closeColorPickerWith,
-    readColorPicker,
-    typeInHexBox,
-} from "./colorPicker";
+import { closeColorPickerWith, colorPicker, typeInHexBox } from "./colorPicker";
 import { cssColorToHex } from "./cssValues";
 import { openCanvasTool } from "./canvasElements";
 import * as fs from "node:fs";
@@ -197,12 +193,12 @@ export async function typeCanvasElementBackgroundColor(
     await toolbox.locator(BACKGROUND_COLOR_BAR).first().click();
     const frame = await colorPickerFrame(page);
     await typeInHexBox(frame, color);
-    await expect
-        .poll(async () => (await readColorPicker(frame)).hex.toLowerCase(), {
-            timeout: 15000,
-            message: `The color picker's hex box did not take ${color}.`,
-        })
-        .toMatch(new RegExp(`^${color.toLowerCase()}(ff)?$`));
+    // Read the hex box alone: the picker leaves out its alpha slider for a caption, so a reader
+    // of every control would fail there.
+    await expect(
+        colorPicker(frame).locator('input[type="text"]'),
+        `The color picker's hex box did not take ${color}.`,
+    ).toHaveValue(new RegExp(`^${color}(ff)?$`, "i"), { timeout: 15000 });
     await closeColorPickerWith(frame, "OK");
 }
 
