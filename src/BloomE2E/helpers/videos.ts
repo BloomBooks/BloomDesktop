@@ -23,7 +23,7 @@ import { apiPost } from "./api";
 import { editablePageFrame } from "./bookMaking";
 import { clickCanvasElementMenuItem } from "./canvasElements";
 import { realClick } from "./realClick";
-import { toolboxFrame } from "./toolbox";
+import { expectExpandedTool, toolboxFrame } from "./toolbox";
 import { confirmRecycleBox } from "./winformsConfirmRecycle";
 
 /** A one-second, 160x120 video that ships with the suite, for filling a video box. */
@@ -284,6 +284,22 @@ export async function getVideoSource(videoBox: Locator): Promise<string> {
     const source = videoBox.locator("video source");
     if ((await source.count()) === 0) return "";
     return (await source.first().getAttribute("src")) ?? "";
+}
+
+/**
+ * Click `videoBox` the way a person does, which expands the Sign Language tool on it, and wait
+ * until the toolbox says the Sign Language tool is the expanded one.
+ */
+export async function openSignLanguageToolOnVideoBox(
+    page: Page,
+    videoBox: Locator,
+): Promise<void> {
+    await realClick(videoBox);
+    await expectExpandedTool(
+        page,
+        "signLanguage",
+        "Clicking the video box did not expand the Sign Language tool.",
+    );
 }
 
 /**
