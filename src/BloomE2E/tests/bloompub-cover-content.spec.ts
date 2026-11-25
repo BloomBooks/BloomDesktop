@@ -183,9 +183,34 @@ async function expectCoverPagesInBloomPub(
         `The inside front cover of the BloomPUB ${when} should hold only its Language 2 text.`,
     ).toEqual({ texts: [{ lang: L2, text: COVER_PAGES[0].text }], images: 0 });
 
-    // And a reader of the preview sees each of those pages with its text. They are at the back,
-    // in this order, as the Device front/back matter puts them.
+    // And the preview is the same publication: it opens on the front cover, and the content page
+    // beside it carries its Language 2 text only when Language 2 is ticked. bloom-player builds
+    // only the pages near the one it shows, which on opening are the cover and the content page.
     const player = await showBloomPubPreview(page);
+    await expect(
+        player.locator(
+            '.swiper-slide-active .bloom-page[data-xmatter-page="frontCover"]',
+        ),
+        `The BloomPUB preview ${when} should open on the front cover.`,
+    ).toHaveCount(1);
+    const contentPageId = stagedPages.find((p) => p.xmatterPage === null)!.id;
+    const contentBox = (lang: string, text: string) =>
+        player
+            .locator(
+                `.bloom-page[id="${contentPageId}"] .bloom-editable[lang="${lang}"]`,
+            )
+            .filter({ hasText: text });
+    await expect(
+        contentBox(L1, CONTENT_L1),
+        `test setup: the preview's content page should carry its Language 1 text ${when}`,
+    ).toHaveCount(1);
+    await expect(
+        contentBox(L2, CONTENT_L2),
+        `The preview's content page should carry its Language 2 text only when Language 2 is ticked (${when}).`,
+    ).toHaveCount(l2Ticked ? 1 : 0);
+
+    // A reader sees each cover page with its text. They are at the back, in this order, as the
+    // Device front/back matter puts them.
     for (const [index, coverPage] of COVER_PAGES.entries()) {
         const shown = await showPreviewPage(player, coverPageIds[index]);
         await expect(
@@ -274,16 +299,32 @@ test("Language 2 text on the inside and back covers is in the BloomPUB whether o
     const isL2Ticked = async () =>
         (await getLanguageRows(page, "text")).find((r) => r.name === l2Name)
             ?.checked;
+    // The check box shows a click at once and tells Bloom afterwards, and staging reads Bloom's
+    // setting. So wait for both to agree before making a BloomPUB.
+    const expectL2Ticked = async (ticked: boolean) => {
+        await expect.poll(isL2Ticked, { timeout: 30000 }).toBe(ticked);
+        await expect
+            .poll(
+                async () =>
+                    (await getLanguagesInBook(page)).find((l) => l.code === L2)
+                        ?.includeText,
+                {
+                    timeout: 30000,
+                    message: `Bloom never recorded Language 2 as ${ticked ? "" : "not "}published.`,
+                },
+            )
+            .toBe(ticked);
+    };
 
     await step("Tick Language 2 and preview the BloomPUB", async () => {
         if (!(await isL2Ticked())) await clickLanguage(page, "text", l2Name);
-        await expect.poll(isL2Ticked, { timeout: 30000 }).toBe(true);
+        await expectL2Ticked(true);
         await expectCoverPagesInBloomPub(page, true);
     });
 
     await step("Untick Language 2 and preview the BloomPUB again", async () => {
         await clickLanguage(page, "text", l2Name);
-        await expect.poll(isL2Ticked, { timeout: 30000 }).toBe(false);
+        await expectL2Ticked(false);
         await expectCoverPagesInBloomPub(page, false);
     });
 });
