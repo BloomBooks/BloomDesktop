@@ -28,6 +28,7 @@ export type PaletteItem =
     | "image"
     | "video"
     | "speech"
+    | "caption"
     | "sound"
     | "none";
 
