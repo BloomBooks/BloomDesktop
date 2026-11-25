@@ -198,6 +198,8 @@ real bug in the code under test; read the message and fix it rather than working
   the inline styles that lay out a picture and its box.
 - `helpers/geometry.ts` — compare rectangles to one another (`expectInside`, `expectNoOverlap`,
   `expectSameRect`) so a test never asserts a pixel value the machine decided.
+- `helpers/messageBox.ts` — `readAndCloseMessageBox` reads a plain WinForms MessageBox (such as
+  the PDF & Print screen's "Warning") over UI Automation and closes it with its OK button.
 - `helpers/videos.ts` — `chooseVideoFile` puts a video into a video box through the Sign Language
   tool's own Import, with the native file picker alone answered by an `e2e/*` hook; ships
   `fixtures/videos/short.mp4`. `trimVideoStart` moves that tool's Trim slider, and
