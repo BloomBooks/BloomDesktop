@@ -171,13 +171,21 @@ export async function pickFont(
 ): Promise<string> {
     // Bloom scans the machine's fonts in the background at startup, and fonts/metadata answers with
     // the fonts scanned so far, so a kind can be missing only because the scan has not reached its
-    // fonts yet. Ask again until there is one; the throw below reports a kind still missing.
+    // fonts yet. Ask again until there is one; the throw below reports a kind still missing. A
+    // request that fails is not a missing kind, so its error is thrown as it is.
     let fonts: IFontMetadata[] = [];
     let candidates: IFontMetadata[] = [];
+    let requestError: unknown;
     await expect
         .poll(
             async () => {
-                fonts = await getFontsMetadata(page);
+                try {
+                    fonts = await getFontsMetadata(page);
+                    requestError = undefined;
+                } catch (error) {
+                    requestError = error;
+                    throw error;
+                }
                 candidates = fonts.filter((f) => f.name && isKind(f, kind));
                 return candidates.length;
             },
@@ -185,6 +193,7 @@ export async function pickFont(
         )
         .toBeGreaterThan(0)
         .catch(() => undefined);
+    if (requestError) throw requestError;
     const chosen =
         preferred
             .map((name) => candidates.find((f) => f.name === name))
@@ -281,17 +290,17 @@ export async function openFontList(
     place: IFontChooserPlace = formatDialogFontChooser(page),
 ): Promise<void> {
     const frame = place.scope;
-    await place.chooser.click({ timeout: 30000 });
-    await expect(
-        frame.locator(LIST),
-        "Clicking the font chooser did not open its list.",
-    ).toBeVisible({ timeout: 30000 });
-    await expect
-        .poll(() => frame.locator(`${LIST} ${LIST_ITEM}`).count(), {
-            timeout: 30000,
-            message: "The font list opened but never listed a font.",
-        })
-        .toBeGreaterThan(0);
+    // Until the chooser has its fonts its list is empty, and in the Collection Settings dialog the
+    // fonts' arrival makes the chooser anew, which closes a list opened before then. So open the
+    // list again whenever it is shut, until it shows a font.
+    await expect(async () => {
+        if (!(await frame.locator(LIST).isVisible()))
+            await place.chooser.click({ timeout: 5000 });
+        await expect(
+            frame.locator(`${LIST} ${LIST_ITEM}`).first(),
+            "The font list is not showing any font.",
+        ).toBeVisible({ timeout: 5000 });
+    }).toPass({ timeout: 30000 });
 }
 
 /** True while the font list is pulled down. */
