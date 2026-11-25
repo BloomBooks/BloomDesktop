@@ -51,6 +51,45 @@ export interface IPageContents {
 }
 
 /**
+ * The style of each language's text box on one page of the book saved in `bookFolder`, as the
+ * saved file has it: e.g. {en: "BigWords", fr: "BigWords"}, from each box's `<name>-style` class,
+ * or "" for a box with none. `page` is used only as a DOM parser. Throws if the file has no page
+ * with that id.
+ */
+export async function readSavedTextBoxStyles(
+    page: Page,
+    bookFolder: string,
+    pageId: string,
+): Promise<Record<string, string>> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate(
+        ({ source, id }) => {
+            const document = new DOMParser().parseFromString(
+                source,
+                "text/html",
+            );
+            const pageDiv = document.getElementById(id);
+            if (!pageDiv)
+                throw new Error(`The saved book has no page with id ${id}.`);
+            const styles: Record<string, string> = {};
+            for (const box of pageDiv.querySelectorAll(
+                ".bloom-translationGroup .bloom-editable[lang]",
+            )) {
+                const lang = box.getAttribute("lang")!;
+                // A group keeps template boxes ("z", "*") that are never shown; skip those.
+                if (lang === "z" || lang === "*") continue;
+                styles[lang] =
+                    Array.from(box.classList)
+                        .find((c) => c.endsWith("-style"))
+                        ?.replace(/-style$/, "") ?? "";
+            }
+            return styles;
+        },
+        { source: html, id: pageId },
+    );
+}
+
+/**
  * One table as the saved file describes it. Everything here is read from the markup rather than
  * measured, because the file is what a later load, a publish, or a spreadsheet export will read.
  */

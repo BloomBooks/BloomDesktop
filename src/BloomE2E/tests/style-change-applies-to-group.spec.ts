@@ -13,10 +13,12 @@
 
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
+import { readSavedTextBoxStyles } from "../helpers/bookHtml";
 import {
     addPage,
     clickInGroup,
     getContentPages,
+    getShownPageId,
     goToPage,
     makeBookFromTemplate,
     reloadPageBeingEdited,
@@ -25,10 +27,10 @@ import {
     type IBookPage,
 } from "../helpers/bookMaking";
 import {
-    applyStyle,
+    applyStyleById,
     closeFormatDialog,
     createStyle,
-    getStyleShown,
+    getStyleIdShown,
     getTextBoxFormatting,
     openFormatDialog,
     scrollFormatGearIntoView,
@@ -50,14 +52,17 @@ test.use({
 test.describe.configure({ mode: "serial" });
 
 const GROUP = ".bloom-translationGroup";
-/** Every box starts with this style, as Bloom names it in the markup. */
+// The tests name styles by their ids, which the markup and the Format dialog's menu both use, so
+// that nothing depends on the UI language the menu shows the names in.
+/** Every box starts with this style. */
 const NORMAL = "normal";
-/** A style Bloom offers in every book: its name in the markup, and in the dialog's menu. */
-const BIG_WORDS = { markup: "BigWords", menu: "Big Words" };
-/** The style the third test creates. A created style has the same name in both places. */
+/** A style Bloom offers in every book, which its menu calls "Big Words". */
+const BIG_WORDS = "BigWords";
+/** The style the third test creates. */
 const CUSTOM = "Special";
 
-/** The two content pages, once the first test has made them. */
+/** The book, and its two content pages, once the first test has made them. */
+let bookFolder: string;
 let pages: IBookPage[];
 
 /** The style of each language's box in the one group of the page being shown, e.g. {en: "normal"}. */
@@ -83,29 +88,30 @@ const openStyleNameTabOn = async (page: Page, lang: string) => {
 /** The style the Format dialog shows for one language's box. Leaves the dialog closed. */
 const styleShownFor = async (page: Page, lang: string): Promise<string> => {
     await openStyleNameTabOn(page, lang);
-    const shown = await getStyleShown(page);
+    const shown = await getStyleIdShown(page);
     await closeFormatDialog(page);
     return shown;
 };
 
 /**
- * Expect the page's group to be in `style` in all three languages, and still to be after the page
- * is left and opened again (so the change was saved, not only drawn), and the Format dialog of
- * each of its boxes, not just the L1 one, to name `menuName`.
+ * Expect the page's group to be in `style` in all three languages: on screen; in the book file once
+ * the page is left, which saves it; on screen again when the page is opened again; and in the
+ * Format dialog of each of its boxes, not just the L1 one.
  */
-const expectWholeGroupIn = async (
-    page: Page,
-    style: string,
-    menuName: string,
-) => {
+const expectWholeGroupIn = async (page: Page, style: string) => {
     expect(await getGroupStyles(page)).toEqual(allLanguagesIn(style));
+    const pageId = (await getShownPageId(page))!;
     await reloadPageBeingEdited(page);
+    expect(
+        await readSavedTextBoxStyles(page, bookFolder, pageId),
+        "the styles of the page's boxes in the saved book",
+    ).toEqual(allLanguagesIn(style));
     expect(await getGroupStyles(page)).toEqual(allLanguagesIn(style));
     for (const lang of LANGUAGES)
         expect(
             await styleShownFor(page, lang),
             `the style the Format dialog shows for the ${lang} box`,
-        ).toBe(menuName);
+        ).toBe(style);
 };
 
 test.describe("Style Change Applies to Group", () => {
@@ -113,7 +119,7 @@ test.describe("Style Change Applies to Group", () => {
         page,
     }) => {
         test.setTimeout(600000);
-        await makeBookFromTemplate(page, "Basic Book");
+        bookFolder = await makeBookFromTemplate(page, "Basic Book");
         await addPage(page, "Just Text", 2);
         await setContentLanguages(page, LANGUAGES);
         pages = await getContentPages(page);
@@ -134,11 +140,11 @@ test.describe("Style Change Applies to Group", () => {
         test.setTimeout(600000);
         await goToPage(page, pages[0].id);
         await openStyleNameTabOn(page, L1);
-        expect(await getStyleShown(page)).toBe("Normal");
-        await applyStyle(page, BIG_WORDS.menu);
+        expect(await getStyleIdShown(page)).toBe(NORMAL);
+        await applyStyleById(page, BIG_WORDS);
         await closeFormatDialog(page);
 
-        await expectWholeGroupIn(page, BIG_WORDS.markup, BIG_WORDS.menu);
+        await expectWholeGroupIn(page, BIG_WORDS);
         // The group on the other page kept its style.
         await goToPage(page, pages[1].id);
         expect(await getGroupStyles(page)).toEqual(allLanguagesIn(NORMAL));
@@ -150,15 +156,13 @@ test.describe("Style Change Applies to Group", () => {
         test.setTimeout(600000);
         await goToPage(page, pages[1].id);
         await openStyleNameTabOn(page, L1);
-        expect(await getStyleShown(page)).toBe("Normal");
+        expect(await getStyleIdShown(page)).toBe(NORMAL);
         await createStyle(page, CUSTOM);
         await closeFormatDialog(page);
 
-        await expectWholeGroupIn(page, CUSTOM, CUSTOM);
+        await expectWholeGroupIn(page, CUSTOM);
         // The group on the other page kept the style the previous test gave it.
         await goToPage(page, pages[0].id);
-        expect(await getGroupStyles(page)).toEqual(
-            allLanguagesIn(BIG_WORDS.markup),
-        );
+        expect(await getGroupStyles(page)).toEqual(allLanguagesIn(BIG_WORDS));
     });
 });
