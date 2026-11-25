@@ -9,6 +9,7 @@
 // afterwards.
 
 import { expect, test } from "../fixtures/bloomTest";
+import { apiGetJson } from "../helpers/api";
 import { getContentPages, goToPage } from "../helpers/bookMaking";
 import { selectBook } from "../helpers/collection";
 import {
@@ -116,6 +117,22 @@ test("the Game feature follows the book's game pages and the subscription tier [
 
     await step("See the Game feature off, with no games", async () => {
         await openPublishToWeb(enterprise);
+        // The row the screen shows before its requests answer is this same "no games" row, so
+        // the row alone could be read too early. Bloom's own answers settle it: with no game page
+        // and no widget, that row is the one the screen ends up showing.
+        expect(
+            {
+                nonWidgetGames: await apiGetJson<boolean>(
+                    enterprise,
+                    "publish/hasNonWidgetGames",
+                ),
+                widgets: await apiGetJson<boolean>(
+                    enterprise,
+                    "publish/hasWidgets",
+                ),
+            },
+            "Bloom should say the book has no games left.",
+        ).toEqual({ nonWidgetGames: false, widgets: false });
         await expectGameFeature(
             enterprise,
             { checked: false, disabled: true, tooltip: kNoGames },
