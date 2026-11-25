@@ -9,7 +9,7 @@
 // marks a keydown for a key that is already down as a repeat, as the keyboard does.
 //
 // Bloom turns long-press off when a keyboarding program such as Keyman is the active input method
-// (keyboarding/useLongpress). On such a machine the panel never shows, and
+// (keyboarding/useLongpress). On such a machine long-press is never attached to a text box, and
 // holdKeyUntilLongPressPanelShows says so.
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
@@ -80,10 +80,46 @@ async function releaseHeldKey(page: Page, key: string): Promise<void> {
 }
 
 /**
+ * Wait until Bloom has attached long-press to the text box that has the focus.
+ *
+ * Bloom attaches it a moment after the page loads: it first asks whether long-press is to be used
+ * at all, and fetches the panel's instructions (activateLongPressFor in bloomEditing.ts). A key
+ * held down before that types its letter twice and shows no panel, for a person as for a test.
+ * Nothing on the page shows when it has happened, so this asks the page's own script
+ * (isLongPressAttachedTo, which is there for this).
+ */
+async function waitForLongPressAttached(frame: Frame): Promise<void> {
+    await expect
+        .poll(
+            () =>
+                frame.evaluate(() => {
+                    const focused = document.activeElement;
+                    return (
+                        !!focused &&
+                        (
+                            window as unknown as {
+                                editablePageBundle: {
+                                    isLongPressAttachedTo: (
+                                        element: Element,
+                                    ) => boolean;
+                                };
+                            }
+                        ).editablePageBundle.isLongPressAttachedTo(focused)
+                    );
+                }),
+            {
+                timeout: 15000,
+                message:
+                    "Bloom never attached long-press to the text box that has the focus. Bloom " +
+                    "turns long-press off when a keyboarding program such as Keyman is the " +
+                    "active input method.",
+            },
+        )
+        .toBe(true);
+}
+
+/**
  * Hold a letter key down in the text box that has the focus, until the long-press panel shows.
- * Bloom attaches long-press to a text box a moment after the page loads (activateLongPressFor in
- * bloomEditing.ts), and nothing on the page shows when it has; a key held before that types its
- * letter twice and shows no panel, and this then fails saying that the panel never showed.
  * The letter itself is typed at the caret, as it is for a person. Returns the special characters
  * the panel offers. The key stays down: choose a character with one of the helpers below, which
  * release it.
@@ -93,13 +129,13 @@ export async function holdKeyUntilLongPressPanelShows(
     key: string,
 ): Promise<string[]> {
     const frame = editablePageFrame(page);
+    await waitForLongPressAttached(frame);
     await page.keyboard.down(key);
     // The key repeating, which is what tells Bloom that it is being held.
     await page.keyboard.down(key);
     await expect(
         longPressPanel(frame),
-        `Holding "${key}" down never showed the long-press panel. Bloom turns long-press off ` +
-            `when a keyboarding program such as Keyman is the active input method.`,
+        `Holding "${key}" down never showed the long-press panel.`,
     ).toBeVisible({ timeout: 15000 });
     return getOfferedCharacters(frame);
 }
