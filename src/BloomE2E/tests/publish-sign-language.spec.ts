@@ -180,6 +180,12 @@ test("the chooser reopened from the tooltip's link comes back on the sign langua
     expect(
         readSavedCollectionSetting(bloomApp.collectionDir, "SignLanguageName"),
     ).toBe(kCustomName);
+    // The Publish screen itself names the sign language by the typed name.
+    await expectSignLanguageFeature(page, {
+        enabled: true,
+        checked: true,
+        tooltip: `The videos in this book contain ${kCustomName}`,
+    });
 
     await openSignLanguageChooserFromPublish(page);
     expect(await getLanguageChooserSelection(page)).toEqual({
