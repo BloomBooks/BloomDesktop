@@ -136,7 +136,12 @@ async function findSourceBook(
         page,
         `collections/books?collection-id=${encodeURIComponent(source.id)}`,
     );
-    const book = books.find((b) => b.title === bookTitle);
+    // Bloom lists a source book by its title in the collection's languages, so in a collection
+    // that is not English "Basic Book" is listed as, say, "Libro básico". Its folder keeps the
+    // English name, so a book is also found by that.
+    const book =
+        books.find((b) => b.title === bookTitle) ??
+        books.find((b) => Path.basename(b.folderPath) === bookTitle);
     if (!book)
         throw new Error(
             `There is no book called "${bookTitle}" in "${sourceCollectionName}". ` +
