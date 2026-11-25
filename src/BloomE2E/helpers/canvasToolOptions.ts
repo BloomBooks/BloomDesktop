@@ -8,6 +8,7 @@
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { bookHtmlPath } from "./bookHtml";
+import { closeColorPickerWith, colorPicker, typeInHexBox } from "./colorPicker";
 import { cssColorToHex } from "./cssValues";
 import { openCanvasTool } from "./canvasElements";
 import * as fs from "node:fs";
@@ -19,6 +20,14 @@ import * as fs from "node:fs";
  */
 const ELEMENT_TYPE_CHECK_BOXES =
     '.MuiFormControl-root:has(#canvasElement-style-dropdown) input[type="checkbox"]';
+/**
+ * The Element Type choice: MUI's Select, whose id is on its hidden input, and the list it opens
+ * (CanvasToolControls.tsx gives the list's menu the class below). Each choice in the list carries
+ * its value, a ComicalJS style name, as data-value; its label is in the UI language.
+ */
+const ELEMENT_TYPE_INPUT = "#canvasElement-style-dropdown";
+const ELEMENT_TYPE_SELECT = `.MuiFormControl-root:has(${ELEMENT_TYPE_INPUT}) .MuiSelect-select`;
+const ELEMENT_TYPE_MENU = ".canvasElement-options-dropdown-menu";
 /** The Background Color bar: the input box beside its label (the ColorBar has no id of its own). */
 const BACKGROUND_COLOR_BAR =
     ':has(> label[for="background-color-bar"]) > .MuiInput-formControl';
@@ -37,6 +46,54 @@ export async function roundedCornersBox(page: Page): Promise<Locator> {
     const box = boxes.nth(1);
     await box.waitFor({ state: "visible", timeout: 15000 });
     return box;
+}
+
+/**
+ * The Element Type choices the Canvas tool offers for a text element, by the ComicalJS style each
+ * one gives (CanvasToolControls.tsx): "pointedArcs" is the one the list calls Exclamation, and
+ * "none" is Just Text.
+ */
+export type CanvasElementType =
+    | "caption"
+    | "pointedArcs"
+    | "none"
+    | "speech"
+    | "ellipse"
+    | "thought"
+    | "circle"
+    | "rectangle";
+
+/** The Element Type the Canvas tool shows for the selected element. */
+export async function getCanvasElementTypeShown(page: Page): Promise<string> {
+    const toolbox = await openCanvasTool(page);
+    return toolbox.locator(ELEMENT_TYPE_INPUT).inputValue({ timeout: 15000 });
+}
+
+/**
+ * Choose the selected element's Element Type in the Canvas tool, the way a person does: open the
+ * list and click the choice. Waits for the tool to show the new type.
+ */
+export async function chooseCanvasElementType(
+    page: Page,
+    type: CanvasElementType,
+): Promise<void> {
+    const toolbox = await openCanvasTool(page);
+    await toolbox.locator(ELEMENT_TYPE_SELECT).first().click();
+    const choice = toolbox.locator(
+        `${ELEMENT_TYPE_MENU} li[data-value="${type}"]`,
+    );
+    await choice.waitFor({ state: "visible", timeout: 15000 });
+    await choice.click();
+    await expect(
+        toolbox.locator(ELEMENT_TYPE_MENU),
+        "The Element Type list did not close after a choice was clicked.",
+    ).toBeHidden({ timeout: 15000 });
+    await expect
+        .poll(() => getCanvasElementTypeShown(page), {
+            timeout: 15000,
+            message: `Choosing the Element Type "${type}" did not show it in the Canvas tool.`,
+        })
+        .toBe(type);
 }
 
 /**
@@ -121,6 +178,28 @@ export async function chooseCanvasElementBackgroundColor(
     await expect(dialog, "The color picker did not close after OK.").toBeHidden(
         { timeout: 15000 },
     );
+}
+
+/**
+ * Give the selected element a background color the picker's palette does not offer (its
+ * background palette has only black, white, gray and transparent): open the color picker from the
+ * Canvas tool's Background Color bar, type `color` ("#rrggbb") into its hex box, and OK it.
+ */
+export async function typeCanvasElementBackgroundColor(
+    page: Page,
+    color: string,
+): Promise<void> {
+    const toolbox = await openCanvasTool(page);
+    await toolbox.locator(BACKGROUND_COLOR_BAR).first().click();
+    const frame = await colorPickerFrame(page);
+    await typeInHexBox(frame, color);
+    // Read the hex box alone: the picker leaves out its alpha slider for a caption, so a reader
+    // of every control would fail there.
+    await expect(
+        colorPicker(frame).locator('input[type="text"]'),
+        `The color picker's hex box did not take ${color}.`,
+    ).toHaveValue(new RegExp(`^${color}(ff)?$`, "i"), { timeout: 15000 });
+    await closeColorPickerWith(frame, "OK");
 }
 
 /** One shape that ComicalJS saved for a canvas page: a path that is filled or stroked. */
@@ -264,4 +343,52 @@ export async function readSavedCanvasShapes(
         },
         { source: html, id: pageId },
     );
+}
+
+/** What a canvas element's saved data-bubble says about how ComicalJS draws it. */
+export interface ISavedBubbleSpec {
+    /** The ComicalJS style, the Element Type's value (e.g. "pointedArcs" for Exclamation). */
+    style: string;
+    /** The background colors as saved, e.g. ["#ff1616"]; empty when it has none. */
+    backgroundColors: string[];
+}
+
+/**
+ * The data-bubble of each canvas element on one page of the book saved in `bookFolder`, in
+ * document order, so the nth entry is the element canvasElement(page, n) finds while the page is
+ * edited; undefined for an element with no data-bubble. `page` is used only as a DOM parser.
+ * Throws if the saved book has no page with that id.
+ */
+export async function readSavedBubbleSpecs(
+    page: Page,
+    bookFolder: string,
+    pageId: string,
+): Promise<(ISavedBubbleSpec | undefined)[]> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    const bubbles = await page.evaluate(
+        ({ source, id }) => {
+            const saved = new DOMParser().parseFromString(source, "text/html");
+            const savedPage = saved.querySelector(`.bloom-page[id="${id}"]`);
+            if (!savedPage) return null;
+            return Array.from(
+                savedPage.querySelectorAll(".bloom-canvas-element"),
+            ).map((e) => e.getAttribute("data-bubble"));
+        },
+        { source: html, id: pageId },
+    );
+    if (!bubbles)
+        throw new Error(`The saved book has no page with the id ${pageId}.`);
+    return bubbles.map((json) => {
+        if (!json) return undefined;
+        // Bloom stores the spec with backquotes in place of double quotes, to keep it out of the
+        // way of the attribute's own quotes.
+        const spec = JSON.parse(json.replace(/`/g, '"')) as {
+            style?: string;
+            backgroundColors?: string[];
+        };
+        return {
+            style: spec.style ?? "",
+            backgroundColors: spec.backgroundColors ?? [],
+        };
+    });
 }
