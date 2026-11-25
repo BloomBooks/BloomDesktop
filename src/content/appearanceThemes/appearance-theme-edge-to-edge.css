@@ -64,10 +64,23 @@ Page-number visibility comes from appearance.json, not from this theme file. */
         (var(--standard-page-margin) + var(--fullBleed-margin-add-y)) /
             var(--fullBleed-margin-scale) - var(--topLevel-text-padding-top)
     );
+    /* The page number sits in the bottom margin, below the text, so a page size whose margin
+       is too small for it keeps the text that much higher (BL-17132). */
     --fullBleed-textBoxInset-bottom: calc(
-        (var(--standard-page-margin) + var(--fullBleed-margin-add-y)) /
+        (
+                var(--standard-page-margin) +
+                    var(--pageNumber-show-multiplicand) *
+                    var(--pageNumber-room-below-text) +
+                    var(--fullBleed-margin-add-y)
+            ) /
             var(--fullBleed-margin-scale) - var(--topLevel-text-padding-bottom)
     );
+}
+
+.Cm13Landscape.numberedPage:not(.bloom-interactive-page) {
+    /* The room for the page number comes from the full bleed text box inset above, not from
+       page padding, which would keep pictures off the bottom edge. */
+    --pageNumber-extra-height: 0mm;
 }
 
 [class*="Ebook"].numberedPage,
