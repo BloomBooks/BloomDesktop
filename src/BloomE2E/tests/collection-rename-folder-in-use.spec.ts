@@ -19,7 +19,10 @@ import {
     getCollectionSettingsOkLabel,
 } from "../helpers/collectionSettings";
 import { realClick } from "../helpers/realClick";
-import { readAndCloseBloomProblemBox } from "../helpers/winformsProblemBox";
+import {
+    killBloomsWithCommandLine,
+    readAndCloseBloomProblemBox,
+} from "../helpers/winformsProblemBox";
 
 const kCollectionName = "folder-in-use";
 const kNewCollectionName = "Renamed While In Use";
@@ -42,6 +45,8 @@ test("renaming a collection whose folder another program holds leaves it as it w
 }) => {
     const oldDir = bloomApp.collectionDir;
     const newDir = Path.join(Path.dirname(oldDir), kNewCollectionName);
+    // The copy of Bloom that does the rename, which the fixture does not track.
+    const renamingBloom = ["--rename", bloomApp.userSettingsDir];
     const holder = holdFolder(oldDir);
     try {
         await openCollectionSettings(page);
@@ -69,10 +74,7 @@ test("renaming a collection whose folder another program holds leaves it as it w
         await pageClosed;
 
         // The copy that does the rename keeps trying for a few seconds before it gives up.
-        const box = await readAndCloseBloomProblemBox(
-            ["--rename", bloomApp.userSettingsDir],
-            90000,
-        );
+        const box = await readAndCloseBloomProblemBox(renamingBloom, 90000);
         expect(
             box,
             "Bloom never reported that it could not rename the collection's folder",
@@ -88,6 +90,8 @@ test("renaming a collection whose folder another program holds leaves it as it w
         expect(describeCollectionFolder(newDir)).toBeUndefined();
     } finally {
         holder.kill();
+        // When the test failed before the problem box was closed, the renaming copy is still up.
+        killBloomsWithCommandLine(renamingBloom);
         // Bloom exits once its problem box is closed; start it again on the collection, so the
         // worker is left with a Bloom as every test expects to find it.
         await bloomApp.restart();

@@ -3,7 +3,18 @@
 // be shown). It is a native window, out of CDP's reach, so this goes through Windows UI Automation,
 // which reads and presses its controls with no pointer, keystroke or focus change.
 
-import { execFile } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
+
+// PowerShell that defines FindBlooms: the Bloom.exe processes whose command line contains every
+// line of $env:BLOOM_E2E_COMMAND_LINE_PARTS, compared without regard to case.
+const kFindBloomsByCommandLine = `
+$parts = $env:BLOOM_E2E_COMMAND_LINE_PARTS -split [char]10 | Where-Object { $_ }
+function FindBlooms {
+  Get-CimInstance Win32_Process -Filter "Name='Bloom.exe'" | Where-Object {
+    $line = $_.CommandLine
+    $line -and -not ($parts | Where-Object { $line.IndexOf($_, [StringComparison]::OrdinalIgnoreCase) -lt 0 })
+  }
+}`;
 
 /** What a "Bloom Problem" box said, and which Bloom showed it. */
 export interface IBloomProblemBox {
@@ -34,17 +45,15 @@ Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
 $A = [System.Windows.Automation.AutomationElement]
 $Scope = [System.Windows.Automation.TreeScope]
 $CT = [System.Windows.Automation.ControlType]
-$parts = $env:BLOOM_E2E_COMMAND_LINE_PARTS -split [char]10 | Where-Object { $_ }
+${kFindBloomsByCommandLine}
 $deadline = (Get-Date).AddMilliseconds([int]$env:BLOOM_E2E_TIMEOUT_MS)
 do {
-  $procs = Get-CimInstance Win32_Process -Filter "Name='Bloom.exe'" | Where-Object {
-    $line = $_.CommandLine
-    $line -and -not ($parts | Where-Object { $line.IndexOf($_, [StringComparison]::OrdinalIgnoreCase) -lt 0 })
-  }
-  foreach ($proc in $procs) {
+  foreach ($proc in (FindBlooms)) {
     $byPid = New-Object System.Windows.Automation.PropertyCondition($A::ProcessIdProperty, [int]$proc.ProcessId)
     foreach ($window in $A::RootElement.FindAll($Scope::Children, $byPid)) {
       if ($window.Current.Name -ne 'Bloom Problem') { continue }
+      # Read before OK is pressed: the box is gone once it has been.
+      $title = $window.Current.Name
       $texts = @()
       $ok = $null
       foreach ($el in $window.FindAll($Scope::Descendants, [System.Windows.Automation.Condition]::TrueCondition)) {
@@ -60,11 +69,14 @@ do {
       }
       if (-not $ok) { throw "The Bloom Problem box of process $($proc.ProcessId) has no OK button." }
       $ok.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
-      @{ pid = [int]$proc.ProcessId; title = $window.Current.Name; texts = @($texts) } | ConvertTo-Json -Compress
+      @{ pid = [int]$proc.ProcessId; title = $title; texts = @($texts) } | ConvertTo-Json -Compress
       exit 0
     }
   }
-  Start-Sleep -Milliseconds 500
+  # The pause between scans of a wait that ends as soon as the box appears or the deadline
+  # passes. The box belongs to another process, so there is no event to wait on instead.
+  $left = ($deadline - (Get-Date)).TotalMilliseconds
+  if ($left -gt 0) { Start-Sleep -Milliseconds ([Math]::Min(500, [int]$left)) }
 } while ((Get-Date) -lt $deadline)
 'none'`;
     const output = await new Promise<string>((resolve, reject) => {
@@ -92,4 +104,29 @@ do {
     // ConvertTo-Json writes a one-element array as a bare string.
     box.texts = ([] as string[]).concat(box.texts ?? []);
     return box;
+}
+
+/**
+ * Kill every Bloom.exe whose command line contains all of `commandLineParts` (compared without
+ * regard to case), with its child processes. For cleaning up a Bloom that the test did not spawn,
+ * such as the copy that finishes a collection rename, when a test fails before that copy exits.
+ */
+export function killBloomsWithCommandLine(commandLineParts: string[]): void {
+    execFileSync(
+        "powershell",
+        [
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            `${kFindBloomsByCommandLine}
+foreach ($proc in (FindBlooms)) { taskkill /T /F /PID $proc.ProcessId | Out-Null }`,
+        ],
+        {
+            encoding: "utf8",
+            env: {
+                ...process.env,
+                BLOOM_E2E_COMMAND_LINE_PARTS: commandLineParts.join("\n"),
+            },
+        },
+    );
 }
