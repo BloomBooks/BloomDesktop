@@ -36,7 +36,7 @@ import { kEdgeTolerance, right } from "../helpers/geometry";
 import { setChangeLayoutMode } from "../helpers/origami";
 import {
     expectNoOverflowMarks,
-    fillTextBoxPastItsBottom,
+    emptyTextBox,
     getOverflowMarks,
     getTextBoxView,
 } from "../helpers/overflowMarks";
@@ -57,6 +57,16 @@ const LANG = "en";
  * own pixels. Set by the second test; the later ones check that the overflow is still that.
  */
 let marginalHidden: number;
+
+/**
+ * The most text, in the page's own pixels, that may be out of sight when Bloom first marks a box
+ * as overflowing: the manual case's "a pixel or two", plus what Bloom's measuring allows. Bloom
+ * compares whole-pixel heights, and it leaves out the part of the font's descent that no letter
+ * reaches (OverflowChecker.getSelfOverflowAmounts). What is out of sight here is the bottom of the
+ * last line's box, below its descenders. Bloom marks it at about 3 pixels (at 24px line height); a
+ * change that made it mark later than this fails the test.
+ */
+const MARGINAL_OVERFLOW = 4;
 
 /** The book's one content page. Set by the first test. */
 let textPage: IBookPage;
@@ -137,19 +147,54 @@ async function expectMarkedAsOverflowing(
 }
 
 /**
+ * Type paragraphs into the box until the last one does not fit. Each has letters that reach below
+ * the line (g, j, p, q, y), so the bottom of the last line is text. Bloom does not count the space
+ * a font keeps below its letters as overflow when no letter reaches into it (BL-6338), so with
+ * text such as "Line 1" a few pixels of a line out of sight are rightly not marked.
+ */
+async function typeParagraphsPastTheBottom(
+    page: Page,
+    box: Locator,
+): Promise<void> {
+    await emptyTextBox(box);
+    for (let paragraph = 1; paragraph <= 100; paragraph++) {
+        if ((await hiddenPagePixels(box)) > 0) return;
+        if (paragraph > 1) await box.press("Enter");
+        await page.keyboard.insertText(
+            `Paragraph ${paragraph}: jumpy gypsy quip`,
+        );
+    }
+    throw new Error(
+        "A hundred paragraphs did not fill the text box past its bottom, so it is not a box of fixed height.",
+    );
+}
+
+/**
+ * The delay of the timer in which Bloom checks a box for overflow after a key comes up in it
+ * (OverflowChecker.AddOverflowHandlers). Keep it equal to Bloom's.
+ */
+const kKeyupOverflowCheckDelayMs = 100;
+
+/**
  * Make a small change, as makeSmallChange does, and report whether Bloom then finds that the box
- * overflows. Bloom checks the box in a timer it starts when the key comes up; a timer started
- * after the key, with the same zero delay, runs after it, so the answer read there is Bloom's
- * answer to this change. This is the "overflow" class Bloom puts on the box, which the marks are
- * drawn from; the marks themselves are drawn a moment later.
+ * overflows. Bloom checks the box in a timer it starts when the key comes up. Timers with the
+ * same delay run in the order they were started, so a timer with that delay started after the key
+ * runs after Bloom's check, and the answer read there is Bloom's answer to this change. If Bloom's
+ * delay grew, the read would come too early and could report the box as fitting; the caller's
+ * check that the marginal overflow is at most MARGINAL_OVERFLOW would then fail. The answer is the
+ * "overflow" class Bloom puts on the box, which the marks are drawn from a moment later.
  */
 async function bloomFindsOverflow(page: Page, box: Locator): Promise<boolean> {
     await makeSmallChange(page, box);
     return box.evaluate(
-        (e) =>
+        (e, delay) =>
             new Promise<boolean>((resolve) =>
-                setTimeout(() => resolve(e.classList.contains("overflow")), 0),
+                setTimeout(
+                    () => resolve(e.classList.contains("overflow")),
+                    delay,
+                ),
             ),
+        kKeyupOverflowCheckDelayMs,
     );
 }
 
@@ -307,7 +352,7 @@ test.describe("Text Overflow All Alignments", () => {
     }) => {
         const box = await textBox(page);
         await step("Type paragraphs until they do not fit", async () => {
-            await fillTextBoxPastItsBottom(page, box, "lines of text", 1);
+            await typeParagraphsPastTheBottom(page, box);
             expect(
                 await box.locator("p").count(),
                 "test setup: the text should be in several paragraphs",
@@ -319,12 +364,12 @@ test.describe("Text Overflow All Alignments", () => {
                 marginalHidden = await makeOverflowMarginal(page, box);
                 expect(
                     marginalHidden,
-                    "test setup: the text should run past the box, by less than a line",
+                    "test setup: the text should run past the box",
                 ).toBeGreaterThan(0);
-                expect(marginalHidden).toBeLessThan(
-                    (await getTextBoxView(box)).lineHeight /
-                        (await pageScale(box)),
-                );
+                expect(
+                    marginalHidden,
+                    `Bloom should mark text that runs past the box by ${MARGINAL_OVERFLOW} pixels or less`,
+                ).toBeLessThanOrEqual(MARGINAL_OVERFLOW);
             },
         );
         await step("Check the box is marked as overflowing", async () => {
