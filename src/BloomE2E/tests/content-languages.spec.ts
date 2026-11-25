@@ -142,6 +142,11 @@ async function expectSourceBubble(
             text,
             `The source bubble should show the ${language} text`,
         ).toBeVisible();
+        for (const other of inBubble.filter((l) => l !== language))
+            await expect(
+                bubble.locator(`.source-text[lang="${other}"]`),
+                `While the source bubble shows ${language}, it should not also show ${other}`,
+            ).toBeHidden();
     }
     for (const language of notInBubble)
         await expect(
