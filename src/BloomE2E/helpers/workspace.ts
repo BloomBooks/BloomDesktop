@@ -301,9 +301,9 @@ export interface IUnzoomedPart {
     /** The width and height of one thing in it: a tab, the first page thumbnail, the tool list. */
     landmark: { width: number; height: number };
     /**
-     * The width and height on screen of the frame the part is drawn in, which scaling the frame
-     * itself changes while everything measured inside it stays the same. The top bar is in the
-     * shell document, so for it this is the size of that document's view.
+     * The width and height on screen of the whole part: the top bar itself, or the frame the page
+     * list or the toolbox is drawn in, which scaling the frame changes while everything measured
+     * inside it stays the same.
      */
     onScreen: { width: number; height: number };
 }
@@ -335,10 +335,9 @@ export async function getSizesOfUnzoomedParts(page: Page): Promise<{
     return {
         topBar: {
             ...(await page.getByTestId(tabTestId("edit")).evaluate(measure)),
-            onScreen: await page.evaluate(() => ({
-                width: window.innerWidth,
-                height: window.innerHeight,
-            })),
+            onScreen: await page
+                .getByTestId("workspace-top-bar")
+                .evaluate(sizeOnScreen),
         },
         pageList: {
             ...(await pageList.locator(".gridItem").first().evaluate(measure)),
