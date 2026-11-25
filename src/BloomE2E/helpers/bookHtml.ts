@@ -51,6 +51,93 @@ export interface IPageContents {
 }
 
 /**
+ * The style of each language's text box on one page of the book saved in `bookFolder`, as the
+ * saved file has it: e.g. {en: "BigWords", fr: "BigWords"}, from each box's `<name>-style` class,
+ * or "" for a box with none. `page` is used only as a DOM parser. Throws if the file has no page
+ * with that id.
+ */
+export async function readSavedTextBoxStyles(
+    page: Page,
+    bookFolder: string,
+    pageId: string,
+): Promise<Record<string, string>> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate(
+        ({ source, id }) => {
+            const document = new DOMParser().parseFromString(
+                source,
+                "text/html",
+            );
+            const pageDiv = document.getElementById(id);
+            if (!pageDiv)
+                throw new Error(`The saved book has no page with id ${id}.`);
+            const styles: Record<string, string> = {};
+            for (const box of pageDiv.querySelectorAll(
+                ".bloom-translationGroup .bloom-editable[lang]",
+            )) {
+                const lang = box.getAttribute("lang")!;
+                // A group keeps template boxes ("z", "*") that are never shown; skip those.
+                if (lang === "z" || lang === "*") continue;
+                styles[lang] =
+                    Array.from(box.classList)
+                        .find((c) => c.endsWith("-style"))
+                        ?.replace(/-style$/, "") ?? "";
+            }
+            return styles;
+        },
+        { source: html, id: pageId },
+    );
+}
+
+/**
+ * The paragraph indent (`text-indent`) that the book saved in `bookFolder` gives each of these
+ * styles, by style id (e.g. {normal: "20pt", Flush: "0px"}), as the CSS serializes it, or "" for a
+ * style whose saved rules set none. Read from the style rules the Format dialog writes into the
+ * book (the `userModifiedStyles` element of its head), from the rule for the style's paragraphs
+ * (`.<id>-style > p`); the last such rule wins, as it does in the browser. `page` is used only as
+ * a parser. Throws if the file has no `userModifiedStyles` element.
+ */
+export async function readSavedParagraphIndents(
+    page: Page,
+    bookFolder: string,
+    styleIds: string[],
+): Promise<Record<string, string>> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate(
+        ({ source, ids }) => {
+            const document = new DOMParser().parseFromString(
+                source,
+                "text/html",
+            );
+            const styleElement = document.querySelector(
+                'style[title="userModifiedStyles"]',
+            );
+            if (!styleElement)
+                throw new Error(
+                    "The saved book has no userModifiedStyles element.",
+                );
+            const sheet = new CSSStyleSheet();
+            sheet.replaceSync(styleElement.textContent ?? "");
+            const indents: Record<string, string> = {};
+            for (const id of ids) {
+                indents[id] = "";
+                for (const rule of Array.from(sheet.cssRules)) {
+                    if (!(rule instanceof CSSStyleRule)) continue;
+                    const forParagraphs = rule.selectorText
+                        .split(",")
+                        .map((s) => s.trim().replace(/\s+/g, " "))
+                        .some((s) => s === `.${id}-style > p`);
+                    if (forParagraphs && rule.style.textIndent)
+                        indents[id] = rule.style.textIndent;
+                }
+            }
+            return indents;
+        },
+        { source: html, ids: styleIds },
+    );
+}
+
+/**
  * One table as the saved file describes it. Everything here is read from the markup rather than
  * measured, because the file is what a later load, a publish, or a spreadsheet export will read.
  */

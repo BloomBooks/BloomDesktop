@@ -19,6 +19,8 @@ export interface ITopBarButtonProps {
     textColor: string;
     disabledTextColor?: string;
     temporarilyDisableI18nWarning?: boolean;
+    // For the e2e suite (src/BloomE2E), which finds the button by it.
+    testId?: string;
 }
 
 export const TopBarButton: React.FunctionComponent<ITopBarButtonProps> = (
@@ -37,6 +39,7 @@ export const TopBarButton: React.FunctionComponent<ITopBarButtonProps> = (
         <BloomButton
             enabled={isEnabled}
             l10nKey={props.labelL10nKey}
+            data-testid={props.testId}
             onClick={props.onClick}
             clickApiEndpoint={
                 props.onClick ? undefined : props.clickApiEndpoint

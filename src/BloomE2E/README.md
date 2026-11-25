@@ -49,8 +49,7 @@ Two more things are decided at launch, because Bloom reads them once and keeps t
   keep the Subscription they were built with, so a tier set later would be invisible to them.
 - **Experimental features.** `test.use({ experimentalFeatures: ["team-collections"] })` names
   the features this Bloom has on, by the tokens in `ExperimentalFeatures.cs`. The launcher passes
-  them as `--experimental-features`, which Bloom accepts only beside `--e2e`, so nothing is saved
-  and the developer's own Bloom, which shares the saved setting, is untouched.
+  them as `--experimental-features`, which Bloom accepts only beside `--e2e`.
 
 Either way the fixture launches Bloom on a temp copy and attaches to the WebView2. One Bloom
 serves every test in a worker, because launching takes several seconds.
@@ -85,10 +84,11 @@ the Bloom it started really is using the folder, so a stale `Bloom.exe` fails th
 than quietly sharing settings.
 
 `restart(betweenStopAndStart)` is how a test changes something Bloom only reads at startup. The
-collection's languages are the case that needed it: the collection Settings dialog is a WinForms
-surface CDP cannot reach, and `collectionSettings/changeLanguage` only answers while that dialog
-is open, so the way to change a language is to stop Bloom, rewrite the `.bloomCollection` with
-`makeCollectionXml`, and start again. Bloom is killed rather than asked to quit, so leave the
+collection's languages are the case that needed it: a test whose subject is not the Collection
+Settings dialog changes a language by stopping Bloom, rewriting the `.bloomCollection` with
+`makeCollectionXml`, and starting again (`helpers/collectionSettings.ts`,
+`restartWithCollectionSettings`). The dialog itself is React and reachable; its own tests drive it
+with the helpers in that same file. Bloom is killed rather than asked to quit, so leave the
 page being edited before restarting or what was typed on it is lost. Use the page `restart`
 returns; the old one is closed.
 
@@ -138,7 +138,10 @@ real bug in the code under test; read the message and fix it rather than working
 ## Helpers
 
 - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`, and the zoom control's
-  `getZoom`, `setZoom`. Note that Bloom hides the Edit and Publish tabs until a book is selected.
+  `getZoom`, `setZoom`; for a test of the zoom itself, `clickZoomButton`, `turnWheelToZoom`
+  (Ctrl+mouse wheel over the page) and what they change (`getZoomShownInTopBar`,
+  `expectPageDrawnAtZoom`). Note that Bloom hides the Edit and Publish tabs until a book is
+  selected.
 - `helpers/formatDialog.ts` — the format gear beside the text box being edited, and the Format
   dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
   `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
@@ -178,6 +181,10 @@ real bug in the code under test; read the message and fix it rather than working
   `getShownTools`. Nothing here turns a tool on through the toolbox's own check boxes; the page
   does that when clicked (a Canvas page's canvas opens the Canvas tool, a video box the Sign
   Language tool), which is the route a person takes.
+- `helpers/canvasToolOptions.ts` — the Canvas tool's options for the selected text element
+  (`setRoundedCorners`, `roundedCornersBox`, `chooseCanvasElementBackgroundColor`), and
+  `readSavedCanvasShapes`, which measures the shapes ComicalJS saved for a page
+  (svg.comical-generated), such as whether each covers the corners of its box.
 - `helpers/canvasElements.ts` — `openCanvasTool`, `dragPaletteItemOntoCanvas`,
   `selectCanvasElement`, the selected element's toolbar and "..." menu by localization id,
   `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`; the menu's groups
@@ -196,7 +203,8 @@ real bug in the code under test; read the message and fix it rather than working
   `expectSameRect`) so a test never asserts a pixel value the machine decided.
 - `helpers/videos.ts` — `chooseVideoFile` puts a video into a video box through the Sign Language
   tool's own Import, with the native file picker alone answered by an `e2e/*` hook; ships
-  `fixtures/videos/short.mp4`.
+  `fixtures/videos/short.mp4`. `trimVideoStart` moves that tool's Trim slider, and
+  `getVideoTrim` and `getVideoFileName` read what a box holds.
 - `helpers/origami.ts` — the Edit tab's Change Layout mode: `setChangeLayoutMode`,
   `sections`, `splitSection`, `getSectionTypesOffered`, `chooseSectionType`.
 - `helpers/pageSize.ts` — `getPageSize`, `getPageSizeChoices`, `setPageSize`: read and change

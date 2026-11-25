@@ -12,7 +12,9 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
-import { apiGetJson, apiPost } from "./api";
+import { apiGetJson, apiPost, getUiString } from "./api";
+import { readImageFileSize, type IPixelSize } from "./images";
+import { waitForLanguageChooser } from "./languageChooser";
 import { switchTab } from "./workspace";
 
 /** The publish destinations, by the label each one shows in the left-hand column. */
@@ -390,6 +392,63 @@ export async function refreshBloomPubPreview(
 }
 
 /**
+ * Turn the pages of a BloomPUB preview (the frame showBloomPubPreview returns) forward with
+ * bloom-player's own next-page button until it is showing the book page with id `pageId`, and
+ * return that page. bloom-player finishes a page only when it is the one showing (a text box gets
+ * its scroll bar then), so a test of how a page looks to a reader goes to it first.
+ *
+ * Only forward: the preview opens on the cover, so every other page is ahead of it.
+ */
+export async function showPreviewPage(
+    player: Frame,
+    pageId: string,
+): Promise<Locator> {
+    const shown = player.locator(
+        `.swiper-slide-active .bloom-page[id="${pageId}"]`,
+    );
+    const next = player.locator(".swiper-button-next").first();
+    const idOfShownPage = async () =>
+        player
+            .locator(".swiper-slide-active .bloom-page")
+            .first()
+            .getAttribute("id");
+    // A book has far fewer pages than this; the bound only stops a preview that is not turning.
+    for (let turns = 0; turns < 500; turns++) {
+        if ((await shown.count()) > 0) return shown;
+        if (
+            await next.evaluate((button) =>
+                button.classList.contains("swiper-button-disabled"),
+            )
+        )
+            throw new Error(
+                `The BloomPUB preview reached its last page without showing page "${pageId}".`,
+            );
+        const before = await idOfShownPage();
+        await next.click();
+        await expect
+            .poll(idOfShownPage, {
+                timeout: 30000,
+                message:
+                    "The BloomPUB preview's next-page button did not turn the page.",
+            })
+            .not.toBe(before);
+    }
+    throw new Error(
+        `The BloomPUB preview never showed page "${pageId}", after 500 page turns.`,
+    );
+}
+
+/**
+ * The text box holding `text` on a page of a BloomPUB preview (a page showPreviewPage returned):
+ * the language box that the reader sees, whose text contains `text`.
+ */
+export function getPreviewTextBox(previewPage: Locator, text: string): Locator {
+    return previewPage
+        .locator(".bloom-editable.bloom-visibility-code-on")
+        .filter({ hasText: text });
+}
+
+/**
  * The languages bloom-player offers in its "Languages in this book:" menu, in the order shown.
  * Each is the name the language calls itself, which is not the name the check box list shows.
  *
@@ -462,17 +521,173 @@ export async function getTooltipForLanguage(
     group: LanguageGroup,
     name: string,
 ): Promise<string> {
+    const tooltip = await hoverForTooltip(page, languageRow(page, group, name));
+    return (await tooltip.innerText()).trim();
+}
+
+/**
+ * Hover `target` and return its tooltip once it shows. The pointer moves off everything first and
+ * the previous tooltip has to go, because reading a tooltip while the last one is still leaving
+ * returns the last one's words.
+ */
+async function hoverForTooltip(page: Page, target: Locator): Promise<Locator> {
     const tooltip = page.locator('[role="tooltip"]');
     await page.mouse.move(0, 0);
     await expect
         .poll(async () => tooltip.count(), {
             timeout: 30000,
-            message: "The tooltip from the row hovered before never went away.",
+            message:
+                "The tooltip from what was hovered before never went away.",
         })
         .toBe(0);
-
-    const row = languageRow(page, group, name);
-    await row.hover();
+    await target.hover();
     await tooltip.first().waitFor({ state: "visible", timeout: 30000 });
-    return (await tooltip.first().innerText()).trim();
+    return tooltip.first();
+}
+
+/** The Sign Language row of a Publish screen's Features list, as a person sees it. */
+export interface ISignLanguageFeature {
+    /** Whether the Sign Language checkbox can be changed. */
+    enabled: boolean;
+    checked: boolean;
+    /** The words of its tooltip, e.g. "The videos in this book contain American Sign Language". */
+    tooltip: string;
+}
+
+/**
+ * The Sign Language row of the Features list on the Publish screen showing (BloomPUB, Web, ...).
+ * The tooltip needs a real pointer over the row, so this moves the pointer away and back, as
+ * getTooltipForLanguage does, to be sure it reads this tooltip and not a previous one.
+ */
+export async function getSignLanguageFeature(
+    page: Page,
+): Promise<ISignLanguageFeature> {
+    const checkbox = page.getByRole("checkbox", {
+        name: await getSignLanguageLabel(page),
+    });
+    await checkbox.waitFor({ state: "attached", timeout: 30000 });
+    const tooltip = await hoverSignLanguageFeature(page);
+    return {
+        enabled: await checkbox.isEnabled(),
+        checked: await checkbox.isChecked(),
+        tooltip: (await tooltip.innerText()).trim(),
+    };
+}
+
+/**
+ * Wait until the Sign Language row of the Publish screen showing is as expected. Use this rather
+ * than a bare expect on getSignLanguageFeature: the row is filled in from requests the screen makes
+ * after it shows (whether the book has video, the sign language's name), and after a sign
+ * language is chosen the checkbox asks Bloom for its value again.
+ */
+export async function expectSignLanguageFeature(
+    page: Page,
+    expected: ISignLanguageFeature,
+): Promise<void> {
+    await expect
+        .poll(() => getSignLanguageFeature(page), {
+            timeout: 30000,
+            message: "The Sign Language feature never showed as expected.",
+        })
+        .toEqual(expected);
+}
+
+/**
+ * Open the language chooser from the link in the Sign Language row's tooltip on a Publish screen,
+ * the way a person sets the collection's sign language from there: the link is the sign
+ * language's name, or "no sign language selected" when the collection has none. Returns once the
+ * chooser shows (see helpers/languageChooser.ts to drive it).
+ */
+export async function openSignLanguageChooserFromPublish(
+    page: Page,
+): Promise<void> {
+    const tooltip = await hoverSignLanguageFeature(page);
+    await tooltip.locator("a, .MuiLink-root").first().click();
+    await waitForLanguageChooser(page);
+}
+
+/**
+ * The collection's sign language as the Publish tab knows it, `{ tag, name }`, both "" for none.
+ * Poll this after choosing one: the choice reaches Bloom after the chooser closes.
+ */
+export async function getCollectionSignLanguage(
+    page: Page,
+): Promise<{ tag: string; name: string }> {
+    return apiGetJson<{ tag: string; name: string }>(
+        page,
+        "publish/collectionSignLanguage",
+    );
+}
+
+/**
+ * What the Sign Language row's tooltip says, in the UI language, when the book has no videos, or
+ * when its videos are in the sign language named `signLanguageName`.
+ */
+export async function getSignLanguageTooltipText(
+    page: Page,
+    tooltip: "noVideos" | { signLanguageName: string },
+): Promise<string> {
+    if (tooltip === "noVideos")
+        return getUiString(
+            page,
+            "PublishTab.Feature.SignLanguage.NoVideos",
+            "This is disabled because this book does not have any videos.",
+        );
+    const present = await getUiString(
+        page,
+        "PublishTab.Feature.SignLanguage.Present",
+        "The videos in this book contain {N}",
+    );
+    return present.replace("{N}", tooltip.signLanguageName);
+}
+
+/**
+ * The Sign Language row's label in the UI language. A test Bloom starts in the Windows UI
+ * language, so the row is found by what Bloom calls it, not by its English name.
+ */
+function getSignLanguageLabel(page: Page): Promise<string> {
+    return getUiString(page, "PublishTab.Upload.SignLanguage", "Sign Language");
+}
+
+/** Hover the Sign Language row and return its tooltip once it shows. */
+async function hoverSignLanguageFeature(page: Page): Promise<Locator> {
+    return hoverForTooltip(
+        page,
+        page
+            .getByText(await getSignLanguageLabel(page), { exact: true })
+            .first(),
+    );
+}
+
+/**
+ * The size in pixels of one picture in a staged BloomPUB (see stageBloomPub), by the name of its
+ * file in the book. This is the picture as a reader's device gets it, after Bloom has reduced it to
+ * the book's BloomPUB image resolution.
+ *
+ * A picture Bloom resized or converted is published under a new name: the book's name with a
+ * suffix for what was done to it ("_r" resized, "_t" or "_tf" made transparent), perhaps a number
+ * to keep it unique, and perhaps another extension (BloomPubMaker.CompressImages). So the picture
+ * is found by its name in the book with any of those suffixes. Fails, listing the pictures the
+ * BloomPUB does carry, unless exactly one file matches.
+ */
+export function getStagedImageSize(
+    stagedFolder: string,
+    imageFileName: string,
+): IPixelSize {
+    const base = Path.basename(imageFileName, Path.extname(imageFileName));
+    const escaped = base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const published = new RegExp(
+        `^${escaped}(_(r|t|tf)\\d*)?\\.(jpe?g|png)$`,
+        "i",
+    );
+    const pictures = fs
+        .readdirSync(stagedFolder)
+        .filter((name) => /\.(jpe?g|png)$/i.test(name));
+    const matches = pictures.filter((name) => published.test(name));
+    if (matches.length !== 1)
+        throw new Error(
+            `The staged BloomPUB has ${matches.length} pictures that could be ${imageFileName}` +
+                ` (${matches.join(", ")}). It has: ${pictures.join(", ")}.`,
+        );
+    return readImageFileSize(Path.join(stagedFolder, matches[0]));
 }

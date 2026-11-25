@@ -21,6 +21,7 @@ import {
     renderDragActivityTabControl,
     updateAbovePageControls,
 } from "./js/AbovePageControls";
+import { installPlayModeEditBlocker } from "./js/playModeEditBlocker";
 import {
     isShowingOtherPagesHere,
     replayTheClickThatOpenedThisPage,
@@ -148,6 +149,7 @@ export interface IPageFrameExports {
     attachToCkEditor(element: any): void;
     showLanguagesInTranslationGroup: typeof showLanguagesInTranslationGroup;
     setUpBoxesBuiltAfterLoad: typeof setUpBoxesBuiltAfterLoad;
+    languagesShownBySetting: typeof languagesShownBySetting;
 
     origamiCanUndo(): boolean;
     origamiUndo(): void;
@@ -226,6 +228,7 @@ import {
 import {
     showLanguagesInTranslationGroup,
     setUpBoxesBuiltAfterLoad,
+    languagesShownBySetting,
 } from "./js/translationGroupLanguages";
 import {
     addRequestPageContentDelay,
@@ -258,6 +261,7 @@ export {
     attachToCkEditor,
     showLanguagesInTranslationGroup,
     setUpBoxesBuiltAfterLoad,
+    languagesShownBySetting,
     removeImageId,
     changeImage,
     changeImageByElement,
@@ -538,6 +542,8 @@ $(document).ready(() => {
     // The one undo stack lives in this frame and starts empty with each page load (see
     // undo/pageUndo.ts). This registers the pre-existing undo mechanisms with it and binds Ctrl+Y.
     setUpPageUndo();
+    // Keys and clipboard actions don't edit a game page while it is being played.
+    installPlayModeEditBlocker(window);
     // Start sending the page's content to C# (see pageSnapshot.ts), but not until C# has accepted
     // this load, or it would refuse what we send. (The notice normally went at DOMContentLoaded;
     // asking again just returns that post.)
@@ -578,6 +584,7 @@ interface EditablePageBundleApi {
     attachToCkEditor: typeof attachToCkEditor;
     showLanguagesInTranslationGroup: typeof showLanguagesInTranslationGroup;
     setUpBoxesBuiltAfterLoad: typeof setUpBoxesBuiltAfterLoad;
+    languagesShownBySetting: typeof languagesShownBySetting;
     removeImageId: typeof removeImageId;
     changeImage: typeof changeImage;
     changeImageByElement: typeof changeImageByElement;
@@ -669,6 +676,7 @@ window.editablePageBundle = {
     attachToCkEditor,
     showLanguagesInTranslationGroup,
     setUpBoxesBuiltAfterLoad,
+    languagesShownBySetting,
     removeImageId,
     changeImage,
     changeImageByElement,

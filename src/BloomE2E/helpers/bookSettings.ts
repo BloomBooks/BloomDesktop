@@ -13,7 +13,8 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
 import { editablePageFrame, waitForEditablePage } from "./bookMaking";
-import { realClick } from "./realClick";
+import { chooseInList } from "./collectionSettings";
+import { realClick, waitForClickToSettle } from "./realClick";
 
 /** The book's appearance settings that tests here change. Only these fields. */
 export interface IBookAppearance {
@@ -234,6 +235,31 @@ export async function setFullBleedInBookSettings(
     await expect(checkbox).toBeChecked({ checked });
 }
 
+/**
+ * Choose a page theme in the "Page Theme" list on the dialog's Theme & Layout page, which must be
+ * showing, by the name the list shows, e.g. "Rounded Border Ebook", as a person does by opening the
+ * list and clicking it. Returns once the list shows it. Fails naming the themes the list offered
+ * when it has no such theme. Nothing is saved until OK.
+ */
+export async function choosePageThemeInBookSettings(
+    page: Page,
+    themeName: string,
+): Promise<void> {
+    // Config-R puts a setting's label in an h4 in its row; the list itself is an MUI Select,
+    // whose clickable part is the element that announces a listbox.
+    const list = bookSettingsDialog(page)
+        .locator("li")
+        .filter({
+            has: page.locator("h4").getByText("Page Theme", { exact: true }),
+        })
+        .locator('[aria-haspopup="listbox"]');
+    await expect(
+        list,
+        'the showing Book and Page Settings page has no "Page Theme" list',
+    ).toHaveCount(1);
+    await chooseInList(page, list, "Page Theme", themeName);
+}
+
 /** The warning on the Theme & Layout page that Edge to Edge needs full bleed on paper. */
 function edgeToEdgeFullBleedWarning(page: Page): Locator {
     return bookSettingsDialog(page).getByTestId(
@@ -280,6 +306,86 @@ export async function followEdgeToEdgeFullBleedWarningLink(
     await expectBookSettingsPageShowing(page, "Print Publishing");
 }
 
+/**
+ * Press the Book and Page Settings button with a real mouse click, then wait two animation frames
+ * in the shell document, and no longer. For a test of whether the button responds at all, such as
+ * while a game is being played and the top bar's editing controls are disabled. The button's click
+ * handler opens the dialog by setting React state in this same document, so by then the dialog is
+ * in the DOM if the click reached the button: isBookSettingsDialogShowing can be asked at once,
+ * for either answer. Found by its test id: disabled (inert) controls are out of the accessibility
+ * tree, where openBookSettings looks.
+ */
+export async function pressBookSettingsButton(page: Page): Promise<void> {
+    await realClick(page.getByTestId("book-settings-button"));
+    await waitForClickToSettle(page);
+}
+
+/** True while the Book and Page Settings dialog is open. */
+export async function isBookSettingsDialogShowing(
+    page: Page,
+): Promise<boolean> {
+    return (await bookSettingsDialog(page).count()) > 0;
+}
+
+/**
+ * One Config-R check box of the open dialog's showing page, by its setting's path, e.g.
+ * "appearance.cover-topic-show".
+ */
+export function bookSettingsCheckbox(page: Page, path: string): Locator {
+    return bookSettingsDialog(page).locator(
+        `input[type="checkbox"][name="${path}"]`,
+    );
+}
+
+/**
+ * Tick or untick one check box of the open dialog's showing page, by its setting's path, and
+ * return once the box shows that state. Nothing is saved until OK.
+ */
+export async function setBookSettingsCheckbox(
+    page: Page,
+    path: string,
+    checked: boolean,
+): Promise<void> {
+    const checkbox = bookSettingsCheckbox(page, path);
+    await expect(
+        checkbox,
+        `the showing Book and Page Settings page has no "${path}" check box`,
+    ).toHaveCount(1);
+    if ((await checkbox.isChecked()) !== checked) await realClick(checkbox);
+    await expect(checkbox).toBeChecked({ checked });
+}
+
+/**
+ * Close Book and Page Settings with OK and, when a book setting was changed, wait until the Edit
+ * tab has rebuilt the page it shows with the saved settings.
+ *
+ * The dialog saves the book's settings only when one of them changed
+ * (BookAndPageSettingsDialog.tsx, saveSettingsAndCloseDialog), and only that save makes Bloom
+ * rebuild the page. So a test that presses OK with no book setting changed, or with only a page
+ * setting changed, passes `bookSettingsChanged: false`; waiting for a rebuild that never comes
+ * would fail it after a minute.
+ */
+export async function okBookSettings(
+    page: Page,
+    { bookSettingsChanged = true }: { bookSettingsChanged?: boolean } = {},
+): Promise<void> {
+    if (bookSettingsChanged) await markPageDocument(page);
+    await realClick(bookSettingsDialog(page).getByTestId("dialog-ok"));
+    await expect(
+        bookSettingsDialog(page),
+        "Book and Page Settings did not close after OK",
+    ).toHaveCount(0);
+    if (!bookSettingsChanged) return;
+    await expect
+        .poll(async () => isPageDocumentMarked(page), {
+            timeout: 60000,
+            message:
+                "Bloom never rebuilt the page after saving the book's settings.",
+        })
+        .toBe(false);
+    await waitForEditablePage(page);
+}
+
 /** Close Book and Page Settings with Cancel, so nothing changed in it is saved. */
 export async function cancelBookSettings(page: Page): Promise<void> {
     await realClick(bookSettingsDialog(page).getByTestId("dialog-cancel"));
@@ -287,4 +393,97 @@ export async function cancelBookSettings(page: Page): Promise<void> {
         bookSettingsDialog(page),
         "Book and Page Settings did not close after Cancel",
     ).toHaveCount(0);
+}
+
+/**
+ * The image resolutions the BloomPUB page of Book and Page Settings offers on its slider, in the
+ * slider's order, by the name the slider shows, with the largest picture each allows, landscape
+ * (BloomResolutionSliderInner in BookSettingsConfigrPages.tsx). A portrait picture gets the same
+ * box turned on its side.
+ */
+export const kBloomPubResolutions = [
+    { name: "Small", maxWidth: 600, maxHeight: 600 },
+    { name: "HD", maxWidth: 1280, maxHeight: 720 },
+    { name: "Full HD", maxWidth: 1920, maxHeight: 1080 },
+    { name: "4K", maxWidth: 3840, maxHeight: 2160 },
+] as const;
+
+/** One of the BloomPUB image resolutions, by the name the slider shows. */
+export type BloomPubResolutionName =
+    (typeof kBloomPubResolutions)[number]["name"];
+
+/** The largest picture, landscape, that the book's BloomPUBs carry, as the book has it saved. */
+export async function getBloomPubImageSettings(
+    page: Page,
+): Promise<{ maxWidth: number; maxHeight: number }> {
+    const settings = await apiGetJson<{
+        publish?: {
+            bloomPUB?: {
+                imageSettings?: { maxWidth: number; maxHeight: number };
+            };
+        };
+    }>(page, "book/settings");
+    const imageSettings = settings.publish?.bloomPUB?.imageSettings;
+    if (!imageSettings)
+        throw new Error(
+            "book/settings has no publish.bloomPUB.imageSettings for the book: " +
+                JSON.stringify(settings.publish),
+        );
+    return {
+        maxWidth: imageSettings.maxWidth,
+        maxHeight: imageSettings.maxHeight,
+    };
+}
+
+/** The image resolution slider on the BloomPUB page of Book and Page Settings. */
+function bloomPubResolutionSlider(page: Page): Locator {
+    return bookSettingsDialog(page).locator(".MuiSlider-root");
+}
+
+/**
+ * The image resolution the slider on the BloomPUB page of the open Book and Page Settings dialog is
+ * set to, e.g. "HD". The page must be showing (see showBookSettingsPage).
+ *
+ * This reads the slider's position, not the name written above it: the name is translated, so it
+ * is one of kBloomPubResolutions' names only when Bloom's UI is in English.
+ */
+export async function getBloomPubResolutionInBookSettings(
+    page: Page,
+): Promise<BloomPubResolutionName> {
+    const slider = bloomPubResolutionSlider(page);
+    await expect(
+        slider,
+        "the showing Book and Page Settings page has no image resolution slider",
+    ).toHaveCount(1);
+    const position = await slider.locator('input[type="range"]').inputValue();
+    const resolution = kBloomPubResolutions[Number(position)];
+    if (!resolution)
+        throw new Error(
+            `The image resolution slider is at "${position}", which is none of its ${kBloomPubResolutions.length} positions.`,
+        );
+    return resolution.name;
+}
+
+/**
+ * Move the image resolution slider on the BloomPUB page of the open Book and Page Settings dialog
+ * to `resolution`, the way a person does with the keyboard: the slider's thumb takes the arrow
+ * keys, one step per press. Returns once the slider is there. Nothing is saved until OK.
+ */
+export async function setBloomPubResolutionInBookSettings(
+    page: Page,
+    resolution: BloomPubResolutionName,
+): Promise<void> {
+    const names: string[] = kBloomPubResolutions.map((r) => r.name);
+    const from = names.indexOf(await getBloomPubResolutionInBookSettings(page));
+    const to = names.indexOf(resolution);
+    const thumb = bloomPubResolutionSlider(page).locator('input[type="range"]');
+    await thumb.focus();
+    for (let i = 0; i < Math.abs(to - from); i++)
+        await thumb.press(to > from ? "ArrowRight" : "ArrowLeft");
+    await expect
+        .poll(async () => getBloomPubResolutionInBookSettings(page), {
+            timeout: 10000,
+            message: `The image resolution slider never moved to ${resolution}.`,
+        })
+        .toBe(resolution);
 }

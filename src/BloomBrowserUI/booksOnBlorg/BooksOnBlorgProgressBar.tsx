@@ -95,6 +95,7 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
 
     return (
         <div
+            data-testid="books-on-blorg-progress"
             // Normally 312px wide, but grow (up to the pane's width) when a long language
             // name needs the room. Beyond that the label ellipsizes.
             css={css`
@@ -156,6 +157,7 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
                                 text-overflow: ellipsis;
                             `}
                             ref={labelRef}
+                            data-testid="books-on-blorg-count"
                         >
                             {countOfBooksLabel}
                         </div>

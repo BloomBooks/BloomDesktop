@@ -1,7 +1,12 @@
 import * as React from "react";
 import { css } from "@emotion/react";
 import { get } from "../utils/bloomApi";
-import { setToolboxEnabledHandler } from "../bookEdit/workspaceRoot";
+import {
+    editingDisabledCss,
+    editingDisabledProps,
+    setToolboxEnabledHandler,
+    useEditingDisabled,
+} from "../bookEdit/workspaceRoot";
 import { createPageFrame, numberPageLoad } from "../bookEdit/js/pageFrame";
 import { takePageViewSettingsFromBloom } from "../bookEdit/js/pageViewSettings";
 
@@ -30,6 +35,10 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
     );
     const [toolboxIsShowing, setToolboxIsShowing] = React.useState(true);
     const [toolboxIsEnabled, setToolboxIsEnabled] = React.useState(true);
+    const editingDisabled = useEditingDisabled();
+    // The toolbox's show/hide toggle is disabled when the toolbox is, and while editing is: showing
+    // a hidden toolbox restarts its tool, which might, say, show image descriptions.
+    const toolboxToggleEnabled = toolboxIsEnabled && !editingDisabled;
 
     // Request edit-frame URLs from C# when edit mode becomes active so app.tsx controls iframe rendering.
     React.useEffect(() => {
@@ -177,9 +186,9 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
                     id="pure-toggle-right"
                     data-toggle="right"
                     checked={toolboxIsShowing}
-                    disabled={!toolboxIsEnabled}
+                    disabled={!toolboxToggleEnabled}
                     onChange={(event) => {
-                        if (!toolboxIsEnabled) {
+                        if (!toolboxToggleEnabled) {
                             return;
                         }
                         setToolboxIsShowing(event.currentTarget.checked);
@@ -187,16 +196,22 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
                 />
                 <label
                     className={`pure-toggle-label${
-                        toolboxIsEnabled ? "" : " toolbox-disabled"
+                        toolboxToggleEnabled ? "" : " toolbox-disabled"
                     }`}
                     htmlFor="pure-toggle-right"
                     data-toggle-label="right"
-                    aria-disabled={!toolboxIsEnabled}
+                    aria-disabled={!toolboxToggleEnabled}
                 >
                     <span className="pure-toggle-icon" />
                 </label>
                 <nav className="pure-drawer" data-position="right">
-                    <div id="right">
+                    <div
+                        id="right"
+                        // The whole toolbox is for editing, so it is disabled (but left in view, so
+                        // the page doesn't move) while a game page is being played.
+                        {...editingDisabledProps(editingDisabled)}
+                        css={editingDisabledCss(editingDisabled)}
+                    >
                         <iframe
                             id="toolbox"
                             title="toolbox"

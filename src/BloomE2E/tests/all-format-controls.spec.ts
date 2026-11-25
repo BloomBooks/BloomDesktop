@@ -1,7 +1,9 @@
 // Every control of the Format dialog, on all four of its tabs, and where each change lands: on the
 // text of the box at once, on every box of the same style on every page, in one language or in all
 // of them, and in the Talking Book tool's highlight. Also creating a style and applying it.
-// Automates the manual test "All Format Controls" (Test Case ID 357).
+// Automates the manual test "All Format Controls" (Test Case ID 357), and "Paragraph Spacing
+// Styles" (Test Case ID 374): the common style and a user-named one, each with its own space
+// between paragraphs, and a box that switches between them.
 //
 // The book is Basic Book with three pages, "Basic Text & Image", "Image in Middle" and "Image on
 // Bottom", which between them have four text boxes, and the collection has two languages, so once
@@ -23,6 +25,7 @@ import {
 } from "../helpers/bookMaking";
 import {
     applyStyle,
+    applyStyleById,
     chooseAlignment,
     chooseFont,
     chooseFontSize,
@@ -120,6 +123,8 @@ const TESTING_CHANGES = {
     alignment: "right",
     indent: "none",
 } as const;
+/** The space between paragraphs the Testing style is then given, unlike Normal's. */
+const TESTING_PARAGRAPH_SPACING = "0.5";
 
 /** The content pages, in order, once the first test has made them. */
 let pages: IBookPage[];
@@ -435,5 +440,75 @@ test.describe("All Format Controls", () => {
             expect(box.style, `${box.lang} box`).toBe(TESTING);
             expect(box, `${box.lang} box`).toMatchObject(TESTING_CHANGES);
         }
+    });
+
+    test("the Testing style takes its own paragraph spacing, and Normal keeps its own [Test Case ID 374]", async ({
+        page,
+    }) => {
+        test.setTimeout(600000);
+        const before = await getTextBoxFormattingOnPages(page, pages);
+        // Sanity check: Normal and Testing start with the spacing the Paragraph-tab test gave
+        // Normal, which Testing copied when it was created.
+        for (const box of before)
+            expect(
+                box.paragraphSpacingEm,
+                `${box.lang} ${box.style} box on page ${box.pageCaption}`,
+            ).toBe(PARAGRAPH.paragraphSpacingEm);
+
+        await goToPage(page, pages[1].id);
+        await openFormatDialogOn(page, L1, 0, "paragraph");
+        await chooseParagraphSpacing(page, TESTING_PARAGRAPH_SPACING);
+        await closeFormatDialog(page);
+
+        const after = await getTextBoxFormattingOnPages(page, pages);
+        expectEightBoxes(after);
+        const testingBoxes = after.filter((b) => b.style === TESTING);
+        // Both languages of the two Testing groups, on the second and third pages.
+        expect(testingBoxes).toHaveLength(4);
+        for (const box of testingBoxes)
+            expect(
+                box.paragraphSpacingEm,
+                `${box.lang} Testing box on page ${box.pageCaption}`,
+            ).toBe(Number(TESTING_PARAGRAPH_SPACING));
+        expect(after.filter((b) => b.style === NORMAL)).toEqual(
+            before.filter((b) => b.style === NORMAL),
+        );
+    });
+
+    test("switching a box between Normal and Testing switches its paragraph spacing [Test Case ID 374]", async ({
+        page,
+    }) => {
+        test.setTimeout(600000);
+        await goToPage(page, pages[1].id);
+        const spacingOfGroup = async (group: number) =>
+            (await getTextBoxFormatting(page))
+                .filter((b) => b.group === group)
+                .map((b) => ({
+                    lang: b.lang,
+                    style: b.style,
+                    paragraphSpacingEm: b.paragraphSpacingEm,
+                }))
+                .sort((a, b) => a.lang.localeCompare(b.lang));
+        const expectGroup = (style: string, paragraphSpacingEm: number) =>
+            [L1, L2].map((lang) => ({ lang, style, paragraphSpacingEm }));
+
+        // The page's second group is still Normal.
+        expect(await spacingOfGroup(1)).toEqual(
+            expectGroup(NORMAL, PARAGRAPH.paragraphSpacingEm),
+        );
+
+        await openFormatDialogOn(page, L1, 1, "styleName");
+        await applyStyle(page, TESTING);
+        await closeFormatDialog(page);
+        expect(await spacingOfGroup(1)).toEqual(
+            expectGroup(TESTING, Number(TESTING_PARAGRAPH_SPACING)),
+        );
+
+        await openFormatDialogOn(page, L1, 1, "styleName");
+        await applyStyleById(page, NORMAL);
+        await closeFormatDialog(page);
+        expect(await spacingOfGroup(1)).toEqual(
+            expectGroup(NORMAL, PARAGRAPH.paragraphSpacingEm),
+        );
     });
 });

@@ -11,6 +11,9 @@ import { postJson } from "../utils/bloomApi";
 import { Link } from "../react_components/BookGridSetup/BookLinkTypes";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
+import * as React from "react";
+import { css, SerializedStyles } from "@emotion/react";
+import { kBloomDisabledOpacity } from "../utils/colorUtils";
 
 export interface IWorkspaceExports {
     showDialog(
@@ -32,6 +35,7 @@ export interface IWorkspaceExports {
     noteAllPagesShown(): void;
     listenForAllPagesShown(listener: () => void): () => void;
     setToolboxEnabled(enabled: boolean): void;
+    setEditingDisabled(disabled: boolean): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
         task: (toolboxFrameExports: IToolboxFrameExports) => unknown,
@@ -289,6 +293,49 @@ export function setToolboxEnabled(enabled: boolean): void {
     toolboxEnabledHandler?.(enabled);
 }
 
+// While editing is disabled, the toolbox and the editing controls in the top bar are disabled and
+// dimmed. Today the one reason is a game page in its Play tab, where the user is trying out how the
+// game will behave when published, not editing it: GameTool's setActiveDragActivityTab sets this,
+// and leaving the page clears it.
+let editingDisabled = false;
+const editingDisabledListeners = new Set<() => void>();
+
+export function setEditingDisabled(disabled: boolean): void {
+    if (disabled === editingDisabled) {
+        return;
+    }
+    editingDisabled = disabled;
+    editingDisabledListeners.forEach((listener) => listener());
+}
+
+// True while editing is disabled (see setEditingDisabled), for the components that disable their
+// editing controls then.
+export function useEditingDisabled(): boolean {
+    return React.useSyncExternalStore(
+        (listener) => {
+            editingDisabledListeners.add(listener);
+            return () => editingDisabledListeners.delete(listener);
+        },
+        () => editingDisabled,
+    );
+}
+
+// Props for an element whose whole content is disabled while editing is: `inert` makes everything
+// inside it unclickable and unfocusable, including controls added there later. Use it with
+// editingDisabledCss, whose dimming shows why. (React 18 doesn't know `inert`, but passes it
+// through to the element.)
+export function editingDisabledProps(
+    disabled: boolean,
+): React.HTMLAttributes<HTMLElement> {
+    return disabled ? ({ inert: "" } as React.HTMLAttributes<HTMLElement>) : {};
+}
+
+export function editingDisabledCss(disabled: boolean): SerializedStyles {
+    return css`
+        opacity: ${disabled ? kBloomDisabledOpacity : 1};
+    `;
+}
+
 // Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.
 // (The value passed to the task function will be the value from getToolboxBundleExports(). Unfortunately we
 // haven't yet managed to declare a type for that, so I can't easily specify it here.)
@@ -492,6 +539,7 @@ interface WorkspaceBundleApi {
     showDialog: typeof showDialog;
     closeDialog: typeof closeDialog;
     setToolboxEnabled: typeof setToolboxEnabled;
+    setEditingDisabled: typeof setEditingDisabled;
     toolboxIsShowing: typeof toolboxIsShowing;
     doWhenToolboxLoaded: typeof doWhenToolboxLoaded;
     canUndo: typeof canUndo;
@@ -555,6 +603,7 @@ window.workspaceBundle = {
     showDialog,
     closeDialog,
     setToolboxEnabled,
+    setEditingDisabled,
     toolboxIsShowing,
     doWhenToolboxLoaded,
     canUndo,
