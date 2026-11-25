@@ -56,10 +56,16 @@ public static class BloomWindows {
     }
     return "false";
   }
-  // Move a window to the top (HWND_TOP) or the bottom (HWND_BOTTOM) of the stacking order
-  // without activating it.
-  public static string Move(long hwnd, bool toTop) {
-    var after = new IntPtr(toTop ? 0 : 1);
+  // Move a window in the stacking order without activating it: to the bottom (HWND_BOTTOM),
+  // or to just above the window "other", where nothing that lay above "other" ends up below it.
+  public static string Move(long hwnd, bool toBottom, long other) {
+    IntPtr after;
+    if (toBottom) after = new IntPtr(1);
+    else {
+      // SetWindowPos places a window below the one it is given, so give it the window above other
+      // (or HWND_TOP when other is on top).
+      after = GetWindow(new IntPtr(other), GW_HWNDPREV);
+    }
     if (!SetWindowPos(new IntPtr(hwnd), after, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE))
       return "error " + Marshal.GetLastWin32Error();
     return "ok";
@@ -145,20 +151,43 @@ export async function isWindowAbove(
 }
 
 /**
- * Move a window to the top or the bottom of the desktop's stacking order without activating it,
- * as switching to another program and back moves it, but with no keystroke and no change of the
- * keyboard focus. Windows moves the windows it owns along with it.
+ * Move a window to the bottom of the desktop's stacking order without activating it, as switching
+ * to another program leaves it below that program. Windows moves the windows it owns along with
+ * it. No keystroke, no change of the keyboard focus.
  */
-export async function moveWindowInStack(
+export async function moveWindowToBottom(hwnd: number): Promise<void> {
+    await move(hwnd, "bottom", 0);
+}
+
+/**
+ * Move window `hwnd` to just above window `other` without activating it, as switching back to a
+ * program brings its window up past the ones below it. Windows moves the windows it owns along
+ * with it. Only windows that lay at or below `other` end up below `hwnd`, so a window of another
+ * program that lay above both stays above: a run on the developer's own monitor never covers what
+ * they are working in.
+ */
+export async function moveWindowJustAbove(
     hwnd: number,
-    where: "top" | "bottom",
+    other: number,
+): Promise<void> {
+    await move(hwnd, "above", other);
+}
+
+async function move(
+    hwnd: number,
+    where: "bottom" | "above",
+    other: number,
 ): Promise<void> {
     const output = await runPowerShell(
-        "[BloomWindows]::Move([long]$env:BLOOM_E2E_HWND, $env:BLOOM_E2E_WHERE -eq 'top')",
-        { BLOOM_E2E_HWND: String(hwnd), BLOOM_E2E_WHERE: where },
+        "[BloomWindows]::Move([long]$env:BLOOM_E2E_HWND, $env:BLOOM_E2E_WHERE -eq 'bottom', [long]$env:BLOOM_E2E_OTHER)",
+        {
+            BLOOM_E2E_HWND: String(hwnd),
+            BLOOM_E2E_WHERE: where,
+            BLOOM_E2E_OTHER: String(other),
+        },
     );
     if (output !== "ok")
         throw new Error(
-            `Could not move window ${hwnd} to the ${where} of the stack: ${output}`,
+            `Could not move window ${hwnd} in the desktop's stack (${where} ${other}): ${output}`,
         );
 }
