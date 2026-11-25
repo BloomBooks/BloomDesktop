@@ -981,6 +981,47 @@ export async function typeInGroup(
 }
 
 /**
+ * The languages whose box is showing in the translation groups that `groupSelector` picks on the
+ * page being edited, in document order. A box that Bloom hides (display: none) is left out, and so
+ * is the "z" box, which is only a pattern Bloom copies to make the others.
+ */
+export async function getLanguagesShownInGroup(
+    page: Page,
+    groupSelector: string,
+): Promise<string[]> {
+    return editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang]`)
+        .evaluateAll((boxes) =>
+            boxes
+                .filter(
+                    (box) =>
+                        box.getAttribute("lang") !== "z" &&
+                        getComputedStyle(box).display !== "none",
+                )
+                .map((box) => box.getAttribute("lang") ?? ""),
+        );
+}
+
+/**
+ * Wait until the translation groups that `groupSelector` picks show exactly the boxes of these
+ * languages, in any order. Fails with `message` when they do not within 30 seconds.
+ */
+export async function expectLanguagesShownInGroup(
+    page: Page,
+    groupSelector: string,
+    languages: string[],
+    message: string,
+): Promise<void> {
+    await expect
+        .poll(
+            async () =>
+                (await getLanguagesShownInGroup(page, groupSelector)).sort(),
+            { timeout: 30000, message },
+        )
+        .toEqual([...languages].sort());
+}
+
+/**
  * The font one language's box of one translation group is shown in: the first family of its computed
  * font-family, without quotes, e.g. "Andika". This is how a test checks that a font chosen in the
  * Format dialog reached the text.
