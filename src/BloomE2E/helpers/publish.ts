@@ -12,7 +12,7 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
-import { apiGetJson, apiPost } from "./api";
+import { apiGetJson, apiPost, getUiString } from "./api";
 import { readImageFileSize, type IPixelSize } from "./images";
 import { waitForLanguageChooser } from "./languageChooser";
 import { switchTab } from "./workspace";
@@ -513,7 +513,9 @@ export interface ISignLanguageFeature {
 export async function getSignLanguageFeature(
     page: Page,
 ): Promise<ISignLanguageFeature> {
-    const checkbox = page.getByRole("checkbox", { name: "Sign Language" });
+    const checkbox = page.getByRole("checkbox", {
+        name: await getSignLanguageLabel(page),
+    });
     await checkbox.waitFor({ state: "attached", timeout: 30000 });
     const tooltip = await hoverSignLanguageFeature(page);
     return {
@@ -570,7 +572,7 @@ export async function getCollectionSignLanguage(
 
 /** The Game row of a Publish screen's Features list, as a person sees it. */
 export interface IGameFeature {
-    /** Whether the check mark beside "Game" shows. */
+    /** Whether the check mark beside the Game label shows. */
     checked: boolean;
     /** Whether the row is dimmed, as Bloom shows a feature this book's publication will not have. */
     disabled: boolean;
@@ -587,7 +589,7 @@ export interface IGameFeature {
  * kBloomDisabledOpacity.
  */
 export async function getGameFeature(page: Page): Promise<IGameFeature> {
-    const label = page.getByText("Game", { exact: true });
+    const label = page.getByText(await getGameLabel(page), { exact: true });
     await label.waitFor({ state: "visible", timeout: 30000 });
     const row = page.locator(".bloom-checkbox").filter({ has: label });
     const checked = await row.locator('[data-testid="CheckIcon"]').isVisible();
@@ -617,11 +619,84 @@ export async function expectGameFeature(
         .toEqual(expected);
 }
 
+/**
+ * What the Game row's tooltip says, in the UI language: the book has games it may publish, it has
+ * none, or it has games that need a higher subscription tier than the collection's (the sentence
+ * names the tier the game feature needs, as Bloom's features/status names it).
+ */
+export async function getGameTooltipText(
+    page: Page,
+    tooltip: "hasGames" | "noGames" | "needsHigherTier",
+): Promise<string> {
+    if (tooltip === "hasGames")
+        return getUiString(
+            page,
+            "PublishTab.Feature.Games.Present",
+            "This book has games.",
+        );
+    if (tooltip === "noGames")
+        return getUiString(
+            page,
+            "PublishTab.Feature.Games.None",
+            "This book does not have any games.",
+        );
+    const status = await apiGetJson<{ localizedTier: string }>(
+        page,
+        "features/status?featureName=game&forPublishing=true",
+    );
+    const sentence = await getUiString(
+        page,
+        "Subscription.RequiredTierForFeatureSentence",
+        'This feature requires a Bloom subscription tier of at least "{0}".',
+    );
+    return sentence.replace("{0}", status.localizedTier);
+}
+
+/**
+ * The Game row's label in the UI language. A test Bloom starts in the Windows UI language, so the
+ * row is found by what Bloom calls it, not by its English name.
+ */
+function getGameLabel(page: Page): Promise<string> {
+    return getUiString(page, "PublishTab.Game", "Game");
+}
+
+/**
+ * What the Sign Language row's tooltip says, in the UI language, when the book has no videos, or
+ * when its videos are in the sign language named `signLanguageName`.
+ */
+export async function getSignLanguageTooltipText(
+    page: Page,
+    tooltip: "noVideos" | { signLanguageName: string },
+): Promise<string> {
+    if (tooltip === "noVideos")
+        return getUiString(
+            page,
+            "PublishTab.Feature.SignLanguage.NoVideos",
+            "This is disabled because this book does not have any videos.",
+        );
+    const present = await getUiString(
+        page,
+        "PublishTab.Feature.SignLanguage.Present",
+        "The videos in this book contain {N}",
+    );
+    return present.replace("{N}", tooltip.signLanguageName);
+}
+
+/**
+ * The Sign Language row's label in the UI language. A test Bloom starts in the Windows UI
+ * language, so the row is found by what Bloom calls it, not by its English name.
+ */
+function getSignLanguageLabel(page: Page): Promise<string> {
+    return getUiString(page, "PublishTab.Upload.SignLanguage", "Sign Language");
+}
+
 /** Hover the Sign Language row and return its tooltip once it shows. */
-function hoverSignLanguageFeature(page: Page): Promise<Locator> {
+async function hoverSignLanguageFeature(page: Page): Promise<Locator> {
     return hoverForTooltip(
         page,
-        page.getByText("Sign Language", { exact: true }).first(),
+        page
+            .getByText(await getSignLanguageLabel(page), { exact: true })
+            .first(),
     );
 }
 

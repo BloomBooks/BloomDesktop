@@ -23,7 +23,7 @@ import {
     confirmRemovePageDialog,
     openRemovePageDialog,
 } from "../helpers/pageList";
-import { expectGameFeature } from "../helpers/publish";
+import { expectGameFeature, getGameTooltipText } from "../helpers/publish";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
@@ -34,11 +34,6 @@ test.use({
         subscriptionCode: kEnterpriseSubscriptionCode,
     },
 });
-
-const kHasGames = "This book has games.";
-const kNeedsPro =
-    'This feature requires a Bloom subscription tier of at least "Pro".';
-const kNoGames = "This book does not have any games.";
 
 test("the Game feature follows the book's game pages and the subscription tier [Test Case ID 174]", async ({
     page,
@@ -57,7 +52,11 @@ test("the Game feature follows the book's game pages and the subscription tier [
         await openPublishToWeb(page);
         await expectGameFeature(
             page,
-            { checked: true, disabled: false, tooltip: kHasGames },
+            {
+                checked: true,
+                disabled: false,
+                tooltip: await getGameTooltipText(page, "hasGames"),
+            },
             "With Enterprise and a game page, the Game feature should be on.",
         );
     });
@@ -71,15 +70,19 @@ test("the Game feature follows the book's game pages and the subscription tier [
     await step("See the Game feature off, needing Pro", async () => {
         const game = await getFeatureStatus(basic, "game");
         expect(
-            game.enabled,
-            `Sanity check: with no subscription code, games should be off the tier. Bloom's ` +
-                `whole answer: ${JSON.stringify(game)}`,
-        ).toBe(false);
+            { enabled: game.enabled, subscriptionTier: game.subscriptionTier },
+            `Sanity check: with no subscription code, games should be off the tier, and need ` +
+                `Pro. Bloom's whole answer: ${JSON.stringify(game)}`,
+        ).toEqual({ enabled: false, subscriptionTier: "Pro" });
         await selectBook(basic, book.bookFolder);
         await openPublishToWeb(basic);
         await expectGameFeature(
             basic,
-            { checked: false, disabled: true, tooltip: kNeedsPro },
+            {
+                checked: false,
+                disabled: true,
+                tooltip: await getGameTooltipText(basic, "needsHigherTier"),
+            },
             "Below Pro, the Game feature should be off and say it needs Pro.",
         );
     });
@@ -99,7 +102,11 @@ test("the Game feature follows the book's game pages and the subscription tier [
         await openPublishToWeb(enterprise);
         await expectGameFeature(
             enterprise,
-            { checked: true, disabled: false, tooltip: kHasGames },
+            {
+                checked: true,
+                disabled: false,
+                tooltip: await getGameTooltipText(enterprise, "hasGames"),
+            },
             "With Enterprise again, the Game feature should be on again.",
         );
     });
@@ -135,7 +142,11 @@ test("the Game feature follows the book's game pages and the subscription tier [
         ).toEqual({ nonWidgetGames: false, widgets: false });
         await expectGameFeature(
             enterprise,
-            { checked: false, disabled: true, tooltip: kNoGames },
+            {
+                checked: false,
+                disabled: true,
+                tooltip: await getGameTooltipText(enterprise, "noGames"),
+            },
             "With no game page left, the Game feature should be off and say there are no games.",
         );
     });

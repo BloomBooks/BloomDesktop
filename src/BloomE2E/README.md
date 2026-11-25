@@ -138,7 +138,10 @@ real bug in the code under test; read the message and fix it rather than working
 ## Helpers
 
 - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`, and the zoom control's
-  `getZoom`, `setZoom`. Note that Bloom hides the Edit and Publish tabs until a book is selected.
+  `getZoom`, `setZoom`; for a test of the zoom itself, `clickZoomButton`, `turnWheelToZoom`
+  (Ctrl+mouse wheel over the page) and what they change (`getZoomShownInTopBar`,
+  `expectPageDrawnAtZoom`). Note that Bloom hides the Edit and Publish tabs until a book is
+  selected.
 - `helpers/formatDialog.ts` — the format gear beside the text box being edited, and the Format
   dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
   `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
@@ -178,6 +181,10 @@ real bug in the code under test; read the message and fix it rather than working
   `getShownTools`. Nothing here turns a tool on through the toolbox's own check boxes; the page
   does that when clicked (a Canvas page's canvas opens the Canvas tool, a video box the Sign
   Language tool), which is the route a person takes.
+- `helpers/canvasToolOptions.ts` — the Canvas tool's options for the selected text element
+  (`setRoundedCorners`, `roundedCornersBox`, `chooseCanvasElementBackgroundColor`), and
+  `readSavedCanvasShapes`, which measures the shapes ComicalJS saved for a page
+  (svg.comical-generated), such as whether each covers the corners of its box.
 - `helpers/canvasElements.ts` — `openCanvasTool`, `dragPaletteItemOntoCanvas`,
   `selectCanvasElement`, the selected element's toolbar and "..." menu by localization id,
   `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`; the menu's groups
