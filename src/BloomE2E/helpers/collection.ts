@@ -107,8 +107,11 @@ export async function chooseFromSelectedBookMenuByTestId(
     await page
         .locator(".bookButton.selected")
         .click({ button: "right", timeout: 15000 });
-    // The menu stays mounted when closed, so only a showing entry counts.
-    const item = page.locator(`[data-testid="${testId}"]:visible`);
+    // The menu stays mounted when closed, so only a showing entry counts. Only a menu item counts:
+    // the book pane beside the grid can show a button with the same test id.
+    const item = page.locator(
+        `[role="menuitem"][data-testid="${testId}"]:visible`,
+    );
     try {
         await item.waitFor({ state: "visible", timeout: 15000 });
     } catch {
