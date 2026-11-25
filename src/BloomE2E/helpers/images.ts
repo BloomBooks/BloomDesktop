@@ -321,10 +321,6 @@ export async function getPictureInlineLayout(
 }
 
 /**
- * The picture to act on: the one inside `within` when a scope is given, otherwise the page's first
- * image slot.
- */
-/**
  * Paste the picture on Bloom's clipboard into the empty first image slot of the page being
  * edited, such as a new book's cover picture, the way a person does: select the picture's box,
  * then choose Paste image from its menu. Returns the file name the slot shows once the picture
@@ -361,6 +357,10 @@ export async function pasteImageIntoEmptySlot(page: Page): Promise<string> {
     return (await getImagePlacement(page)).fileName;
 }
 
+/**
+ * The picture to act on: the one inside `within` when a scope is given, otherwise the page's first
+ * image slot.
+ */
 function imageIn(page: Page, within?: Locator): Locator {
     if (within) return within.locator(".bloom-imageContainer img").first();
     return editablePageFrame(page).locator(FIRST_IMAGE).first();
