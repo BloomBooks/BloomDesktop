@@ -65,17 +65,25 @@ async function expectSelectedCharacter(
     ).toHaveAttribute("data-value", character, { timeout: 15000 });
 }
 
+/** Wait until the panel has gone. `after` says what should have closed it. */
+async function expectPanelClosed(page: Page, after: string): Promise<void> {
+    await expect(
+        longPressPanel(editablePageFrame(page)),
+        `The long-press panel stayed up after ${after}.`,
+    ).toHaveCount(0, { timeout: 15000 });
+}
+
 /** Let go of the held key, and wait until the panel has gone, as it does when a person lets go. */
 async function releaseHeldKey(page: Page, key: string): Promise<void> {
     await page.keyboard.up(key);
-    await expect(
-        longPressPanel(editablePageFrame(page)),
-        `The long-press panel stayed up after the "${key}" key was released.`,
-    ).toHaveCount(0, { timeout: 15000 });
+    await expectPanelClosed(page, `the "${key}" key was released`);
 }
 
 /**
  * Hold a letter key down in the text box that has the focus, until the long-press panel shows.
+ * Bloom attaches long-press to a text box a moment after the page loads (activateLongPressFor in
+ * bloomEditing.ts), and nothing on the page shows when it has; a key held before that types its
+ * letter twice and shows no panel, and this then fails saying that the panel never showed.
  * The letter itself is typed at the caret, as it is for a person. Returns the special characters
  * the panel offers. The key stays down: choose a character with one of the helpers below, which
  * release it.
@@ -108,11 +116,9 @@ export async function chooseLongPressCharacterWithClick(
     const frame = editablePageFrame(page);
     await indexOfOfferedCharacter(frame, character);
     await longPressButton(frame, character).click();
-    await expect(
-        longPressPanel(frame),
-        `Clicking "${character}" did not close the long-press panel.`,
-    ).toHaveCount(0, { timeout: 15000 });
-    await releaseHeldKey(page, heldKey);
+    // The click closes the panel, so letting go of the key afterwards has nothing left to close.
+    await expectPanelClosed(page, `"${character}" was clicked`);
+    await page.keyboard.up(heldKey);
 }
 
 /**
@@ -145,7 +151,8 @@ export async function chooseLongPressCharacterWithMouseWheel(
 
 /**
  * With the long-press panel showing, press the shortcut key the panel shows beside a special
- * character, then let go of the held key.
+ * character, then let go of the held key. Letting go of the shortcut key is what closes the panel:
+ * Bloom closes it when any key comes up.
  */
 export async function chooseLongPressCharacterWithShortcut(
     page: Page,
@@ -168,7 +175,11 @@ export async function chooseLongPressCharacterWithShortcut(
         `The shortcut key "${shortcut}"`,
     );
     await page.keyboard.up(shortcut.toLowerCase());
-    await releaseHeldKey(page, heldKey);
+    await expectPanelClosed(
+        page,
+        `the shortcut key "${shortcut}" was released`,
+    );
+    await page.keyboard.up(heldKey);
 }
 
 /** Where the caret is in a text box: which paragraph, and how many of its characters come before. */
