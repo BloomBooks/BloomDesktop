@@ -677,9 +677,6 @@ namespace Bloom
             );
 
             yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(
-                Path.Combine(BloomFileLocator.BrowserRoot, "collection")
-            );
-            yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(
                 Path.Combine(BloomFileLocator.BrowserRoot, "collectionsTab/collectionsTabBookPane")
             );
 
