@@ -316,6 +316,8 @@ export async function scrollTextBox(
  *  - not scrolled: the last line that fits fades out, and nothing is washed red;
  *  - scrolled: a red wash from that line down to the box's bottom, as wide as the box, and no fade;
  *  - the gray language label is placed at the bottom of what the box shows, scrolled or not.
+ *    Pass `hasLanguageLabel` false for a box that has no such label, as the text of a speech
+ *    bubble has none.
  *
  * Waits for the marks, because Bloom draws them a moment after the typing or scrolling.
  */
@@ -323,6 +325,7 @@ export async function expectTextBoxMarkedAsOverflowing(
     page: Page,
     box: Locator,
     what: string,
+    hasLanguageLabel = true,
 ): Promise<void> {
     await expect(async () => {
         const view = await getTextBoxView(box);
@@ -384,7 +387,12 @@ export async function expectTextBoxMarkedAsOverflowing(
             );
         }
 
-        expectLanguageLabelAtBottom(view, what);
+        if (hasLanguageLabel) expectLanguageLabelAtBottom(view, what);
+        else
+            expect(
+                view.languageLabelAboveBottom,
+                `test setup: ${what} should have no language label`,
+            ).toBeUndefined();
     }).toPass({ timeout: 15000 });
 }
 
