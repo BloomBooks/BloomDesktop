@@ -16,6 +16,7 @@ import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     getContentPages,
+    getPages,
     goToPage,
     makeBookFromSourceBook,
     type IBookPage,
@@ -78,10 +79,15 @@ async function expectPageNumber(
     where: string,
     position: PageNumberPosition,
     layoutId: string,
+    side: string,
 ): Promise<void> {
     const shown = await getPageNumberShown(page);
-    const placement = expectedPlacement(position, layoutId, shown.side);
+    const placement = expectedPlacement(position, layoutId, side);
     const described = `${where}: ${JSON.stringify(shown)}`;
+    expect(
+        shown.side,
+        `the page is not on the ${side} of its spread. ${described}`,
+    ).toBe(side);
     expect(
         shown.pageNumber,
         `the page has no number of its own. ${described}`,
@@ -170,6 +176,17 @@ test("a derivative of a shell shows its page numbers at every page size unless t
         "the derivative should have the shell's content pages",
     ).toBeGreaterThanOrEqual(2);
     const pagesToRead: IBookPage[] = contentPages.slice(0, 2);
+    // Which side of its spread each page belongs on, from its place in the book: the front cover
+    // is a right-hand page, and the sides alternate from there (left to right, as English reads).
+    const allPages = await getPages(page);
+    const sideOf = (bookPage: IBookPage) =>
+        allPages.findIndex((p) => p.id === bookPage.id) % 2 === 0
+            ? "side-right"
+            : "side-left";
+    expect(
+        pagesToRead.map(sideOf),
+        "the two pages read should face each other",
+    ).toEqual(expect.arrayContaining(["side-left", "side-right"]));
 
     const sizes = (await getPageSizeChoices(page)).choices.map((c) => c.id);
     // The shell is A5 portrait; "various page sizes" needs more than that, and the device sizes,
@@ -191,6 +208,7 @@ test("a derivative of a shell shows its page numbers at every page size unless t
                     `${layoutId}, Page Numbers ${position}, the ${pagesToRead.indexOf(bookPage) === 0 ? "first" : "second"} content page`,
                     position,
                     layoutId,
+                    sideOf(bookPage),
                 );
             }
         }

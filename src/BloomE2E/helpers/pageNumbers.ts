@@ -28,10 +28,13 @@ export interface IPageNumberShown {
     pageWidth: number;
     pageHeight: number;
     /**
-     * True when the page number is the top thing at the middle of its box, so nothing else on the
-     * page is drawn over it. (A hit on a pseudo-element reports the element it belongs to.)
+     * True when nothing of the page's own that paints (a background, a picture, a canvas, a video)
+     * is above the number at the middle of its box, whether or not it takes the mouse. (A hit on
+     * a pseudo-element reports the element it belongs to.)
      */
     onTop: boolean;
+    /** What covers the middle of the number's box, when something does. */
+    coveredBy: string;
 }
 
 /** The page number of the page being edited, as Bloom draws it. */
@@ -83,6 +86,7 @@ export async function getPageNumberShown(
             // Is the number the top thing at its middle? Bring that point into the frame's view
             // first: elementFromPoint finds nothing outside it.
             let onTop = false;
+            let coveredBy = "";
             if (drawn) {
                 const rect = el.getBoundingClientRect();
                 // The Edit tab zooms the page with a transform, which getBoundingClientRect sees and
@@ -99,7 +103,44 @@ export async function getPageNumberShown(
                 const scrolled = el.getBoundingClientRect();
                 const x = scrolled.left + el.clientLeft * scale + middleX;
                 const y = scrolled.top + el.clientTop * scale + middleY;
-                onTop = document.elementFromPoint(x, y) === el;
+                // Hit testing skips anything with pointer-events: none, which can still be drawn
+                // over the number, so let every element take the hit for this one test. The
+                // style goes again before anything can be drawn or saved with it.
+                const allHittable = document.createElement("style");
+                allHittable.textContent =
+                    "*, *::before, *::after { pointer-events: auto !important; }";
+                document.head.appendChild(allHittable);
+                let hits: Element[];
+                try {
+                    // Top first. The page is listed where its number is, the topmost thing of
+                    // its own that is hit.
+                    hits = document.elementsFromPoint(x, y);
+                } finally {
+                    allHittable.remove();
+                }
+                const pageAt = hits.indexOf(el);
+                // What covers the number is the page's own content above it that paints
+                // something there. The Edit tab's own controls outside the page, and the page's
+                // transparent containers, cover nothing.
+                const paints = (hit: Element) => {
+                    const style = getComputedStyle(hit);
+                    if (style.visibility !== "visible" || style.opacity === "0")
+                        return false;
+                    if (/^(IMG|CANVAS|VIDEO|SVG|svg)$/.test(hit.tagName))
+                        return true;
+                    const bg = /rgba?\(([^)]*)\)/.exec(style.backgroundColor);
+                    const bgParts = bg ? bg[1].split(",") : [];
+                    const bgAlpha =
+                        bgParts.length === 4 ? parseFloat(bgParts[3]) : 1;
+                    return bgAlpha > 0 || style.backgroundImage !== "none";
+                };
+                const cover = hits
+                    .slice(0, Math.max(pageAt, 0))
+                    .find((hit) => el.contains(hit) && paints(hit));
+                onTop = pageAt >= 0 && !cover;
+                if (cover)
+                    coveredBy = `<${cover.tagName.toLowerCase()} class="${cover.getAttribute("class") ?? ""}">`;
+                else if (pageAt < 0) coveredBy = "the page itself was not hit";
             }
 
             let side = "";
@@ -117,6 +158,7 @@ export async function getPageNumberShown(
                 pageWidth: el.clientWidth,
                 pageHeight: el.clientHeight,
                 onTop,
+                coveredBy,
             };
         });
 }
