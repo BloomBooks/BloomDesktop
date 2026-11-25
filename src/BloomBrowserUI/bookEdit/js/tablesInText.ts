@@ -11,7 +11,11 @@ import { refreshStructuralChrome } from "bloom-table";
 import { elementOf, kTableInTextClass } from "./tableInTextConstants";
 import { kBlockElementSelector } from "../bloomField/BloomField";
 import { isUndoOrRedoKey } from "../undo/redoKeyBinding";
-import { AttachNewTableAndSetUpItsCells } from "./tableEditing";
+import {
+    AttachNewTableAndSetUpItsCells,
+    removeTableEditingMarkupFromClone,
+} from "./tableEditing";
+import { removeEditorChromeFromClone } from "./editorChromeCleanup";
 import { setupTableInTextDragging } from "./tableInTextDrag";
 import { getInlineImageActionTarget } from "./inlineImageInteractions";
 import { IMenuItemWithSubmenu } from "./canvasElementManager/canvasControlMenuRendering";
@@ -53,8 +57,9 @@ export function getInsertTableMenuItem(
 }
 
 /**
- * Put a new two-by-two table into `editable`'s text at `caret`, and set it up for editing. Returns
- * the table.
+ * Put `table` into `editable`'s text at `caret`, and set it up for editing. Returns the table.
+ * Without `table`, this makes a new two-by-two table; a table given here comes from
+ * tableFromClipboardText.
  *
  * The table goes between paragraphs: a caret inside a paragraph splits it, with the table between
  * the two halves. A caret at the start or end of a paragraph puts the table before or after it,
@@ -65,9 +70,9 @@ export function getInsertTableMenuItem(
 export function insertTableInText(
     editable: HTMLElement,
     caret: Range | undefined,
+    table: HTMLElement = editable.ownerDocument.createElement("div"),
 ): HTMLElement {
     const doc = editable.ownerDocument;
-    const table = doc.createElement("div");
     table.classList.add("bloom-table", kTableInTextClass);
     // So that the table can be focused, as for a table in a canvas element.
     table.setAttribute("tabindex", "0");
@@ -79,6 +84,80 @@ export function insertTableInText(
     AttachNewTableAndSetUpItsCells(table);
     keepPlainKeysInTable(table);
     setupTableInTextDragging(doc);
+    return table;
+}
+
+/**
+ * If `clipboardText` is a table that Copy Table or Cut Table (in a table's Table menu) put on the
+ * clipboard, paste it into the text of the box that has the focus, as Insert Table would put a new
+ * one there, in place of any text that is selected. Those commands put the table's HTML on the
+ * clipboard as plain text, which a paste would otherwise put in the box as text. Does nothing, and
+ * returns false, where Insert Table is not offered (in a table's cells, say) or the clipboard holds
+ * anything else; the paste is then the caller's to do. Returns true when it pasted the table.
+ */
+export function pasteTableIntoText(clipboardText: string): boolean {
+    const focused = document.activeElement as HTMLElement | null;
+    const target = getInlineImageActionTarget(focused ?? undefined);
+    if (target.kind !== "add" || focused?.closest(".bloom-table")) return false;
+    const editable = target.editable;
+    const table = tableFromClipboardText(editable.ownerDocument, clipboardText);
+    if (!table) return false;
+    const selection = editable.ownerDocument.getSelection();
+    let caret: Range | undefined;
+    if (selection && selection.rangeCount > 0) {
+        caret = selection.getRangeAt(0);
+        if (editable.contains(caret.commonAncestorContainer)) {
+            caret.deleteContents();
+            caret.collapse(true);
+        } else caret = undefined;
+    }
+    insertTableInText(editable, caret, table);
+    return true;
+}
+
+/**
+ * The paste event's part of pasteTableIntoText: paste a table that Copy Table or Cut Table put on
+ * the clipboard, and keep the box's CKEditor from also pasting its HTML as text. Listen in the
+ * capture phase, so that this runs before CKEditor takes the paste.
+ */
+export function pasteTableIntoTextFromEvent(e: ClipboardEvent): void {
+    if (!pasteTableIntoText(e.clipboardData?.getData("text/plain") ?? ""))
+        return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+}
+
+/**
+ * The table that `text` is the HTML of, made ready to go into `doc`, or undefined if `text` is not
+ * the HTML of one table. The HTML is a copy of a live table (see pasteTableIntoText), so this takes
+ * out what the live table's editing put in it, which would stop it being set up again, and the ids
+ * that are already in `doc` (a recorded sentence's, say), which must stay unique. A table that was
+ * cut keeps its ids, and with them its recordings.
+ */
+export function tableFromClipboardText(
+    doc: Document,
+    text: string,
+): HTMLElement | undefined {
+    if (!text.includes("bloom-table")) return undefined;
+    // A template's content is parsed without running scripts or loading pictures.
+    const template = doc.createElement("template");
+    template.innerHTML = text.trim();
+    const content = template.content;
+    const element = content.firstElementChild;
+    if (content.childNodes.length !== 1 || !element?.matches(".bloom-table"))
+        return undefined;
+    const holder = doc.createElement("div");
+    const table = doc.importNode(element, true) as HTMLElement;
+    holder.appendChild(table);
+    removeTableEditingMarkupFromClone(holder);
+    removeEditorChromeFromClone(holder);
+    // Setting up a cell's text box (wireBloomContentOfNewCells) skips one that already has this.
+    table
+        .querySelectorAll(".bloom-editable")
+        .forEach((box) => box.removeAttribute("contenteditable"));
+    holder.querySelectorAll("[id]").forEach((withId) => {
+        if (doc.getElementById(withId.id)) withId.removeAttribute("id");
+    });
     return table;
 }
 

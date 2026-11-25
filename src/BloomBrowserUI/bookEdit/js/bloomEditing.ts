@@ -55,7 +55,12 @@ import {
     SetupTableEditing,
     removeTableEditingMarkupFromClone,
 } from "./tableEditing";
-import { selectionTouchesTableInText, setupTablesInText } from "./tablesInText";
+import {
+    pasteTableIntoText,
+    pasteTableIntoTextFromEvent,
+    selectionTouchesTableInText,
+    setupTablesInText,
+} from "./tablesInText";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -1962,6 +1967,11 @@ document.addEventListener("paste", pasteHandler);
 document.addEventListener("paste", pasteImageIntoTextAsInlineImage, {
     capture: true,
 });
+// A table that the Table menu's Copy Table or Cut Table put on the clipboard goes into a text
+// block as a table, not as the text of its HTML. In the capture phase for the same reason.
+document.addEventListener("paste", pasteTableIntoTextFromEvent, {
+    capture: true,
+});
 // We also need a handler on ctrl-V. The pasteHandler does not get invoked by
 // the code above when ctrl-V is pressed in a contenteditable element,
 // probably because some CkEditor code intercepts it and prevents default,
@@ -2052,6 +2062,10 @@ async function pasteImpl(imageAvailable: boolean) {
         return;
     }
     if (selectionTouchesTableInText()) return;
+    if (pasteTableIntoText(textToPaste)) {
+        scheduleMarkupUpdateAfterPaste();
+        return;
+    }
     const ckEditorInstance = CKEDITOR.currentInstance;
     if (ckEditorInstance) {
         // Using ckeditor here because it's the only way I've found to integrate clipboard

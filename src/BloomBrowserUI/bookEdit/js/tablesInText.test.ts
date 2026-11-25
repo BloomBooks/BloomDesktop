@@ -4,6 +4,7 @@ import {
     deleteAllButTables,
     getInsertTableMenuItem,
     insertTableInText,
+    pasteTableIntoText,
     selectionTouchesTableInText,
     tableInTextMayShowItsButtons,
 } from "./tablesInText";
@@ -11,9 +12,14 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { kTableInTextClass } from "./tableInTextConstants";
 
 // Attaching a table needs the bloom-table library and Bloom's page setup, which these tests are
-// not about; they check where the table goes and what the menu offers.
+// not about; they check where the table goes and what the menu offers. A pasted table loses the
+// mark that it is attached, as a saved one does.
 vi.mock("./tableEditing", () => ({
     AttachNewTableAndSetUpItsCells: vi.fn(),
+    removeTableEditingMarkupFromClone: (clone: HTMLElement) =>
+        clone
+            .querySelectorAll(".bloom-table")
+            .forEach((table) => table.removeAttribute("data-table-attached")),
 }));
 
 function setupPage(): void {
@@ -355,6 +361,110 @@ describe("getInsertTableMenuItem", () => {
             "P: and second half.",
             "P:Last paragraph.",
         ]);
+    });
+});
+
+// What Copy Table puts on the clipboard: the HTML of a table in a canvas element, as its live
+// editing leaves it (attached, its cell's box editable, CKEditor's classes on it), with a recorded
+// sentence whose id is `sentenceId`.
+function copiedTableHtml(sentenceId: string): string {
+    return `<div class="bloom-table" data-table-attached="1" data-column-widths="fill" data-row-heights="fill"><div class="bloom-cell"><div class="bloom-translationGroup"><div class="bloom-editable cke_editable cke_focus" contenteditable="true" lang="en"><p><span id="${sentenceId}" class="audio-sentence">Cell text</span></p></div></div></div></div>`;
+}
+
+// Put the focus in the box with id "text", with the caret `offset` characters into the paragraph
+// with id `paragraphId`.
+function focusTextWithCaretIn(paragraphId: string, offset: number): void {
+    element("text").setAttribute("tabindex", "0");
+    element("text").focus();
+    const selection = document.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(caretIn(paragraphId, offset));
+    expect(document.activeElement).toBe(element("text"));
+}
+
+describe("pasteTableIntoText", () => {
+    beforeEach(setupPage);
+    afterEach(() => (document.body.innerHTML = ""));
+
+    it("puts a copied table into the text at the caret, ready to be set up again", () => {
+        focusTextWithCaretIn("first", 10);
+
+        expect(pasteTableIntoText(copiedTableHtml("newSentence"))).toBe(true);
+
+        expect(childrenOfText()).toEqual([
+            "P:First half",
+            "[table]",
+            "P: and second half.",
+            "P:Last paragraph.",
+        ]);
+        const table = element("text").querySelector<HTMLElement>(
+            "." + kTableInTextClass,
+        )!;
+        expect(table.getAttribute("contenteditable")).toBe("false");
+        expect(table.hasAttribute("data-table-attached")).toBe(false);
+        // The column widths and row heights it was copied with.
+        expect(table.getAttribute("data-row-heights")).toBe("fill");
+        const box = table.querySelector(".bloom-editable")!;
+        expect(box.hasAttribute("contenteditable")).toBe(false);
+        expect(box.className).toBe("bloom-editable");
+        expect(box.textContent).toBe("Cell text");
+        // No other element on the page has this id, so the sentence keeps it, and its recording.
+        expect(table.querySelector(".audio-sentence")!.id).toBe("newSentence");
+    });
+
+    it("takes off an id that something on the page already has", () => {
+        focusTextWithCaretIn("first", 10);
+        expect(document.getElementById("second")).not.toBeNull();
+
+        pasteTableIntoText(copiedTableHtml("second"));
+
+        const table = element("text").querySelector("." + kTableInTextClass)!;
+        expect(table.querySelector(".audio-sentence")!.hasAttribute("id")).toBe(
+            false,
+        );
+        expect(document.querySelectorAll("#second").length).toBe(1);
+    });
+
+    it("puts the table in place of the selected text", () => {
+        focusTextWithCaretIn("first", 10);
+        const selection = document.getSelection()!;
+        const range = selection.getRangeAt(0);
+        range.setEnd(element("first").firstChild!, 14);
+        expect(range.toString()).toBe(" and");
+
+        pasteTableIntoText(copiedTableHtml("newSentence"));
+
+        expect(childrenOfText()).toEqual([
+            "P:First half",
+            "[table]",
+            "P: second half.",
+            "P:Last paragraph.",
+        ]);
+    });
+
+    it("leaves a paste that is not a table alone", () => {
+        focusTextWithCaretIn("first", 10);
+        expect(
+            pasteTableIntoText(`<p class="bloom-table-ish">Some text</p>`),
+        ).toBe(false);
+        expect(
+            pasteTableIntoText(`Before ${copiedTableHtml("newSentence")}`),
+        ).toBe(false);
+        expect(childrenOfText()).toEqual([
+            "P:First half and second half.",
+            "P:Last paragraph.",
+        ]);
+    });
+
+    it("leaves a paste where Insert Table is not offered alone", () => {
+        const canvasBox = element("canvasParagraph")
+            .parentElement as HTMLElement;
+        canvasBox.setAttribute("tabindex", "0");
+        canvasBox.focus();
+        expect(document.activeElement).toBe(canvasBox);
+
+        expect(pasteTableIntoText(copiedTableHtml("newSentence"))).toBe(false);
+        expect(document.querySelector(".bloom-table")).toBeNull();
     });
 });
 

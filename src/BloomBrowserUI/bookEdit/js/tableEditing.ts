@@ -649,9 +649,14 @@ export function AttachNewTable(tableDiv: HTMLElement): void {
  * (tablesInText.ts) for a table put into the text of a text box. A table made with the Table link
  * gets that setup when the page is loaded again on leaving Change Layout, and one in a canvas
  * element when the canvas element is set up, but nothing comes after Insert Table to do it.
+ * A pasted table (pasteTableIntoText) can hold tables in its cells, and they are attached too, as
+ * page load attaches every table.
  */
 export function AttachNewTableAndSetUpItsCells(tableDiv: HTMLElement): void {
     attachSingleTable(tableDiv);
+    tableDiv
+        .querySelectorAll<HTMLElement>(".bloom-table")
+        .forEach((nested) => attachSingleTable(nested));
     wireBloomContentOfNewCells([tableDiv]);
 }
 
