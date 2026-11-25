@@ -9,7 +9,9 @@
 // case checks starts after the typing, when the page is saved and reloaded with the tool open, so
 // the bar still makes the trip through Bloom's hidden marker that the case is about.
 
+import * as fs from "node:fs";
 import { expect, test } from "../fixtures/bloomTest";
+import { bookHtmlPath } from "../helpers/bookHtml";
 import {
     addPage,
     clickInGroup,
@@ -38,7 +40,7 @@ test.use({
 test("the segment marker shows only while the Talking Book tool is open [Test Case ID 504]", async ({
     page,
 }) => {
-    await makeBookFromTemplate(page, "Basic Book");
+    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
     await addPage(page, "Just Text", 1);
     const [contentPage] = await getContentPages(page);
     await goToPage(page, contentPage.id);
@@ -48,6 +50,15 @@ test("the segment marker shows only while the Talking Book tool is open [Test Ca
     // Leaving the page saves it, with the bar turned into Bloom's hidden marker; coming back with
     // the tool open must turn the marker back into a bar the person can see.
     await reloadPageBeingEdited(page);
+    const savedHtml = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    expect(
+        savedHtml,
+        "Saving the page should keep the bar as Bloom's hidden marker.",
+    ).toContain("bloom-audio-split-marker");
+    expect(
+        savedHtml,
+        'Saving the page should not keep the "|" as a plain character.',
+    ).not.toContain(TEXT_WITH_MARKER);
     const box = await clickInGroup(page, ".bloom-translationGroup", "en");
     await expect(
         box,
@@ -62,6 +73,10 @@ test("the segment marker shows only while the Talking Book tool is open [Test Ca
         timeout: 30000,
         useInnerText: true,
     });
+    await expect(
+        box.locator(".bloom-audio-split-marker"),
+        "Closing the tool should hide the segment marker, not delete it.",
+    ).toHaveCount(1);
 
     await openPublishDestination(page, "BloomPUB");
     const player = await showBloomPubPreview(page);
