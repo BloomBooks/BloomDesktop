@@ -3,12 +3,14 @@
 // question mark), and the information pane that hovering one of those marks opens. In the source
 // it is FontSelectComponent, with FontDisplayBar for each row and FontInformationPane for the pane.
 //
-// The chooser appears in two places: the Format dialog in the Edit tab (see formatDialog.ts), which
-// is where these helpers drive it, and each language's Default Font on the Languages page of the
-// Collection Settings dialog, which collectionSettings.ts drives. The component is the same in both.
+// The chooser appears in two places: the Format dialog in the Edit tab (see formatDialog.ts), and
+// each language's Default Font on the Languages page of the Collection Settings dialog
+// (collectionSettingsFontChooser in collectionSettings.ts). The component is the same in both, so
+// these helpers drive either: each takes the chooser's place (IFontChooserPlace), and drives the
+// Format dialog's when given none.
 //
-// Everything here lives in the Edit tab's page frame, where the Format dialog is: the chooser sits
-// in the dialog, and its list and its information pane are portals in that frame's body. Bloom
+// The chooser's list and its information pane are portals in the body of the document the chooser
+// is in: the Edit tab's page frame for the Format dialog, the shell page for Settings. Bloom
 // marks the font it may not use as dimmed in the list but still lets it be chosen, and the mark of
 // the chosen font in the closed chooser is coloured (red, gold, or Bloom blue) where the same mark
 // in the list is grey.
@@ -244,16 +246,28 @@ const nameMarkDisplay = (raw: IRawMarkDisplay): IFontMarkDisplay => {
     };
 };
 
-/** The frame the Format dialog, and so the chooser, is in. */
-const chooserFrame = (page: Page): Frame => editablePageFrame(page);
-
 /**
- * Pull down the font list in the Format dialog, the way a person does, and wait until it is showing
- * its fonts. The Format dialog must be open (see openFormatDialog).
+ * Where one font chooser is: the document it is in, whose body holds its list and its information
+ * pane while they are open, and the closed chooser itself.
  */
-export async function openFontList(page: Page): Promise<void> {
-    const frame = chooserFrame(page);
-    await frame.locator(CHOOSER).click({ timeout: 30000 });
+export interface IFontChooserPlace {
+    scope: Page | Frame;
+    chooser: Locator;
+}
+
+/** The font chooser in the Format dialog, which must be open (see openFormatDialog). */
+export function formatDialogFontChooser(page: Page): IFontChooserPlace {
+    const frame = editablePageFrame(page);
+    return { scope: frame, chooser: frame.locator(CHOOSER) };
+}
+
+/** Pull down the font list, the way a person does, and wait until it is showing its fonts. */
+export async function openFontList(
+    page: Page,
+    place: IFontChooserPlace = formatDialogFontChooser(page),
+): Promise<void> {
+    const frame = place.scope;
+    await place.chooser.click({ timeout: 30000 });
     await expect(
         frame.locator(LIST),
         "Clicking the font chooser did not open its list.",
@@ -267,15 +281,19 @@ export async function openFontList(page: Page): Promise<void> {
 }
 
 /** True while the font list is pulled down. */
-export async function isFontListOpen(page: Page): Promise<boolean> {
-    return chooserFrame(page).locator(LIST).isVisible();
+export async function isFontListOpen(
+    page: Page,
+    place: IFontChooserPlace = formatDialogFontChooser(page),
+): Promise<boolean> {
+    return place.scope.locator(LIST).isVisible();
 }
 
 /** Every font in the pulled-down list, in its order, with the mark and colours each is shown with. */
 export async function getFontListItems(
     page: Page,
+    place: IFontChooserPlace = formatDialogFontChooser(page),
 ): Promise<IFontMarkDisplay[]> {
-    const rows = chooserFrame(page).locator(`${LIST} ${LIST_ITEM}`);
+    const rows = place.scope.locator(`${LIST} ${LIST_ITEM}`);
     if ((await rows.count()) === 0)
         throw new Error(
             "The font list is not open, or lists no font. Open it with openFontList first.",
@@ -285,22 +303,37 @@ export async function getFontListItems(
 }
 
 /** The list row for one font. */
-const listRow = (page: Page, fontName: string): Locator =>
-    chooserFrame(page).locator(
-        `${LIST} ${LIST_ITEM}[data-value="${fontName}"]`,
-    );
+const listRow = (place: IFontChooserPlace, fontName: string): Locator =>
+    place.scope.locator(`${LIST} ${LIST_ITEM}[data-value="${fontName}"]`);
+
+/**
+ * Wait until the pulled-down list has a row for each of these fonts. The Collection Settings dialog
+ * asks Bloom for its fonts as it opens, and its list is empty until they come.
+ */
+export async function waitForFontsInList(
+    page: Page,
+    fontNames: string[],
+    place: IFontChooserPlace = formatDialogFontChooser(page),
+): Promise<void> {
+    for (const fontName of fontNames)
+        await expect(
+            listRow(place, fontName),
+            `The font list has no row for "${fontName}".`,
+        ).toHaveCount(1, { timeout: 30000 });
+}
 
 /** Wait for the information pane to open, then read it. */
 const waitForPane = async (
     page: Page,
+    place: IFontChooserPlace,
     what: string,
 ): Promise<IFontInformation> => {
-    const pane = chooserFrame(page).locator(PANE);
+    const pane = place.scope.locator(PANE);
     await expect(
         pane,
         `Hovering ${what} did not open the font information pane.`,
     ).toBeVisible({ timeout: 30000 });
-    return readFontInformationPane(page);
+    return readFontInformationPane(page, place);
 };
 
 /**
@@ -314,14 +347,19 @@ const waitForPane = async (
 export async function hoverFontMarkInList(
     page: Page,
     fontName: string,
+    place: IFontChooserPlace = formatDialogFontChooser(page),
 ): Promise<IFontInformation> {
-    const row = listRow(page, fontName);
+    const row = listRow(place, fontName);
     await expect(
         row,
         `The font list has no row for "${fontName}".`,
     ).toHaveCount(1, { timeout: 30000 });
     await row.locator("svg").hover({ timeout: 30000 });
-    return waitForPane(page, `the mark beside "${fontName}" in the list`);
+    return waitForPane(
+        page,
+        place,
+        `the mark beside "${fontName}" in the list`,
+    );
 }
 
 /**
@@ -330,18 +368,18 @@ export async function hoverFontMarkInList(
  */
 export async function hoverChosenFontMark(
     page: Page,
+    place: IFontChooserPlace = formatDialogFontChooser(page),
 ): Promise<IFontInformation> {
-    await chooserFrame(page)
-        .locator(`${CHOOSER} svg`)
-        .hover({ timeout: 30000 });
-    return waitForPane(page, "the mark in the font chooser");
+    await place.chooser.locator("svg").hover({ timeout: 30000 });
+    return waitForPane(page, place, "the mark in the font chooser");
 }
 
 /** Read the open information pane. Throws when no pane is open. */
 export async function readFontInformationPane(
     page: Page,
+    place: IFontChooserPlace = formatDialogFontChooser(page),
 ): Promise<IFontInformation> {
-    const pane = chooserFrame(page).locator(PANE);
+    const pane = place.scope.locator(PANE);
     if (!(await pane.isVisible()))
         throw new Error(
             "The font information pane is not open, so there is nothing to read.",
@@ -375,11 +413,37 @@ export async function readFontInformationPane(
 }
 
 /**
+ * True when the open information pane is in front of everything else at its middle, so a person
+ * sees it rather than the dialog the chooser is in. Throws when no pane is open.
+ */
+export async function isFontInformationPaneInFront(
+    page: Page,
+    place: IFontChooserPlace = formatDialogFontChooser(page),
+): Promise<boolean> {
+    const pane = place.scope.locator(PANE);
+    if (!(await pane.isVisible()))
+        throw new Error(
+            "The font information pane is not open, so it cannot be in front.",
+        );
+    return pane.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const top = document.elementFromPoint(
+            box.left + box.width / 2,
+            box.top + box.height / 2,
+        );
+        return !!top && element.contains(top);
+    });
+}
+
+/**
  * Close the information pane with its X button, and wait for it to go. A pane that has already
  * closed itself is fine — see below — so this leaves the pane shut either way.
  */
-export async function closeFontInformationPane(page: Page): Promise<void> {
-    const pane = chooserFrame(page).locator(PANE);
+export async function closeFontInformationPane(
+    page: Page,
+    place: IFontChooserPlace = formatDialogFontChooser(page),
+): Promise<void> {
+    const pane = place.scope.locator(PANE);
     // The pane is a MUI popover, which shuts on a click away — and dismissing the browser alert
     // that showFontDetails raises counts as one. So on a slow machine the pane is often gone
     // before we get here (seen on the nightly runner, and locally when the whole suite is
@@ -403,8 +467,11 @@ export async function closeFontInformationPane(page: Page): Promise<void> {
  * and return that message. The box is the browser's own alert; this accepts it, so nothing is left
  * open. Only a font Bloom may not use, or cannot judge, offers the icon.
  */
-export async function showFontDetails(page: Page): Promise<string> {
-    const icon = chooserFrame(page).locator(`${PANE} ${PANE_DETAILS_ICON}`);
+export async function showFontDetails(
+    page: Page,
+    place: IFontChooserPlace = formatDialogFontChooser(page),
+): Promise<string> {
+    const icon = place.scope.locator(`${PANE} ${PANE_DETAILS_ICON}`);
     await expect(
         icon,
         "The open font information pane offers no information icon.",
@@ -431,27 +498,33 @@ export async function showFontDetails(page: Page): Promise<string> {
  * it. The list closes. What the choice does to the text box is the caller's to check (see
  * getFontFamilyInGroup in bookMaking.ts).
  */
-export async function chooseFont(page: Page, fontName: string): Promise<void> {
-    const row = listRow(page, fontName);
+export async function chooseFont(
+    page: Page,
+    fontName: string,
+    place: IFontChooserPlace = formatDialogFontChooser(page),
+): Promise<void> {
+    const row = listRow(place, fontName);
     await expect(
         row,
         `The font list has no row for "${fontName}".`,
     ).toHaveCount(1, { timeout: 30000 });
     await row.click({ timeout: 30000 });
-    const frame = chooserFrame(page);
     await expect(
-        frame.locator(LIST),
+        place.scope.locator(LIST),
         `The font list stayed open after "${fontName}" was chosen.`,
     ).toBeHidden({ timeout: 30000 });
     await expect(
-        frame.locator(CHOOSER),
+        place.chooser,
         `The font chooser does not show "${fontName}" after it was chosen.`,
     ).toContainText(fontName, { timeout: 30000 });
 }
 
 /** The font the closed chooser shows, with the mark and colours beside its name. */
-export async function getChosenFont(page: Page): Promise<IFontMarkDisplay> {
-    const chooser = chooserFrame(page).locator(CHOOSER);
+export async function getChosenFont(
+    page: Page,
+    place: IFontChooserPlace = formatDialogFontChooser(page),
+): Promise<IFontMarkDisplay> {
+    const chooser = place.chooser;
     await chooser.waitFor({ state: "visible", timeout: 30000 });
     const [raw] = await chooser.evaluateAll(readRawMarkDisplays);
     return nameMarkDisplay(raw);
