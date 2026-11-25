@@ -90,6 +90,54 @@ export async function readSavedTextBoxStyles(
 }
 
 /**
+ * The paragraph indent (`text-indent`) that the book saved in `bookFolder` gives each of these
+ * styles, by style id (e.g. {normal: "20pt", Flush: "0px"}), as the CSS serializes it, or "" for a
+ * style whose saved rules set none. Read from the style rules the Format dialog writes into the
+ * book (the `userModifiedStyles` element of its head), from the rule for the style's paragraphs
+ * (`.<id>-style > p`); the last such rule wins, as it does in the browser. `page` is used only as
+ * a parser. Throws if the file has no `userModifiedStyles` element.
+ */
+export async function readSavedParagraphIndents(
+    page: Page,
+    bookFolder: string,
+    styleIds: string[],
+): Promise<Record<string, string>> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate(
+        ({ source, ids }) => {
+            const document = new DOMParser().parseFromString(
+                source,
+                "text/html",
+            );
+            const styleElement = document.querySelector(
+                'style[title="userModifiedStyles"]',
+            );
+            if (!styleElement)
+                throw new Error(
+                    "The saved book has no userModifiedStyles element.",
+                );
+            const sheet = new CSSStyleSheet();
+            sheet.replaceSync(styleElement.textContent ?? "");
+            const indents: Record<string, string> = {};
+            for (const id of ids) {
+                indents[id] = "";
+                for (const rule of Array.from(sheet.cssRules)) {
+                    if (!(rule instanceof CSSStyleRule)) continue;
+                    const forParagraphs = rule.selectorText
+                        .split(",")
+                        .map((s) => s.trim().replace(/\s+/g, " "))
+                        .some((s) => s === `.${id}-style > p`);
+                    if (forParagraphs && rule.style.textIndent)
+                        indents[id] = rule.style.textIndent;
+                }
+            }
+            return indents;
+        },
+        { source: html, ids: styleIds },
+    );
+}
+
+/**
  * One table as the saved file describes it. Everything here is read from the markup rather than
  * measured, because the file is what a later load, a publish, or a spreadsheet export will read.
  */
