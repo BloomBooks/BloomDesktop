@@ -621,12 +621,12 @@ export async function expectGameFeature(
 
 /**
  * What the Game row's tooltip says, in the UI language: the book has games it may publish, it has
- * none, or it has games that need a higher subscription tier than the collection's (the sentence
- * names the tier the game feature needs, as Bloom's features/status names it).
+ * none, or it has games that need the subscription tier `needsTier`, e.g. { needsTier: "Pro" }.
+ * The tier is named by the caller, not asked of Bloom, so a tooltip naming the wrong tier fails.
  */
 export async function getGameTooltipText(
     page: Page,
-    tooltip: "hasGames" | "noGames" | "needsHigherTier",
+    tooltip: "hasGames" | "noGames" | { needsTier: string },
 ): Promise<string> {
     if (tooltip === "hasGames")
         return getUiString(
@@ -640,16 +640,19 @@ export async function getGameTooltipText(
             "PublishTab.Feature.Games.None",
             "This book does not have any games.",
         );
-    const status = await apiGetJson<{ localizedTier: string }>(
+    // Bloom names a tier by this key (FeatureStatus.ToJson); "LocalCommunity" is the one tier
+    // whose English name is not its id.
+    const tierName = await getUiString(
         page,
-        "features/status?featureName=game&forPublishing=true",
+        `Subscription.Tier.${tooltip.needsTier}`,
+        tooltip.needsTier.replace("LocalCommunity", "Local Community"),
     );
     const sentence = await getUiString(
         page,
         "Subscription.RequiredTierForFeatureSentence",
         'This feature requires a Bloom subscription tier of at least "{0}".',
     );
-    return sentence.replace("{0}", status.localizedTier);
+    return sentence.replace("{0}", tierName);
 }
 
 /**

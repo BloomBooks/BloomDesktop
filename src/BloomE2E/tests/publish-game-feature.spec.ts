@@ -81,7 +81,7 @@ test("the Game feature follows the book's game pages and the subscription tier [
             {
                 checked: false,
                 disabled: true,
-                tooltip: await getGameTooltipText(basic, "needsHigherTier"),
+                tooltip: await getGameTooltipText(basic, { needsTier: "Pro" }),
             },
             "Below Pro, the Game feature should be off and say it needs Pro.",
         );
