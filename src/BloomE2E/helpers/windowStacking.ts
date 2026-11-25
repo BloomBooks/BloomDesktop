@@ -48,6 +48,16 @@ public static class BloomWindows {
     return string.Join("\\n", lines);
   }
   // Whether upper lies above lower in the desktop's stacking order.
+  // The nearest window above hwnd that belongs to another process, or 0 when there is none.
+  public static string NearestOtherAbove(long hwnd, int pid) {
+    var h = GetWindow(new IntPtr(hwnd), GW_HWNDPREV);
+    while (h != IntPtr.Zero) {
+      int p; GetWindowThreadProcessId(h, out p);
+      if (p != pid) return h.ToInt64().ToString();
+      h = GetWindow(h, GW_HWNDPREV);
+    }
+    return "0";
+  }
   public static string IsAbove(long upper, long lower) {
     var h = GetWindow(new IntPtr(lower), GW_HWNDPREV);
     while (h != IntPtr.Zero) {
@@ -138,6 +148,21 @@ export async function findBloomMainWindow(pid: number): Promise<number> {
     return roots[0].hwnd;
 }
 
+/**
+ * The nearest window above window `hwnd` on the desktop that does not belong to the process `pid`
+ * (a hidden one included), or 0 when only that process's windows lie above it.
+ */
+export async function findNearestOtherWindowAbove(
+    hwnd: number,
+    pid: number,
+): Promise<number> {
+    const output = await runPowerShell(
+        "[BloomWindows]::NearestOtherAbove([long]$env:BLOOM_E2E_HWND, [int]$env:BLOOM_E2E_PID)",
+        { BLOOM_E2E_HWND: String(hwnd), BLOOM_E2E_PID: String(pid) },
+    );
+    return Number(output);
+}
+
 /** Whether window `upper` lies above window `lower` on the desktop. */
 export async function isWindowAbove(
     upper: number,
@@ -161,10 +186,9 @@ export async function moveWindowToBottom(hwnd: number): Promise<void> {
 
 /**
  * Move window `hwnd` to just above window `other` without activating it, as switching back to a
- * program brings its window up past the ones below it. Windows moves the windows it owns along
- * with it. Only windows that lay at or below `other` end up below `hwnd`, so a window of another
- * program that lay above both stays above: a run on the developer's own monitor never covers what
- * they are working in.
+ * program brings its window up past the ones that covered it. Windows moves the windows it owns
+ * along with it. Only windows that lay at or below `other` end up below `hwnd`, so a window that
+ * lay above `other` stays above.
  */
 export async function moveWindowJustAbove(
     hwnd: number,

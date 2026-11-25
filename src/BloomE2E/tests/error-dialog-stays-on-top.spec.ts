@@ -5,9 +5,10 @@
 // an owned window above its owner, wherever the owner goes in the stack.
 //
 // The user's Alt-Tab is played here by moving Bloom's main window to the bottom of the desktop's
-// stack and then back up past the dialog's place, without activating it, so the run never takes
-// the keyboard and never covers another program's windows. Windows moves the windows a window owns
-// along with it, as it does when Alt-Tab brings Bloom back.
+// stack and then back up past the nearest window of another program, without activating it. The
+// run never takes the keyboard, and Bloom ends up above only the one window that lay just above it
+// at the bottom of the stack. Windows moves the windows a window owns along with it, as it does
+// when Alt-Tab brings Bloom back.
 
 import type { Page } from "@playwright/test";
 import type { IBloomWindow } from "../helpers/windowStacking";
@@ -15,6 +16,7 @@ import { expect, test } from "../fixtures/bloomTest";
 import { apiPost } from "../helpers/api";
 import {
     findBloomMainWindow,
+    findNearestOtherWindowAbove,
     isWindowAbove,
     listTopLevelWindows,
     moveWindowJustAbove,
@@ -36,12 +38,20 @@ async function isProblemDialogShowing(page: Page): Promise<boolean> {
         : page.context().pages();
     for (const candidate of pages) {
         if (candidate.url().startsWith("devtools://")) continue;
-        const heading = candidate.locator(".problem-dialog .report-heading");
-        const showing = await heading
-            .filter({ hasText: kHeading })
-            .isVisible()
-            .catch(() => false);
-        if (showing) return true;
+        const headings = candidate
+            .locator(".problem-dialog .report-heading")
+            .filter({ hasText: kHeading });
+        try {
+            if (
+                (await headings.count()) > 0 &&
+                (await headings.first().isVisible())
+            )
+                return true;
+        } catch (error) {
+            // A page that closed while we asked is not the dialog; any other failure is real.
+            if (candidate.isClosed()) continue;
+            throw error;
+        }
     }
     return false;
 }
@@ -127,7 +137,22 @@ test("the problem dialog stays above Bloom's window when the user switches away 
             await expectDialogShowingAboveBloom(
                 "after the user switched to another program",
             );
-            await moveWindowJustAbove(mainWindow, dialogWindow);
+            // Bring Bloom back up past the nearest window of another program that now lies
+            // above it: one window at the bottom of the desktop's stack, not the window the
+            // developer is working in.
+            const coveringWindow = await findNearestOtherWindowAbove(
+                dialogWindow,
+                bloomPid,
+            );
+            expect(
+                coveringWindow,
+                "some window of another program lies above Bloom once Bloom is at the bottom",
+            ).not.toBe(0);
+            await moveWindowJustAbove(mainWindow, coveringWindow);
+            expect(
+                await isWindowAbove(mainWindow, coveringWindow),
+                "Bloom's main window came back up past the window that covered it",
+            ).toBe(true);
             await expectDialogShowingAboveBloom(
                 "after the user came back to Bloom",
             );
