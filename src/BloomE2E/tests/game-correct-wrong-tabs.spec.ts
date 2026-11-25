@@ -19,7 +19,11 @@ import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
     clickGameTab,
     dragGamePaletteItemOntoPage,
+    getPictureOnTarget,
+    getTabItemsCovering,
     makeBookWithGamePage,
+    selectTextBoxInsideAnotherItem,
+    type GameTab,
 } from "../helpers/games";
 import {
     chooseImageFile,
@@ -47,14 +51,32 @@ const IMAGE_FILE = Path.resolve(
     "bird.png",
 );
 
-/** Where a canvas element or target sits, as its style records it. */
-async function getStylePosition(
-    element: Locator,
-): Promise<{ left: string; top: string }> {
-    return element.evaluate((e) => ({
-        left: (e as HTMLElement).style.left,
-        top: (e as HTMLElement).style.top,
-    }));
+/** Where a canvas element or target sits and how big it is, as its style records them. */
+interface IStylePlace {
+    left: string;
+    top: string;
+    width: string;
+    height: string;
+}
+
+/** The place of the one item `element` locates. */
+async function getStylePlace(element: Locator): Promise<IStylePlace> {
+    return (await getStylePlaces(element))[0];
+}
+
+/** The place of each item `elements` locates, in document order. */
+async function getStylePlaces(elements: Locator): Promise<IStylePlace[]> {
+    return elements.evaluateAll((items) =>
+        items.map((e) => {
+            const style = (e as HTMLElement).style;
+            return {
+                left: style.left,
+                top: style.top,
+                width: style.width,
+                height: style.height,
+            };
+        }),
+    );
 }
 
 /** Whether the selection or the keyboard focus of the page frame is inside the element. */
@@ -71,34 +93,54 @@ async function hasCaretOrFocusInside(element: Locator): Promise<boolean> {
     });
 }
 
+/** Where on an item to press, as fractions of its width and height from its top-left corner. */
+interface IPressPoint {
+    xFraction: number;
+    yFraction: number;
+}
+
 /**
- * Where to press on an item: across the middle, and `yFraction` of the way down it. A word box
- * has its picture's target in the middle, which takes a press there, so a press meant for the box
- * goes lower down, where its word is.
+ * Near the left edge of an item, half-way down it. The Correct and Wrong tabs each lay a panel of
+ * their own over the middle of the page, which covers most of each word box, word and target. A
+ * press on the covered part goes to the panel, so a press meant for an item made in Start goes
+ * here, on the part that sticks out to the left of the panel. expectCannotModify checks that the
+ * point really is clear.
  */
+const kClearOfTabPanel: IPressPoint = { xFraction: 0.08, yFraction: 0.5 };
+/** The middle of an item. */
+const kMiddle: IPressPoint = { xFraction: 0.5, yFraction: 0.5 };
+
+/** The point of the window at `at` on an item. `what` names the item in the failure message. */
 async function pointOn(
     item: Locator,
     what: string,
-    yFraction: number,
+    at: IPressPoint,
 ): Promise<{ x: number; y: number }> {
     const box = await item.boundingBox();
     if (!box) throw new Error(`${what} has no box on screen to press.`);
-    return { x: box.x + box.width / 2, y: box.y + box.height * yFraction };
+    return {
+        x: box.x + box.width * at.xFraction,
+        y: box.y + box.height * at.yFraction,
+    };
 }
 
 /**
  * Check that a person cannot change an item made in Start, from the tab showing: a click on it
  * neither selects it nor puts the insertion point or focus in it, and dragging it leaves it where
- * it was. `what` names it in the failure messages; `yFraction` is where to press (see pointOn).
+ * it was. `what` names it in the failure messages; `at` is where on it to press.
  */
 async function expectCannotModify(
     page: Page,
     item: Locator,
     what: string,
-    yFraction = 0.5,
+    at: IPressPoint,
 ): Promise<void> {
-    const { x, y } = await pointOn(item, what, yFraction);
-    const before = await getStylePosition(item);
+    const { x, y } = await pointOn(item, what, at);
+    expect(
+        await getTabItemsCovering(page, x, y),
+        `Sanity check: the press on ${what} should land on it, not on an item of the tab showing that covers it there`,
+    ).toEqual([]);
+    const before = await getStylePlace(item);
     expect(
         await item.getAttribute("data-bloom-active"),
         `Sanity check: ${what} should not be selected before clicking it`,
@@ -121,7 +163,7 @@ async function expectCannotModify(
     await page.mouse.up();
     await waitForClickToSettle(editablePageFrame(page));
     expect(
-        await getStylePosition(item),
+        await getStylePlace(item),
         `Dragging ${what} should not move it`,
     ).toEqual(before);
     expect(
@@ -136,7 +178,7 @@ async function dragElementBy(
     element: Locator,
     dx: number,
     dy: number,
-): Promise<{ left: string; top: string }> {
+): Promise<IStylePlace> {
     const box = (await element.boundingBox())!;
     // A quarter of the way in from the top-left corner, clear of the crop handles in the middle of
     // each side.
@@ -147,7 +189,7 @@ async function dragElementBy(
     await page.mouse.move(x + dx, y + dy, { steps: 12 });
     await page.mouse.up();
     await waitForClickToSettle(editablePageFrame(page));
-    return getStylePosition(element);
+    return getStylePlace(element);
 }
 
 test("items made in Start show in Correct and Wrong but cannot be changed there, and items added there can [Test Case ID 782]", async ({
@@ -163,8 +205,8 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
         ".bloom-canvas-element:not(.drag-item-correct):not(.drag-item-wrong)",
     );
     const draggables = frame.locator("[data-draggable-id]");
-    // Items in Start that stay where they are in the game: the heading, and the boxes that hold
-    // the words the pictures go to.
+    // Items in Start that stay where they are in the game: the heading, the boxes that the
+    // pictures go to, and the word in each box.
     const heading = frame
         .locator(".bloom-canvas-element.bloom-passive-element")
         .first();
@@ -176,11 +218,22 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
             ),
         )
         .first();
-    const word = "Birds";
-    // How far down a word box its word is, below the picture's target.
-    const kWordInBox = 0.85;
+    const wordLabel = startItems
+        .filter({ has: frame.locator(".bloom-editable") })
+        .and(frame.locator(":not(.bloom-passive-element)"))
+        .first();
+    // The picture's target is the leftmost one, the first in the page, because part of it sticks
+    // out from under the panels of the Correct and Wrong tabs, where it can be pressed. Bloom
+    // pairs a new page's targets with its pictures at random, so the picture to fill in is
+    // whichever one that target is for.
+    const pictureTarget = frame.locator("[data-target-of]").first();
+    const pictureItem = frame.locator(
+        `[data-draggable-id="${await pictureTarget.getAttribute("data-target-of")}"]`,
+    );
+    const headingText = "Birds";
+    const word = "robin";
 
-    await step("Fill in the heading and a picture", async () => {
+    await step("Fill in the heading, a word and a picture", async () => {
         expect(
             await draggables.count(),
             "Sanity check: the page should have draggable pictures",
@@ -189,34 +242,88 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
             wordBox,
             "Sanity check: the page should have boxes for the words",
         ).toBeVisible();
-        // Sanity check: in Start, a click on a word box selects it, so a click that does not in
-        // the other tabs is one that Bloom refused.
-        const onWord = await pointOn(wordBox, "a word box", kWordInBox);
-        await realClickAt(page, onWord.x, onWord.y);
+        // Sanity check: in Start, a click on a word box, at the point the other tabs are pressed
+        // at, selects it, so a click that does not in the other tabs is one that Bloom refused.
+        const onWordBox = await pointOn(
+            wordBox,
+            "a word box",
+            kClearOfTabPanel,
+        );
+        await realClickAt(page, onWordBox.x, onWordBox.y);
         await expect(
             wordBox,
             "Sanity check: in Start, clicking a word box should select it",
         ).toHaveAttribute("data-bloom-active", "true");
         await selectCanvasElementAt(heading, "the heading");
+        await typeInCanvasElement(page, headingText);
+        // Typing the word also shows that in Start a click puts the insertion point in it.
+        await selectTextBoxInsideAnotherItem(
+            page,
+            wordLabel,
+            "the word in a word box",
+        );
         await typeInCanvasElement(page, word);
-        await chooseImageFile(page, IMAGE_FILE, draggables.first());
+        await expect(
+            pictureItem,
+            "Sanity check: the leftmost target should be the target of one draggable picture",
+        ).toHaveCount(1);
+        await chooseImageFile(page, IMAGE_FILE, pictureItem);
     });
 
     const startCount = await startItems.count();
+    // The heading as Start leaves it: the template's own text with what was typed after it.
+    const startHeadingText = (await heading.textContent())!;
+    expect(
+        startHeadingText,
+        "Sanity check: the heading should hold what was typed in Start",
+    ).toContain(headingText);
     // Everything made in Start except the draggable pictures, which only Start and Play show.
     const fixedItems = frame.locator(
         ".bloom-canvas-element:not(.drag-item-correct):not(.drag-item-wrong):not([data-draggable-id])",
     );
-    const firstDraggableId = (await draggables
-        .first()
-        .getAttribute("data-draggable-id"))!;
-    const firstTarget = frame.locator(`[data-target-of="${firstDraggableId}"]`);
-    const startPositions = await startItems.evaluateAll((items) =>
-        items.map((e) => ({
-            left: (e as HTMLElement).style.left,
-            top: (e as HTMLElement).style.top,
-        })),
+    // Everything made in Start, and the targets, which are not canvas elements.
+    const startItemsAndTargets = frame.locator(
+        ".bloom-canvas-element:not(.drag-item-correct):not(.drag-item-wrong), [data-target-of]",
     );
+    const startPlaces = await getStylePlaces(startItemsAndTargets);
+    const pictureFile = Path.basename(IMAGE_FILE);
+
+    /**
+     * Check, from the Correct or Wrong tab, that none of the kinds of item made in Start can be
+     * changed: the heading, a word box, the word in it, and a picture's target.
+     */
+    const expectStartItemsCannotBeModified = async (
+        tab: GameTab,
+    ): Promise<void> => {
+        await expectCannotModify(
+            page,
+            heading,
+            `in ${tab}, the heading made in Start`,
+            kMiddle,
+        );
+        await expectCannotModify(
+            page,
+            wordBox,
+            `in ${tab}, a word box made in Start`,
+            kClearOfTabPanel,
+        );
+        await expectCannotModify(
+            page,
+            wordLabel,
+            `in ${tab}, the word typed in Start`,
+            kClearOfTabPanel,
+        );
+        await expectCannotModify(
+            page,
+            pictureTarget,
+            `in ${tab}, the picture's target`,
+            kClearOfTabPanel,
+        );
+        await expect(
+            wordLabel,
+            `In ${tab}, the word typed in Start should be as it was typed`,
+        ).toHaveText(word);
+    };
 
     await step("Switch to the Correct tab", async () => {
         await clickGameTab(page, "Correct");
@@ -234,31 +341,32 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
             await expect(
                 heading,
                 "In Correct, the heading typed in Start should show",
-            ).toContainText(word);
+            ).toContainText(headingText);
             await expect(
-                firstTarget,
+                wordLabel,
+                "In Correct, the word typed in Start should show",
+            ).toHaveText(word);
+            await expect(
+                pictureTarget,
                 "In Correct, the target of the picture should show",
             ).toBeVisible();
-            expect(
-                await firstTarget.evaluate((t) =>
-                    Array.from(t.children).map(
-                        (c) => getComputedStyle(c).opacity,
-                    ),
-                ),
-                "In Correct, the picture should show on its target, fully opaque",
-            ).toContain("1");
+            // The target holds a copy of its item's picture, a placeholder until the item has one.
+            await expect
+                .poll(() => getPictureOnTarget(pictureTarget), {
+                    message:
+                        "In Correct, the picture chosen in Start should show on its target, loaded and fully opaque",
+                })
+                .toEqual({
+                    fileName: pictureFile,
+                    loaded: true,
+                    laidOut: true,
+                    opacity: 1,
+                });
         },
     );
 
     await step("Try to change what was made in Start", async () => {
-        await expectCannotModify(page, heading, "the heading made in Start");
-        await expectCannotModify(
-            page,
-            wordBox,
-            "a word box made in Start",
-            kWordInBox,
-        );
-        await expectCannotModify(page, firstTarget, "the picture's target");
+        await expectStartItemsCannotBeModified("Correct");
     });
 
     // The picture added in Correct, found by its picture, so that adding the text box in Wrong,
@@ -286,7 +394,7 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
             ).toHaveCount(1);
             await selectCanvasElementAt(added, "the picture added in Correct");
 
-            const before = await getStylePosition(added);
+            const before = await getStylePlace(added);
             expect(
                 await dragElementBy(page, added, -40, 30),
                 "Dragging the picture added in Correct should move it",
@@ -308,14 +416,7 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
     );
 
     await step("Try again to change what was made in Start", async () => {
-        await expectCannotModify(page, heading, "the heading made in Start");
-        await expectCannotModify(
-            page,
-            wordBox,
-            "a word box made in Start",
-            kWordInBox,
-        );
-        await expectCannotModify(page, firstTarget, "the picture's target");
+        await expectStartItemsCannotBeModified("Correct");
     });
 
     await step("Switch to the Wrong tab", async () => {
@@ -334,21 +435,28 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
             await expect(
                 heading,
                 "In Wrong, the heading typed in Start should show",
-            ).toContainText(word);
+            ).toContainText(headingText);
+            await expect(
+                wordLabel,
+                "In Wrong, the word typed in Start should show",
+            ).toHaveText(word);
             for (let i = 0; i < (await draggables.count()); i++) {
                 await expect(
                     draggables.nth(i),
                     `In Wrong, draggable picture ${i} should not show`,
                 ).toBeHidden();
             }
+            // Not even faintly: Start shows a shadow of the picture on its target, and Wrong must
+            // not give the answer away.
             expect(
-                await firstTarget.evaluate((t) =>
-                    Array.from(t.children).map(
-                        (c) => getComputedStyle(c).opacity,
-                    ),
-                ),
-                "In Wrong, the picture should not show on its target",
-            ).not.toContain("1");
+                await getPictureOnTarget(pictureTarget),
+                "In Wrong, the picture chosen in Start should be on its target but not show there at all",
+            ).toEqual({
+                fileName: pictureFile,
+                loaded: true,
+                laidOut: true,
+                opacity: 0,
+            });
             await expect(
                 correctImage,
                 "In Wrong, the picture added in Correct should not show",
@@ -364,13 +472,7 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
     );
 
     await step("Try to change what was made in Start", async () => {
-        await expectCannotModify(page, heading, "the heading made in Start");
-        await expectCannotModify(
-            page,
-            wordBox,
-            "a word box made in Start",
-            kWordInBox,
-        );
+        await expectStartItemsCannotBeModified("Wrong");
     });
 
     await step("Add a text box in Wrong, type in it and widen it", async () => {
@@ -397,31 +499,25 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
     });
 
     await step("Try again to change what was made in Start", async () => {
-        await expectCannotModify(page, heading, "the heading made in Start");
-        await expectCannotModify(
-            page,
-            wordBox,
-            "a word box made in Start",
-            kWordInBox,
-        );
+        await expectStartItemsCannotBeModified("Wrong");
     });
 
-    await step("Check that nothing made in Start moved", async () => {
-        const startItemsNow = frame.locator(
-            ".bloom-canvas-element:not(.drag-item-correct):not(.drag-item-wrong)",
-        );
+    await step("Check that nothing made in Start changed", async () => {
         expect(
-            await startItemsNow.count(),
+            await startItems.count(),
             "No item made in Start should have been added or removed",
         ).toBe(startCount);
         expect(
-            await startItemsNow.evaluateAll((items) =>
-                items.map((e) => ({
-                    left: (e as HTMLElement).style.left,
-                    top: (e as HTMLElement).style.top,
-                })),
-            ),
-            "No item made in Start should have moved",
-        ).toEqual(startPositions);
+            await getStylePlaces(startItemsAndTargets),
+            "No item made in Start, and no target, should have moved or changed size",
+        ).toEqual(startPlaces);
+        await expect(
+            heading,
+            "The heading should be as it was typed in Start",
+        ).toHaveText(startHeadingText);
+        await expect(
+            wordLabel,
+            "The word should be as it was typed in Start",
+        ).toHaveText(word);
     });
 });

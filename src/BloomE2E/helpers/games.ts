@@ -25,6 +25,7 @@ import {
     type PaletteItem,
 } from "./canvasElements";
 import type { IViewRect } from "./pageView";
+import { realClick, waitForClickToSettle } from "./realClick";
 import { expandToolByHeader } from "./toolbox";
 export type GameTab = "Start" | "Correct" | "Wrong" | "Play";
 export const kGameTabs: GameTab[] = ["Start", "Correct", "Wrong", "Play"];
@@ -337,4 +338,103 @@ export async function dragGamePaletteItemOntoPage(
     );
     await Promise.all(existing.map((handle) => handle.dispose()));
     return index;
+}
+
+/**
+ * Outside Play, select a text box that lies inside another canvas element, such as the word under
+ * a target on a Drag Images to Words page, which sits in a rectangle. A click on such a text box
+ * selects the element around it, and a second click selects the text box itself, so this clicks
+ * once or twice, and waits until Bloom marks the text box as the selected canvas element. `what`
+ * names it in the failure message.
+ */
+export async function selectTextBoxInsideAnotherItem(
+    page: Page,
+    textBox: Locator,
+    what: string,
+): Promise<void> {
+    await realClick(textBox);
+    await waitForClickToSettle(editablePageFrame(page));
+    if ((await textBox.getAttribute("data-bloom-active")) !== "true") {
+        await realClick(textBox);
+    }
+    await expect(
+        textBox,
+        `Clicking ${what} twice did not select it.`,
+    ).toHaveAttribute("data-bloom-active", "true", { timeout: 15000 });
+}
+
+/** How a target shows the picture that belongs on it, as getPictureOnTarget reports it. */
+export interface ITargetPicture {
+    /** The picture's file, e.g. "bird.png"; "placeHolder.png" when its item has no picture yet. */
+    fileName: string;
+    /** True when the browser has the picture: it loaded rather than failed. */
+    loaded: boolean;
+    /** True when the picture takes up room on the page and is not hidden. */
+    laidOut: boolean;
+    /**
+     * How opaque the picture is drawn, from 0 (not seen at all) to 1, counting everything between
+     * it and the target. The game tabs differ in this: Start shows a shadow of the picture, Correct
+     * the whole picture, and Wrong nothing.
+     */
+    opacity: number;
+}
+
+/**
+ * The copy of its item's picture that a target holds, and how the tab showing draws it. `target`
+ * locates one target (an element with data-target-of).
+ */
+export async function getPictureOnTarget(
+    target: Locator,
+): Promise<ITargetPicture> {
+    return target.evaluate((targetElement) => {
+        const image = targetElement.querySelector("img")!;
+        let opacity = 1;
+        for (
+            let e: Element = image;
+            e !== targetElement.parentElement!;
+            e = e.parentElement!
+        ) {
+            opacity *= Number(getComputedStyle(e).opacity);
+        }
+        const src = (image.getAttribute("src") ?? "").split("?")[0];
+        return {
+            fileName: decodeURIComponent(src.split("/").pop() ?? src),
+            loaded: image.complete && image.naturalWidth > 0,
+            laidOut:
+                image.getClientRects().length > 0 &&
+                getComputedStyle(image).visibility === "visible",
+            opacity,
+        };
+    });
+}
+
+/**
+ * The items that the game tab showing adds to the page and that cover the point (x, y) of the
+ * window: in Correct the ones only Correct shows, in Wrong the ones only Wrong shows. A press at a
+ * point they cover goes to them, not to an item made in Start that lies under them. Returns their
+ * class names, so a failure can say what was in the way.
+ */
+export async function getTabItemsCovering(
+    page: Page,
+    x: number,
+    y: number,
+): Promise<string[]> {
+    const covering: string[] = [];
+    const tabItems = await editablePageFrame(page)
+        .locator(".drag-item-correct, .drag-item-wrong")
+        .all();
+    for (const item of tabItems) {
+        // An item of the tab that is not showing has no box.
+        const box = await item.boundingBox();
+        if (
+            box &&
+            x >= box.x &&
+            x <= box.x + box.width &&
+            y >= box.y &&
+            y <= box.y + box.height
+        ) {
+            covering.push((await item.getAttribute("class"))!);
+        }
+    }
+    return covering;
 }
