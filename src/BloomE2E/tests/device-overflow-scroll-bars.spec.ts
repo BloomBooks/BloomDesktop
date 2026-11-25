@@ -70,12 +70,24 @@ async function expectScrollBar(page: Page): Promise<void> {
     await waitForTextBoxScrollBar(page, GROUP, LANG, true);
 }
 
-/** Expect the box marked as overflowing, its scroll bar, and the zigzag on its thumbnail. */
+/**
+ * The text box of the page being shown, clicked into. Unlike textBox it does not go to the page,
+ * because going there reloads it, and loading a page works out its overflow again: a mark that
+ * typing failed to update would then come back and hide the failure.
+ */
+async function textBoxAsItIs(page: Page): Promise<Locator> {
+    return clickInGroup(page, GROUP, LANG);
+}
+
+/**
+ * Expect the box marked as overflowing and its scroll bar, as the page is now, and then, once the
+ * page has been clicked in the page list, the zigzag on its thumbnail.
+ */
 async function expectMarkedOverflowing(
     page: Page,
     what: string,
 ): Promise<void> {
-    const box = await textBox(page);
+    const box = await textBoxAsItIs(page);
     await expectScrollBar(page);
     await scrollTextBox(page, box, "top");
     await expectTextBoxMarkedAsOverflowing(page, box, what);
@@ -91,9 +103,12 @@ async function expectMarkedOverflowing(
         .toBe(true);
 }
 
-/** Expect no overflow mark on the page or its thumbnail, though the box still overflows. */
+/**
+ * Expect no overflow mark on the page as it is now, though the box still overflows, and none on
+ * its thumbnail once the page has been clicked in the page list.
+ */
 async function expectNotMarked(page: Page, what: string): Promise<void> {
-    const box = await textBox(page);
+    const box = await textBoxAsItIs(page);
     expect(
         (await getTextBoxView(box)).hidden,
         `test setup: ${what}, the box should still have text out of sight`,
@@ -126,8 +141,11 @@ async function setVerticalAlignment(
     await frame.locator(".textBox-identifier .formatButton").first().click();
     const dialog = frame.locator("#text-properties-dialog");
     await dialog.waitFor({ state: "visible", timeout: 15000 });
-    // The dialog opens on its Language tab; the alignment buttons are on the next one.
-    await dialog.getByText("Alignment", { exact: true }).click();
+    // The dialog opens on its Language tab; the alignment buttons are on the next one. The tab is
+    // found by its localization id, so the UI language does not matter.
+    await dialog
+        .locator('h2.tab[data-i18n="EditTab.TextBoxProperties.Alignment"]')
+        .click();
     await dialog.locator(`#align-${alignment}`).click();
     await expect(dialog.locator(`#align-${alignment}`)).toHaveClass(
         /selectedIcon/,
