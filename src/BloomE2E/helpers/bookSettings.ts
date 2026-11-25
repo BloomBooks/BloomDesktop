@@ -330,16 +330,26 @@ export async function setBookSettingsCheckbox(
 }
 
 /**
- * Close Book and Page Settings with OK, and wait until the Edit tab has rebuilt the page it shows
- * with the saved settings.
+ * Close Book and Page Settings with OK and, when a book setting was changed, wait until the Edit
+ * tab has rebuilt the page it shows with the saved settings.
+ *
+ * The dialog saves the book's settings only when one of them changed
+ * (BookAndPageSettingsDialog.tsx, saveSettingsAndCloseDialog), and only that save makes Bloom
+ * rebuild the page. So a test that presses OK with no book setting changed, or with only a page
+ * setting changed, passes `bookSettingsChanged: false`; waiting for a rebuild that never comes
+ * would fail it after a minute.
  */
-export async function okBookSettings(page: Page): Promise<void> {
-    await markPageDocument(page);
+export async function okBookSettings(
+    page: Page,
+    { bookSettingsChanged = true }: { bookSettingsChanged?: boolean } = {},
+): Promise<void> {
+    if (bookSettingsChanged) await markPageDocument(page);
     await realClick(bookSettingsDialog(page).getByTestId("dialog-ok"));
     await expect(
         bookSettingsDialog(page),
         "Book and Page Settings did not close after OK",
     ).toHaveCount(0);
+    if (!bookSettingsChanged) return;
     await expect
         .poll(async () => isPageDocumentMarked(page), {
             timeout: 60000,

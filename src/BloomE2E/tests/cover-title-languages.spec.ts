@@ -85,9 +85,13 @@ async function expectCover(
             ).toBeHidden();
     }
     const topicBox = cover.locator(".coverBottomBookTopic").first();
-    if (topic)
+    if (topic) {
         await expect(topicBox, `${where}: the topic should show`).toBeVisible();
-    else
+        await expect(
+            topicBox,
+            `${where}: the topic should have its words`,
+        ).not.toHaveText("");
+    } else
         await expect(
             topicBox,
             `${where}: the topic should not show`,
@@ -167,12 +171,8 @@ test("the Cover page of Book and Page Settings decides which titles and whether 
         "English should still not be possible to turn off",
     ).toBeDisabled();
     await okBookSettings(page);
-    await expectCover(
-        frontCover(editablePageFrame(page)),
-        "Edit tab, French off",
-        ["en"],
-        true,
-    );
+    // With the topic still on, so that the publication is seen showing it before it goes off.
+    await expectCoverEverywhere(page, ["en"], true);
     await openBookSettings(page, "Cover");
     await setBookSettingsCheckbox(page, TOPIC_SETTING, false);
     await okBookSettings(page);
