@@ -9,9 +9,14 @@
 // for it: the same answer Bloom gets for a Super Bible book in a language its publisher has not
 // licensed. The check is the real one, against the real server, so the test needs the internet.
 //
+// A spreadsheet that came back empty or unreadable would also leave no language licensed, so the
+// first test reads the spreadsheet itself and checks that it has rows and that none names this
+// book's content id. The denial the later tests see is then the spreadsheet's answer.
+//
 // Not checked here: "publishing an Android App stops with a licensing message before building".
 // The Apps screen's Prepare installs Reading App Builder before it gets as far as the license
-// check (RabProjectService.Prepare), and a test may not run an installer.
+// check; see AUTOMATION-DEBT.md, "The Apps screen installs Reading App Builder before it checks
+// anything".
 
 import { type Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
@@ -59,6 +64,8 @@ const UNLICENSED_CONTENT_ID = "bloom-e2e.tc619.unlicensed";
 const LANGUAGE_NAME = "French";
 // The words of LicenseChecker.kUnlicenseLanguageMessage before the language name.
 const NOT_LICENSED = "has not licensed it for publishing in";
+// Where Bloom reads the licensing spreadsheet (LicenseChecker.GetProblemLanguages).
+const LICENSE_SERVER = "https://content-licenses.bloomlibrary.org";
 const TITLE = "Un livre sous licence";
 const SIGNED_IN_EMAIL = "e2e-tester@example.com";
 
@@ -79,6 +86,57 @@ async function expectLicensingMessageShowing(
         `${where} showed no message saying the book is not licensed for publishing.`,
     ).toBeVisible({ timeout: 120000 });
     return (await licensingMessage(page).innerText()).replace(/\s+/g, " ");
+}
+
+/**
+ * Read the licensing spreadsheet the way Bloom does, and fail unless it has rows and none of them
+ * licenses `contentId` for any language. A row's id matches as LicenseChecker.MatchingKey says:
+ * exactly, or as a prefix when it ends in "*".
+ */
+async function expectSpreadsheetLicensesNothingFor(
+    contentId: string,
+): Promise<void> {
+    const response = await fetch(LICENSE_SERVER);
+    expect(
+        response.ok,
+        `The licensing spreadsheet at ${LICENSE_SERVER} answered ${response.status}.`,
+    ).toBe(true);
+    const { values } = (await response.json()) as { values?: unknown[][] };
+    const rows = (values ?? []).filter(
+        (row) =>
+            typeof row[0] === "string" &&
+            typeof row[1] === "string" &&
+            row[0].trim() !== "" &&
+            row[1].trim() !== "" &&
+            row[0] !== "content-id",
+    ) as string[][];
+    expect(
+        rows.length,
+        "The licensing spreadsheet has no rows, so a denial would prove nothing about Bloom's check.",
+    ).toBeGreaterThan(0);
+    const matching = rows.filter(([id]) => {
+        const key = id.trim();
+        return key.endsWith("*")
+            ? contentId.startsWith(key.slice(0, -1))
+            : key === contentId;
+    });
+    expect(
+        matching,
+        `The licensing spreadsheet licenses ${contentId}, which the test needs to be unlicensed.`,
+    ).toEqual([]);
+}
+
+/**
+ * Fail if the screen is showing a preview of the book: its preview frame (DeviceAndControls) has
+ * been given the book's address.
+ */
+async function expectNoPreview(page: Page, where: string): Promise<void> {
+    const src =
+        (await page.locator("#preview-iframe").getAttribute("src")) ?? "";
+    expect(
+        src === "" || src === "stopPreview",
+        `${where} showed a preview of a book it may not publish (${src}).`,
+    ).toBe(true);
 }
 
 /** Click PREVIEW on a screen that makes a preview of the publication. */
@@ -104,6 +162,7 @@ test.describe("a book not licensed for the collection's language cannot be publi
         bloomApp,
     }) => {
         test.setTimeout(600000);
+        await expectSpreadsheetLicensesNothingFor(UNLICENSED_CONTENT_ID);
         await makeBookFromTemplate(page, "Basic Book");
         const frontCover = (await getPages(page))[0];
         await goToPage(page, frontCover.id);
@@ -196,6 +255,15 @@ test.describe("a book not licensed for the collection's language cannot be publi
                 "A signed-in user with the agreements ticked was not offered the Upload Book button.",
             );
 
+            // Bloom answers the upload request only when the whole attempt is over, so waiting
+            // for that answer lets the check below see everything the attempt wrote.
+            const uploadAttemptOver = page.waitForResponse(
+                (response) =>
+                    /\/libraryPublish\/upload$/.test(
+                        new URL(response.url()).pathname,
+                    ),
+                { timeout: 120000 },
+            );
             // THE ACTION UNDER TEST: Upload Book.
             await clickUploadBook(page);
             const message = await expectLicensingMessageShowing(
@@ -206,6 +274,7 @@ test.describe("a book not licensed for the collection's language cannot be publi
                 message,
                 "The upload's licensing message did not name the collection's language.",
             ).toContain(LANGUAGE_NAME);
+            await uploadAttemptOver;
             // The check comes before anything is sent, and Bloom says nothing more after it.
             await expect(
                 page.getByTestId("progress-box-log"),
@@ -231,11 +300,8 @@ test.describe("a book not licensed for the collection's language cannot be publi
             message,
             "The BloomPUB licensing message did not name the collection's language.",
         ).toContain(LANGUAGE_NAME);
-        expect(
-            page.frames().some((f) => f.url().includes("bloomplayer.htm")),
-            "The BloomPUB screen showed a preview of a book it may not publish.",
-        ).toBe(false);
         await closeProgressDialog(page);
+        await expectNoPreview(page, "BloomPUB");
 
         // Each way of sending the book on is closed: to a file, over Wi-Fi, over a USB cable.
         const ways: [string, string][] = [
@@ -266,6 +332,7 @@ test.describe("a book not licensed for the collection's language cannot be publi
             "The ePUB licensing message did not name the collection's language.",
         ).toContain(LANGUAGE_NAME);
         await closeProgressDialog(page);
+        await expectNoPreview(page, "ePUB");
         await expect(
             page.getByRole("button", { name: "Save...", exact: true }),
             "ePUB offered Save for a book it may not publish.",
@@ -289,6 +356,7 @@ test.describe("a book not licensed for the collection's language cannot be publi
             "The Audio or Video licensing message did not name the collection's language.",
         ).toContain(LANGUAGE_NAME);
         await closeProgressDialog(page);
+        await expectNoPreview(page, "Audio or Video");
         await expect(
             page.getByRole("button", { name: "Record", exact: true }),
             "Audio or Video offered Record for a book it may not publish.",
