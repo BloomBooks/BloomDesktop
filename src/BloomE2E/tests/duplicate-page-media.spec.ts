@@ -7,7 +7,9 @@
 // A test cannot record from a microphone (AUTOMATION-DEBT.md, "Native OS dialogs hang
 // automation"), so "recording" here is the Talking Book tool's Import Recording button, which
 // writes the same file a recording would, and "redoing the recording" is importing a different
-// file over it.
+// file over it. The first recording is imported too, rather than seeded with addNarration: only
+// Bloom's own import leaves the text box marked as holding a whole-text-box recording, which is
+// what the copy must have for a second import to replace it.
 //
 // The tests are serial because each one works on the book the first one builds.
 
@@ -37,6 +39,7 @@ import {
     chooseVideoFile,
     getVideoFileName,
     getVideoTrim,
+    readVideoFile,
     SHORT_VIDEO,
     trimVideoStart,
     videoBoxes,
@@ -61,11 +64,12 @@ const getRecordingIds = async (page: Page) =>
     (await getNarrationSentences(page)).map((s) => s.id);
 
 test.describe("duplicating a page with narration or a video", () => {
-    test("builds a book with a text page and a video page", async ({
+    test("builds a book with a text page and a video page [Test Case ID 810]", async ({
         page,
     }) => {
         test.setTimeout(300000);
-        // Import Recording is a Pro-tier feature; see import-recording.spec.ts.
+        // Import Recording, which redoes the recording, is a Pro-tier feature; see
+        // import-recording.spec.ts.
         await setBranding(page, "Sample-Pro");
         bookFolder = await makeBookFromTemplate(page, "Basic Book");
         await addPage(page, "Just Text");
@@ -172,6 +176,7 @@ test.describe("duplicating a page with narration or a video", () => {
             await getVideoTrim(videoBoxes(page).first()),
             "sanity check: a video just added is not trimmed",
         ).toBeUndefined();
+        const originalVideo = readVideoFile(bookFolder, originalFile);
 
         // "Duplicate the page." The copy has a video file of its own.
         const copy = await duplicatePageWithButton(page);
@@ -197,6 +202,10 @@ test.describe("duplicating a page with narration or a video", () => {
             await getVideoTrim(videoBoxes(page).first()),
             "Trimming the copy's video trimmed the original's.",
         ).toBeUndefined();
+        expect(
+            readVideoFile(bookFolder, originalFile).equals(originalVideo),
+            "Trimming the copy's video changed the original's video file.",
+        ).toBe(true);
 
         // And the copy kept its trim through the save that leaving it did.
         await goToPage(page, copy.id);

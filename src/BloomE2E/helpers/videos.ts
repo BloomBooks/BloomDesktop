@@ -228,6 +228,11 @@ export async function getVideoFileName(videoBox: Locator): Promise<string> {
     return decodeURIComponent(source.split(/[?#]/)[0].split("/").pop() ?? "");
 }
 
+/** The bytes of one of a book's video files, by the name getVideoFileName gives. */
+export function readVideoFile(bookFolder: string, fileName: string): Buffer {
+    return fs.readFileSync(Path.join(bookFolder, "video", fileName));
+}
+
 /**
  * The book-relative source of the video in a box, trim fragment included, or "" when it has none.
  * Bloom records the trim as a `#t=` fragment on the src, which is why this returns the whole thing.
