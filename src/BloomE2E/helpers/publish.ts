@@ -568,6 +568,55 @@ export async function getCollectionSignLanguage(
     );
 }
 
+/** The Game row of a Publish screen's Features list, as a person sees it. */
+export interface IGameFeature {
+    /** Whether the check mark beside "Game" shows. */
+    checked: boolean;
+    /** Whether the row is dimmed, as Bloom shows a feature this book's publication will not have. */
+    disabled: boolean;
+    /** The words of its tooltip, e.g. "This book has games." */
+    tooltip: string;
+}
+
+/**
+ * The Game row of the Features list on the Publish screen showing (Web, BloomPUB).
+ *
+ * The row is never a real check box (PublishFeaturesGroup.tsx gives it BloomCheckbox's hideBox),
+ * so there is no input to ask. What a person sees is read instead: the check mark is always in the
+ * DOM and is either visible or `visibility: hidden`, and a disabled row's label is dimmed to
+ * kBloomDisabledOpacity.
+ */
+export async function getGameFeature(page: Page): Promise<IGameFeature> {
+    const label = page.getByText("Game", { exact: true });
+    await label.waitFor({ state: "visible", timeout: 30000 });
+    const row = page.locator(".bloom-checkbox").filter({ has: label });
+    const checked = await row.locator('[data-testid="CheckIcon"]').isVisible();
+    const opacity = await row
+        .locator(".bloom-checkbox-label")
+        .evaluate((e) => Number(getComputedStyle(e).opacity));
+    const tooltip = await hoverForTooltip(page, label);
+    return {
+        checked,
+        disabled: opacity < 1,
+        tooltip: (await tooltip.innerText()).trim(),
+    };
+}
+
+/**
+ * Wait until the Game row of the Publish screen showing is as expected. The row is filled in from
+ * requests the screen makes after it shows (whether the book has games, what the subscription
+ * allows), so reading it once races them.
+ */
+export async function expectGameFeature(
+    page: Page,
+    expected: IGameFeature,
+    message: string,
+): Promise<void> {
+    await expect
+        .poll(() => getGameFeature(page), { timeout: 30000, message })
+        .toEqual(expected);
+}
+
 /** Hover the Sign Language row and return its tooltip once it shows. */
 function hoverSignLanguageFeature(page: Page): Promise<Locator> {
     return hoverForTooltip(
