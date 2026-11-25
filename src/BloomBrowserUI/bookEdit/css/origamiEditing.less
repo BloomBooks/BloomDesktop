@@ -100,14 +100,15 @@
 // rule that gives that text box its padding-top. A pseudo-element gets the divider's
 // mouse events without changing its offsetHeight, which split-pane.ts uses to position
 // the panes. Don't extend it upward: that covers the crop control of a picture just
-// above the split.
+// above the split. No [data-splitter-label] here, unlike the rules around it: split-pane.ts
+// adds it on mouseenter, so requiring it would hide this band until the line had been hovered.
 .marginBox
     > .split-pane.horizontal-percent:has(
         > .split-pane-component.position-bottom
             > .split-pane-component-inner
             > .bloom-translationGroup
     )
-    > .horizontal-divider[data-splitter-label]:before {
+    > .horizontal-divider:before {
     content: "";
     position: absolute;
     top: 100%;

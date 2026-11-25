@@ -925,6 +925,8 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         }
     }
     /* on these "inner" edges, we don't need to consider the page margin */
+    // origamiEditing.less copies the next selector and its padding-top to let this padding
+    // grab the splitter above it; change both together.
     &
         > .split-pane.horizontal-percent
         > .split-pane-component.position-bottom
