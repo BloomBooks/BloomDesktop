@@ -27,6 +27,14 @@ test.use({
     collectionSpec: { name: kCollectionName, languages: ["en"] },
 });
 
+// The message is a raw MessageBox, which Windows brings to the front and gives the keyboard
+// whatever Bloom asks, so --dont-disturb cannot keep it from the developer. It runs where Bloom
+// behaves as it does for a user: on CI, or with BLOOM_E2E_DONT_DISTURB=0.
+test.skip(
+    launchWithDontDisturb(),
+    "The message box would take the developer's keyboard; set BLOOM_E2E_DONT_DISTURB=0 to run it.",
+);
+
 test("opening a collection from inside a ZIP file tells the user to unzip it first, and opens nothing [Test Case ID 35]", async ({
     bloomApp,
 }) => {
@@ -64,30 +72,36 @@ test("opening a collection from inside a ZIP file tells the user to unzip it fir
             "--user-settings-folder",
             userSettingsDir,
         ];
-        if (launchWithDontDisturb()) args.push("--dont-disturb");
         bloom = execFile(findBloomExe(), args, { env: environmentForBloom() });
+        let exitCode: number | null | undefined;
         const exited = new Promise<number | null>((resolve) =>
-            bloom!.on("exit", (code) => resolve(code)),
+            bloom!.on("exit", (code) => {
+                exitCode = code;
+                resolve(code);
+            }),
         );
 
         const box = await readAndCloseBloomMessageBox(zipBloom, "", 120000);
         expect(
             box,
-            "Bloom never showed a message about the collection inside a ZIP file",
+            "Bloom never showed a message about the collection inside a ZIP file" +
+                (exitCode === undefined
+                    ? " and is still running"
+                    : `; it quit with exit code ${exitCode}`),
         ).toBeDefined();
         expect(box!.texts.join(" ")).toContain(
             "It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.",
         );
 
         // Closing the box ends that Bloom without opening the collection.
-        const exitCode = await Promise.race([
+        const exitAfterBox = await Promise.race([
             exited,
             new Promise<string>((resolve) =>
                 setTimeout(() => resolve("still running"), 60000),
             ),
         ]);
         expect(
-            exitCode,
+            exitAfterBox,
             "Bloom should quit, having opened nothing, once the message is closed",
         ).toBe(1);
         expect(
