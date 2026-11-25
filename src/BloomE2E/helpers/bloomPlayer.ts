@@ -37,10 +37,7 @@ export async function getActivePreviewPageId(player: Frame): Promise<string> {
  * empty slides until the reader comes near them), so which way to go is worked out from the
  * order of the book's pages in Bloom (getPages), which is the order Bloom Player shows them in.
  *
- * Just after the book loads, Bloom Player ignores the arrows for a moment while it settles on its
- * first page (finishUp in bloom-player-core); there is nothing on the page that says when that is
- * over. So each click is checked by whether the page changed, and a click that changed nothing is
- * made again, rather than waiting out a fixed time first.
+ * Every click must turn the page: one that does not fails the test.
  */
 export async function goToPreviewPage(
     page: Page,
@@ -53,26 +50,39 @@ export async function goToPreviewPage(
         throw new Error(
             `The book has no page "${pageId}". Its pages are: ${order.join(", ")}.`,
         );
-    // Enough clicks to cross the whole book twice over, so a few ignored ones do not matter.
-    for (let attempt = 0; attempt < order.length * 2 + 10; attempt++) {
+    await waitForPreviewToSettle(player);
+    // One turn for each page of the book is enough to reach any page from any other.
+    for (let turns = 0; turns <= order.length; turns++) {
         await dismissBigPlayButton(player);
         const shown = await getActivePreviewPageId(player);
         if (shown === pageId) return;
-        const arrow =
-            order.indexOf(shown) < target
-                ? player.locator(".swiper-button-next")
-                : player.locator(".swiper-button-prev");
-        await arrow.click();
+        const forward = order.indexOf(shown) < target;
+        await player
+            .locator(forward ? ".swiper-button-next" : ".swiper-button-prev")
+            .click();
         await expect
-            .poll(() => getActivePreviewPageId(player), { timeout: 3000 })
-            .not.toBe(shown)
-            .catch(() => {
-                // The click was ignored; the loop clicks again.
-            });
+            .poll(() => getActivePreviewPageId(player), {
+                timeout: 30000,
+                message: `Bloom Player's ${forward ? "Next" : "Previous"} arrow did not turn the page.`,
+            })
+            .not.toBe(shown);
     }
     throw new Error(
         `Bloom Player never reached page "${pageId}"; it is showing "${await getActivePreviewPageId(player)}".`,
     );
+}
+
+/**
+ * Wait until Bloom Player has settled on the first page of a book it has just loaded. Until then
+ * it holds the book on that page, so a click on an arrow is undone (startingUpSwiper in
+ * bloom-player-core). When it lets go, it makes the arrows reachable with the Tab key by giving
+ * them a tabindex, in the same step; that is the only thing in the document that says so.
+ */
+async function waitForPreviewToSettle(player: Frame): Promise<void> {
+    await expect(
+        player.locator(".swiper-button-next[tabindex]").first(),
+        "Bloom Player never finished settling on the first page of the book.",
+    ).toBeAttached({ timeout: 30000 });
 }
 
 /**
@@ -95,6 +105,11 @@ export interface IPreviewChoice {
     role: ChoiceRole;
     /** The text the button shows, trimmed; empty for a picture button. */
     text: string;
+    /**
+     * The file name of the picture the button shows, without its folder or extension; empty for
+     * a word button, and for a picture Bloom Player has not loaded yet.
+     */
+    picture: string;
     /** Bloom Player marks a button chosen-correct when the reader picks the right answer. */
     chosenCorrect: boolean;
     /** Bloom Player marks a button chosen-wrong when the reader picks a wrong answer. */
@@ -122,6 +137,19 @@ export async function getPreviewChoices(
     ).toBeVisible({ timeout: 30000 });
     return buttons.evaluateAll((elements) =>
         elements.map((button) => {
+            // Bloom Player draws a button's picture as the background of its canvas, once the
+            // page is near enough to showing to be worth loading.
+            const pictureName = (within: Element) => {
+                const canvas =
+                    within.querySelector<HTMLElement>(".bloom-canvas");
+                const url = /url\("(.*)"\)/.exec(
+                    canvas?.style.backgroundImage ?? "",
+                )?.[1];
+                if (!url) return "";
+                return decodeURIComponent(
+                    new URL(url).pathname.split("/").pop()!,
+                ).replace(/\.[^.]*$/, "");
+            };
             const toRect = (r: DOMRect) => ({
                 x: r.x,
                 y: r.y,
@@ -133,16 +161,52 @@ export async function getPreviewChoices(
                 button.querySelectorAll<HTMLElement>(".bloom-editable"),
             ).find((box) => box.offsetParent !== null);
             let textRect: ReturnType<typeof toRect> | undefined;
-            if (shownText && shownText.innerText.trim()) {
-                const range = button.ownerDocument.createRange();
-                range.selectNodeContents(shownText);
-                textRect = toRect(range.getBoundingClientRect());
+            const doc = button.ownerDocument;
+            const letters =
+                shownText &&
+                doc
+                    .createTreeWalker(shownText, NodeFilter.SHOW_TEXT, {
+                        acceptNode: (node) =>
+                            node.nodeValue!.trim()
+                                ? NodeFilter.FILTER_ACCEPT
+                                : NodeFilter.FILTER_SKIP,
+                    })
+                    .nextNode();
+            if (letters) {
+                // The box the browser gives a run of text is as tall as the font allows any
+                // letter to be, which for Andika is well above and below the letters of a
+                // word. What the reader sees is the ink, so work that out from the font's
+                // measurements of this word: how far its letters rise above the baseline
+                // and how far they fall below it. Those are in the font's own pixels, and
+                // Bloom Player draws the page at a scale, so they are scaled by how tall the
+                // browser drew the run. An answer is one word, so the run is one line.
+                const range = doc.createRange();
+                range.selectNodeContents(letters);
+                const run = range.getBoundingClientRect();
+                const style = getComputedStyle(letters.parentElement!);
+                const canvas = doc.createElement("canvas").getContext("2d")!;
+                canvas.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+                const ink = canvas.measureText(letters.nodeValue!.trim());
+                const scale =
+                    run.height /
+                    (ink.fontBoundingBoxAscent + ink.fontBoundingBoxDescent);
+                const baseline = run.y + ink.fontBoundingBoxAscent * scale;
+                textRect = {
+                    x: run.x,
+                    y: baseline - ink.actualBoundingBoxAscent * scale,
+                    width: run.width,
+                    height:
+                        (ink.actualBoundingBoxAscent +
+                            ink.actualBoundingBoxDescent) *
+                        scale,
+                };
             }
             return {
                 role: button.getAttribute("data-activityrole") as
                     | "correct-answer"
                     | "wrong-answer",
                 text: shownText?.innerText.trim() ?? "",
+                picture: pictureName(button),
                 chosenCorrect: button.classList.contains("chosen-correct"),
                 chosenWrong: button.classList.contains("chosen-wrong"),
                 rect: toRect(button.getBoundingClientRect()),

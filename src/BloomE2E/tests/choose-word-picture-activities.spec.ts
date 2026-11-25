@@ -36,6 +36,7 @@ import {
     chooseChoicePromptPicture,
     describeChoiceArrangement,
     getChoicePageLayout,
+    getChoicePicturesInEditOrder,
     getChoiceRolesInEditOrder,
     typeChoiceWords,
     type IChoiceArrangement,
@@ -79,10 +80,17 @@ const PICTURE_PAGE = { correct: HOUSE, wrong: [BIRD, SQUARE] };
 const WRONG_SOUND = "wrong_answer.mp3";
 const RIGHT_SOUND = "right_answer.mp3";
 
-// Bloom Player shuffles at random, so a page can come out in the Edit tab's order by chance (one
-// time in three for three answers). Rebuilding the preview shuffles again; this many rebuilds
-// without a single change of order would happen by chance about once in sixty thousand runs.
-const MAX_PREVIEW_BUILDS = 10;
+// The words of each word page in the order the Edit tab holds them: the right answer first.
+const WORDS_IN_EDIT_ORDER = {
+    firstWordPage: [FIRST_WORD_PAGE.correct, ...FIRST_WORD_PAGE.wrong],
+    secondWordPage: [SECOND_WORD_PAGE.correct, ...SECOND_WORD_PAGE.wrong],
+};
+
+// Bloom Player shuffles at random, so a page's right answer can come out first, where the Edit tab
+// has it, by chance: one time in three for three answers. Rebuilding the preview shuffles again. A
+// correct Bloom Player leaves the picture page's right answer first through this many builds once
+// in 3 to the power of 30 runs, which is 2 followed by 14 zeroes, so a failure here is not chance.
+const MAX_PREVIEW_BUILDS = 30;
 
 // The arrangements the card describes, for each kind of page and orientation.
 const WORD_PAGE_PORTRAIT: IChoiceArrangement = {
@@ -130,6 +138,11 @@ test("Choose Word from Image and Choose Image from Word play, shuffle and rearra
     expect(await getChoiceRolesInEditOrder(page)).toEqual(editOrder);
     await typeInGroup(page, ".word-to-match", LANG, PICTURE_PAGE_WORD);
     await chooseChoicePictures(page, PICTURE_PAGE);
+    const picturesInEditOrder = await getChoicePicturesInEditOrder(page);
+    expect(
+        new Set(picturesInEditOrder).size,
+        `Sanity check: the picture page's three answers should be three different pictures, not ${picturesInEditOrder.join(", ")}`,
+    ).toBe(3);
     // Leaving the page saves it.
     await goToPage(page, firstWordPage.id);
 
@@ -156,8 +169,19 @@ test("Choose Word from Image and Choose Image from Word play, shuffle and rearra
         }
     });
 
+    // The template's pages can carry a mark on an answer from the Edit tab; Bloom Player must
+    // show a page with no answer marked until the reader chooses one.
+    const expectNoAnswerMarked = async () =>
+        expect(
+            (await getPreviewChoices(player))
+                .filter((c) => c.chosenCorrect || c.chosenWrong)
+                .map((c) => c.role),
+            "No answer should be marked before the reader chooses one",
+        ).toEqual([]);
+
     await step("Answer the first word page wrong, then right", async () => {
         await goToPreviewPage(page, player, firstWordPage.id);
+        await expectNoAnswerMarked();
         await clickPreviewChoice(player, "wrong-answer");
         await expectPreviewSoundsPlayed(
             player,
@@ -181,6 +205,7 @@ test("Choose Word from Image and Choose Image from Word play, shuffle and rearra
 
     await step("Answer the second word page right", async () => {
         await goToPreviewPage(page, player, secondWordPage.id);
+        await expectNoAnswerMarked();
         await clickPreviewChoice(player, "correct-answer");
         await expectPreviewSoundsPlayed(
             player,
@@ -191,6 +216,7 @@ test("Choose Word from Image and Choose Image from Word play, shuffle and rearra
 
     await step("Answer the picture page wrong, then right", async () => {
         await goToPreviewPage(page, player, picturePage.id);
+        await expectNoAnswerMarked();
         await clickPreviewChoice(player, "wrong-answer");
         await expectPreviewSoundsPlayed(
             player,
@@ -215,6 +241,31 @@ test("Choose Word from Image and Choose Image from Word play, shuffle and rearra
     await step(
         "Check that the answers are shuffled on a page of each kind",
         async () => {
+            // Whether Bloom Player shows this page's right and wrong answers in an order other
+            // than the Edit tab's, so that the right one is no longer first. Whatever the
+            // order, they must be the answers the page has in the Edit tab, each known by its
+            // word or its picture's name: a page that lost one would otherwise count as
+            // shuffled. Bloom Player loads a page's pictures as it comes to the page, so
+            // this waits for them.
+            const isShuffled = async (pageId: string, answers: string[]) => {
+                await goToPreviewPage(page, player, pageId);
+                let roles: string[] = [];
+                await expect
+                    .poll(
+                        async () => {
+                            const shown = await getPreviewChoices(player);
+                            roles = shown.map((c) => c.role);
+                            return shown.map((c) => c.text || c.picture).sort();
+                        },
+                        {
+                            message:
+                                "Bloom Player should offer the answers the page has in the Edit tab",
+                            timeout: 15000,
+                        },
+                    )
+                    .toEqual([...answers].sort());
+                return JSON.stringify(roles) !== JSON.stringify(editOrder);
+            };
             const shuffled = { word: false, picture: false };
             for (
                 let build = 1;
@@ -224,19 +275,21 @@ test("Choose Word from Image and Choose Image from Word play, shuffle and rearra
             ) {
                 if (build > 1)
                     player = await refreshBloomPubPreview(page, player);
-                for (const wordPage of [firstWordPage, secondWordPage]) {
-                    await goToPreviewPage(page, player, wordPage.id);
-                    const order = (await getPreviewChoices(player)).map(
-                        (c) => c.role,
-                    );
-                    if (JSON.stringify(order) !== JSON.stringify(editOrder))
-                        shuffled.word = true;
-                }
-                await goToPreviewPage(page, player, picturePage.id);
-                const order = (await getPreviewChoices(player)).map(
-                    (c) => c.role,
-                );
-                if (JSON.stringify(order) !== JSON.stringify(editOrder))
+                if (
+                    await isShuffled(
+                        firstWordPage.id,
+                        WORDS_IN_EDIT_ORDER.firstWordPage,
+                    )
+                )
+                    shuffled.word = true;
+                if (
+                    await isShuffled(
+                        secondWordPage.id,
+                        WORDS_IN_EDIT_ORDER.secondWordPage,
+                    )
+                )
+                    shuffled.word = true;
+                if (await isShuffled(picturePage.id, picturesInEditOrder))
                     shuffled.picture = true;
             }
             expect(

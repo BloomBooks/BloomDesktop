@@ -45,6 +45,34 @@ export async function getChoiceRolesInEditOrder(
 }
 
 /**
+ * The pictures in the answer buttons of the "Choose Image from Word" page being edited, in the
+ * order the page holds them: each one's file name in the book, without its folder or extension.
+ * Bloom names the book's copy itself (a second picture from a file called bird.png becomes
+ * bird1.png), so a test asks for the names rather than assuming them.
+ */
+export async function getChoicePicturesInEditOrder(
+    page: Page,
+): Promise<string[]> {
+    const buttons = answerButtons(page);
+    await expect(
+        buttons.first(),
+        "The page being edited has no answer buttons; is it a choice activity page?",
+    ).toBeAttached({ timeout: 30000 });
+    return buttons.evaluateAll((elements) =>
+        elements.map((button) =>
+            decodeURIComponent(
+                new URL(
+                    button.querySelector("img")!.getAttribute("src")!,
+                    button.ownerDocument.baseURI,
+                ).pathname
+                    .split("/")
+                    .pop()!,
+            ).replace(/\.[^.]*$/, ""),
+        ),
+    );
+}
+
+/**
  * The indexes, in document order, of the answer buttons for these answers: the right answer's
  * button first, then the wrong answers' buttons in order. Fails when the page has a different
  * number of wrong-answer buttons than there are wrong answers.

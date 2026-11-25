@@ -37,14 +37,24 @@ test("without a subscription, a Choose Word from Image page is not added and its
     await openAddPageDialog(page);
     await selectPageInAddPageDialog(page, "Choose Word from Image");
 
-    expect(await getAddPageOffer(page)).toEqual({
-        addButtonOffered: false,
-        requiresSubscriptionNotice: true,
-    });
-    expect(
-        await getAddPageSubscriptionNoticeText(page),
-        "The notice should name the subscription the games need",
-    ).toContain(game.subscriptionTier);
+    // The dialog asks Bloom for the page's feature status when the page is selected, and offers
+    // Add Page with an empty notice until the answer comes; so both of these wait for it.
+    await expect
+        .poll(() => getAddPageOffer(page), {
+            message:
+                "The Add Page dialog should show the subscription notice in place of its Add Page button",
+            timeout: 15000,
+        })
+        .toEqual({
+            addButtonOffered: false,
+            requiresSubscriptionNotice: true,
+        });
+    await expect
+        .poll(() => getAddPageSubscriptionNoticeText(page), {
+            message: "The notice should name the subscription the games need",
+            timeout: 15000,
+        })
+        .toContain(game.subscriptionTier);
 
     await clickAddPageSubscriptionSettings(page);
     await expect
