@@ -60,8 +60,9 @@ const kShapeToElementTolerance = 12;
  * element to have square corners or rounded ones. Then come back to the element's page.
  *
  * The element's shapes in the drawing are the ones of its size: the drawing also holds the
- * shapes of the page's other canvas elements, such as its background image. Square means each of
- * them covers all four corners of its bounding box; rounded means none of them covers any.
+ * shapes of the page's other canvas elements, such as its background image. Each must be a box:
+ * it covers its bounding box's edges away from the corners, which an ellipse does not. Square
+ * means each also covers all four corners of its bounding box; rounded means none covers any.
  */
 async function expectSavedCorners(
     page: Page,
@@ -92,6 +93,8 @@ async function expectSavedCorners(
         let found: string;
         if (elementShapes.length === 0)
             found = "no shape of the element's size";
+        else if (elementShapes.some((s) => s.edgePointsCovered !== 8))
+            found = "not a box with straight edges";
         else if (elementShapes.every((s) => s.cornersCovered === 4))
             found = "square";
         else if (elementShapes.every((s) => s.cornersCovered === 0))

@@ -12,9 +12,13 @@ import { cssColorToHex } from "./cssValues";
 import { openCanvasTool } from "./canvasElements";
 import * as fs from "node:fs";
 
-/** The Rounded Corners check box in the Canvas tool. */
-const ROUNDED_CORNERS =
-    'label:has-text("Rounded Corners") input[type="checkbox"]';
+/**
+ * The check boxes that go with the Element Type choice in the Canvas tool: Show Tail, then Rounded
+ * Corners (CanvasToolControls.tsx). Found by where they sit rather than by their labels, which are
+ * in the UI language, and that follows Windows' language on a machine with no Bloom settings.
+ */
+const ELEMENT_TYPE_CHECK_BOXES =
+    '.MuiFormControl-root:has(#canvasElement-style-dropdown) input[type="checkbox"]';
 /** The Background Color bar: the input box beside its label (the ColorBar has no id of its own). */
 const BACKGROUND_COLOR_BAR =
     ':has(> label[for="background-color-bar"]) > .MuiInput-formControl';
@@ -25,7 +29,12 @@ const COLOR_SWATCH = ".color-swatch > div:last-child";
 /** The Rounded Corners check box, once the Canvas tool is open. */
 export async function roundedCornersBox(page: Page): Promise<Locator> {
     const toolbox = await openCanvasTool(page);
-    const box = toolbox.locator(ROUNDED_CORNERS).first();
+    const boxes = toolbox.locator(ELEMENT_TYPE_CHECK_BOXES);
+    await expect(
+        boxes,
+        "The Element Type choice should have two check boxes beside it: Show Tail and Rounded Corners.",
+    ).toHaveCount(2, { timeout: 15000 });
+    const box = boxes.nth(1);
     await box.waitFor({ state: "visible", timeout: 15000 });
     return box;
 }
@@ -108,7 +117,7 @@ export async function chooseCanvasElementBackgroundColor(
             `The color picker has no swatch of ${color}. Its swatches are: ${colors.join(", ")}.`,
         );
     await swatches.nth(index).click();
-    await dialog.getByRole("button", { name: "OK" }).click();
+    await dialog.locator('[data-testid="dialog-ok"]').click();
     await expect(dialog, "The color picker did not close after OK.").toBeHidden(
         { timeout: 15000 },
     );
@@ -127,6 +136,12 @@ export interface ISavedShape {
      * stroke. A plain rectangle covers all four; a rectangle with rounded corners covers none.
      */
     cornersCovered: number;
+    /**
+     * How many of eight points along the edges of the bounding box, three eighths and five eighths
+     * of the way along each, the shape covers. A rectangle covers all eight, rounded corners or
+     * not; an ellipse, which also leaves the corners empty, covers none.
+     */
+    edgePointsCovered: number;
 }
 
 /**
@@ -197,13 +212,28 @@ export async function readSavedCanvasShapes(
                                 box.y + box.height - inset,
                             ],
                         ];
-                        const covered = corners.filter(([x, y]) => {
-                            const point = new DOMPoint(x, y);
-                            return (
-                                (filled && shape.isPointInFill(point)) ||
-                                (stroked && shape.isPointInStroke(point))
-                            );
-                        }).length;
+                        const left = box.x + inset;
+                        const right = box.x + box.width - inset;
+                        const top = box.y + inset;
+                        const bottom = box.y + box.height - inset;
+                        const edgePoints = [0.375, 0.625].flatMap((f) => {
+                            const x = box.x + box.width * f;
+                            const y = box.y + box.height * f;
+                            return [
+                                [left, y],
+                                [right, y],
+                                [x, top],
+                                [x, bottom],
+                            ];
+                        });
+                        const coveredOf = (points: number[][]) =>
+                            points.filter(([x, y]) => {
+                                const point = new DOMPoint(x, y);
+                                return (
+                                    (filled && shape.isPointInFill(point)) ||
+                                    (stroked && shape.isPointInStroke(point))
+                                );
+                            }).length;
                         return {
                             visible: filled || stroked,
                             shape: {
@@ -213,7 +243,8 @@ export async function readSavedCanvasShapes(
                                     style.stroke,
                                 width: Math.round(box.width),
                                 height: Math.round(box.height),
-                                cornersCovered: covered,
+                                cornersCovered: coveredOf(corners),
+                                edgePointsCovered: coveredOf(edgePoints),
                             },
                         };
                     })
