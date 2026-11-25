@@ -20,6 +20,10 @@ import {
 } from "../helpers/bookMaking";
 import { openBookSettings } from "../helpers/bookSettings";
 import { realClick } from "../helpers/realClick";
+import {
+    getCurrentUiLanguageTag,
+    setUiStateViaApi,
+} from "../helpers/uiLanguage";
 
 // L1, L2 and L3 of the collection, in that order, and the text the test puts in each.
 const L1 = "en";
@@ -66,26 +70,88 @@ async function expectLanguagesShownOnPage(
         .toEqual([...languages].sort());
 }
 
+/** The source bubble of the page's text group. */
+function sourceBubble(page: Page): Locator {
+    return editablePageFrame(page).locator(".qtip.uibloomSourceTextsBubble");
+}
+
 /**
- * The text of the source bubble of the page's text group, which Bloom shows when the insertion
- * point is in a box of that group; "" when the group has no bubble.
+ * Put the insertion point in the first box that the page's text group shows, which is when Bloom
+ * shows the group's source bubble.
  */
-async function getSourceBubbleText(page: Page): Promise<string> {
+async function clickInTextGroup(page: Page): Promise<void> {
     const shown = await getLanguagesShownOnPage(page);
-    const box = editablePageFrame(page)
-        .locator(`${GROUP} .bloom-editable[lang="${shown[0]}"]`)
-        .first();
-    await realClick(box);
-    const bubble = editablePageFrame(page).locator(".qtip:visible");
-    if (
-        !(await bubble
-            .first()
-            .waitFor({ state: "visible", timeout: 5000 })
-            .then(() => true)
-            .catch(() => false))
-    )
-        return "";
-    return (await bubble.first().textContent()) ?? "";
+    await realClick(
+        editablePageFrame(page)
+            .locator(`${GROUP} .bloom-editable[lang="${shown[0]}"]`)
+            .first(),
+    );
+    await expect
+        .poll(
+            async () =>
+                editablePageFrame(page)
+                    .locator("body")
+                    .evaluate(
+                        (body, group) =>
+                            !!body.ownerDocument.activeElement?.closest(group),
+                        GROUP,
+                    ),
+            {
+                timeout: 15000,
+                message:
+                    "Clicking in the page's text group should put the insertion point there",
+            },
+        )
+        .toBe(true);
+}
+
+/**
+ * Check that the page's text group shows a source bubble that holds the text of each of
+ * `inBubble` and of none of `notInBubble`.
+ */
+async function expectSourceBubble(
+    page: Page,
+    inBubble: string[],
+    notInBubble: string[],
+): Promise<void> {
+    await clickInTextGroup(page);
+    const bubble = sourceBubble(page);
+    await expect(
+        bubble,
+        `The text group should have a source bubble, for ${inBubble.join(" and ")}`,
+    ).toBeVisible({ timeout: 15000 });
+    // Sanity check for expectNoSourceBubble: this mark is how it knows a group has a bubble.
+    await expect(
+        editablePageFrame(page).locator(GROUP),
+        "A text group with a source bubble should be marked as having one",
+    ).toHaveAttribute("data-hasqtip");
+    for (const language of inBubble)
+        await expect(
+            bubble,
+            `${language} should be in the source bubble`,
+        ).toContainText(TEXT[language]);
+    for (const language of notInBubble)
+        await expect(
+            bubble,
+            `${language} should not be in the source bubble`,
+        ).not.toContainText(TEXT[language]);
+}
+
+/**
+ * Check that the page's text group has no source bubble, as when the page shows every language
+ * that the group has text in. Bloom draws a bubble only when its group first needs it, so this
+ * also checks that the group has none waiting to be drawn.
+ */
+async function expectNoSourceBubble(page: Page): Promise<void> {
+    await clickInTextGroup(page);
+    await expect(
+        editablePageFrame(page).locator(GROUP),
+        "The text group should have no source bubble",
+    ).not.toHaveAttribute("data-hasqtip");
+    await expect(
+        sourceBubble(page),
+        "The page should show no source bubble",
+    ).toHaveCount(0);
 }
 
 /** The top bar's language button. */
@@ -107,12 +173,18 @@ async function closeLanguageMenu(page: Page): Promise<void> {
     await expect(page.getByRole("menu")).toHaveCount(0);
 }
 
-/** Each language in the top bar's menu: its name, whether it is ticked, and whether it can be clicked. */
-async function getLanguageMenuItems(
-    page: Page,
-): Promise<{ name: string; checked: boolean; enabled: boolean }[]> {
-    const menu = await openLanguageMenu(page);
-    const items = await menu.getByRole("menuitem").evaluateAll((elements) =>
+/** A language in the top bar's menu: its name, whether it is ticked, and whether it can be clicked. */
+interface ILanguageMenuItem {
+    name: string;
+    checked: boolean;
+    enabled: boolean;
+}
+
+/** The languages in the top bar's menu, which must be open, as it shows them at this moment. */
+async function readLanguageMenuItems(
+    menu: Locator,
+): Promise<ILanguageMenuItem[]> {
+    return menu.getByRole("menuitem").evaluateAll((elements) =>
         elements.map((item) => ({
             name: (item.textContent ?? "").trim(),
             checked:
@@ -121,20 +193,83 @@ async function getLanguageMenuItems(
             enabled: item.getAttribute("aria-disabled") !== "true",
         })),
     );
-    await closeLanguageMenu(page);
-    return items;
 }
 
 /** The name the top bar's menu and the Languages page give a language, e.g. "French". */
 let languageNames: Record<string, string> = {};
 
-/** Click one language in the top bar's menu, and wait until the page shows the result. */
-async function toggleInTopBar(page: Page, language: string): Promise<void> {
+/**
+ * Read the collection's three language names from the top bar's menu, which lists L1, L2 and L3
+ * in that order.
+ */
+async function readLanguageNames(page: Page): Promise<void> {
+    const menu = await openLanguageMenu(page);
+    await expect(
+        menu.getByRole("menuitem"),
+        "Sanity check: the top bar's menu should list the collection's three languages",
+    ).toHaveCount(3);
+    const items = await readLanguageMenuItems(menu);
+    languageNames = {
+        [L1]: items[0].name,
+        [L2]: items[1].name,
+        [L3]: items[2].name,
+    };
+    await closeLanguageMenu(page);
+}
+
+/**
+ * Check that the top bar's menu ticks exactly these languages, and that it lets every language
+ * be clicked except a ticked one that is the only one ticked.
+ *
+ * The menu opens showing what it showed last time and then asks Bloom for the current state, so
+ * right after it opens it can still show a choice from before a change made elsewhere. So this
+ * waits for the menu to show the expected state rather than reading it once.
+ */
+async function expectLanguageMenuShows(
+    page: Page,
+    languages: string[],
+    message: string,
+): Promise<void> {
+    const menu = await openLanguageMenu(page);
+    await expect
+        .poll(() => readLanguageMenuItems(menu), { timeout: 15000, message })
+        .toEqual(
+            [L1, L2, L3].map((language) => ({
+                name: languageNames[language],
+                checked: languages.includes(language),
+                enabled: !languages.includes(language) || languages.length > 1,
+            })),
+        );
+    await closeLanguageMenu(page);
+}
+
+/**
+ * Turn one language on or off by clicking it in the top bar's menu, and wait until the page shows
+ * the result.
+ *
+ * What a click asks Bloom for is the opposite of the tick that the menu shows, and the menu can
+ * open showing an old state (see expectLanguageMenuShows). So this waits for the menu to show the
+ * language as it is before the change, and as something that can be clicked, before it clicks.
+ */
+async function toggleInTopBar(
+    page: Page,
+    language: string,
+    turnOn: boolean,
+): Promise<void> {
     await waitForEditTabSettled(page);
     const menu = await openLanguageMenu(page);
-    await realClick(
-        menu.getByRole("menuitem").filter({ hasText: languageNames[language] }),
-    );
+    const item = menu
+        .getByRole("menuitem")
+        .filter({ hasText: languageNames[language] });
+    await expect(
+        item.locator("input[type=checkbox]"),
+        `Before it is turned ${turnOn ? "on" : "off"} in the top bar, ${language} should ${turnOn ? "not " : ""}be ticked there`,
+    ).toBeChecked({ checked: !turnOn });
+    await expect(
+        item,
+        `The top bar should let ${language} be turned ${turnOn ? "on" : "off"}`,
+    ).not.toHaveAttribute("aria-disabled", "true");
+    await realClick(item);
     await waitForEditTabSettled(page);
 }
 
@@ -219,10 +354,17 @@ async function getCoverTitleLanguages(page: Page): Promise<string[]> {
 }
 
 test("the top bar and the Languages page choose the same languages, and one always stays [Test Case ID 405]", async ({
-    page,
+    bloomApp,
     step,
 }) => {
     test.setTimeout(400000);
+
+    // The top bar's button, the Book and Page Settings dialog and its "Show <language>" rows are
+    // found by their English wording, and a freshly launched Bloom takes its UI language from the
+    // operating system.
+    if ((await getCurrentUiLanguageTag(bloomApp.page)) !== "en")
+        await setUiStateViaApi(bloomApp, "en", false);
+    const page = bloomApp.page;
 
     await step("Make a book with a text page", async () => {
         await makeBookFromTemplate(page, "Basic Book");
@@ -241,53 +383,42 @@ test("the top bar and the Languages page choose the same languages, and one alwa
         },
     );
 
-    const items = await getLanguageMenuItems(page);
-    expect(
-        items.length,
-        "Sanity check: the top bar's menu should list the collection's three languages",
-    ).toBe(3);
-    // The menu lists L1, L2 and L3 in that order.
-    languageNames = {
-        [L1]: items[0].name,
-        [L2]: items[1].name,
-        [L3]: items[2].name,
-    };
+    await readLanguageNames(page);
 
     await step(
         "See only L1, in the top bar, the Languages page and the page",
         async () => {
             await expect(languageButton(page)).toHaveText(/One Language/);
-            expect(
-                (await getLanguageMenuItems(page)).map((i) => i.checked),
+            await expectLanguageMenuShows(
+                page,
+                [L1],
                 "The top bar's menu should tick only L1",
-            ).toEqual([true, false, false]);
+            );
             await expectLanguagesPageShows(page, [L1], "With only L1 shown");
             await expectLanguagesShownOnPage(
                 page,
                 [L1],
                 "The page should show only L1",
             );
-            const bubble = await getSourceBubbleText(page);
-            expect(bubble, "L2 should be in the source bubble").toContain(
-                TEXT[L2],
-            );
-            expect(bubble, "L3 should be in the source bubble").toContain(
-                TEXT[L3],
-            );
+            await expectSourceBubble(page, [L2, L3], []);
         },
     );
 
     await step("Turn on L2 in the top bar", async () => {
-        await toggleInTopBar(page, L2);
+        await toggleInTopBar(page, L2, true);
         await expectLanguagesShownOnPage(
             page,
             [L1, L2],
             "The page should show L1 and L2",
         );
-        expect(
-            await getSourceBubbleText(page),
-            "L2 should no longer be in the source bubble",
-        ).not.toContain(TEXT[L2]);
+        // L3 is still not on the page, so the bubble stays, with L3 alone.
+        await expectSourceBubble(page, [L3], [L2]);
+        await expect(languageButton(page)).toHaveText(/Two Languages/);
+        await expectLanguageMenuShows(
+            page,
+            [L1, L2],
+            "The top bar's menu should tick L1 and L2",
+        );
         await expectLanguagesPageShows(
             page,
             [L1, L2],
@@ -305,36 +436,31 @@ test("the top bar and the Languages page choose the same languages, and one alwa
             [L1, L2, L3],
             "The page should show all three",
         );
-        expect(
-            await getSourceBubbleText(page),
-            "L3 should no longer be in the source bubble",
-        ).not.toContain(TEXT[L3]);
+        // The group has text in no other language, so nothing is left for a bubble.
+        await expectNoSourceBubble(page);
         await expect(languageButton(page)).toHaveText(/Three Languages/);
-        expect(
-            (await getLanguageMenuItems(page)).map((i) => i.checked),
+        await expectLanguageMenuShows(
+            page,
+            [L1, L2, L3],
             "The top bar's menu should tick all three",
-        ).toEqual([true, true, true]);
+        );
     });
 
     await step(
         "Turn off L1 and L2 in the top bar, and try to turn off L3",
         async () => {
-            await toggleInTopBar(page, L1);
-            await toggleInTopBar(page, L2);
+            await toggleInTopBar(page, L1, false);
+            await toggleInTopBar(page, L2, false);
             await expectLanguagesShownOnPage(
                 page,
                 [L3],
                 "The page should show only L3",
             );
-            const items = await getLanguageMenuItems(page);
-            expect(
-                items[2],
-                "The top bar should not let the last language, L3, be turned off",
-            ).toEqual({
-                name: languageNames[L3],
-                checked: true,
-                enabled: false,
-            });
+            await expectLanguageMenuShows(
+                page,
+                [L3],
+                "The top bar should tick only L3, and not let this last language be turned off",
+            );
             await openLanguagesPage(page);
             await expect(showCheckbox(page, L3)).toBeChecked();
             await expect(
@@ -361,24 +487,26 @@ test("the top bar and the Languages page choose the same languages, and one alwa
             [L2],
             "The page should show only L2",
         );
-        expect(
-            (await getLanguageMenuItems(page))[1],
-            "The top bar should not let the last language, L2, be turned off",
-        ).toEqual({ name: languageNames[L2], checked: true, enabled: false });
+        await expectLanguageMenuShows(
+            page,
+            [L2],
+            "The top bar should tick only L2, and not let this last language be turned off",
+        );
     });
 
     await step("Turn on L1 and turn off L2 in the top bar", async () => {
-        await toggleInTopBar(page, L1);
-        await toggleInTopBar(page, L2);
+        await toggleInTopBar(page, L1, true);
+        await toggleInTopBar(page, L2, false);
         await expectLanguagesShownOnPage(
             page,
             [L1],
             "The page should show only L1",
         );
-        expect(
-            (await getLanguageMenuItems(page))[0],
-            "The top bar should not let the last language, L1, be turned off",
-        ).toEqual({ name: languageNames[L1], checked: true, enabled: false });
+        await expectLanguageMenuShows(
+            page,
+            [L1],
+            "The top bar should tick only L1, and not let this last language be turned off",
+        );
         await openLanguagesPage(page);
         await expect(showCheckbox(page, L1)).toBeDisabled();
         await cancelBookSettings(page);
@@ -395,8 +523,8 @@ test("the top bar and the Languages page choose the same languages, and one alwa
                 "Sanity check: the cover should show the title in at least one language",
             ).toBeGreaterThan(0);
             await goToPage(page, contentPage.id);
-            await toggleInTopBar(page, L2);
-            await toggleInTopBar(page, L3);
+            await toggleInTopBar(page, L2, true);
+            await toggleInTopBar(page, L3, true);
             await expectLanguagesShownOnPage(
                 page,
                 [L1, L2, L3],
