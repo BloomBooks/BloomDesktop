@@ -33,7 +33,11 @@ test.use({
 const L1 = "en";
 const GROUP = ".bloom-translationGroup";
 const PLAIN_WORDS = "Copy this ";
-const WORD = "word";
+/**
+ * The word that is formatted and copied. It differs from run to run, so that the paste can only
+ * bring it if this run's copy worked: the Windows clipboard keeps what an earlier run copied.
+ */
+const WORD = `word${Date.now().toString(36)}`;
 /** A color from the text palette. */
 const RED = "#ff1616";
 
