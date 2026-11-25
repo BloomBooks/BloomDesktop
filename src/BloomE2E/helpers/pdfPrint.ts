@@ -1,6 +1,6 @@
-// Drive and read the Publish tab's PDF & Print screen: its booklet modes, its Print button, the
-// browser's print dialog that button opens, and the window of booklet print instructions Bloom
-// shows beside that dialog.
+// Drive and read the Publish tab's PDF & Print screen: its booklet modes, its print bleed check
+// box, the PDF it previews, its Print button, the browser's print dialog that button opens, and
+// the window of booklet print instructions Bloom shows beside that dialog.
 //
 // Two of those are outside the shell document:
 //
@@ -14,6 +14,7 @@
 
 import { execFileSync } from "node:child_process";
 import { expect, type Browser, type Page } from "@playwright/test";
+import { apiGet } from "./api";
 import { selectPublishDestination } from "./publish";
 
 /** The PDF & Print screen's booklet modes, by the label each one shows. */
@@ -50,10 +51,56 @@ export async function choosePdfMode(page: Page, mode: PdfMode): Promise<void> {
 }
 
 /**
- * How many pages the PDF that the PDF & Print screen is previewing has, read from the PDF file
- * itself (its page objects). Call it after choosePdfMode().
+ * Open Publish > PDF & Print and tick or untick "Exclude print bleed around page edges", the way a
+ * person does, and return once Bloom has the choice. Unticked, the PDF of a book that uses full
+ * bleed is made with its bleed, on paper larger than the page; ticked, which is how a book starts,
+ * it is made at the size of the page.
+ *
+ * Bloom offers the box only for a book that uses full bleed (Book and Page Settings > Print
+ * Publishing), so this fails for any other book. Call it before choosePdfMode(), which needs to be
+ * the first thing to make a PDF on the screen.
  */
-export async function getPdfPreviewPageCount(page: Page): Promise<number> {
+export async function setExcludePrintBleed(
+    page: Page,
+    exclude: boolean,
+): Promise<void> {
+    await selectPublishDestination(page, "PDF & Print");
+    const checkbox = page.getByRole("checkbox", {
+        name: "Exclude print bleed around page edges",
+    });
+    await checkbox.waitFor({ state: "visible", timeout: 30000 });
+    // The box is disabled until the screen has heard from Bloom that the book uses full bleed.
+    await expect(
+        checkbox,
+        'Bloom does not offer "Exclude print bleed around page edges", which it does only for a book that uses full bleed.',
+    ).toBeEnabled({ timeout: 30000 });
+    // The box shows as unticked until the screen has heard from Bloom what the book has, so wait
+    // for it to show that before deciding whether it needs a click.
+    const excludedNow =
+        (await apiGet(page, "publish/pdf/excludePrintBleed")).body === "true";
+    await expect(
+        checkbox,
+        'The "Exclude print bleed around page edges" box never showed what Bloom has for the book.',
+    ).toBeChecked({ checked: excludedNow, timeout: 30000 });
+    if (excludedNow !== exclude) await checkbox.click();
+    await expect(checkbox).toBeChecked({ checked: exclude });
+    await expect
+        .poll(
+            async () =>
+                (await apiGet(page, "publish/pdf/excludePrintBleed")).body,
+            {
+                message: `Bloom never took "Exclude print bleed around page edges" being ${exclude ? "ticked" : "unticked"}.`,
+            },
+        )
+        .toBe(String(exclude));
+}
+
+/**
+ * The PDF that the PDF & Print screen is previewing, as text with one character for each byte of
+ * the file. Bloom writes the objects that describe a PDF's pages uncompressed, so they can be read
+ * from this text.
+ */
+async function readPreviewedPdf(page: Page): Promise<string> {
     const preview = page.locator('iframe[src*="pdf" i]');
     await expect(
         preview,
@@ -66,19 +113,134 @@ export async function getPdfPreviewPageCount(page: Page): Promise<number> {
         let text = "";
         for (let i = 0; i < bytes.length; i += 0x8000)
             text += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-        const pageObjects = (text.match(/\/Type\s*\/Page(?![a-zA-Z])/g) ?? [])
-            .length;
-        return { status: response.status, pageObjects };
+        return { status: response.status, text };
     }, src);
     if (result.status !== 200)
         throw new Error(
             `Reading the previewed PDF (${src}) gave status ${result.status}.`,
         );
-    if (!result.pageObjects)
+    return result.text;
+}
+
+/**
+ * The object that describes each page of a PDF (its "page object"), as the text of the object.
+ * They come in the order the file holds them, which need not be the order of the pages.
+ */
+function getPdfPageObjects(pdf: string): string[] {
+    const pageObjects: string[] = [];
+    for (const match of pdf.matchAll(/\/Type\s*\/Page(?![a-zA-Z])/g)) {
+        const start = pdf.lastIndexOf(" obj", match.index);
+        const end = pdf.indexOf("endobj", match.index);
+        if (start < 0 || end < 0)
+            throw new Error(
+                "A page of the previewed PDF is not inside an object, so its boxes cannot be read.",
+            );
+        pageObjects.push(pdf.slice(start, end));
+    }
+    if (pageObjects.length === 0)
+        throw new Error("No pages could be read from the previewed PDF.");
+    return pageObjects;
+}
+
+/**
+ * How many pages the PDF that the PDF & Print screen is previewing has, read from the PDF file
+ * itself (its page objects). Call it after choosePdfMode().
+ */
+export async function getPdfPreviewPageCount(page: Page): Promise<number> {
+    return getPdfPageObjects(await readPreviewedPdf(page)).length;
+}
+
+/** A rectangle on a PDF page, in millimetres from the left and bottom edges of the paper. */
+export interface IPdfBox {
+    left: number;
+    bottom: number;
+    right: number;
+    top: number;
+}
+
+/** The boxes a PDF records for one of its pages. */
+export interface IPdfPageBoxes {
+    /** The whole sheet (the MediaBox): what a PDF reader reports as the paper size. */
+    paper: IPdfBox;
+    /**
+     * Where the printer cuts the sheet (the TrimBox), which a PDF reader can draw as trim lines.
+     * Undefined when the PDF records none for the page, as when it is made without print bleed.
+     */
+    trim?: IPdfBox;
+    /**
+     * How far the printing runs past the cut (the BleedBox), which a PDF reader can draw as bleed
+     * lines. Undefined when the PDF records none for the page.
+     */
+    bleed?: IPdfBox;
+}
+
+const kMillimetresPerPoint = 25.4 / 72;
+
+/**
+ * The paper size, the trim box and the bleed box of each page of the PDF that the PDF & Print
+ * screen is previewing, read from the PDF file itself. Call it after choosePdfMode().
+ *
+ * These are what Acrobat shows as the page size under File > Properties, and as the trim and
+ * bleed lines when "Show art, trim, & bleed boxes" is on. The pages come in the order the file
+ * holds them, which need not be the order of the book's pages.
+ */
+export async function getPdfPreviewPageBoxes(
+    page: Page,
+): Promise<IPdfPageBoxes[]> {
+    const pdf = await readPreviewedPdf(page);
+    return getPdfPageObjects(pdf).map((pageObject) => {
+        const paper = readPaperSize(pdf, pageObject);
+        if (!paper)
+            throw new Error(
+                `A page of the previewed PDF has no paper size (MediaBox): ${pageObject}`,
+            );
+        // A page has a trim or bleed box only when its own object gives one: unlike the paper
+        // size, a PDF reader does not take these from the page tree.
+        return {
+            paper,
+            trim: readPdfBox(pageObject, "TrimBox"),
+            bleed: readPdfBox(pageObject, "BleedBox"),
+        };
+    });
+}
+
+/**
+ * The paper size (MediaBox) of a PDF page, in millimetres. A page that does not give it itself
+ * takes it from the node of the page tree it belongs to, as the PDF format says.
+ */
+function readPaperSize(pdf: string, pdfObject: string): IPdfBox | undefined {
+    const own = readPdfBox(pdfObject, "MediaBox");
+    if (own) return own;
+    const parent = /\/Parent\s+(\d+)\s+(\d+)\s+R/.exec(pdfObject);
+    if (!parent) return undefined;
+    const parentStart = new RegExp(
+        `(?:^|[\\r\\n])${parent[1]}\\s+${parent[2]}\\s+obj`,
+    ).exec(pdf);
+    if (!parentStart) return undefined;
+    const parentEnd = pdf.indexOf("endobj", parentStart.index);
+    return readPaperSize(pdf, pdf.slice(parentStart.index, parentEnd));
+}
+
+/**
+ * One box that a PDF object gives, e.g. "TrimBox", in millimetres; undefined when the object does
+ * not give that box.
+ */
+function readPdfBox(pdfObject: string, boxName: string): IPdfBox | undefined {
+    const box = new RegExp(`/${boxName}\\s*\\[([^\\]]*)\\]`).exec(pdfObject);
+    if (!box) return undefined;
+    const numbers = box[1].trim().split(/\s+/).map(Number);
+    if (numbers.length !== 4 || numbers.some((n) => Number.isNaN(n)))
         throw new Error(
-            `No pages could be read from the previewed PDF (${src}).`,
+            `The previewed PDF has a ${boxName} that is not four numbers: "${box[0]}".`,
         );
-    return result.pageObjects;
+    const [x1, y1, x2, y2] = numbers.map((n) => n * kMillimetresPerPoint);
+    // The format allows any two opposite corners, in either order.
+    return {
+        left: Math.min(x1, x2),
+        bottom: Math.min(y1, y2),
+        right: Math.max(x1, x2),
+        top: Math.max(y1, y2),
+    };
 }
 
 /**
