@@ -18,16 +18,15 @@ import {
     type IBookPage,
 } from "../helpers/bookMaking";
 import { getCameraUse, watchCameraRequests } from "../helpers/camera";
-import { realClick } from "../helpers/realClick";
+import { selectPage } from "../helpers/pageThumbnails";
 import {
     enableToolForBook,
     expandToolByHeader,
-    expectExpandedTool,
     hideToolbox,
     showToolbox,
     toolboxFrame,
 } from "../helpers/toolbox";
-import { videoBoxes } from "../helpers/videos";
+import { openSignLanguageToolOnVideoBox, videoBoxes } from "../helpers/videos";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
@@ -50,7 +49,7 @@ async function addPageAndFindIt(page: Page, label: string): Promise<IBookPage> {
     return added[0];
 }
 
-/** Wait until Bloom holds the camera:the toolbox has a live track from getUserMedia. */
+/** Wait until Bloom holds the camera: the toolbox has a live track from getUserMedia. */
 async function expectCameraHeld(page: Page, message: string): Promise<void> {
     await expect
         .poll(async () => (await getCameraUse(page)).liveTracks, {
@@ -60,7 +59,11 @@ async function expectCameraHeld(page: Page, message: string): Promise<void> {
         .toBeGreaterThan(0);
 }
 
-/** Wait until Bloom has given the camera back: no track it got from getUserMedia is still live. */
+/**
+ * Wait until Bloom has given the camera back: no track it got from getUserMedia is still live, and
+ * no request for the camera is still waiting for its stream (which would hold the camera again
+ * unless the tool stops it on arrival).
+ */
 async function expectCameraReleased(
     page: Page,
     message: string,
@@ -71,11 +74,17 @@ async function expectCameraReleased(
         "test setup: Bloom never asked for the camera, so its giving it back proves nothing",
     ).toBeGreaterThan(0);
     await expect
-        .poll(async () => (await getCameraUse(page)).liveTracks, {
-            timeout: 30000,
-            message,
-        })
-        .toBe(0);
+        .poll(
+            async () => {
+                const now = await getCameraUse(page);
+                return {
+                    liveTracks: now.liveTracks,
+                    pendingRequests: now.pendingRequests,
+                };
+            },
+            { timeout: 30000, message },
+        )
+        .toEqual({ liveTracks: 0, pendingRequests: 0 });
 }
 
 /**
@@ -85,19 +94,14 @@ async function expectCameraReleased(
 async function openSignLanguageToolOnVideo(page: Page): Promise<void> {
     await goToPage(page, videoPage.id);
     await waitForEditablePage(page);
-    await realClick(videoBoxes(page).first());
-    await expectExpandedTool(
-        page,
-        "signLanguage",
-        "Clicking the video box did not expand the Sign Language tool.",
-    );
+    await openSignLanguageToolOnVideoBox(page, videoBoxes(page).first());
     await expectCameraHeld(
         page,
         "The Sign Language tool, showing a video box, never took the camera.",
     );
 }
 
-test.describe("TC-587 Bloom relinquishes the camera", () => {
+test.describe("Bloom relinquishes the camera", () => {
     test.beforeEach(async ({ page }) => {
         test.setTimeout(300000);
         bookFolder = await makeBookFromTemplate(page, "Basic Book");
@@ -109,7 +113,7 @@ test.describe("TC-587 Bloom relinquishes the camera", () => {
         await openSignLanguageToolOnVideo(page);
     });
 
-    test("when another tool is expanded, and takes it again when the Sign Language tool is", async ({
+    test("when another tool is expanded, and takes it again when the Sign Language tool is [Test Case ID 587]", async ({
         page,
     }) => {
         await expandToolByHeader(page, "talkingBook");
@@ -124,7 +128,7 @@ test.describe("TC-587 Bloom relinquishes the camera", () => {
         );
     });
 
-    test("when the toolbox is shut, and takes it again when it is opened", async ({
+    test("when the toolbox is shut, and takes it again when it is opened [Test Case ID 587]", async ({
         page,
     }) => {
         await hideToolbox(page);
@@ -139,16 +143,16 @@ test.describe("TC-587 Bloom relinquishes the camera", () => {
         );
     });
 
-    test("when the page being edited has no video box, and takes it again on the video page", async ({
+    test("when the page being edited has no video box, and takes it again on the video page [Test Case ID 587]", async ({
         page,
     }) => {
-        await goToPage(page, textPage.id);
+        await selectPage(page, textPage.id);
         await waitForEditablePage(page);
         await expectCameraReleased(
             page,
             "Bloom kept the camera on a page with no video box.",
         );
-        await goToPage(page, videoPage.id);
+        await selectPage(page, videoPage.id);
         await waitForEditablePage(page);
         await expectCameraHeld(
             page,
@@ -156,7 +160,7 @@ test.describe("TC-587 Bloom relinquishes the camera", () => {
         );
     });
 
-    test("when the Edit tab is left", async ({ page }) => {
+    test("when the Edit tab is left [Test Case ID 587]", async ({ page }) => {
         // Leaving the Edit tab unloads the toolbox's document, and Chromium stops every track a
         // document holds when it goes. So the camera is given back once that document is gone.
         const toolbox = toolboxFrame(page);

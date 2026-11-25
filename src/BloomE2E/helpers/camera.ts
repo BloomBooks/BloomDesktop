@@ -16,6 +16,7 @@ import { toolboxFrame } from "./toolbox";
 
 interface ICameraWatch {
     streams: MediaStream[];
+    pending: number;
 }
 
 /**
@@ -27,14 +28,19 @@ export async function watchCameraRequests(page: Page): Promise<void> {
     await toolboxFrame(page).evaluate(() => {
         const w = window as unknown as { e2eCameraWatch?: ICameraWatch };
         if (w.e2eCameraWatch) return;
-        const watch: ICameraWatch = { streams: [] };
+        const watch: ICameraWatch = { streams: [], pending: 0 };
         w.e2eCameraWatch = watch;
         const devices = navigator.mediaDevices;
         const getUserMedia = devices.getUserMedia.bind(devices);
         devices.getUserMedia = async (constraints) => {
-            const stream = await getUserMedia(constraints);
-            watch.streams.push(stream);
-            return stream;
+            watch.pending++;
+            try {
+                const stream = await getUserMedia(constraints);
+                watch.streams.push(stream);
+                return stream;
+            } finally {
+                watch.pending--;
+            }
         };
     });
 }
@@ -45,6 +51,11 @@ export interface ICameraUse {
     streamsHandedOut: number;
     /** How many of those streams' tracks are still live, i.e. still holding the camera. */
     liveTracks: number;
+    /**
+     * How many getUserMedia calls have not answered yet. Each may still hand the toolbox a stream,
+     * so the camera is not given back for good until this is 0 as well as liveTracks.
+     */
+    pendingRequests: number;
 }
 
 /**
@@ -66,6 +77,7 @@ export async function getCameraUse(page: Page): Promise<ICameraUse> {
             liveTracks: watch.streams
                 .flatMap((s) => s.getTracks())
                 .filter((t) => t.readyState === "live").length,
+            pendingRequests: watch.pending,
         };
     });
 }
