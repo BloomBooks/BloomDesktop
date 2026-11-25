@@ -891,15 +891,16 @@ BL-16179.)
 
 ## The Apps screen installs Reading App Builder before it checks anything
 
-Publish > Apps runs Prepare, and Prepare's first step is to make sure Reading App Builder is
-installed at the version Bloom wants, downloading and running its installer when it is not
-(`RabProjectService.EnsureRabInstalledForPrepare`). Only after that does it export the books and
-refuse one whose language is not licensed (`EnsureBooksAreLicensedForPublishing`). A test may not
-run an installer, and a test machine cannot be assumed to have Reading App Builder, so nothing that
-Prepare does after the install can be driven. Cost: the Apps step of "Block Unlicensed Language
-Publish" stays manual, and so does any other case about what Prepare or Build does. Fix direction:
-under `--e2e`, an `E2eTestingApi` hook that lets Prepare skip the install check, so the checks that
-come after it can run; or make the license check before the install, which is also what a user
-with an unlicensed book would want, since they would not have to wait for an install to learn
+Publish > Apps runs Prepare, and Prepare's first steps make sure Reading App Builder is installed at
+the version Bloom wants, with its JDK and Android SDK, downloading and running installers when they
+are not (`RabProjectService.EnsureRabInstalledForPrepare`, `EnsureRabBuildPrerequisites`). Only
+after that does it export the books and refuse one whose language is not licensed
+(`EnsureBooksAreLicensedForPublishing`). A test must not run an installer, so a test of anything
+Prepare does reads `publish/rab/status` first and skips, saying why, on a machine where Prepare
+would have to install something. Cost: on such a machine (any CI agent without Reading App
+Builder) the Apps step of "Block Unlicensed Language Publish" does not run. Fix direction: under
+`--e2e`, an `E2eTestingApi` hook that lets Prepare skip the install checks, so the checks that come
+after them can run anywhere; or make the license check before the install, which is also what a
+user with an unlicensed book would want, since they would not have to wait for an install to learn
 that the book cannot go in the app. (Found 2026-11-25 automating Test Case ID 619,
 `publish-unlicensed-language.spec.ts`.)

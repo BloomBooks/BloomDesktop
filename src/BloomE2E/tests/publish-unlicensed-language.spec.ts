@@ -164,13 +164,16 @@ async function waitForTextToSettle(locator: Locator): Promise<void> {
         .toBe(true);
 }
 
-/** What publish/rab/status says, as far as these tests need it (RabProjectStatus in C#). */
+/**
+ * What publish/rab/status says, as far as these tests need it. Bloom serializes RabProjectStatus
+ * with its C# property names.
+ */
 interface IRabStatus {
-    rabInstalled: boolean;
-    rabUpdateVersion: string | null;
-    projectExists: boolean;
-    activeAction: string | null;
-    prepareSteps: { id: string; complete: boolean }[];
+    RabInstalled: boolean;
+    RabUpdateVersion: string | null;
+    ProjectExists: boolean;
+    ActiveAction: string | null;
+    PrepareSteps: { Id: string; Complete: boolean }[];
 }
 
 /**
@@ -178,13 +181,13 @@ interface IRabStatus {
  * check on this machine, or undefined when it would not.
  */
 function whyPrepareWouldInstall(status: IRabStatus): string | undefined {
-    if (!status.rabInstalled) return "Reading App Builder is not installed";
-    if (status.rabUpdateVersion)
-        return `Bloom would first update Reading App Builder to ${status.rabUpdateVersion}`;
-    const buildTools = status.prepareSteps.find(
-        (step) => step.id === "build-tools-installed",
+    if (!status.RabInstalled) return "Reading App Builder is not installed";
+    if (status.RabUpdateVersion)
+        return `Bloom would first update Reading App Builder to ${status.RabUpdateVersion}`;
+    const buildTools = status.PrepareSteps.find(
+        (step) => step.Id === "build-tools-installed",
     );
-    if (!buildTools?.complete)
+    if (!buildTools?.Complete)
         return "Reading App Builder's JDK and Android SDK are not installed";
     return undefined;
 }
@@ -416,8 +419,26 @@ test.describe("a book not licensed for the collection's language cannot be publi
         test.setTimeout(300000);
         await selectBook(page, bookFolder);
         await selectPublishDestination(page, "Audio or Video");
+        const previewRequested = page
+            .waitForRequest(
+                (request) =>
+                    new URL(request.url()).pathname.endsWith(
+                        "/publish/av/updatePreview",
+                    ),
+                { timeout: 30000 },
+            )
+            .then(
+                () => "sent",
+                () => "never sent",
+            );
         // THE ACTION UNDER TEST: PREVIEW, which makes the book that is recorded.
         await clickPreview(page);
+        // Said apart from the message check below, so that a failure says whether the click
+        // never reached Bloom or Bloom's answer never showed.
+        expect(
+            await previewRequested,
+            "PREVIEW on Audio or Video never asked Bloom to make the preview.",
+        ).toBe("sent");
         const message = await expectLicensingMessageShowing(
             page,
             "Audio or Video",
@@ -446,7 +467,7 @@ test.describe("a book not licensed for the collection's language cannot be publi
             `${reason}, and a test must not install it. Install Reading App Builder (Publish > Apps > Prepare does it) to run this test.`,
         );
         expect(
-            status.projectExists,
+            status.ProjectExists,
             "The collection already had an app project before Prepare.",
         ).toBe(false);
 
@@ -485,7 +506,7 @@ test.describe("a book not licensed for the collection's language cannot be publi
                         page,
                         "publish/rab/status",
                     );
-                    return finalStatus.activeAction ?? null;
+                    return finalStatus.ActiveAction ?? null;
                 },
                 {
                     timeout: 120000,
@@ -495,7 +516,7 @@ test.describe("a book not licensed for the collection's language cannot be publi
             )
             .toBeNull();
         expect(
-            finalStatus!.projectExists,
+            finalStatus!.ProjectExists,
             "Prepare made an app project for a book it may not publish.",
         ).toBe(false);
     });
