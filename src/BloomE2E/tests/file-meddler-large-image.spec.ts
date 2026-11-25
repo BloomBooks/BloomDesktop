@@ -20,20 +20,15 @@ import { expect, test } from "../fixtures/bloomTest";
 import { apiGetJson, apiPost } from "../helpers/api";
 import { bookHtmlPath } from "../helpers/bookHtml";
 import {
-    editablePageFrame,
     findBookFolder,
     makeBookFromTemplate,
     typeInGroup,
 } from "../helpers/bookMaking";
-import {
-    clickCanvasElementMenuItem,
-    selectCanvasElementAt,
-} from "../helpers/canvasElements";
 import { copyToClipboard } from "../helpers/clipboard";
 import {
-    getImagePlacement,
     type IPixelSize,
     makeJpegFile,
+    pasteImageIntoEmptySlot,
     readImageFileSize,
 } from "../helpers/images";
 import { switchTab } from "../helpers/workspace";
@@ -46,8 +41,6 @@ test.use({
 // Bloom shrinks it while the meddler holds the files it writes.
 const LARGE_WIDTH = 6000;
 const LARGE_HEIGHT = 3375;
-const PASTE_IMAGE_COMMAND = "EditTab.Image.PasteImage";
-const PLACEHOLDER = "placeHolder.png";
 // The error codes Node gives for opening a file that another process holds open without sharing.
 const LOCKED_CODES = ["EBUSY", "EPERM", "EACCES"];
 
@@ -123,43 +116,6 @@ async function stopMeddling(page: Page): Promise<void> {
         "false",
         "application/json",
     );
-}
-
-/**
- * Paste the picture on Bloom's clipboard into the cover picture the way a person does: select the
- * picture, then choose Paste image from its menu. Returns the file name the cover shows once the
- * picture has loaded.
- */
-async function pasteOnCover(page: Page): Promise<string> {
-    const before = await getImagePlacement(page);
-    expect(
-        before.fileName,
-        "test setup: a new book's cover starts with no picture",
-    ).toBe(PLACEHOLDER);
-    // An empty picture shows no image to click, so select the picture's box itself.
-    await selectCanvasElementAt(
-        editablePageFrame(page)
-            .locator(
-                ".bloom-canvas .bloom-canvas-element.bloom-backgroundImage",
-            )
-            .first(),
-        "the cover picture",
-    );
-    await clickCanvasElementMenuItem(page, PASTE_IMAGE_COMMAND);
-    await expect
-        .poll(
-            async () => {
-                const placement = await getImagePlacement(page);
-                return placement.fileName !== PLACEHOLDER && placement.loaded;
-            },
-            {
-                timeout: 120000,
-                message:
-                    "The cover never showed the pasted picture while the meddler was running.",
-            },
-        )
-        .toBe(true);
-    return (await getImagePlacement(page)).fileName;
 }
 
 /** The book preview on the right of the Collections tab. */
@@ -374,7 +330,7 @@ for (const titled of [false, true]) {
 
             await copyToClipboard(page, { picture: largePicture });
             const pastedAt = Date.now();
-            const pictureFile = await pasteOnCover(page);
+            const pictureFile = await pasteImageIntoEmptySlot(page);
 
             await switchTab(page, "collection");
             await expectCoverInPreview(page, pictureFile);

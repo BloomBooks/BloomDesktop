@@ -209,7 +209,7 @@ real bug in the code under test; read the message and fix it rather than working
   (`readTail`), and the handles ComicalJS draws for it: `dragTailMidpoint`,
   `doubleClickTailMidpoint`, and `expectMidpointHandle`, which reads the drawing to tell a
   filled midpoint handle from an open one or a missing one.
-- `helpers/images.ts` — `chooseImageFile`, `cropImage`, `getImagePlacement`; `getPictureRotation`,
+- `helpers/images.ts` — `chooseImageFile`, `pasteImageIntoEmptySlot`, `cropImage`, `getImagePlacement`; `getPictureRotation`,
   which says how a picture is rotated and mirrored on screen, box and picture together, with
   `kUprightPicture` and `mirroredAboutOwnAxis` to build the expected answer; `getPictureInlineLayout`,
   the inline styles that lay out a picture and its box.

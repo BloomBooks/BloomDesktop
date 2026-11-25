@@ -18,11 +18,20 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiPost } from "./api";
 import { editablePageFrame } from "./bookMaking";
+import {
+    clickCanvasElementMenuItem,
+    selectCanvasElementAt,
+} from "./canvasElements";
 import { realClick } from "./realClick";
 
 /** The first image on the page: the background picture of the page's first image slot. */
 const FIRST_IMAGE =
     ".bloom-canvas .bloom-backgroundImage .bloom-imageContainer img";
+
+/** What the first image slot shows while it holds no picture. */
+const PLACEHOLDER = "placeHolder.png";
+/** The Paste image command on a picture's "..." menu, by its localization id. */
+const PASTE_IMAGE_COMMAND = "EditTab.Image.PasteImage";
 
 /** The side handles of the selected image's control frame, by compass side. */
 const SIDE_HANDLE: Record<"n" | "s" | "e" | "w", string> = {
@@ -315,6 +324,43 @@ export async function getPictureInlineLayout(
  * The picture to act on: the one inside `within` when a scope is given, otherwise the page's first
  * image slot.
  */
+/**
+ * Paste the picture on Bloom's clipboard into the empty first image slot of the page being
+ * edited, such as a new book's cover picture, the way a person does: select the picture's box,
+ * then choose Paste image from its menu. Returns the file name the slot shows once the picture
+ * has loaded. Put the picture on the clipboard first, with copyToClipboard.
+ */
+export async function pasteImageIntoEmptySlot(page: Page): Promise<string> {
+    const before = await getImagePlacement(page);
+    expect(
+        before.fileName,
+        "test setup: the page's first image slot starts with no picture",
+    ).toBe(PLACEHOLDER);
+    // An empty picture shows no image to click, so select the picture's box itself.
+    await selectCanvasElementAt(
+        editablePageFrame(page)
+            .locator(
+                ".bloom-canvas .bloom-canvas-element.bloom-backgroundImage",
+            )
+            .first(),
+        "the page's first picture",
+    );
+    await clickCanvasElementMenuItem(page, PASTE_IMAGE_COMMAND);
+    await expect
+        .poll(
+            async () => {
+                const placement = await getImagePlacement(page);
+                return placement.fileName !== PLACEHOLDER && placement.loaded;
+            },
+            {
+                timeout: 120000,
+                message: "The page never showed the pasted picture.",
+            },
+        )
+        .toBe(true);
+    return (await getImagePlacement(page)).fileName;
+}
+
 function imageIn(page: Page, within?: Locator): Locator {
     if (within) return within.locator(".bloom-imageContainer img").first();
     return editablePageFrame(page).locator(FIRST_IMAGE).first();
