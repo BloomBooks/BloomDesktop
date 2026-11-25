@@ -170,6 +170,65 @@ export async function recordVideo(
 }
 
 /**
+ * Trim the start of the video in `videoBox` with the Sign Language tool's Trim slider: click the
+ * box, which opens the tool on that video, then move the slider's start handle `tenthsOfASecond`
+ * steps to the right with the arrow key (one step is a tenth of a second). Waits until the box's
+ * video starts that much later than it did, and returns its trim.
+ */
+export async function trimVideoStart(
+    page: Page,
+    videoBox: Locator,
+    tenthsOfASecond: number,
+): Promise<IVideoTrim> {
+    const startBefore = (await getVideoTrim(videoBox))?.start ?? 0;
+    await realClick(videoBox);
+    const startHandle = toolboxFrame(page).locator(
+        ".videoTrimSlider .rc-slider-handle-1",
+    );
+    await expect(
+        startHandle,
+        "The Sign Language tool never showed its Trim slider. It shows one only once it has read the selected video's length.",
+    ).toBeVisible({ timeout: 30000 });
+    for (let i = 0; i < tenthsOfASecond; i++)
+        await startHandle.press("ArrowRight");
+    const expectedStart = startBefore + tenthsOfASecond / 10;
+    await expect
+        .poll(async () => (await getVideoTrim(videoBox))?.start, {
+            timeout: 15000,
+            message: `Moving the Trim slider's start handle ${tenthsOfASecond} steps did not trim the video's start to ${expectedStart} seconds.`,
+        })
+        .toBeCloseTo(expectedStart, 5);
+    return (await getVideoTrim(videoBox))!;
+}
+
+/** Where a trimmed video starts and ends, in seconds from the start of the whole video. */
+export interface IVideoTrim {
+    start: number;
+    end: number;
+}
+
+/**
+ * The trim of the video in a box, or undefined when the video plays whole. Bloom records a trim as
+ * a `#t=start,end` fragment on the video's src.
+ */
+export async function getVideoTrim(
+    videoBox: Locator,
+): Promise<IVideoTrim | undefined> {
+    const match = /#t=([\d.]+),([\d.]+)/.exec(await getVideoSource(videoBox));
+    if (!match) return undefined;
+    return { start: Number(match[1]), end: Number(match[2]) };
+}
+
+/**
+ * The file name of the video in a box, or "" when the box has no video. Leaves out the trim, and
+ * the timestamp query Bloom puts on a video just imported so that the browser reloads it.
+ */
+export async function getVideoFileName(videoBox: Locator): Promise<string> {
+    const source = await getVideoSource(videoBox);
+    return decodeURIComponent(source.split(/[?#]/)[0].split("/").pop() ?? "");
+}
+
+/**
  * The book-relative source of the video in a box, trim fragment included, or "" when it has none.
  * Bloom records the trim as a `#t=` fragment on the src, which is why this returns the whole thing.
  */
