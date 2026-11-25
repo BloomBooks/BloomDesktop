@@ -30,6 +30,8 @@ export interface IAddPageThumbnail {
      */
     naturalWidth: number;
     naturalHeight: number;
+    /** The URL the thumbnail's image is loaded from, as the browser resolved it. */
+    imageUrl: string;
 }
 
 /**
@@ -172,6 +174,7 @@ export async function getAddPageDialogGroups(
                 loaded: boolean;
                 naturalWidth: number;
                 naturalHeight: number;
+                imageUrl: string;
             }[];
         }[] = [];
         for (const group of Array.from(
@@ -186,6 +189,7 @@ export async function getAddPageDialogGroups(
                     loaded: img.complete && img.naturalWidth > 0,
                     naturalWidth: img.naturalWidth,
                     naturalHeight: img.naturalHeight,
+                    imageUrl: img.src,
                 }),
             );
             result.push({ title, pages });
@@ -198,6 +202,7 @@ export async function getAddPageDialogGroups(
             thumbnailLoaded: p.loaded,
             naturalWidth: p.naturalWidth,
             naturalHeight: p.naturalHeight,
+            imageUrl: p.imageUrl,
         }));
         if (pages.length === 0)
             throw new Error(

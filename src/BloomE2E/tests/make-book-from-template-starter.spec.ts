@@ -215,8 +215,9 @@ test("a book made from a Template Starter template is blank and offers the templ
 
             // Bloom makes the other page's thumbnail when the dialog first asks for it, saves it in
             // the template's "template" folder, and then has the dialog load it in place of the
-            // placeholder it showed meanwhile. So wait until the dialog is showing the image of
-            // the file Bloom saved.
+            // placeholder it showed meanwhile. So wait until the dialog is showing an image of the
+            // saved file's size, then check that the image is that file, byte for byte: every
+            // portrait thumbnail Bloom makes has the same size.
             const generated = Path.join(
                 templateFolder,
                 "template",
@@ -230,11 +231,29 @@ test("a book made from a Template Starter template is blank and offers the templ
                             return `Bloom has not saved ${generated}`;
                         const shown = (await getAddPageDialogGroups(page))[0]
                             .pages[0];
-                        return shown.naturalWidth === expected.width &&
-                            shown.naturalHeight === expected.height
+                        if (
+                            shown.naturalWidth !== expected.width ||
+                            shown.naturalHeight !== expected.height
+                        )
+                            return (
+                                `the dialog shows a ${shown.naturalWidth}x${shown.naturalHeight} ` +
+                                `image, not Bloom's ${expected.width}x${expected.height} thumbnail`
+                            );
+                        const served = await page.evaluate(async (url) => {
+                            const bytes = new Uint8Array(
+                                await (await fetch(url)).arrayBuffer(),
+                            );
+                            let text = "";
+                            for (let i = 0; i < bytes.length; i += 0x8000)
+                                text += String.fromCharCode(
+                                    ...bytes.subarray(i, i + 0x8000),
+                                );
+                            return btoa(text);
+                        }, shown.imageUrl);
+                        return served ===
+                            fs.readFileSync(generated).toString("base64")
                             ? ""
-                            : `the dialog shows a ${shown.naturalWidth}x${shown.naturalHeight} ` +
-                                  `image, not Bloom's ${expected.width}x${expected.height} thumbnail`;
+                            : `the dialog's image at ${shown.imageUrl} is not the file ${generated}`;
                     },
                     {
                         timeout: 60000,
