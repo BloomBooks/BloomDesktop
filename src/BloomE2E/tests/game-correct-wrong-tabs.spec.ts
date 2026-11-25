@@ -146,16 +146,20 @@ async function expectCannotModify(
         `Sanity check: ${what} should not be selected before clicking it`,
     ).not.toBe("true");
 
-    await realClickAt(page, x, y);
-    await waitForClickToSettle(editablePageFrame(page));
-    expect(
-        await item.getAttribute("data-bloom-active"),
-        `Clicking ${what} should not select it`,
-    ).not.toBe("true");
-    expect(
-        await hasCaretOrFocusInside(item),
-        `Clicking ${what} should not put the insertion point or the focus in it`,
-    ).toBe(false);
+    // Twice, because in Start it can take two clicks to reach an item: the first click on a word
+    // selects the box around it, and the second the word.
+    for (const clicking of ["Clicking", "Clicking a second time on"]) {
+        await realClickAt(page, x, y);
+        await waitForClickToSettle(editablePageFrame(page));
+        expect(
+            await item.getAttribute("data-bloom-active"),
+            `${clicking} ${what} should not select it`,
+        ).not.toBe("true");
+        expect(
+            await hasCaretOrFocusInside(item),
+            `${clicking} ${what} should not put the insertion point or the focus in it`,
+        ).toBe(false);
+    }
 
     await page.mouse.move(x, y);
     await page.mouse.down();
@@ -478,6 +482,10 @@ test("items made in Start show in Correct and Wrong but cannot be changed there,
             // not give the answer away.
             // However Bloom hides it: a picture that takes up no room is not seen either.
             const inWrong = await getPictureOnTarget(pictureTarget);
+            expect(
+                { fileName: inWrong.fileName, loaded: inWrong.loaded },
+                "In Wrong, the target should still hold the picture chosen in Start",
+            ).toEqual({ fileName: pictureFile, loaded: true });
             expect(
                 inWrong.laidOut ? inWrong.opacity : 0,
                 "In Wrong, the picture chosen in Start should not show on its target at all",
