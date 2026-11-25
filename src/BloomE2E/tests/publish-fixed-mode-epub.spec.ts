@@ -60,10 +60,6 @@ const OVERLAY_PICTURE = Path.join(IMAGES, "bird.png");
 const BUBBLE_TEXT = "Look at the bird on the roof of our house!";
 const CAPTION_TEXT = "The bird sang all morning.";
 
-// The canvas, the two pictures, and the bubble and the caption, each with its text box and its
-// words: what getPageLayout should find on the comic page.
-const THINGS_ON_THE_COMIC_PAGE = 9;
-
 test("a comic page published as a fixed-mode ePUB is laid out as it is in Edit [Test Case ID 246]", async ({
     page,
     step,
@@ -121,16 +117,25 @@ test("a comic page published as a fixed-mode ePUB is laid out as it is in Edit [
                 comicPage.id,
             );
             expect(
-                layout.items.map((item) => item.name),
-                "test setup: the page in Edit should hold the picture, the bubble, the " +
-                    "caption and the small picture, with their texts",
-            ).toHaveLength(THINGS_ON_THE_COMIC_PAGE);
+                layout.items.filter((item) => item.isPicture),
+                "test setup: the page in Edit should hold the picture behind the " +
+                    "canvas and the small picture",
+            ).toHaveLength(2);
             expect(
                 layout.items
-                    .filter((item) => item.name.startsWith("the words in"))
+                    .filter((item) => item.name.startsWith("the text box of"))
                     .map((item) => item.text),
                 "test setup: the bubble and the caption should hold what was typed",
             ).toEqual([BUBBLE_TEXT, CAPTION_TEXT]);
+            expect(
+                layout.items.filter(
+                    (item) =>
+                        item.name.startsWith("line ") &&
+                        item.text === BUBBLE_TEXT,
+                ).length,
+                "test setup: the bubble's text should take more than one line, so that " +
+                    "a different line break in the ePUB would show",
+            ).toBeGreaterThan(1);
             return layout;
         },
     );
@@ -142,7 +147,7 @@ test("a comic page published as a fixed-mode ePUB is laid out as it is in Edit [
             await openEpubPublishScreen(page);
             expect(
                 await getEpubMode(page),
-                "A book with a comic page is published as a fixed-mode ePUB.",
+                "test setup: the ePUB should be about to be made in Fixed mode, the mode the case is about",
             ).toBe("fixed");
         },
     );

@@ -27,8 +27,12 @@ const PROGRESS_DIALOG = ".MuiDialog-root.progress-dialog";
 const PROGRESS_DIALOG_CLOSE_BUTTON =
     ".MuiDialogActions-root button.MuiButton-contained";
 
-/** The reader's button that turns to the next page; see output/browser/Readium/index.html. */
-const NEXT_PAGE_BUTTON = "#right-page-btn";
+/**
+ * The reader's button that turns to the next page, found by what it does: it is the right-hand
+ * button for a book read left to right (Readium/index.html), and the left-hand one for a book
+ * read right to left (indexRtl.html).
+ */
+const NEXT_PAGE_BUTTON = 'button[onclick*="nextPage"]';
 
 /** Go to the Publish tab's ePUB screen, and wait until it offers its Preview button. */
 export async function openEpubPublishScreen(page: Page): Promise<void> {
@@ -208,7 +212,10 @@ async function getIdOfEpubPreviewPage(page: Page): Promise<string | undefined> {
         .catch(() => undefined);
 }
 
-/** Wait until a page of the preview has loaded, with its fonts and every picture it shows. */
+/**
+ * Wait until a page of the preview has loaded, with its fonts and every picture it shows. A
+ * picture that failed to load never counts as loaded, so a page with one fails here.
+ */
 async function waitForEpubPreviewPageToFinishLoading(
     frame: Frame,
 ): Promise<void> {
@@ -219,12 +226,15 @@ async function waitForEpubPreviewPageToFinishLoading(
                     () =>
                         document.readyState === "complete" &&
                         document.fonts.status === "loaded" &&
-                        [...document.images].every((image) => image.complete),
+                        [...document.images].every(
+                            (image) => image.complete && image.naturalWidth > 0,
+                        ),
                 ),
             {
                 timeout: 30000,
                 message:
-                    "A page of the ePUB preview never finished loading its fonts and pictures.",
+                    "A page of the ePUB preview never finished loading its fonts and pictures. " +
+                    "A picture that cannot be loaded leaves it so.",
             },
         )
         .toBe(true);

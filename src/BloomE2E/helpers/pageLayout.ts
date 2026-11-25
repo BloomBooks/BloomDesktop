@@ -25,7 +25,7 @@ const kPictureBleedPixels = 2;
 
 /** One thing on a page, and where it is, in thousandths of the page's width from its top left. */
 export interface IPageLayoutItem {
-    /** What the thing is, e.g. "canvas 1, picture 2" or "the words in canvas 1, text 1". */
+    /** What the thing is, e.g. "canvas 1, picture 2" or "line 2 of the words in canvas 1, text 1". */
     name: string;
     /** For a text box and for its words, the text; for anything else, nothing. */
     text?: string;
@@ -54,7 +54,7 @@ export interface IPageLayout {
  *
  * For each canvas on the page, in this order: the canvas; each picture on it, as the area the
  * picture itself covers; and each canvas element that shows text, as the element, its text box,
- * and the words in the box.
+ * and each line of the words in the box.
  *
  * Throws when the document is not showing that page.
  */
@@ -134,6 +134,58 @@ export async function getPageLayout(
             }
             return { left, top, width: right - left, height: bottom - top };
         };
+        // The area each line of an element's text covers, from the top line down. The text
+        // is measured run by run, and runs that overlap vertically by more than half the
+        // height of the shorter one are on one line.
+        const linesOfWords = (element: Element): IBox[] => {
+            const lines: {
+                left: number;
+                top: number;
+                right: number;
+                bottom: number;
+            }[] = [];
+            const texts = document.createTreeWalker(
+                element,
+                NodeFilter.SHOW_TEXT,
+            );
+            for (let text = texts.nextNode(); text; text = texts.nextNode()) {
+                const run = document.createRange();
+                run.selectNodeContents(text);
+                for (const piece of run.getClientRects()) {
+                    if (piece.width === 0 || piece.height === 0) continue;
+                    const line = lines.find(
+                        (candidate) =>
+                            Math.min(candidate.bottom, piece.bottom) -
+                                Math.max(candidate.top, piece.top) >
+                            Math.min(
+                                candidate.bottom - candidate.top,
+                                piece.height,
+                            ) /
+                                2,
+                    );
+                    if (line) {
+                        line.left = Math.min(line.left, piece.left);
+                        line.top = Math.min(line.top, piece.top);
+                        line.right = Math.max(line.right, piece.right);
+                        line.bottom = Math.max(line.bottom, piece.bottom);
+                    } else
+                        lines.push({
+                            left: piece.left,
+                            top: piece.top,
+                            right: piece.right,
+                            bottom: piece.bottom,
+                        });
+                }
+            }
+            return lines
+                .sort((a, b) => a.top - b.top)
+                .map((line) => ({
+                    left: line.left,
+                    top: line.top,
+                    width: line.right - line.left,
+                    height: line.bottom - line.top,
+                }));
+        };
         const items: {
             name: string;
             text?: string;
@@ -180,15 +232,16 @@ export async function getPageLayout(
                             text,
                             rect: place(box.getBoundingClientRect()),
                         });
-                        // Where the words themselves fall, which is what shows a different
-                        // font, size or line break inside an unchanged box.
-                        const words = document.createRange();
-                        words.selectNodeContents(box);
-                        items.push({
-                            name: `the words in ${textName}`,
-                            text,
-                            rect: place(words.getBoundingClientRect()),
-                        });
+                        // Where the words themselves fall, line by line, which is what
+                        // shows a different font, size, alignment or line break inside an
+                        // unchanged box.
+                        linesOfWords(box).forEach((line, lineIndex) =>
+                            items.push({
+                                name: `line ${lineIndex + 1} of the words in ${textName}`,
+                                text,
+                                rect: place(line),
+                            }),
+                        );
                     });
             },
         );
