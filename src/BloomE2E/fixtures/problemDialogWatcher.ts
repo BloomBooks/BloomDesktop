@@ -44,6 +44,12 @@ export interface IProblemDialogWatcher {
      * or blamed on the next test.
      */
     scanNow: () => Promise<void>;
+    /**
+     * Stop scanning until the returned function is called, for a test that raises a problem
+     * dialog on purpose and closes it itself. Resolves once no scan is in progress, so a dialog
+     * raised after that is left alone.
+     */
+    pause: () => Promise<() => void>;
     /** Stop polling. */
     stop: () => void;
 }
@@ -145,6 +151,7 @@ export function startProblemDialogWatcher(
 ): IProblemDialogWatcher {
     const problems: IBloomProblem[] = [];
     let stopped = false;
+    let pauses = 0;
 
     // Pages whose dialog we recorded but could not close. The dialog is still showing there, so
     // later scans would find and record the same problem again; skip such a page instead.
@@ -153,6 +160,7 @@ export function startProblemDialogWatcher(
     // One scan: find a dialog, record it, close it. Never throws: a failure to gather the
     // detail or to close still gets recorded as a problem, and the watcher keeps running.
     const checkOnce = async (): Promise<boolean> => {
+        if (pauses > 0) return false;
         const browser = getBrowser();
         if (!browser) return false;
         const found = await findProblemDialog(browser).catch(() => undefined);
@@ -212,6 +220,17 @@ export function startProblemDialogWatcher(
         takeProblems: () => problems.splice(0, problems.length),
         scanNow: async () => {
             await scanExclusively();
+        },
+        pause: async () => {
+            pauses++;
+            await chain;
+            let resumed = false;
+            return () => {
+                if (!resumed) {
+                    resumed = true;
+                    pauses--;
+                }
+            };
         },
         stop: () => {
             stopped = true;
