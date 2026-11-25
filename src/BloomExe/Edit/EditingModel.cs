@@ -1894,8 +1894,8 @@ namespace Bloom.Edit
         /// </summary>
         public string EditTabStatePageId => _stateMachine.CurrentPageId;
 
-        // When a page last told us its DOM had loaded. See HandlePageDomLoadedEvent.
-        private DateTime _lastPageLoadAnnouncement = DateTime.MinValue;
+        // Time since a page last told us its DOM had loaded. See HandlePageDomLoadedEvent.
+        private readonly Stopwatch _sinceLastPageLoadAnnouncement = new Stopwatch();
 
         // The book folder the page on screen was loaded from, which its URL is in; see
         // ShowPageAgainIfFromAnotherFolderSoon.
@@ -1985,7 +1985,7 @@ namespace Bloom.Edit
         /// automation only.
         /// </summary>
         public long MsSinceLastPageLoadAnnouncement =>
-            (long)(DateTime.UtcNow - _lastPageLoadAnnouncement).TotalMilliseconds;
+            _sinceLastPageLoadAnnouncement.ElapsedMilliseconds;
 
         /// <summary>
         /// Show the page with this id in the Edit tab. The page being left is saved on the way,
@@ -2807,7 +2807,7 @@ namespace Bloom.Edit
             // Note the announcement before acting on it. A page announces itself more than once,
             // and the e2e suite has to know that the last one has been and gone before it asks
             // this tab for anything (see the editState endpoint and MsSinceLastPageLoadAnnouncement).
-            _lastPageLoadAnnouncement = DateTime.UtcNow;
+            _sinceLastPageLoadAnnouncement.Restart();
 
             var nowEditing = _stateMachine.ToEditing(pageId);
             // Only for a notification we accepted, i.e. for the page we are now editing; see
