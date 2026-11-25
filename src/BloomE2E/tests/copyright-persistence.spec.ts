@@ -263,6 +263,21 @@ test.describe("copyright persistence, in a book and in its derivative", () => {
             "A new derivative already gives the original's copyright as its own",
         ).not.toContain(ORIGINAL_HOLDER);
 
+        // A new derivative keeps the original's license as its own (BookStarter), so first give it
+        // a copyright and license that differ from the original's in both parts; otherwise the
+        // license would match the original's whether or not the box below did anything.
+        await openCopyrightDialogFromCreditsPage(page);
+        await setCopyrightAndLicense(page, DERIVATIVE_HOLDER, true);
+        await expectCreditsCopyright(
+            page,
+            {
+                holder: DERIVATIVE_HOLDER,
+                notHolder: ORIGINAL_HOLDER,
+                licenseUrlPart: DERIVATIVE_LICENSE_URL_PART,
+            },
+            "Giving the derivative a copyright and license of its own did not show them on the credits page.",
+        );
+
         // THE ACTION UNDER TEST: "Not a translation or new version".
         await openCopyrightDialogFromCreditsPage(page);
         await expect(
