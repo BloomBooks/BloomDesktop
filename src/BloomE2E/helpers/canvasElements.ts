@@ -1128,6 +1128,35 @@ export async function hoverOverCanvas(
         force: true,
         timeout: 30000,
     });
+    // Wait until the browser itself counts the pointer as over the canvas, so a check that
+    // something stays hidden on hover cannot pass merely because the hover never took.
+    await expect
+        .poll(async () => canvas(page).evaluate((el) => el.matches(":hover")), {
+            timeout: 15000,
+            message:
+                "The pointer was moved onto the canvas, but the canvas is not hovered.",
+        })
+        .toBe(true);
+}
+
+/**
+ * Leave no canvas element selected, the way a person does: by clicking the page just outside its
+ * margin box, away from the canvas. Bloom clears the selection on any click in the page that is
+ * not in a canvas or its controls (onDocClickClearActiveElement in CanvasElementManager.ts).
+ * Waits until nothing is selected.
+ */
+export async function clearCanvasElementSelection(page: Page): Promise<void> {
+    const pageBox = await requireBox(
+        editablePageFrame(page).locator(".bloom-page").first(),
+        "the page being edited",
+    );
+    await realClickAt(page, pageBox.x + 3, pageBox.y + 3);
+    await expect(
+        editablePageFrame(page).locator(
+            '.bloom-canvas-element[data-bloom-active="true"]',
+        ),
+        "Clicking the page outside the canvas left a canvas element selected.",
+    ).toHaveCount(0, { timeout: 15000 });
 }
 
 /** Take the pointer off the page being edited altogether, onto Bloom's top bar. */

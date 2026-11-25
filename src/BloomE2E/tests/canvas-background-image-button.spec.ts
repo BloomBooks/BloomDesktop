@@ -3,13 +3,15 @@
 //
 // The button shows only while the pointer is over the canvas, and then only when the background
 // image is the selected element or the canvas holds nothing but its background image. With any
-// other element selected it stays hidden, so it does not cover the element being worked on.
+// other element on the canvas it stays hidden unless the background image is selected, so it does
+// not cover the element being worked on.
 //
 // The tests are serial because each one starts from the page the one before it left behind.
 
 import { expect, test } from "../fixtures/bloomTest";
 import { addPage, makeBookFromTemplate } from "../helpers/bookMaking";
 import {
+    clearCanvasElementSelection,
     deleteCanvasElement,
     dragPaletteItemOntoCanvas,
     expectChangeImageButton,
@@ -79,6 +81,19 @@ test.describe("the background image's Change Image button [Test Case ID 340]", (
             page,
             false,
             "The button shows while a speech bubble is selected.",
+        );
+    });
+
+    test("with another element on the canvas and nothing selected, it stays hidden", async ({
+        page,
+    }) => {
+        await clearCanvasElementSelection(page);
+
+        await hoverOverCanvas(page, kEmptySpot);
+        await expectChangeImageButton(
+            page,
+            false,
+            "The button shows over a canvas that holds a speech bubble, with nothing selected.",
         );
     });
 
