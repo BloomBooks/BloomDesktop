@@ -91,6 +91,40 @@ describe("insertTableInText", () => {
         expect(halves.map((half) => half.id)).toEqual(["sentence", ""]);
     });
 
+    it("keeps the id of a recorded sentence that the table goes just before", () => {
+        element("first").innerHTML =
+            "<span id='one' class='audio-sentence'>First sentence. </span><span id='two' class='audio-sentence'>Second sentence.</span>";
+
+        insertTableInText(element("text"), caretIn("two", 0));
+
+        const sentences = Array.from(
+            element("text").querySelectorAll<HTMLElement>(
+                "span.audio-sentence",
+            ),
+        );
+        expect(sentences.map((s) => `${s.id}:${s.textContent}`)).toEqual([
+            "one:First sentence. ",
+            "two:Second sentence.",
+        ]);
+    });
+
+    it("keeps the id of a recorded sentence that the table goes just after", () => {
+        element("first").innerHTML =
+            "<span id='one' class='audio-sentence'>First sentence.</span><span id='two' class='audio-sentence'> Second sentence.</span>";
+
+        insertTableInText(element("text"), caretIn("one", 15));
+
+        const sentences = Array.from(
+            element("text").querySelectorAll<HTMLElement>(
+                "span.audio-sentence",
+            ),
+        );
+        expect(sentences.map((s) => `${s.id}:${s.textContent}`)).toEqual([
+            "one:First sentence.",
+            "two: Second sentence.",
+        ]);
+    });
+
     it("puts the table before the paragraph for a caret at its start", () => {
         insertTableInText(element("text"), caretIn("second", 0));
         // A paragraph before the table already exists, so no empty one is added.

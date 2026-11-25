@@ -113,10 +113,17 @@ export function placeBetweenParagraphs(
         return;
     }
     // An element that the caret was inside (a recorded sentence, say) is now in both halves, and
-    // the copy in the second half has the same id. Only the first half keeps it.
+    // the copy in the second half has the same id. A half that the split left empty is removed,
+    // so a sentence that the caret was at the edge of keeps its id, and with it its recording.
+    // When both halves have text, only the first keeps the id.
     restOfParagraph.querySelectorAll("[id]").forEach((copy) => {
-        if (paragraph.querySelector(`[id="${CSS.escape(copy.id)}"]`))
-            copy.removeAttribute("id");
+        const original = paragraph.querySelector(
+            `[id="${CSS.escape(copy.id)}"]`,
+        );
+        if (!original) return;
+        if (original.textContent === "") original.remove();
+        else if (copy.textContent === "") copy.remove();
+        else copy.removeAttribute("id");
     });
     paragraph.after(table);
     if (!isBlank(restOfParagraph)) {

@@ -186,6 +186,20 @@ describe("pageEditingMarkup tests", () => {
         expect(div.querySelector(".bloom-tableInText")).toBe(liveTable);
     });
 
+    it("cleanUpNbsps leaves the box alone when the only nbsp to convert is in a table's cell", () => {
+        const div = document.createElement("div");
+        div.innerHTML =
+            "<p>Before</p><div class='bloom-table bloom-tableInText'><p>A&nbsp;b c</p></div><p>After</p>";
+        const textNodeBefore = div.querySelector("p")!.firstChild;
+        // Sanity check: the cell holds an nbsp that would be converted anywhere else.
+        expect(div.innerHTML).toContain("A&nbsp;b c");
+
+        cleanUpNbsps(div);
+
+        expect(div.querySelector("p")!.firstChild).toBe(textNodeBefore);
+        expect(div.innerHTML).toContain("A&nbsp;b c");
+    });
+
     it("removeCommentsFromEditableHtml keeps the live table in the box's text", () => {
         const div = document.createElement("div");
         div.innerHTML =
