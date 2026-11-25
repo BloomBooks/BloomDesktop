@@ -152,14 +152,26 @@ export function paragraphOf(
     return paragraph;
 }
 
+// What shows in a paragraph although it has no text: a picture, and the empty span that
+// Shift+Enter puts in.
+const kShowsWithoutText = "img, span.bloom-linebreak";
+
 // Whether `element` holds nothing that shows: no text, no line break and no picture. Empty
 // formatting elements (an empty <strong>, say) do not count.
 function isEmptyElement(element: Element): boolean {
-    return element.textContent === "" && !element.querySelector("br, img");
+    return (
+        element.textContent === "" &&
+        !element.querySelector(`br, ${kShowsWithoutText}`)
+    );
 }
 
-function isBlank(content: Node): boolean {
-    return (content.textContent ?? "").trim() === "";
+// Whether `content` is no more than white space, empty formatting and a <br>, the browser's
+// placeholder in an empty paragraph.
+function isBlank(content: Element | DocumentFragment): boolean {
+    return (
+        (content.textContent ?? "").trim() === "" &&
+        !content.querySelector(kShowsWithoutText)
+    );
 }
 
 /**

@@ -7,7 +7,7 @@
 // finished the switch rather than merely started it.
 
 import { expect, type Page, type Response } from "@playwright/test";
-import { apiGetJson, apiPost } from "./api";
+import { apiGetJson, apiPost, clickAndWaitForApiPost } from "./api";
 import { editablePageFrame } from "./bookMaking";
 import { pageListFrame } from "./pageList";
 import { toolboxFrame } from "./toolbox";
@@ -174,16 +174,9 @@ export async function clickZoomButtonAtEndOfRange(
         throw new Error(
             `The zoom is ${before.zoom}%, not ${end}%, the ${direction === "in" ? "largest" : "smallest"} Bloom allows. Use clickZoomButton.`,
         );
-    // Awaited together, so that a click that fails does not leave the wait to time out unhandled.
-    await Promise.all([
-        page.waitForResponse(
-            (response) =>
-                response.request().method() === "POST" &&
-                new URL(response.url()).pathname.endsWith("/workspace/zoom"),
-            { timeout: 30000 },
-        ),
+    await clickAndWaitForApiPost(page, "workspace/zoom", () =>
         zoomButton(page, direction).click(),
-    ]);
+    );
     return (await getZoom(page)).zoom;
 }
 

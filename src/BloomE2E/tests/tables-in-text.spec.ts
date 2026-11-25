@@ -33,7 +33,7 @@ import {
     getTextBoxLayout,
     insertTableInTextAfter,
     putCaretBesideTable,
-    selectAcrossTable,
+    selectText,
 } from "../helpers/tablesInText";
 
 // Tables need a subscription and the experimental Tables feature, as for the other table tests.
@@ -154,13 +154,7 @@ test("A selection across a table can be deleted, but not typed over, cut or past
     );
 
     await step("Select across the table and press Delete", async () => {
-        await selectAcrossTable(
-            page,
-            GROUP,
-            LANG,
-            "The kingfisher",
-            "The heron",
-        );
+        await selectText(page, GROUP, LANG, "The kingfisher", "The heron");
         await pressKeys(page, ["Delete"]);
     });
     const afterDelete = [
@@ -176,32 +170,55 @@ test("A selection across a table can be deleted, but not typed over, cut or past
         .toEqual(afterDelete);
 
     await step("Select across the table and type a letter", async () => {
-        await selectAcrossTable(page, GROUP, LANG, "The", "fishes.");
+        await selectText(page, GROUP, LANG, "The", "fishes.");
         await page.keyboard.type("Z");
         await waitForClickToSettle(editablePageFrame(page));
     });
     expect(await getTextBoxLayout(page, GROUP, LANG)).toEqual(afterDelete);
 
+    // Bloom does the top bar's commands in the order they are clicked, and Cut looks at the
+    // selection as soon as it runs. So once a second Cut, of a word below the table, has taken
+    // that word out, the first one has been handled too.
     await step(
-        "Select across the table and click the top bar's Cut",
+        "Select across the table and click the top bar's Cut, then Cut a word below the table",
         async () => {
-            await selectAcrossTable(page, GROUP, LANG, "The", "fishes.");
+            await selectText(page, GROUP, LANG, "The", "fishes.");
             await clickTopBarButton(page, "cut");
-            await waitForClickToSettle(editablePageFrame(page));
+            await selectText(page, GROUP, LANG, "fishes.", " The");
+            await clickTopBarButton(page, "cut");
         },
     );
-    expect(await getTextBoxLayout(page, GROUP, LANG)).toEqual(afterDelete);
+    const afterCut = ["P:The kingfisher", TABLE, "P:fishes. otter swims."];
+    await expect
+        .poll(async () => getTextBoxLayout(page, GROUP, LANG), {
+            message:
+                "Cut should take out only the word below the table, and leave the table.",
+        })
+        .toEqual(afterCut);
 
+    // Paste reads the clipboard before it looks at the selection, so a later click says nothing
+    // about when it looked. Leaving the page waits for a paste that is under way to finish.
     await step(
-        "Select across the table and click the top bar's Paste",
+        "Select across the table, click the top bar's Paste, then leave the page and come back",
         async () => {
             await copyToClipboard(page, { text: "pasted words" });
-            await selectAcrossTable(page, GROUP, LANG, "The", "fishes.");
+            await selectText(page, GROUP, LANG, "The", "fishes.");
             await clickTopBarButton(page, "paste");
-            await waitForClickToSettle(editablePageFrame(page));
+            await reloadPageBeingEdited(page);
         },
     );
-    expect(await getTextBoxLayout(page, GROUP, LANG)).toEqual(afterDelete);
+    expect(await getTextBoxLayout(page, GROUP, LANG)).toEqual(afterCut);
+
+    await step("Paste over a word below the table", async () => {
+        await selectText(page, GROUP, LANG, "fishes.", " otter");
+        await clickTopBarButton(page, "paste");
+    });
+    await expect
+        .poll(async () => getTextBoxLayout(page, GROUP, LANG), {
+            message:
+                "Paste below the table should work, or the step before it proves nothing.",
+        })
+        .toEqual(["P:The kingfisher", TABLE, "P:fishes.pasted words swims."]);
 });
 
 test("Dragging a table by its grip moves it in the text, and it stays there", async ({

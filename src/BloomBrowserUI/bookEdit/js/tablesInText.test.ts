@@ -137,23 +137,60 @@ describe("insertTableInText", () => {
         ]);
     });
 
-    it("keeps a line break that is all the split leaves of a recorded sentence", () => {
-        element("first").innerHTML =
-            "<span id='one' class='audio-sentence'>First sentence.<br></span><span id='two' class='audio-sentence'>Second.</span>";
-        const sentenceText = element("one").firstChild as Text;
-        const caret = document.createRange();
-        caret.setStart(sentenceText, sentenceText.length);
-        caret.collapse(true);
+    it.each([
+        [
+            "after",
+            "Words.<span class='bloom-inlineImage'><img src='a.png'></span>",
+        ],
+        [
+            "before",
+            "<span class='bloom-inlineImage'><img src='a.png'></span>Words.",
+        ],
+    ])(
+        "keeps an inline picture that is all of the paragraph %s the caret",
+        (side, html) => {
+            element("first").innerHTML = html;
+            const words = Array.from(element("first").childNodes).find(
+                (node) => node.nodeType === Node.TEXT_NODE,
+            ) as Text;
+            const caret = document.createRange();
+            caret.setStart(words, side === "after" ? words.length : 0);
+            caret.collapse(true);
 
-        const table = insertTableInText(element("text"), caret);
+            insertTableInText(element("text"), caret);
 
-        // The line break was after the caret, so it is in the second half, in that half's part of
-        // the sentence, and not a placeholder added for an empty paragraph.
-        expect(
-            table.nextElementSibling!.querySelector("span.audio-sentence br"),
-        ).not.toBeNull();
-        expect(element("text").querySelectorAll("br").length).toBe(1);
-    });
+            expect(element("text").querySelectorAll("img").length).toBe(1);
+            expect(childrenOfText()).toContain("[table]");
+        },
+    );
+
+    it.each([
+        ["<br>", "br"],
+        ["<span class='bloom-linebreak'></span>", "span.bloom-linebreak"],
+    ])(
+        "keeps a line break (%s) that is all the split leaves of a recorded sentence",
+        (lineBreak, lineBreakSelector) => {
+            element("first").innerHTML =
+                `<span id='one' class='audio-sentence'>First sentence.${lineBreak}</span><span id='two' class='audio-sentence'>Second.</span>`;
+            const sentenceText = element("one").firstChild as Text;
+            const caret = document.createRange();
+            caret.setStart(sentenceText, sentenceText.length);
+            caret.collapse(true);
+
+            const table = insertTableInText(element("text"), caret);
+
+            // The line break was after the caret, so it is in the second half, in that half's part of
+            // the sentence, and not a placeholder added for an empty paragraph.
+            expect(
+                table.nextElementSibling!.querySelector(
+                    `span.audio-sentence ${lineBreakSelector}`,
+                ),
+            ).not.toBeNull();
+            expect(
+                element("text").querySelectorAll(lineBreakSelector).length,
+            ).toBe(1);
+        },
+    );
 
     it("keeps the id of a recorded sentence when the table goes in at the start of its bold text", () => {
         element("first").innerHTML =

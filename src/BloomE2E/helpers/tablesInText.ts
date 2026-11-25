@@ -11,6 +11,7 @@
 // relative to Bloom's window. pointInWindow adds the frame's offset, in one place.
 
 import { expect, type Locator, type Page } from "@playwright/test";
+import { clickAndWaitForApiPost } from "./api";
 import { editablePageFrame } from "./bookMaking";
 import {
     clickContextMenuCommand,
@@ -227,12 +228,12 @@ export async function putCaretBesideTable(
 }
 
 /**
- * Select the text box's text from just after `fromText` (above a table) to just after `toText`
- * (below it), so that the selection takes in the table, as a person's drag across it would. The
- * selection is set directly: it is the start state for what the test presses next, not what it
- * measures.
+ * Select the text box's text from just after `fromText` to just after `toText`, both outside its
+ * tables. With `fromText` above a table and `toText` below it, the selection takes in the table,
+ * as a person's drag across it would. The selection is set directly: it is the start state for
+ * what the test presses next, not what it measures.
  */
-export async function selectAcrossTable(
+export async function selectText(
     page: Page,
     groupSelector: string,
     languageTag: string,
@@ -272,12 +273,15 @@ export async function selectAcrossTable(
         { fromText, toText, tableClass: kTableInTextClass },
     );
     if (!selected)
-        throw new Error("Selecting across the table selected nothing.");
+        throw new Error(
+            `Selecting from after "${fromText}" to after "${toText}" selected nothing.`,
+        );
 }
 
 /**
  * Click the top bar's Cut or Paste button, the way a person does, once Bloom has enabled it.
- * Returns as soon as the click is made; what it should have done is the caller's question.
+ * Returns once Bloom has answered the click. Bloom then does the command in the page, so it may
+ * not be done yet; what it should have done is the caller's question.
  */
 export async function clickTopBarButton(
     page: Page,
@@ -288,7 +292,9 @@ export async function clickTopBarButton(
         button,
         `The top bar's ${which} button never became enabled.`,
     ).toBeEnabled({ timeout: kWaitMs });
-    await realClick(button);
+    await clickAndWaitForApiPost(page, "editView/topBarButtonClick", () =>
+        realClick(button),
+    );
 }
 
 /**
@@ -305,8 +311,13 @@ export async function dragTableToAfterText(
 ): Promise<void> {
     const before = await getTextBoxLayout(page, groupSelector, languageTag);
     const box = textBox(page, groupSelector, languageTag);
+    // Found first, because finding it scrolls the text, which moves the table and its grip. The
+    // table is in the same text box, so it is in view with the place it is dropped.
+    const drop = await pointInWindow(
+        page,
+        await pointAfterText(box, afterText),
+    );
     const table = box.locator(`> .${kTableInTextClass}`).first();
-    await table.scrollIntoViewIfNeeded({ timeout: kWaitMs });
     const tableBox = await table.boundingBox();
     if (!tableBox)
         throw new Error("The table in the text has no on-screen box.");
@@ -323,10 +334,6 @@ export async function dragTableToAfterText(
     });
     const gripBox = await grip.boundingBox();
     if (!gripBox) throw new Error("The table's grip has no on-screen box.");
-    const drop = await pointInWindow(
-        page,
-        await pointAfterText(box, afterText),
-    );
     await page.mouse.move(
         gripBox.x + gripBox.width / 2,
         gripBox.y + gripBox.height / 2,
