@@ -343,6 +343,63 @@ export async function showBloomPubPreview(page: Page): Promise<Frame> {
 }
 
 /**
+ * Turn the pages of a BloomPUB preview (the frame showBloomPubPreview returns) forward with
+ * bloom-player's own next-page button until it is showing the book page with id `pageId`, and
+ * return that page. bloom-player finishes a page only when it is the one showing (a text box gets
+ * its scroll bar then), so a test of how a page looks to a reader goes to it first.
+ *
+ * Only forward: the preview opens on the cover, so every other page is ahead of it.
+ */
+export async function showPreviewPage(
+    player: Frame,
+    pageId: string,
+): Promise<Locator> {
+    const shown = player.locator(
+        `.swiper-slide-active .bloom-page[id="${pageId}"]`,
+    );
+    const next = player.locator(".swiper-button-next").first();
+    const idOfShownPage = async () =>
+        player
+            .locator(".swiper-slide-active .bloom-page")
+            .first()
+            .getAttribute("id");
+    // A book has far fewer pages than this; the bound only stops a preview that is not turning.
+    for (let turns = 0; turns < 500; turns++) {
+        if ((await shown.count()) > 0) return shown;
+        if (
+            await next.evaluate((button) =>
+                button.classList.contains("swiper-button-disabled"),
+            )
+        )
+            throw new Error(
+                `The BloomPUB preview reached its last page without showing page "${pageId}".`,
+            );
+        const before = await idOfShownPage();
+        await next.click();
+        await expect
+            .poll(idOfShownPage, {
+                timeout: 30000,
+                message:
+                    "The BloomPUB preview's next-page button did not turn the page.",
+            })
+            .not.toBe(before);
+    }
+    throw new Error(
+        `The BloomPUB preview never showed page "${pageId}", after 500 page turns.`,
+    );
+}
+
+/**
+ * The text box holding `text` on a page of a BloomPUB preview (a page showPreviewPage returned):
+ * the language box that the reader sees, whose text contains `text`.
+ */
+export function getPreviewTextBox(previewPage: Locator, text: string): Locator {
+    return previewPage
+        .locator(".bloom-editable.bloom-visibility-code-on")
+        .filter({ hasText: text });
+}
+
+/**
  * The languages bloom-player offers in its "Languages in this book:" menu, in the order shown.
  * Each is the name the language calls itself, which is not the name the check box list shows.
  *

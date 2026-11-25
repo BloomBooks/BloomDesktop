@@ -1258,7 +1258,50 @@ export async function typeInCanvasElement(
 
 /** The box that the selected canvas element's text is showing. */
 function shownTextBoxOfActiveElement(page: Page): Locator {
-    return activeCanvasElement(page).locator(
-        ".bloom-translationGroup > .bloom-editable.bloom-visibility-code-on",
+    return activeCanvasElement(page).locator(SHOWN_TEXT_BOX);
+}
+
+/** Within a canvas element, the language box of its text that it is showing. */
+const SHOWN_TEXT_BOX =
+    ".bloom-translationGroup > .bloom-editable.bloom-visibility-code-on";
+
+/**
+ * The box that canvas element `index` (in document order, as canvasElement counts) is showing its
+ * text in. Unlike the selected element's box, this goes on naming the same box after Bloom has
+ * rebuilt the page, as a change of page size does.
+ */
+export function canvasElementTextBox(page: Page, index: number): Locator {
+    return canvasElement(page, index).locator(SHOWN_TEXT_BOX);
+}
+
+/**
+ * Whether the selected canvas element has Auto Height on: Bloom then makes the element as tall as
+ * its text needs, as far as the canvas has room. It is on for a new speech bubble or text block.
+ */
+export async function getCanvasElementAutoHeight(page: Page): Promise<boolean> {
+    return activeCanvasElement(page).evaluate(
+        (element) => !element.classList.contains("bloom-noAutoHeight"),
     );
+}
+
+/**
+ * Turn the selected canvas element's Auto Height on or off with the Auto Height command of its
+ * "..." menu, which is a toggle, and wait until the element has the setting. Does nothing when the
+ * element has it already.
+ */
+export async function setCanvasElementAutoHeight(
+    page: Page,
+    on: boolean,
+): Promise<void> {
+    if ((await getCanvasElementAutoHeight(page)) === on) return;
+    await clickCanvasElementMenuItem(
+        page,
+        "EditTab.Toolbox.ComicTool.Options.AutoHeight",
+    );
+    await expect
+        .poll(async () => getCanvasElementAutoHeight(page), {
+            timeout: 15000,
+            message: `The Auto Height command did not turn Auto Height ${on ? "on" : "off"}.`,
+        })
+        .toBe(on);
 }
