@@ -36,6 +36,10 @@ import {
     goToCreditsPage,
     openCopyrightDialogFromCreditsPage,
 } from "../helpers/creditsPage";
+import {
+    getCurrentUiLanguageTag,
+    setUiStateViaApi,
+} from "../helpers/uiLanguage";
 
 test.use({
     collectionSpec: { name: "copyright-persistence", languages: ["en"] },
@@ -51,6 +55,10 @@ const DERIVATIVE_HOLDER = "Osprey Translation Team";
 // LicensePanel.tsx has them for a book.
 const CREATIVE_COMMONS = "Everyone is allowed to:";
 const ALLOW_COMMERCIAL = "use the book in a commercial way";
+// The license a new Basic Book gets, which the original keeps: its URL on the credits page, and how
+// the sentence about the original names it.
+const ORIGINAL_LICENSE_URL_PART = "/licenses/by/4.0";
+const ORIGINAL_LICENSE_NAME = "CC BY 4.0";
 
 // Filled in as the tests go.
 let originalFolder = "";
@@ -145,9 +153,14 @@ async function cancelCopyrightDialog(page: Page): Promise<void> {
 
 test.describe("copyright persistence, in a book and in its derivative", () => {
     test("a copyright set from the credits page stays after leaving the book and coming back [Test Case ID 81]", async ({
-        page,
+        bloomApp,
     }) => {
         test.setTimeout(300000);
+        // The dialog's fields, buttons and license choices are found by their English wording, and a
+        // freshly launched Bloom takes its UI language from the operating system.
+        if ((await getCurrentUiLanguageTag(bloomApp.page)) !== "en")
+            await setUiStateViaApi(bloomApp, "en", false);
+        const page = bloomApp.page;
         // The book to switch to; made first so the original is the book Bloom is showing.
         otherFolder = await makeBookFromTemplate(page, "Basic Book");
         originalFolder = await makeBookFromTemplate(page, "Basic Book");
@@ -163,15 +176,21 @@ test.describe("copyright persistence, in a book and in its derivative", () => {
         await setCopyrightHolder(page, ORIGINAL_HOLDER);
         await expectCreditsCopyright(
             page,
-            { holder: ORIGINAL_HOLDER },
-            "After OK in the Copyright and License dialog, the credits page did not show the copyright.",
+            {
+                holder: ORIGINAL_HOLDER,
+                licenseUrlPart: ORIGINAL_LICENSE_URL_PART,
+            },
+            "After OK in the Copyright and License dialog, the credits page did not show the copyright and the CC BY license.",
         );
 
         // THE ACTION UNDER TEST: select another book, then this one again.
         await leaveAndComeBack(page, originalFolder);
         await expectCreditsCopyright(
             page,
-            { holder: ORIGINAL_HOLDER },
+            {
+                holder: ORIGINAL_HOLDER,
+                licenseUrlPart: ORIGINAL_LICENSE_URL_PART,
+            },
             "After selecting another book and coming back, the credits page lost the copyright (BL-7518).",
         );
         await openCopyrightDialogFromCreditsPage(page);
@@ -201,6 +220,10 @@ test.describe("copyright persistence, in a book and in its derivative", () => {
             "The derivative's sentence about the original does not name the original's copyright holder",
         ).toContain(ORIGINAL_HOLDER);
         expect(
+            sentence.text,
+            "The derivative's sentence about the original does not name the original's license",
+        ).toContain(ORIGINAL_LICENSE_NAME);
+        expect(
             (await getCreditsCopyright(page)).copyright,
             "A new derivative already gives the original's copyright as its own",
         ).not.toContain(ORIGINAL_HOLDER);
@@ -215,7 +238,10 @@ test.describe("copyright persistence, in a book and in its derivative", () => {
 
         const own = await expectCreditsCopyright(
             page,
-            { holder: ORIGINAL_HOLDER },
+            {
+                holder: ORIGINAL_HOLDER,
+                licenseUrlPart: ORIGINAL_LICENSE_URL_PART,
+            },
             "With \"Not a translation or new version\" ticked, the credits page did not give the original's copyright as the book's own.",
         );
         await expectOriginalCopyrightSentence(
@@ -227,7 +253,10 @@ test.describe("copyright persistence, in a book and in its derivative", () => {
         await leaveAndComeBack(page, derivativeFolder);
         const kept = await expectCreditsCopyright(
             page,
-            { holder: ORIGINAL_HOLDER },
+            {
+                holder: ORIGINAL_HOLDER,
+                licenseUrlPart: ORIGINAL_LICENSE_URL_PART,
+            },
             "After selecting another book and coming back, the derivative lost the original's copyright as its own.",
         );
         expect(
@@ -292,6 +321,10 @@ test.describe("copyright persistence, in a book and in its derivative", () => {
             sentence.text,
             "The sentence about the original names the derivative's copyright holder",
         ).not.toContain(DERIVATIVE_HOLDER);
+        expect(
+            sentence.text,
+            "The sentence about the original no longer names the original's license",
+        ).toContain(ORIGINAL_LICENSE_NAME);
 
         await leaveAndComeBack(page, derivativeFolder);
         await expectCreditsCopyright(
