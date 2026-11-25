@@ -6,11 +6,12 @@
 import { execFile, execFileSync } from "node:child_process";
 
 // PowerShell that defines FindBlooms: the Bloom.exe processes whose command line contains every
-// line of $env:BLOOM_E2E_COMMAND_LINE_PARTS, compared without regard to case.
+// line of $env:BLOOM_E2E_COMMAND_LINE_PARTS, compared without regard to case. A failed query throws,
+// so it is never taken for "no such Bloom".
 const kFindBloomsByCommandLine = `
 $parts = $env:BLOOM_E2E_COMMAND_LINE_PARTS -split [char]10 | Where-Object { $_ }
 function FindBlooms {
-  Get-CimInstance Win32_Process -Filter "Name='Bloom.exe'" | Where-Object {
+  Get-CimInstance Win32_Process -Filter "Name='Bloom.exe'" -ErrorAction Stop | Where-Object {
     $line = $_.CommandLine
     $line -and -not ($parts | Where-Object { $line.IndexOf($_, [StringComparison]::OrdinalIgnoreCase) -lt 0 })
   }
