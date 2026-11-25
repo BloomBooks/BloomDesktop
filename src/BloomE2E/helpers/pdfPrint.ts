@@ -74,7 +74,15 @@ export async function setExcludePrintBleed(
         checkbox,
         'Bloom does not offer "Exclude print bleed around page edges", which it does only for a book that uses full bleed.',
     ).toBeEnabled({ timeout: 30000 });
-    if ((await checkbox.isChecked()) !== exclude) await checkbox.click();
+    // The box shows as unticked until the screen has heard from Bloom what the book has, so wait
+    // for it to show that before deciding whether it needs a click.
+    const excludedNow =
+        (await apiGet(page, "publish/pdf/excludePrintBleed")).body === "true";
+    await expect(
+        checkbox,
+        'The "Exclude print bleed around page edges" box never showed what Bloom has for the book.',
+    ).toBeChecked({ checked: excludedNow, timeout: 30000 });
+    if (excludedNow !== exclude) await checkbox.click();
     await expect(checkbox).toBeChecked({ checked: exclude });
     await expect
         .poll(
@@ -181,44 +189,28 @@ export async function getPdfPreviewPageBoxes(
 ): Promise<IPdfPageBoxes[]> {
     const pdf = await readPreviewedPdf(page);
     return getPdfPageObjects(pdf).map((pageObject) => {
-        const paper = readPdfBox(pdf, pageObject, "MediaBox");
+        const paper = readPaperSize(pdf, pageObject);
         if (!paper)
             throw new Error(
                 `A page of the previewed PDF has no paper size (MediaBox): ${pageObject}`,
             );
+        // A page has a trim or bleed box only when its own object gives one: unlike the paper
+        // size, a PDF reader does not take these from the page tree.
         return {
             paper,
-            trim: readPdfBox(pdf, pageObject, "TrimBox"),
-            bleed: readPdfBox(pdf, pageObject, "BleedBox"),
+            trim: readPdfBox(pageObject, "TrimBox"),
+            bleed: readPdfBox(pageObject, "BleedBox"),
         };
     });
 }
 
 /**
- * One box of a PDF page, e.g. "MediaBox", in millimetres. A page that does not give the box itself
+ * The paper size (MediaBox) of a PDF page, in millimetres. A page that does not give it itself
  * takes it from the node of the page tree it belongs to, as the PDF format says.
  */
-function readPdfBox(
-    pdf: string,
-    pdfObject: string,
-    boxName: string,
-): IPdfBox | undefined {
-    const box = new RegExp(`/${boxName}\\s*\\[([^\\]]*)\\]`).exec(pdfObject);
-    if (box) {
-        const numbers = box[1].trim().split(/\s+/).map(Number);
-        if (numbers.length !== 4 || numbers.some((n) => Number.isNaN(n)))
-            throw new Error(
-                `The previewed PDF has a ${boxName} that is not four numbers: "${box[0]}".`,
-            );
-        const [x1, y1, x2, y2] = numbers.map((n) => n * kMillimetresPerPoint);
-        // The format allows any two opposite corners, in either order.
-        return {
-            left: Math.min(x1, x2),
-            bottom: Math.min(y1, y2),
-            right: Math.max(x1, x2),
-            top: Math.max(y1, y2),
-        };
-    }
+function readPaperSize(pdf: string, pdfObject: string): IPdfBox | undefined {
+    const own = readPdfBox(pdfObject, "MediaBox");
+    if (own) return own;
     const parent = /\/Parent\s+(\d+)\s+(\d+)\s+R/.exec(pdfObject);
     if (!parent) return undefined;
     const parentStart = new RegExp(
@@ -226,7 +218,29 @@ function readPdfBox(
     ).exec(pdf);
     if (!parentStart) return undefined;
     const parentEnd = pdf.indexOf("endobj", parentStart.index);
-    return readPdfBox(pdf, pdf.slice(parentStart.index, parentEnd), boxName);
+    return readPaperSize(pdf, pdf.slice(parentStart.index, parentEnd));
+}
+
+/**
+ * One box that a PDF object gives, e.g. "TrimBox", in millimetres; undefined when the object does
+ * not give that box.
+ */
+function readPdfBox(pdfObject: string, boxName: string): IPdfBox | undefined {
+    const box = new RegExp(`/${boxName}\\s*\\[([^\\]]*)\\]`).exec(pdfObject);
+    if (!box) return undefined;
+    const numbers = box[1].trim().split(/\s+/).map(Number);
+    if (numbers.length !== 4 || numbers.some((n) => Number.isNaN(n)))
+        throw new Error(
+            `The previewed PDF has a ${boxName} that is not four numbers: "${box[0]}".`,
+        );
+    const [x1, y1, x2, y2] = numbers.map((n) => n * kMillimetresPerPoint);
+    // The format allows any two opposite corners, in either order.
+    return {
+        left: Math.min(x1, x2),
+        bottom: Math.min(y1, y2),
+        right: Math.max(x1, x2),
+        top: Math.max(y1, y2),
+    };
 }
 
 /**
