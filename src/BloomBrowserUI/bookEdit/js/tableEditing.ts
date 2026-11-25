@@ -26,7 +26,10 @@ import "bloom-table/bloom-table-edit.css";
 import "./tableEditing.less";
 import { SetupImagesInContainer } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
-import { setUpBoxesBuiltAfterLoad } from "./translationGroupLanguages";
+import {
+    languageClassesOf,
+    setUpBoxesBuiltAfterLoad,
+} from "./translationGroupLanguages";
 import { get, post } from "../../utils/bloomApi";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import {
@@ -44,7 +47,6 @@ import {
     cellLanguagesOfCollection,
     ICellLanguage,
     showSettingInGroup,
-    showSettingsInGroups,
     textGroupOfCell,
 } from "./tableCellLanguages";
 import { TableCellLanguagesSection } from "./TableCellLanguagesSection";
@@ -95,20 +97,23 @@ function ensureTableLibrarySetUp(): void {
     // Text cells hold a bloom-translationGroup rather than the library's bare
     // contenteditable, so text in a table participates in Bloom's multilingual
     // system and its styles. The group gets one bloom-editable of its own here,
-    // in the language new text boxes use, because nothing else would give the
+    // in the collection's first language, because nothing else would give the
     // cell one until the page is next loaded: TranslationGroupManager (C#) adds
     // the editables for the book's other languages then. Without that first
     // editable a new cell has nothing to type in, and so no format button and no
     // language name either. This is what a text canvas element does too; see
     // makeTranslationGroup in CanvasElementFactories.ts.
-    // The group shows the toolbar's first language only (data-default-languages V), which is the
-    // language new text boxes use, until the user picks others in the table's menus; see
-    // tableCellLanguages.ts.
-    const languageForNewText = GetSettings().languageForNewTextBoxes;
+    // The group shows the collection's first language only (data-default-languages CL1),
+    // whatever the toolbar shows, until the user picks others in the table's menus; see
+    // tableCellLanguages.ts. Its box has the classes page load would give it (languageClassesOf):
+    // bloom-content1, for instance, only when that language is also the toolbar's first, which is
+    // what the reader tools take bloom-content1 to mean.
+    const collectionLanguage1 = GetSettings().collectionLanguage1;
+    const languageClasses = languageClassesOf(collectionLanguage1).join(" ");
     replaceCellContentType(
         "text",
-        "<div class='bloom-translationGroup bloom-trailingElement normal-style' data-default-languages='V'>" +
-            `<div class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='${languageForNewText}'><p></p></div>` +
+        "<div class='bloom-translationGroup bloom-trailingElement normal-style' data-default-languages='CL1'>" +
+            `<div class='bloom-editable normal-style ${languageClasses} bloom-visibility-code-on' lang='${collectionLanguage1}'><p></p></div>` +
             "</div>",
         /bloom-translationGroup/,
         true,
@@ -203,33 +208,15 @@ function installHostHooks(): void {
             // Pasting over many cells mostly gives a cell the setting it already has.
             if (storedSettingOf(group) === value) return;
             const setting = value === kNoSetting ? null : value;
-            if (!cellLanguages) {
-                // The collection's languages have not arrived yet; the cell gets its setting when
-                // they do (requestCellLanguages), and saving the page waits for that.
-                if (settingsCopiedBeforeLanguages.length === 0)
-                    addRequestPageContentDelay(kCopiedLanguagesDelayId);
-                settingsCopiedBeforeLanguages.push({ group, setting });
-                return;
-            }
             // Every operation that copies settings (a new row or column, Paste properties, Paint
             // format) is followed by the wiring pass, which sets up the boxes this adds and tags
             // the ones it shows again, all at once rather than once per cell. That is also the
             // only time new boxes can be set up: a new row gets its settings before it is in the
             // page, where a box's direction cannot be read.
-            showSettingInGroup(group, setting, cellLanguages);
+            showSettingInGroup(group, setting);
         },
     });
 }
-
-// Language settings copied into cells before the collection's languages arrived, which the cells
-// get once they do.
-let settingsCopiedBeforeLanguages: {
-    group: HTMLElement;
-    setting: string | null;
-}[] = [];
-
-// The page-content delay held while settingsCopiedBeforeLanguages has settings in it.
-export const kCopiedLanguagesDelayId = "tableCellLanguagesCopiedEarly";
 
 // What setHostCellSettings carries for a text cell with no data-default-languages. The library
 // uses undefined for a cell with nothing to copy, so "no setting" needs a value of its own.
@@ -240,9 +227,10 @@ function storedSettingOf(group: HTMLElement): string {
     return group.getAttribute("data-default-languages") ?? kNoSetting;
 }
 
-// The collection's languages as a table cell can show them. Asked for as the page loads, so that
-// they are there by the time a table added later opens its menus; until they arrive, the menus
-// have no Languages item.
+// The collection's languages, with their names, as the table's Languages menus list them. Asked for
+// as the page loads, so that they are there by the time a table added later opens its menus; until
+// they arrive, the menus have no Languages item. (Showing a cell's languages needs only their tags,
+// which the page's settings already hold; see showSettingInGroup.)
 let cellLanguages: ICellLanguage[] | undefined;
 let cellLanguagesRequested = false;
 
@@ -251,30 +239,10 @@ let cellLanguagesRequested = false;
 function requestCellLanguages(): void {
     if (cellLanguagesRequested) return;
     cellLanguagesRequested = true;
-    const settings = GetSettings();
-    // The languages ticked in the toolbar, the first one first.
-    const toolbarTags = [
-        settings.languageForNewTextBoxes,
-        settings.currentCollectionLanguage2,
-        settings.currentCollectionLanguage3,
-    ].filter((tag) => !!tag);
     get("settings/languageNames", (result) => {
-        const languages = cellLanguagesOfCollection(
+        cellLanguages = cellLanguagesOfCollection(
             result.data as ILanguageNameValues,
-            toolbarTags,
         );
-        cellLanguages = languages;
-        const copied = settingsCopiedBeforeLanguages;
-        if (copied.length === 0) return;
-        settingsCopiedBeforeLanguages = [];
-        // Cells that an undo has since replaced are no longer in the page.
-        const waiting = copied.filter((entry) => entry.group.isConnected);
-        showSettingsInGroups(
-            waiting.map((entry) => entry.group),
-            waiting.map((entry) => entry.setting),
-            languages,
-        );
-        removeRequestPageContentDelay(kCopiedLanguagesDelayId);
     });
 }
 

@@ -18,8 +18,14 @@ import {
     goToPage,
     makeBookFromTemplate,
 } from "./bookMaking";
-import { selectCanvasElementAt } from "./canvasElements";
+import {
+    canvasElements,
+    dispatchPaletteDrag,
+    selectCanvasElementAt,
+    type PaletteItem,
+} from "./canvasElements";
 import type { IViewRect } from "./pageView";
+import { realClick, waitForClickToSettle } from "./realClick";
 import { expandToolByHeader } from "./toolbox";
 export type GameTab = "Start" | "Correct" | "Wrong" | "Play";
 export const kGameTabs: GameTab[] = ["Start", "Correct", "Wrong", "Play"];
@@ -287,4 +293,148 @@ export async function dragItemOntoItsTarget(page: Page): Promise<string> {
         `Dragging item ${id} onto its target did not place it there.`,
     ).toHaveClass(/bloom-draggedToTarget/, { timeout: 10000 });
     return id;
+}
+
+/** The Game tool's panel in the toolbox, which holds its palette for the tab showing. */
+const GAME_TOOL_PANEL = '.MuiAccordion-root:has([data-toolid="game"])';
+/** The canvas of a game page, which takes the items dragged from the Game tool's palette. */
+const GAME_PAGE_CANVAS = '.bloom-page[data-tool-id="game"] .bloom-canvas';
+
+/**
+ * Drag one item from the Game tool's palette onto the game page being edited, as a person does,
+ * and wait until the page has one more canvas element. Returns the position of the new element
+ * among the page's canvas elements (canvasElements), which holds until another is added or removed.
+ * In the Correct or Wrong tab the palette is that tab's, so the new item shows only in that tab.
+ *
+ * Bloom does not always add the new element last on a game page, so it is found as the one that
+ * was not there before the drag.
+ *
+ * `at` places the drop within the canvas, as a fraction of its width and height. Like the Canvas
+ * tool's palette drag (dragPaletteItemOntoCanvas), the drag is dispatched rather than made with the
+ * real mouse; that function's helper says why.
+ */
+export async function dragGamePaletteItemOntoPage(
+    page: Page,
+    item: PaletteItem,
+    at: { xFraction: number; yFraction: number },
+): Promise<number> {
+    const existing = await canvasElements(page).elementHandles();
+    await dispatchPaletteDrag(
+        page,
+        item,
+        at,
+        GAME_TOOL_PANEL,
+        GAME_PAGE_CANVAS,
+    );
+    await expect
+        .poll(async () => canvasElements(page).count(), {
+            timeout: 30000,
+            message: `Dragging the Game tool's ${item} item onto the page did not add a canvas element.`,
+        })
+        .toBe(existing.length + 1);
+    const index = await canvasElements(page).evaluateAll(
+        (elements, before) => elements.findIndex((e) => !before.includes(e)),
+        existing,
+    );
+    await Promise.all(existing.map((handle) => handle.dispose()));
+    return index;
+}
+
+/**
+ * Outside Play, select a text box that lies inside another canvas element, such as the word under
+ * a target on a Drag Images to Words page, which sits in a rectangle. A click on such a text box
+ * selects the element around it, and a second click selects the text box itself, so this clicks
+ * once or twice, and waits until Bloom marks the text box as the selected canvas element. `what`
+ * names it in the failure message.
+ */
+export async function selectTextBoxInsideAnotherItem(
+    page: Page,
+    textBox: Locator,
+    what: string,
+): Promise<void> {
+    await realClick(textBox);
+    await waitForClickToSettle(editablePageFrame(page));
+    if ((await textBox.getAttribute("data-bloom-active")) !== "true") {
+        await realClick(textBox);
+    }
+    await expect(
+        textBox,
+        `Clicking ${what} twice did not select it.`,
+    ).toHaveAttribute("data-bloom-active", "true", { timeout: 15000 });
+}
+
+/** How a target shows the picture that belongs on it, as getPictureOnTarget reports it. */
+export interface ITargetPicture {
+    /** The picture's file, e.g. "bird.png"; "placeHolder.png" when its item has no picture yet. */
+    fileName: string;
+    /** True when the browser has the picture: it loaded rather than failed. */
+    loaded: boolean;
+    /** True when the picture takes up room on the page and is not hidden. */
+    laidOut: boolean;
+    /**
+     * How opaque the picture is drawn, from 0 (not seen at all) to 1, counting everything between
+     * it and the target. The game tabs differ in this: Start shows a shadow of the picture, Correct
+     * the whole picture, and Wrong nothing.
+     */
+    opacity: number;
+}
+
+/**
+ * The copy of its item's picture that a target holds, and how the tab showing draws it. `target`
+ * locates one target (an element with data-target-of).
+ */
+export async function getPictureOnTarget(
+    target: Locator,
+): Promise<ITargetPicture> {
+    return target.evaluate((targetElement) => {
+        const image = targetElement.querySelector("img")!;
+        let opacity = 1;
+        for (
+            let e: Element = image;
+            e !== targetElement.parentElement!;
+            e = e.parentElement!
+        ) {
+            opacity *= Number(getComputedStyle(e).opacity);
+        }
+        const src = (image.getAttribute("src") ?? "").split("?")[0];
+        return {
+            fileName: decodeURIComponent(src.split("/").pop() ?? src),
+            loaded: image.complete && image.naturalWidth > 0,
+            laidOut:
+                image.getClientRects().length > 0 &&
+                getComputedStyle(image).visibility === "visible",
+            opacity,
+        };
+    });
+}
+
+/**
+ * The items that the game tab showing adds to the page and that cover the point (x, y) of the
+ * window: in Correct the ones only Correct shows, in Wrong the ones only Wrong shows. A press at a
+ * point they cover goes to them, not to an item made in Start that lies under them. Returns their
+ * class names, so a failure can say what was in the way.
+ */
+export async function getTabItemsCovering(
+    page: Page,
+    x: number,
+    y: number,
+): Promise<string[]> {
+    const covering: string[] = [];
+    const tabItems = await editablePageFrame(page)
+        .locator(".drag-item-correct, .drag-item-wrong")
+        .all();
+    for (const item of tabItems) {
+        // An item of the tab that is not showing has no box.
+        const box = await item.boundingBox();
+        if (
+            box &&
+            x >= box.x &&
+            x <= box.x + box.width &&
+            y >= box.y &&
+            y <= box.y + box.height
+        ) {
+            covering.push((await item.getAttribute("class"))!);
+        }
+    }
+    return covering;
 }

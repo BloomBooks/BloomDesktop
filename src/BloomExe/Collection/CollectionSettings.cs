@@ -56,11 +56,6 @@ namespace Bloom.Collection
         private const int kDefaultAudioRecordingTrimEndMilliseconds = 40;
         private const int kDefaultBooksOnWebGoal = 200;
 
-        /// <summary>
-        /// The branding the user wanted, but not confirmed by current SubscriptionCode, if any.
-        /// </summary>
-        public string InvalidBranding { get; private set; }
-
         public string DefaultBookshelf = "";
 
         /// <summary>
@@ -307,35 +302,17 @@ namespace Bloom.Collection
             SettingsFilePath = desiredOrExistingSettingsFilePath;
             CollectionName = Path.GetFileNameWithoutExtension(desiredOrExistingSettingsFilePath);
             var collectionDirectory = Path.GetDirectoryName(desiredOrExistingSettingsFilePath);
-            var parentDirectoryPath = Path.GetDirectoryName(collectionDirectory);
 
+            // Reading an existing collection's settings doesn't need its folder to be writable; the
+            // ProjectContext checks that when it opens the collection for editing.
             if (RobustFile.Exists(desiredOrExistingSettingsFilePath))
             {
-                DoDefenderFolderProtectionCheck();
                 Load();
             }
             else
             {
-                if (!Directory.Exists(parentDirectoryPath))
-                    Directory.CreateDirectory(parentDirectoryPath);
-
-                if (!Directory.Exists(collectionDirectory))
-                    Directory.CreateDirectory(collectionDirectory);
-
-                DoDefenderFolderProtectionCheck();
+                FolderWriteCheck.EnsureFolderExistsAndIsWritable(collectionDirectory);
                 Save();
-            }
-        }
-
-        private void DoDefenderFolderProtectionCheck()
-        {
-            // We check for a Windows Defender "Controlled Access" problem when we start Bloom,
-            // but the user may have moved their startup collection to a "safe" place and now be opening a different
-            // collection in a "controlled" place. Test again with this settings file path.
-            // 'FolderPath' is the directory part of 'SettingsFilePath'.
-            if (!DefenderFolderProtectionCheck.CanWriteToDirectory(FolderPath))
-            {
-                Environment.Exit(-1);
             }
         }
 
@@ -736,7 +713,6 @@ namespace Bloom.Collection
                     : null;
                 if (downloadInfoPath != null)
                 {
-                    IgnoreExpiration = true;
                     var editSettings = JObject.Parse(RobustFile.ReadAllText(downloadInfoPath));
 
                     // BloomProblemReport.json's have an issueID that will be better for us to use as a collection name
@@ -921,7 +897,6 @@ namespace Bloom.Collection
         // a mode that restricts you to this one book in your collection but also allows you to retain
         // whatever you branding was at the time, even it has expired.
         public bool EditingABlorgBook;
-        public bool IgnoreExpiration;
 
         private void DoOneTimeCheck()
         {
@@ -929,7 +904,19 @@ namespace Bloom.Collection
             // (See https://issues.bloomlibrary.org/youtrack/issue/BL-7868.)
             // If we ever have to do another one of these, we should call a method based on OneTimeCheckVersionNumber.
             OneTimeCheckVersionNumber = kCurrentOneTimeCheckVersionNumber;
-            Save(); // save updated settings
+            try
+            {
+                Save(); // save updated settings
+            }
+            catch (Exception e) when (FileAccessDiagnostics.IsRefusal(e))
+            {
+                // Reading a collection whose folder we may not change (a command-line run on a
+                // read-only share, say) must still work; the check just runs again next time.
+                // (BL-16728)
+                Logger.WriteEvent(
+                    $"Could not record the one-time settings check in {SettingsFilePath}: {e.Message}"
+                );
+            }
         }
 
         internal static bool ReadBoolean(XElement xml, string id, bool defaultValue)
@@ -1551,12 +1538,6 @@ namespace Bloom.Collection
         {
             string[] administratorList = ParseAdministratorString(newAdminString);
             return administratorList.Length > 0 && administratorList.All(MiscUtils.IsValidEmail);
-        }
-
-        public void ModifyAdministrators(string newAdminString)
-        {
-            Administrators = ParseAdministratorString(newAdminString);
-            Save();
         }
     }
 }
