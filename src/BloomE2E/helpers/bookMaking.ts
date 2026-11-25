@@ -361,6 +361,20 @@ async function listEditableBooks(page: Page): Promise<IBookInfo[]> {
 }
 
 /**
+ * Which of the collection's languages the book shows, by tag, as the Edit tab's
+ * Monolingual/Bilingual/Trilingual dropdown has them. The reading side of setContentLanguages.
+ */
+export async function getContentLanguages(page: Page): Promise<string[]> {
+    const usage = await apiGetJson<IContentLanguageUsage>(
+        page,
+        "editView/topBar/contentLanguageUsage",
+    );
+    return usage.languages
+        .filter((language) => language.isUsedForContent)
+        .map((language) => language.id);
+}
+
+/**
  * Set exactly which of the collection's languages the book shows, by the same route as the Edit
  * tab's Monolingual/Bilingual/Trilingual dropdown. Any language can be turned off, Language 1
  * included, as long as one other stays on.
@@ -978,6 +992,47 @@ export async function typeInGroup(
     // as one change, so a save straight after it would lose all of it. A test whose subject is an
     // action taken straight after typing passes false.
     if (thenWaitForBloomToHaveIt) await waitForSnapshotStreamIdle(page);
+}
+
+/**
+ * The languages whose box is showing in the translation groups that `groupSelector` picks on the
+ * page being edited, in document order. A box that Bloom hides (display: none) is left out, and so
+ * is the "z" box, which is only a pattern Bloom copies to make the others.
+ */
+export async function getLanguagesShownInGroup(
+    page: Page,
+    groupSelector: string,
+): Promise<string[]> {
+    return editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang]`)
+        .evaluateAll((boxes) =>
+            boxes
+                .filter(
+                    (box) =>
+                        box.getAttribute("lang") !== "z" &&
+                        getComputedStyle(box).display !== "none",
+                )
+                .map((box) => box.getAttribute("lang") ?? ""),
+        );
+}
+
+/**
+ * Wait until the translation groups that `groupSelector` picks show exactly the boxes of these
+ * languages, in any order. Fails with `message` when they do not within 30 seconds.
+ */
+export async function expectLanguagesShownInGroup(
+    page: Page,
+    groupSelector: string,
+    languages: string[],
+    message: string,
+): Promise<void> {
+    await expect
+        .poll(
+            async () =>
+                (await getLanguagesShownInGroup(page, groupSelector)).sort(),
+            { timeout: 30000, message },
+        )
+        .toEqual([...languages].sort());
 }
 
 /**

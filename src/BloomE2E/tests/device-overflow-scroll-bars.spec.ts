@@ -24,7 +24,6 @@ import {
     type IBookPage,
 } from "../helpers/bookMaking";
 import { copyToClipboard, pasteFromClipboard } from "../helpers/clipboard";
-import { setChangeLayoutMode } from "../helpers/origami";
 import {
     expectNoOverflowMarks,
     expectTextBoxMarkedAsOverflowing,
@@ -35,6 +34,7 @@ import {
 } from "../helpers/overflowMarks";
 import { getPageSize, setPageSize } from "../helpers/pageSize";
 import { selectPage } from "../helpers/pageThumbnails";
+import { setTextBoxVerticalAlignment } from "../helpers/textBoxProperties";
 import {
     typeAtEndOfGroup,
     waitForTextBoxScrollBar,
@@ -136,24 +136,7 @@ async function setVerticalAlignment(
     alignment: VerticalAlignment,
 ): Promise<void> {
     await goToPage(page, textPage.id);
-    await setChangeLayoutMode(page, true);
-    const frame = editablePageFrame(page);
-    await frame.locator(".textBox-identifier .formatButton").first().click();
-    const dialog = frame.locator("#text-properties-dialog");
-    await dialog.waitFor({ state: "visible", timeout: 15000 });
-    // The dialog opens on its Language tab; the alignment buttons are on the next one. The tab is
-    // found by its localization id, so the UI language does not matter.
-    await dialog
-        .locator('h2.tab[data-i18n="EditTab.TextBoxProperties.Alignment"]')
-        .click();
-    await dialog.locator(`#align-${alignment}`).click();
-    await expect(dialog.locator(`#align-${alignment}`)).toHaveClass(
-        /selectedIcon/,
-    );
-    // A click outside the dialog closes it.
-    await frame.locator("body").click({ position: { x: 2, y: 2 } });
-    await expect(dialog).toBeHidden({ timeout: 15000 });
-    await setChangeLayoutMode(page, false);
+    await setTextBoxVerticalAlignment(page, alignment);
     // While the box has its scroll bar, Bloom stops aligning the text and keeps the setting as
     // bloom-vertical-align-<alignment>-removed (niceScrollCleanup.ts), so either class shows that
     // the setting took.
