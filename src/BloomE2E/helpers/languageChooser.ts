@@ -74,6 +74,70 @@ export async function pickLanguageInChooser(
         await chooser.locator("#language-name-bar").fill(language.customName);
 }
 
+/** What the open language chooser has selected, as a person sees it there. */
+export interface IChooserSelection {
+    /**
+     * The code on the selected language's card, e.g. "ce", or undefined when no language card is
+     * selected.
+     */
+    language: string | undefined;
+    /**
+     * The code of the selected script's card, e.g. "Cyrl", or undefined when no script card is
+     * selected (the language is written in one script, so the chooser shows none).
+     */
+    script: string | undefined;
+    /** The name in the box that names the language, which is what Bloom will call it. */
+    name: string;
+    /** The language tag the chooser shows under that box, e.g. "ce-Cyrl". */
+    tag: string;
+}
+
+/**
+ * Read what the open chooser has selected: the highlighted language and script cards, the name
+ * and the tag. A chooser opened on a language the collection already has starts out like this, so
+ * this is how a test sees whether it came back with the earlier choice.
+ */
+export async function getLanguageChooserSelection(
+    page: Page,
+): Promise<IChooserSelection> {
+    const chooser = languageChooser(page);
+    // The chooser marks the selected card's button; the language card holds a
+    // data-testid="language-card-<code>" and a script card one of "script-card-<code>".
+    const selectedCode = async (prefix: string) => {
+        const card = chooser
+            .locator(".selected-option-card-button")
+            .locator(`[data-testid^="${prefix}"]`);
+        const count = await card.count();
+        if (count > 1)
+            throw new Error(
+                `The language chooser has ${count} selected cards whose test id starts "${prefix}".`,
+            );
+        if (count === 0) return undefined;
+        return (await card.getAttribute("data-testid"))!.slice(prefix.length);
+    };
+    return {
+        language: await selectedCode("language-card-"),
+        script: await selectedCode("script-card-"),
+        name: await chooser.locator("#language-name-bar").inputValue(),
+        tag: (
+            await chooser.getByTestId("right-panel-langtag-preview").innerText()
+        ).trim(),
+    };
+}
+
+/**
+ * Replace the name in the open chooser's name box with `name`, as a person does who wants the
+ * language shown by a name of their own. The choice is not made until OK.
+ */
+export async function setLanguageChooserName(
+    page: Page,
+    name: string,
+): Promise<void> {
+    const nameBox = languageChooser(page).locator("#language-name-bar");
+    await nameBox.fill(name);
+    await expect(nameBox).toHaveValue(name);
+}
+
 /** Click OK in the language chooser and wait for it to close. */
 export async function confirmLanguageChooser(page: Page): Promise<void> {
     const ok = languageChooser(page).getByRole("button", {
