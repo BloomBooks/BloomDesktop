@@ -368,3 +368,96 @@ export async function cancelBookSettings(page: Page): Promise<void> {
         "Book and Page Settings did not close after Cancel",
     ).toHaveCount(0);
 }
+
+/**
+ * The image resolutions the BloomPUB page of Book and Page Settings offers on its slider, in the
+ * slider's order, by the name the slider shows, with the largest picture each allows, landscape
+ * (BloomResolutionSliderInner in BookSettingsConfigrPages.tsx). A portrait picture gets the same
+ * box turned on its side.
+ */
+export const kBloomPubResolutions = [
+    { name: "Small", maxWidth: 600, maxHeight: 600 },
+    { name: "HD", maxWidth: 1280, maxHeight: 720 },
+    { name: "Full HD", maxWidth: 1920, maxHeight: 1080 },
+    { name: "4K", maxWidth: 3840, maxHeight: 2160 },
+] as const;
+
+/** One of the BloomPUB image resolutions, by the name the slider shows. */
+export type BloomPubResolutionName =
+    (typeof kBloomPubResolutions)[number]["name"];
+
+/** The largest picture, landscape, that the book's BloomPUBs carry, as the book has it saved. */
+export async function getBloomPubImageSettings(
+    page: Page,
+): Promise<{ maxWidth: number; maxHeight: number }> {
+    const settings = await apiGetJson<{
+        publish?: {
+            bloomPUB?: {
+                imageSettings?: { maxWidth: number; maxHeight: number };
+            };
+        };
+    }>(page, "book/settings");
+    const imageSettings = settings.publish?.bloomPUB?.imageSettings;
+    if (!imageSettings)
+        throw new Error(
+            "book/settings has no publish.bloomPUB.imageSettings for the book: " +
+                JSON.stringify(settings.publish),
+        );
+    return {
+        maxWidth: imageSettings.maxWidth,
+        maxHeight: imageSettings.maxHeight,
+    };
+}
+
+/** The image resolution slider on the BloomPUB page of Book and Page Settings. */
+function bloomPubResolutionSlider(page: Page): Locator {
+    return bookSettingsDialog(page).locator(".MuiSlider-root");
+}
+
+/**
+ * The image resolution the slider on the BloomPUB page of the open Book and Page Settings dialog is
+ * set to, e.g. "HD". The page must be showing (see showBookSettingsPage).
+ *
+ * This reads the slider's position, not the name written above it: the name is translated, so it
+ * is one of kBloomPubResolutions' names only when Bloom's UI is in English.
+ */
+export async function getBloomPubResolutionInBookSettings(
+    page: Page,
+): Promise<BloomPubResolutionName> {
+    const slider = bloomPubResolutionSlider(page);
+    await expect(
+        slider,
+        "the showing Book and Page Settings page has no image resolution slider",
+    ).toHaveCount(1);
+    const position = await slider.locator('input[type="range"]').inputValue();
+    const resolution = kBloomPubResolutions[Number(position)];
+    if (!resolution)
+        throw new Error(
+            `The image resolution slider is at "${position}", which is none of its ${kBloomPubResolutions.length} positions.`,
+        );
+    return resolution.name;
+}
+
+/**
+ * Move the image resolution slider on the BloomPUB page of the open Book and Page Settings dialog
+ * to `resolution`, the way a person does with the keyboard: the slider's thumb takes the arrow
+ * keys, one step per press. Returns once the slider is there. Nothing is saved until OK.
+ */
+export async function setBloomPubResolutionInBookSettings(
+    page: Page,
+    resolution: BloomPubResolutionName,
+): Promise<void> {
+    const names: string[] = kBloomPubResolutions.map((r) => r.name);
+    const from = names.indexOf(await getBloomPubResolutionInBookSettings(page));
+    const to = names.indexOf(resolution);
+    const thumb = bloomPubResolutionSlider(page).locator('input[type="range"]');
+    await thumb.focus();
+    for (let i = 0; i < Math.abs(to - from); i++)
+        await thumb.press(to > from ? "ArrowRight" : "ArrowLeft");
+    await expect
+        .poll(async () => getBloomPubResolutionInBookSettings(page), {
+            timeout: 10000,
+            message: `The image resolution slider never moved to ${resolution}.`,
+        })
+        .toBe(resolution);
+}
