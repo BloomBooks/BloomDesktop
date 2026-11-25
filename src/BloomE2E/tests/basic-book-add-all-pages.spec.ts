@@ -126,11 +126,6 @@ test("every page of every template installed with Bloom can be added to a Basic 
                             ),
                             templatePageId: "",
                         });
-            expect(
-                Path.basename(groups[0].templateBookFolder),
-                `the first group in Add Page is not ${BASIC_BOOK}'s`,
-            ).toBe(BASIC_BOOK);
-
             // The oracle is the template files on disk: each template the dialog shows must have
             // every one of its template pages for a book of this orientation on offer. Without this
             // the test would pass when the dialog stopped offering a page.
@@ -164,6 +159,19 @@ test("every page of every template installed with Bloom can be added to a Basic 
                 offeredByTemplate,
                 "Add Page did not offer exactly the template pages that the files of the templates it shows hold",
             ).toEqual(expectedByTemplate);
+            // The book's own template comes first: the first group is the Basic Book's pages, all
+            // of them and nothing else.
+            expect(
+                groups[0].pages.map(
+                    (p) =>
+                        `${Path.basename(p.templateBookFolder)}: ${oneLine(p.label)}`,
+                ),
+                `the first group in Add Page is not exactly ${BASIC_BOOK}'s pages`,
+            ).toEqual(
+                expectedByTemplate[BASIC_BOOK].map(
+                    (label) => `${BASIC_BOOK}: ${label}`,
+                ),
+            );
             // The files cannot say which templates the dialog should show at all, so name them.
             expect(
                 Object.keys(offeredByTemplate),
