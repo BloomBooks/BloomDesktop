@@ -26,6 +26,7 @@ import {
 import {
     attribute,
     getEpubSpine,
+    getFirstZipEntry,
     getPreviewVideoState,
     playPreviewVideo,
     previewEpub,
@@ -142,6 +143,8 @@ test("a Sign Language book's video shows and plays in the ePUB preview [Test Cas
             videoHeight: 120,
             errorCode: null,
         });
+    // A reader must see the video, not only have it loaded.
+    await expect(pageFrame.locator("video")).toBeVisible();
     await playPreviewVideo(pageFrame);
 });
 
@@ -165,19 +168,25 @@ test("a Sign Language book saved as an ePUB carries its video, on a page that pl
 
     const epubPath = testInfo.outputPath("Sign Language book.epub");
     fs.mkdirSync(Path.dirname(epubPath), { recursive: true });
-    const files = readEpub(await saveEpub(page, bloomApp.bloomPid, epubPath));
-
-    // What every ePUB reader checks first.
+    const epub = await saveEpub(page, bloomApp.bloomPid, epubPath);
+    const files = readEpub(epub);
     const names = [...files.keys()];
-    expect(names[0]).toBe("mimetype");
+
+    // What every ePUB reader checks first: the file's first entry is "mimetype", stored
+    // uncompressed, and says it is an ePUB.
+    expect(getFirstZipEntry(epub)).toEqual({ name: "mimetype", method: 0 });
     expect(files.get("mimetype")!.content.toString("ascii")).toBe(
         "application/epub+zip",
     );
 
+    // Comments are dropped, since a reader ignores whatever is in them.
     const texts = new Map<string, string>();
     for (const [name, entry] of files) {
         if (/\.(xml|opf|xhtml)$/.test(name))
-            texts.set(name, entry.content.toString("utf8"));
+            texts.set(
+                name,
+                entry.content.toString("utf8").replace(/<!--[\s\S]*?-->/g, ""),
+            );
     }
     const { packagePath, hrefs } = getEpubSpine(texts);
     const videoPath = resolveInEpub(packagePath, `video/${videoFile}`);

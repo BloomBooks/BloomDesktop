@@ -298,6 +298,24 @@ export function readEpub(epub: Buffer): Map<string, IArchiveEntry> {
     return new Map(readZip(epub).map((entry) => [entry.name, entry]));
 }
 
+/**
+ * The name and compression method (0 = stored) of the entry that comes first in a zip's bytes,
+ * from its local file header. The ePUB standard wants "mimetype" there, stored, so that a reader
+ * can recognize the file from its first bytes.
+ */
+export function getFirstZipEntry(zip: Buffer): {
+    name: string;
+    method: number;
+} {
+    if (zip.readUInt32LE(0) !== 0x04034b50)
+        throw new Error("The file does not start with a zip entry.");
+    const nameLength = zip.readUInt16LE(26);
+    return {
+        name: zip.toString("utf8", 30, 30 + nameLength),
+        method: zip.readUInt16LE(8),
+    };
+}
+
 /** The path within an ePUB of its package document, from META-INF/container.xml. */
 function getPackagePath(files: Map<string, string>): string {
     const container = files.get("META-INF/container.xml");
