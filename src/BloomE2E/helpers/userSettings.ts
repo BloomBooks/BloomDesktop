@@ -63,16 +63,22 @@ export async function readSavedUserSetting(
  * can hold an ampersand), and a test compares the setting with the value it expects.
  */
 function decodeXmlText(text: string): string {
-    return text
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/&apos;/g, "'")
-        .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
-        .replace(/&#x([0-9a-f]+);/gi, (_, code) =>
-            String.fromCharCode(parseInt(code, 16)),
-        )
-        .replace(/&amp;/g, "&");
+    const named: Record<string, string> = {
+        amp: "&",
+        lt: "<",
+        gt: ">",
+        quot: '"',
+        apos: "'",
+    };
+    // One pass, so that the text an escape stands for is never decoded again.
+    return text.replace(
+        /&(?:#x([0-9a-f]+)|#(\d+)|(amp|lt|gt|quot|apos));/gi,
+        (escape, hex, decimal, name) => {
+            if (hex) return String.fromCodePoint(parseInt(hex, 16));
+            if (decimal) return String.fromCodePoint(Number(decimal));
+            return named[name] ?? escape;
+        },
+    );
 }
 
 /**
