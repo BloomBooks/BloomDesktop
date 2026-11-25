@@ -9,7 +9,7 @@
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Locator, Page, Response } from "@playwright/test";
+import type { Locator, Page, Request } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
@@ -139,49 +139,60 @@ async function openFromMenu(page: Page): Promise<void> {
 }
 
 /**
- * Do `show`, which makes the dialog show its Copyright tab, and wait until the
- * Shortcuts list there is complete.
+ * Do `open`, which opens the dialog, and wait until the Shortcuts list on its Copyright tab is
+ * complete. No Copyright and License dialog may be open beforehand.
  *
  * The list fills in one row at a time (MetadataChooser.tsx): the dialog asks Bloom for the names
  * of the book's image files, then for the credits of each in turn, and nothing on screen says
- * when it has asked for the last. So this counts Bloom's answers until there is one for every
- * file, then lets the dialog draw. Only after that does "this row is not in the list" mean
- * anything.
+ * when it has asked for the last. So this watches for the requests the dialog sends from now on,
+ * until it has sent one for every file and Bloom has answered them all, then lets the dialog
+ * draw. Only after that does "this row is not in the list" mean anything.
+ *
+ * It counts requests and not answers because an answer may be a late one to a dialog that has
+ * since closed, while a closed dialog sends no more requests.
  */
 async function waitForShortcutsScan(
     page: Page,
-    show: () => Promise<void>,
+    open: () => Promise<void>,
 ): Promise<void> {
-    const answered: Response[] = [];
-    const listener = (response: Response) => {
-        if (response.url().includes("copyrightAndLicense/imageMetadataForFile"))
-            answered.push(response);
+    await expect(
+        copyrightAndLicenseDialog(page),
+        "Sanity check: no dialog should be open, or its requests would be counted too",
+    ).toHaveCount(0);
+    const asked: Request[] = [];
+    const listener = (request: Request) => {
+        if (request.url().includes("copyrightAndLicense/imageMetadataForFile"))
+            asked.push(request);
     };
-    page.on("response", listener);
+    page.on("request", listener);
     try {
-        const fileNamesAnswer = page.waitForResponse(
-            (response) =>
-                response
+        const fileNamesRequest = page.waitForRequest(
+            (request) =>
+                request
                     .url()
                     .includes("copyrightAndLicense/imageFileNamesInBook"),
             { timeout: 60000 },
         );
-        await show();
-        const fileNames = (await (await fileNamesAnswer).json()) as string[];
+        await open();
+        const fileNamesAnswer = await (await fileNamesRequest).response();
+        const fileNames = (await fileNamesAnswer!.json()) as string[];
         expect(
             fileNames.length,
             "Sanity check: the book should have both pictures' files to scan",
         ).toBeGreaterThanOrEqual(2);
         await expect
-            .poll(() => answered.length, {
+            .poll(() => asked.length, {
                 timeout: 60000,
                 message:
                     "The Shortcuts list should ask for the credits of every image file in the book",
             })
             .toBe(fileNames.length);
-        await Promise.all(answered.map((response) => response.finished()));
+        for (const request of asked) {
+            const answer = await request.response();
+            await answer!.finished();
+        }
     } finally {
-        page.off("response", listener);
+        page.off("request", listener);
     }
     // The last answer has reached the dialog; give it two frames to draw the row for it.
     await page.evaluate(
@@ -552,9 +563,10 @@ test("image Copyright and License dialog: opening it, OK and Cancel, licenses, s
             new RegExp(`© \\d+ ${holder}`),
         );
 
-    // Every row of the Shortcuts list: each starts with its copyright.
+    // Every row of the Shortcuts list, whatever it says: each has a check mark, shown or hidden,
+    // and nothing else in the dialog has one.
     const shortcuts = () =>
-        copyrightAndLicenseDialog(page).getByText(/^© \d+ /);
+        copyrightAndLicenseDialog(page).locator('[data-testid="CheckIcon"]');
 
     await step(
         "Give the second picture another holder and another license",
