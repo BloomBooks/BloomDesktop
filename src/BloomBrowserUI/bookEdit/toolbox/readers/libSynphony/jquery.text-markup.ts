@@ -13,6 +13,7 @@ import { theOneLibSynphony, LibSynphony } from "./synphony_lib";
 import "./bloomSynphonyExtensions"; //add several functions to LanguageData
 import { ReaderToolsModel } from "../readerToolsModel";
 import { TextOffsetMap } from "../../../js/textHighlightManager";
+import { kTableInTextClass } from "../../../js/tableInTextConstants";
 import {
     kSentenceTooLongHighlight,
     kSightWordHighlight,
@@ -163,7 +164,7 @@ import {
                 const child = children[i];
                 // A table in the text of a box: each of its cells' text boxes is checked as a box of
                 // its own, so checking it here as well would count its text twice.
-                if (child.classList?.contains("bloom-tableInText")) continue;
+                if (child.classList?.contains(kTableInTextClass)) continue;
                 const name = child.nodeName.toLowerCase();
                 // Review: is there a better way to pick out the elements that can occur within content elements?
                 if (

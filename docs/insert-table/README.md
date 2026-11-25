@@ -183,7 +183,9 @@ same whenever other code rewrites the box.
   the table), then the table's cells. A reader would expect the text above, the table, then the
   text below. In Text Box mode the outer box is one recording, so the table cannot come in the
   middle of it. Insert Table can ship without this.
-- **Undo.** Insert Table is not yet a step on the undo stack, and typing in a cell cannot be undone
-  (the cells have no CKEditor). CKEditor's own undo for typing in the outer box restores a copy of
+- **Undo.** Left for Bloom's new undo, which is due in the same version, so little is done here.
+  Insert Table is not yet a step on the undo stack. Ctrl+Z and Ctrl+Y in a cell are the browser's
+  own undo and redo, whose history is the whole page's; the Undo button does nothing for typing in
+  a cell. CKEditor's own undo for typing in the outer box restores a copy of
   the box, which would rebuild the table; that is untested.
 - **Spreadsheet export and import.** Import replaces a box's content, table included.

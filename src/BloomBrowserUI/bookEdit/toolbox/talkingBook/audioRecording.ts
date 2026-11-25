@@ -57,6 +57,7 @@ import Recordable from "./recordable";
 import { getChecksum } from "./talkingBookChecksum";
 import { setupImageDescriptions } from "../imageDescription/imageDescription";
 import { EditableDivUtils } from "../../js/editableDivUtils";
+import { tablesInTextOf } from "../../js/tableInTextConstants";
 import { createValidXhtmlUniqueId } from "../../js/xhtmlIdUtils";
 import { doesNarrationExist, kAnyRecordingApiUrl } from "./audioUtils";
 import { wrapWithRequestPageContentDelay } from "../../js/pageContentDelays";
@@ -3836,9 +3837,9 @@ export default class AudioRecording implements IAudioRecorder {
                                     !element.classList.contains(
                                         "bloom-editable",
                                     ) &&
-                                    // A table in the box's text has cells whose own text boxes
-                                    // keep their own recordings.
-                                    !element.closest(".bloom-tableInText")
+                                    // Not the sentences of the cells of a table in the box's
+                                    // text: each cell's text box keeps its own recordings.
+                                    element.closest(".bloom-editable") === root
                                 ) {
                                     this.deleteElementAndPushChildNodesIntoParent(
                                         element,
@@ -5103,11 +5104,8 @@ export function bumpDown(whichPositionToBump: number) {
  * text boxes of their own (see docs/insert-table/README.md).
  */
 function htmlOfOwnText(editable: HTMLElement): string {
-    if (!editable.querySelector(":scope > .bloom-tableInText"))
-        return editable.innerHTML;
+    if (tablesInTextOf(editable).length === 0) return editable.innerHTML;
     const copy = editable.cloneNode(true) as HTMLElement;
-    copy.querySelectorAll(":scope > .bloom-tableInText").forEach((table) =>
-        table.remove(),
-    );
+    tablesInTextOf(copy).forEach((table) => table.remove());
     return copy.innerHTML;
 }

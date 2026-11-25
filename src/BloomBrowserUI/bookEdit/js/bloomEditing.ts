@@ -29,7 +29,12 @@ import {
     setupInlineImages,
 } from "./inlineImages";
 import { kInlineImageClass } from "./inlineImageConstants";
-import { kTableInTextClass } from "./tableInTextConstants";
+import {
+    elementOf,
+    kTableInTextClass,
+    putBackLiveTables,
+    tablesInTextOf,
+} from "./tableInTextConstants";
 import {
     cleanupInlineImageInteractions,
     adjustInlineImageOffsetsIfBlockSizeChanged,
@@ -2174,25 +2179,10 @@ function keepLiveTablesWhenCkEditorLoads(
     // At the default priority, this runs before the "loaded" handler that CKEDITOR.inline()
     // registered at priority 10000, which does the rewrite.
     editor.on("loaded", () => {
-        liveTables = Array.from(
-            element.querySelectorAll<HTMLElement>(
-                `:scope > .${kTableInTextClass}`,
-            ),
-        );
+        liveTables = tablesInTextOf(element);
     });
     editor.on("instanceReady", () => {
-        const copies = Array.from(
-            element.querySelectorAll<HTMLElement>(
-                `:scope > .${kTableInTextClass}`,
-            ),
-        );
-        if (copies.length !== liveTables.length)
-            throw new Error(
-                `CKEditor loaded ${copies.length} tables into a text box that had ${liveTables.length}`,
-            );
-        copies.forEach((copy, index) => {
-            if (copy !== liveTables[index]) copy.replaceWith(liveTables[index]);
-        });
+        putBackLiveTables(element, liveTables);
         liveTables = [];
     });
 }
@@ -2207,11 +2197,8 @@ function keepLiveTablesWhenCkEditorLoads(
 function keepEditorCommandsOutOfTables(editor: CKEDITOR.editor): void {
     editor.on("beforeCommandExec", (evt) => {
         const anchor = editor.document?.$.getSelection()?.anchorNode;
-        const anchorElement =
-            anchor?.nodeType === Node.TEXT_NODE
-                ? anchor.parentElement
-                : (anchor as Element | null | undefined);
-        if (anchorElement?.closest("." + kTableInTextClass)) evt.cancel();
+        if (anchor && elementOf(anchor)?.closest("." + kTableInTextClass))
+            evt.cancel();
     });
 }
 

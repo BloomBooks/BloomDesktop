@@ -27,3 +27,36 @@ export function unusedParagraphBelowLastTable(
         !last.querySelector(":not(br, span)");
     return isEmpty ? last : undefined;
 }
+
+/** The element `node` is, or for a text node the element it is in. */
+export function elementOf(node: Node): Element | null {
+    return node.nodeType === Node.ELEMENT_NODE
+        ? (node as Element)
+        : node.parentElement;
+}
+
+/** The tables in `box`'s own text, in order. */
+export function tablesInTextOf(box: HTMLElement): HTMLElement[] {
+    return Array.from(
+        box.querySelectorAll<HTMLElement>(`:scope > .${kTableInTextClass}`),
+    );
+}
+
+/**
+ * After something has rewritten `box`'s content from HTML, put `liveTables` (from tablesInTextOf
+ * before the rewrite) back in place of the copies the HTML made. Tables have no id, so they are
+ * matched by their order in the box.
+ */
+export function putBackLiveTables(
+    box: HTMLElement,
+    liveTables: HTMLElement[],
+): void {
+    const copies = tablesInTextOf(box);
+    if (copies.length !== liveTables.length)
+        throw new Error(
+            `The new content of the text box has ${copies.length} tables, but it had ${liveTables.length}`,
+        );
+    copies.forEach((copy, index) => {
+        if (copy !== liveTables[index]) copy.replaceWith(liveTables[index]);
+    });
+}

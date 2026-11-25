@@ -3,7 +3,7 @@ import { get, postString } from "../../utils/bloomApi";
 import $ from "jquery";
 import { getPageIFrame, getPageIframeBody } from "../../utils/shared";
 import { kInlineImageClass, kInlineImageIdAttr } from "./inlineImageConstants";
-import { kTableInTextClass } from "./tableInTextConstants";
+import { putBackLiveTables, tablesInTextOf } from "./tableInTextConstants";
 import {
     postAfterSendingSnapshot,
     saveChangesAndRethinkPage,
@@ -529,22 +529,11 @@ export class EditableDivUtils {
         const liveInlineImages = Array.from(
             div.querySelectorAll<HTMLElement>(`:scope > .${kInlineImageClass}`),
         );
-        const liveTables = Array.from(
-            div.querySelectorAll<HTMLElement>(`:scope > .${kTableInTextClass}`),
-        );
+        const liveTables = tablesInTextOf(div);
 
         div.innerHTML = html;
 
-        const rebuiltTables = Array.from(
-            div.querySelectorAll<HTMLElement>(`:scope > .${kTableInTextClass}`),
-        );
-        if (rebuiltTables.length !== liveTables.length)
-            throw new Error(
-                `The new content of the text block has ${rebuiltTables.length} tables, but it had ${liveTables.length}`,
-            );
-        rebuiltTables.forEach((rebuilt, index) =>
-            rebuilt.replaceWith(liveTables[index]),
-        );
+        putBackLiveTables(div, liveTables);
 
         liveInlineImages.forEach((live) => {
             // Every wrapper is given an id when it is inserted or when the page is set up, and the

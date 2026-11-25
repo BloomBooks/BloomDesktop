@@ -1652,6 +1652,28 @@ describe("inlineImageInteractions", () => {
             expect(widthIn(group, "fr")).toBe("60%");
         });
 
+        it("leaves Ctrl+Z and Ctrl+Y in a cell of a table in text to the browser", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            resizeTo(group, "60%");
+            const table = document.createElement("div");
+            table.className = "bloom-table bloom-tableInText";
+            const cellBox = document.createElement("div");
+            cellBox.className = "bloom-editable";
+            table.appendChild(cellBox);
+            editableFor(group, "en").appendChild(table);
+            // Sanity check: the picture change is what the stack would undo.
+            expect(inlineImageCanUndo()).toBe(true);
+
+            const undo = pressKey(cellBox, "z");
+            const redo = pressKey(cellBox, "y");
+
+            expect(undo.defaultPrevented).toBe(false);
+            expect(redo.defaultPrevented).toBe(false);
+            expect(widthIn(group, "fr")).toBe("60%");
+        });
+
         it("leaves Ctrl+Z alone when the next undo is not a picture change", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();

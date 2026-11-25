@@ -8,7 +8,8 @@
 import * as React from "react";
 import { default as InsertTableIcon } from "@mui/icons-material/TableChartOutlined";
 import { refreshStructuralChrome } from "bloom-table";
-import { kTableInTextClass } from "./tableInTextConstants";
+import { elementOf, kTableInTextClass } from "./tableInTextConstants";
+import { isUndoOrRedoKey } from "../undo/redoKeyBinding";
 import { AttachNewTableAndSetUpItsCells } from "./tableEditing";
 import { setupTableInTextDragging } from "./tableInTextDrag";
 import { getInlineImageActionTarget } from "./inlineImageInteractions";
@@ -76,6 +77,7 @@ export function insertTableInText(
     ensureParagraphOnEachSide(table);
     AttachNewTableAndSetUpItsCells(table);
     keepPlainKeysInTable(table);
+    setupTableInTextDragging(doc);
     return table;
 }
 
@@ -123,12 +125,7 @@ export function paragraphOf(
     editable: HTMLElement,
     caret: Range,
 ): HTMLElement | undefined {
-    const node = caret.startContainer;
-    const element =
-        node.nodeType === Node.ELEMENT_NODE
-            ? (node as Element)
-            : node.parentElement;
-    const paragraph = element?.closest("p");
+    const paragraph = elementOf(caret.startContainer)?.closest("p");
     if (!paragraph || paragraph.parentElement !== editable) return undefined;
     return paragraph;
 }
@@ -152,19 +149,17 @@ export function ensureParagraphOnEachSide(table: HTMLElement): void {
 }
 
 /**
- * Keep the plain keys typed in a cell away from the handlers on the text box around the table.
- * Those handlers (the outer box's CKEditor, BloomField, long press) treat every key that reaches
- * them as typing in their own box: the outer CKEditor, for instance, runs its Enter command on top
- * of the Enter the table library has already handled, and the cell gets two new paragraphs.
- *
- * A key held with Ctrl, Alt or the Windows key goes on up, because page-wide shortcuts listen for it
- * on the document (Ctrl+V for pictures, Ctrl+Y for Redo, and others in bloomEditing.ts).
+ * Set up the tables in text in `container`: keep the plain keys typed in their cells to the cells
+ * (keepPlainKeysInTable), and set up dragging them. Once per document, also guard the tables from
+ * keys typed in the text around them, and refresh the tables' buttons when the focus moves.
  */
 export function setupTablesInText(container: HTMLElement): void {
-    container
-        .querySelectorAll<HTMLElement>(`.${kTableInTextClass}`)
-        .forEach((table) => keepPlainKeysInTable(table));
+    const tables = container.querySelectorAll<HTMLElement>(
+        `.${kTableInTextClass}`,
+    );
+    tables.forEach((table) => keepPlainKeysInTable(table));
     const doc = container.ownerDocument;
+    if (tables.length > 0) setupTableInTextDragging(doc);
     if (!documentsWithTableGuard.has(doc)) {
         documentsWithTableGuard.add(doc);
         // Capture on the document, so that it runs before the box's CKEditor sees the key.
@@ -172,7 +167,6 @@ export function setupTablesInText(container: HTMLElement): void {
         // The library asks tableInTextMayShowItsButtons only as the pointer comes near a table, so
         // when the focus moves into or out of a table it has to be asked again.
         doc.addEventListener("focusin", () => refreshStructuralChrome(), true);
-        setupTableInTextDragging(doc);
     }
 }
 
@@ -195,7 +189,7 @@ export function tableInTextMayShowItsButtons(table: HTMLElement): boolean {
 const documentsWithTableGuard = new WeakSet<Document>();
 
 /** What a key typed in the text around a table should do. See guardTablesInTextFromKey. */
-export type TableGuardDecision = "allow" | "block" | "deleteAroundTables";
+type TableGuardDecision = "allow" | "block" | "deleteAroundTables";
 
 /**
  * Decide what `key` (with Ctrl or the Windows key held if `withCommandKey`) should do to the text of
@@ -261,17 +255,28 @@ function guardTablesInTextFromKey(e: KeyboardEvent): void {
     if (decision === "allow") return;
     e.preventDefault();
     e.stopPropagation();
-    if (decision === "deleteAroundTables") {
-        // So that the box's CKEditor counts the deletion as an edit, for saving and for its undo.
-        const editor = (
-            editable as unknown as {
-                bloomCkEditor?: { fire: (name: string) => void };
-            }
-        ).bloomCkEditor;
-        editor?.fire("saveSnapshot");
-        deleteAllButTables(editable, range);
-        editor?.fire("saveSnapshot");
-    }
+    if (decision === "deleteAroundTables")
+        changeWithCkEditorSnapshots(editable, () =>
+            deleteAllButTables(editable, range),
+        );
+}
+
+/**
+ * Make `change` to `editable`'s content between two undo snapshots of the box's CKEditor, so that
+ * the editor counts it as an edit, for saving and for its undo.
+ */
+export function changeWithCkEditorSnapshots(
+    editable: HTMLElement,
+    change: () => void,
+): void {
+    const editor = (
+        editable as unknown as {
+            bloomCkEditor?: { fire: (name: string) => void };
+        }
+    ).bloomCkEditor;
+    editor?.fire("saveSnapshot");
+    change();
+    editor?.fire("saveSnapshot");
 }
 
 /**
@@ -338,11 +343,7 @@ function tablesTouchedBy(editable: HTMLElement, range: Range): HTMLElement[] {
 }
 
 function cellOf(node: Node): Element | null {
-    const element =
-        node.nodeType === Node.ELEMENT_NODE
-            ? (node as Element)
-            : node.parentElement;
-    return element?.closest(".bloom-cell") ?? null;
+    return elementOf(node)?.closest(".bloom-cell") ?? null;
 }
 
 /** Whether the caret `range` is at the start (or end) of `paragraph`'s text. */
@@ -363,6 +364,15 @@ export function isAtEdgeOf(
 // saved HTML and it does not keep the tables of pages we have left in memory.
 const tablesWithKeyListeners = new WeakSet<HTMLElement>();
 
+/**
+ * Keep the plain keys typed in a cell away from the handlers on the text box around the table.
+ * Those handlers (the outer box's CKEditor, BloomField, long press) treat every key that reaches
+ * them as typing in their own box: the outer CKEditor, for instance, runs its Enter command on top
+ * of the Enter the table library has already handled, and the cell gets two new paragraphs.
+ *
+ * A key held with Ctrl, Alt or the Windows key goes on up, because page-wide shortcuts listen for it
+ * on the document (Ctrl+V for pictures, Ctrl+Y for Redo, and others in bloomEditing.ts).
+ */
 function keepPlainKeysInTable(table: HTMLElement): void {
     if (tablesWithKeyListeners.has(table)) return;
     tablesWithKeyListeners.add(table);
@@ -374,6 +384,15 @@ function keepPlainKeysInTable(table: HTMLElement): void {
     table.addEventListener(
         "keydown",
         (e) => {
+            // The cells have no CKEditor, so Undo and Redo in a cell are the browser's own. Its
+            // history is the whole page's, so it can also take back typing elsewhere; that is
+            // accepted until Bloom's new undo replaces this. Stopping the key here, on the way
+            // down, keeps it from the outer box's CKEditor, whose undo command is cancelled in a
+            // table, and from Bloom's Ctrl+Y binding, leaving the browser to act on it.
+            if (isUndoOrRedoKey(e)) {
+                e.stopPropagation();
+                return;
+            }
             if (
                 e.key === "Enter" &&
                 !e.shiftKey &&

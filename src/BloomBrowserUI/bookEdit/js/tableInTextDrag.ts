@@ -1,16 +1,18 @@
 // Dragging a table that sits in the text of a text box to another place in the same text (see
 // docs/insert-table/README.md).
 //
-// While a table in text is selected (the focus is in it), a grip shows just left of its top-left
-// corner. Dragging the grip shows where the table would land: a horizontal line at the start or
-// end of a paragraph, or a text-cursor mark inside one, which the drop splits. The drop moves the
-// table element itself, so the table library and its cells' text boxes keep working on it.
+// Each table in text has a grip just left of its first row, which shows whenever the page's
+// other editing marks do (tableEditing.less). Dragging the grip shows where the table would land:
+// a horizontal line at the start or end of a paragraph, or a text-cursor mark inside one, which the
+// drop splits. The drop moves the table element itself, so the table library and its cells' text
+// boxes keep working on it.
 //
 // The grip and the mark are on the page's body, outside the bloom-page, so they are never saved.
 
 import { refreshStructuralChrome } from "bloom-table";
-import { kTableInTextClass } from "./tableInTextConstants";
+import { elementOf, kTableInTextClass } from "./tableInTextConstants";
 import {
+    changeWithCkEditorSnapshots,
     ensureParagraphOnEachSide,
     isAtEdgeOf,
     paragraphOf,
@@ -19,9 +21,11 @@ import {
 
 const kGripClass = "bloom-tableInTextGrip";
 const kDropMarkClass = "bloom-tableInTextDropMark";
+// The grip's height in tableEditing.less.
+const kGripHeight = 24;
 
 /** Where a drop would put the table, and how to show it. */
-export interface ITableDropTarget {
+interface ITableDropTarget {
     // The caret the table goes at; see placeBetweenParagraphs.
     caret: Range;
     // "line" for a drop at the start or end of a paragraph, or between paragraphs; "split" for one
@@ -42,11 +46,11 @@ export function dropTargetFor(
     const node = caret.startContainer;
     if (!editable.contains(node) || table.contains(node)) return undefined;
     // Not into another table in the same text, nor into an inline image.
-    const element =
-        node.nodeType === Node.ELEMENT_NODE
-            ? (node as Element)
-            : node.parentElement;
-    if (element?.closest(`.${kTableInTextClass}, [contenteditable='false']`))
+    if (
+        elementOf(node)?.closest(
+            `.${kTableInTextClass}, [contenteditable='false']`,
+        )
+    )
         return undefined;
     if (node === editable) return { caret, kind: "line" };
     const paragraph = paragraphOf(editable, caret);
@@ -66,34 +70,122 @@ export function moveTableInText(
     table: HTMLElement,
     caret: Range,
 ): void {
-    const editor = (
-        editable as unknown as {
-            bloomCkEditor?: { fire: (name: string) => void };
-        }
-    ).bloomCkEditor;
-    editor?.fire("saveSnapshot");
     // Taking the table out of the page takes the focus out of it too, which would deselect it
     // and hide its buttons, so the focus goes back where it was once the table is in place.
     const doc = editable.ownerDocument;
     const focused = doc.activeElement as HTMLElement | null;
     const focusWasInTable = !!focused && table.contains(focused);
-    // The caret is a live Range, so taking the table out of the text does not move it.
-    table.remove();
-    placeBetweenParagraphs(editable, table, caret);
-    ensureParagraphOnEachSide(table);
-    editor?.fire("saveSnapshot");
+    changeWithCkEditorSnapshots(editable, () => {
+        // The caret is a live Range, so taking the table out of the text does not move it.
+        table.remove();
+        placeBetweenParagraphs(editable, table, caret);
+        ensureParagraphOnEachSide(table);
+    });
     if (focusWasInTable) focused.focus({ preventScroll: true });
     // The library draws its buttons where the table was; this has it ask again and move them.
     refreshStructuralChrome();
 }
 
 /**
- * Set up the grip for the tables in text of `doc`. Safe to call again: it does its setup once per
+ * Set up the grips for the tables in text of `doc`. Call it once `doc` has a table in text, so that
+ * pages without one pay nothing for the grips. Safe to call again: it does its setup once per
  * document.
  */
 export function setupTableInTextDragging(doc: Document): void {
-    if (documentsWithGrip.has(doc)) return;
-    documentsWithGrip.add(doc);
+    if (documentsWithGrips.has(doc)) return;
+    documentsWithGrips.add(doc);
+    const mark = doc.createElement("div");
+    mark.className = `${kDropMarkClass} bloom-ui`;
+    mark.style.display = "none";
+    doc.body.appendChild(mark);
+
+    // Anything that adds, moves or removes a table moves or removes its grip: inserting or
+    // dragging one, typing above it, scrolling something inside the page, a change of window size.
+    // Batched to one update a frame, since typing changes the page with every key.
+    let updatePending = false;
+    const update = () => {
+        if (updatePending) return;
+        updatePending = true;
+        doc.defaultView!.requestAnimationFrame(() => {
+            updatePending = false;
+            placeGrips(doc, mark);
+        });
+    };
+    new MutationObserver((mutations) => {
+        // The grips are on the body, and placing them is a change too.
+        if (mutations.some((m) => !isGripOrMark(m.target))) update();
+    }).observe(doc.body, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ["class", "style"],
+    });
+    // The grips are placed in the document's own coordinates, so scrolling the whole document
+    // does not move them relative to their tables.
+    doc.addEventListener(
+        "scroll",
+        (e) => {
+            if (e.target !== doc) update();
+        },
+        { capture: true, passive: true },
+    );
+    doc.defaultView?.addEventListener("resize", update, { passive: true });
+    update();
+}
+
+const documentsWithGrips = new WeakSet<Document>();
+
+// The grip of each table in text that has one.
+const grips = new Map<HTMLElement, HTMLElement>();
+
+function isGripOrMark(node: Node): boolean {
+    return !!elementOf(node)?.closest(`.${kGripClass}, .${kDropMarkClass}`);
+}
+
+/**
+ * Give each table in text of `doc` that shows a grip just left of its first row, and take away the
+ * grips of tables that are gone or hidden (their language is not shown).
+ */
+function placeGrips(doc: Document, mark: HTMLElement): void {
+    const view = doc.defaultView!;
+    // All the measuring first, then all the placing, so that the browser lays the page out once.
+    const placements = Array.from(
+        doc.querySelectorAll<HTMLElement>(`.bloom-page .${kTableInTextClass}`),
+    )
+        .map((table) => ({
+            table,
+            rect: table.getBoundingClientRect(),
+            firstCell: table
+                .querySelector(".bloom-cell")!
+                .getBoundingClientRect(),
+        }))
+        .filter((placement) => placement.rect.width > 0);
+    const shown = new Set<HTMLElement>();
+    placements.forEach(({ table, rect, firstCell }) => {
+        shown.add(table);
+        let grip = grips.get(table);
+        if (!grip) {
+            grip = makeGrip(doc, table, mark);
+            grips.set(table, grip);
+        }
+        grip.style.left = `${rect.left + view.scrollX - 22}px`;
+        // Level with the middle of the first row, as Notion puts its handle level with a
+        // block's first line.
+        grip.style.top = `${firstCell.top + firstCell.height / 2 - kGripHeight / 2 + view.scrollY}px`;
+    });
+    grips.forEach((grip, table) => {
+        if (shown.has(table)) return;
+        grip.remove();
+        grips.delete(table);
+    });
+}
+
+function makeGrip(
+    doc: Document,
+    table: HTMLElement,
+    mark: HTMLElement,
+): HTMLElement {
     const grip = doc.createElement("div");
     grip.className = `${kGripClass} bloom-ui`;
     grip.setAttribute("aria-hidden", "true");
@@ -106,67 +198,23 @@ export function setupTableInTextDragging(doc: Document): void {
             `<circle cx="7.5" cy="${y}" r="1.5"/>`,
         ])
         .join("")}</svg>`;
-    grip.style.display = "none";
     doc.body.appendChild(grip);
-    const mark = doc.createElement("div");
-    mark.className = `${kDropMarkClass} bloom-ui`;
-    mark.style.display = "none";
-    doc.body.appendChild(mark);
-
-    const update = () => showGripForSelectedTable(doc, grip);
-    // A focus change can select a table or leave one; anything that moves the table moves the
-    // grip.
-    doc.addEventListener("focusin", update, true);
-    doc.addEventListener("focusout", () => setTimeout(update, 0), true);
-    doc.addEventListener("scroll", update, { capture: true, passive: true });
-    doc.defaultView?.addEventListener("resize", update, { passive: true });
-    doc.addEventListener("input", update, true);
-
-    grip.addEventListener("pointerdown", (e) => startDrag(e, doc, grip, mark));
-    // Pressing the grip must not take the focus out of the table, which would hide the grip.
-    grip.addEventListener("mousedown", (e) => e.preventDefault());
-}
-
-const documentsWithGrip = new WeakSet<Document>();
-
-// The table the grip belongs to, while it shows.
-let gripTable: HTMLElement | undefined;
-
-function selectedTableInText(doc: Document): HTMLElement | undefined {
-    const active = doc.activeElement;
-    return (
-        (active?.closest(`.${kTableInTextClass}`) as HTMLElement | null) ??
-        undefined
+    grip.addEventListener("pointerdown", (e) =>
+        startDrag(e, doc, table, grip, mark),
     );
-}
-
-function showGripForSelectedTable(doc: Document, grip: HTMLElement): void {
-    const table = selectedTableInText(doc);
-    gripTable = table;
-    if (!table) {
-        grip.style.display = "none";
-        return;
-    }
-    const rect = table.getBoundingClientRect();
-    const view = doc.defaultView!;
-    grip.style.display = "block";
-    grip.style.left = `${rect.left + view.scrollX - 16}px`;
-    grip.style.top = `${rect.top + view.scrollY}px`;
-}
-
-function caretAtPoint(doc: Document, x: number, y: number): Range | null {
-    return doc.caretRangeFromPoint(x, y);
+    // Pressing the grip leaves the focus where it was, and so the table's buttons as they were.
+    grip.addEventListener("mousedown", (e) => e.preventDefault());
+    return grip;
 }
 
 function startDrag(
     e: PointerEvent,
     doc: Document,
+    table: HTMLElement,
     grip: HTMLElement,
     mark: HTMLElement,
 ): void {
-    const table = gripTable;
-    const editable = table?.parentElement;
-    if (!table || !editable) return;
+    const editable = table.parentElement!;
     e.preventDefault();
     grip.setPointerCapture(e.pointerId);
     let target: ITableDropTarget | undefined;
@@ -176,7 +224,7 @@ function startDrag(
         target = dropTargetFor(
             editable,
             table,
-            caretAtPoint(doc, move.clientX, move.clientY),
+            doc.caretRangeFromPoint(move.clientX, move.clientY),
         );
         showDropMark(mark, editable, target, view);
     };
@@ -186,7 +234,6 @@ function startDrag(
         grip.removeEventListener("pointercancel", onCancel);
         mark.style.display = "none";
         if (drop && target) moveTableInText(editable, table, target.caret);
-        showGripForSelectedTable(doc, grip);
     };
     const onUp = () => finish(true);
     const onCancel = () => finish(false);
@@ -210,9 +257,9 @@ function showDropMark(
     mark.style.display = "block";
     if (target.kind === "split") {
         // A text cursor where the paragraph would split.
-        mark.style.left = `${caretRect.left + view.scrollX - 1}px`;
+        mark.style.left = `${caretRect.left + view.scrollX - 1.5}px`;
         mark.style.top = `${caretRect.top + view.scrollY}px`;
-        mark.style.width = "2px";
+        mark.style.width = "3px";
         mark.style.height = `${Math.max(caretRect.height, 12)}px`;
         return;
     }
@@ -227,9 +274,9 @@ function showDropMark(
             : paragraphRect.bottom;
     }
     mark.style.left = `${boxRect.left + view.scrollX}px`;
-    mark.style.top = `${lineY + view.scrollY - 1}px`;
+    mark.style.top = `${lineY + view.scrollY - 2}px`;
     mark.style.width = `${boxRect.width}px`;
-    mark.style.height = "2px";
+    mark.style.height = "4px";
 }
 
 // The rectangle of a caret. A caret in an empty paragraph has an empty rectangle, so that one uses
@@ -237,10 +284,5 @@ function showDropMark(
 function caretRectangle(caret: Range): DOMRect {
     const rect = caret.getBoundingClientRect();
     if (rect.height > 0) return rect;
-    const node = caret.startContainer;
-    const element =
-        node.nodeType === Node.ELEMENT_NODE
-            ? (node as Element)
-            : node.parentElement!;
-    return element.getBoundingClientRect();
+    return elementOf(caret.startContainer)!.getBoundingClientRect();
 }

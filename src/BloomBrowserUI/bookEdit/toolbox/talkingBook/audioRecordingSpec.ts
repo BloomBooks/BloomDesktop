@@ -505,6 +505,25 @@ describe("audio recording tests", () => {
             expect(cellSentence.hasClass("audio-sentence")).toBe(true);
         });
 
+        it("removes the sentence spans of a table's cell when that cell's own box is set to Text Box mode", () => {
+            const div = boxWithTableInText(
+                "<p><span id='cellSentence' class='audio-sentence'>In the cell.</span></p>",
+            );
+            const cellBox = div.find("#cellBox");
+            expect(cellBox.find("#cellSentence").length).toBe(1);
+            const recording = new AudioRecording();
+
+            recording.makeAudioSentenceElementsTest(
+                cellBox,
+                RecordingMode.TextBox,
+                RecordingMode.TextBox,
+            );
+
+            expect(cellBox.hasClass("audio-sentence")).toBe(true);
+            expect(cellBox.find("#cellSentence").length).toBe(0);
+            expect(cellBox.text()).toBe("In the cell.");
+        });
+
         it("splits the text around a table into sentences but not the table's cells", () => {
             const div = boxWithTableInText("<p>In the cell.</p>");
             const recording = new AudioRecording();

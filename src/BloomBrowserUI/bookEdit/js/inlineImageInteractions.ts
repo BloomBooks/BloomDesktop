@@ -104,6 +104,7 @@ import {
     syncInlineImagesFromEditable,
 } from "./inlineImages";
 import { kInlineImageClass } from "./inlineImageConstants";
+import { kTableInTextClass } from "./tableInTextConstants";
 
 // Classes for the four resize handles and the frame they are positioned in. Both are bloom-ui,
 // so Cleanup() removes them before the page is saved, and syncInlineImagesFromEditable leaves
@@ -838,6 +839,9 @@ function onUndoOrRedoKeyDown(event: KeyboardEvent): void {
     if (isInChangeLayoutMode(doc)) return;
     // A form field has its own undo of what was typed in it.
     if ((event.target as Element).closest?.("input, textarea, select")) return;
+    // The cells of a table in a box's text have no CKEditor; their Ctrl+Z and Ctrl+Y are the
+    // browser's own (keepPlainKeysInTable in tablesInText.ts).
+    if ((event.target as Element).closest?.(`.${kTableInTextClass}`)) return;
     if (
         (event.target as Element).closest?.(".bloom-editable") &&
         getToolboxBundleExports()?.readerToolsHandleUndoKeys()

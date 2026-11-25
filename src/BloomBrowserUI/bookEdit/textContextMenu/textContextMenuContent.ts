@@ -40,14 +40,12 @@ export function getTextContextMenuContent(
     closeMenu: CloseMenuFunction = () => {},
 ): ITextContextMenuContent | undefined {
     const paragraph = findParagraphForTextContextMenu(target);
+    const clicked = target instanceof HTMLElement ? target : undefined;
     const inlineImageItems = getInlineImageMenuItemsForClick(
-        target instanceof HTMLElement ? target : undefined,
+        clicked,
         closeMenu,
     );
-    const insertTable = getInsertTableMenuItem(
-        target instanceof HTMLElement ? target : undefined,
-        closeMenu,
-    );
+    const insertTable = getInsertTableMenuItem(clicked, closeMenu);
     const tableItems = insertTable ? [insertTable] : [];
     if (!paragraph && inlineImageItems.length === 0 && tableItems.length === 0)
         return undefined;

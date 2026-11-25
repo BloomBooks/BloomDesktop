@@ -32,29 +32,53 @@ body:has(.origami-layout-mode) [data-table-overlay] {
 
 // The grip for dragging a table in the text of a text box, and the mark that shows where it would
 // land (tableInTextDrag.ts). Both are on the body, outside the page, so nothing here is saved.
+// They copy Notion's handle for dragging a block and the line that shows where it will drop.
+// Both are Notion's faint blue, rgba(35, 131, 226, 0.43) on white, made solid so that it looks
+// the same on the grip's grey hover background as on the page.
+@tableInTextDragBlue: rgb(160, 202, 242);
 .bloom-tableInTextGrip {
     position: absolute;
-    width: 12px;
-    height: 18px;
-    padding: 1px;
-    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 24px;
+    border-radius: 4px;
     cursor: grab;
     // Above the page, but below the library's own buttons and menus.
     z-index: 1000;
-    background-color: white;
-    box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+    color: @tableInTextDragBlue;
+    transition: background-color 20ms ease-in;
+    // Shown only while the page's other editing marks (the text boxes' frames and language
+    // names) are, that is, while the mouse is over the page (editMode.less), or while it is on
+    // the grip itself or dragging it, since the grip is not inside the page.
+    visibility: hidden;
+    body:has(.bloom-page:hover) &,
+    body:has(#canvas-element-context-controls:hover) &,
+    &:hover,
+    &:active {
+        visibility: visible;
+    }
     touch-action: none;
     svg {
         display: block;
-        fill: #6a6a6a;
+        fill: currentColor;
+    }
+    &:hover {
+        background-color: rgba(55, 53, 47, 0.08);
     }
     &:active {
         cursor: grabbing;
+        background-color: rgba(55, 53, 47, 0.16);
     }
 }
 .bloom-tableInTextDropMark {
     position: absolute;
     z-index: 1000;
     pointer-events: none;
-    background-color: #1d94a4;
+    border-radius: 2px;
+    background-color: @tableInTextDragBlue;
+    // A bar of this colour reads much stronger than the grip's small dots; this brings it down to
+    // match them and the page's other faint editing marks.
+    opacity: 0.6;
 }
