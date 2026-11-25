@@ -277,15 +277,20 @@ export function ensureParagraphOnEachSide(table: HTMLElement): void {
 }
 
 /**
- * Set up the tables in text in `container`: keep the plain keys typed in their cells to the cells
- * (keepPlainKeysInTable), and set up dragging them. Once per document, also guard the tables from
+ * Set up the tables in text in `container`: give each a paragraph above and below it (a saved page
+ * has no empty paragraph below a table that ends the text, see removeUnusedParagraphsBelowTables),
+ * keep the plain keys typed in their cells to the cells (keepPlainKeysInTable), and set up dragging
+ * them. Once per document, also guard the tables from
  * keys typed in the text around them, and refresh the tables' buttons when the focus moves.
  */
 export function setupTablesInText(container: HTMLElement): void {
     const tables = container.querySelectorAll<HTMLElement>(
         `.${kTableInTextClass}`,
     );
-    tables.forEach((table) => keepPlainKeysInTable(table));
+    tables.forEach((table) => {
+        ensureParagraphOnEachSide(table);
+        keepPlainKeysInTable(table);
+    });
     const doc = container.ownerDocument;
     if (tables.length > 0) setupTableInTextDragging(doc);
     if (!documentsWithTableGuard.has(doc)) {

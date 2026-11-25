@@ -33,6 +33,7 @@ import {
     elementOf,
     kTableInTextClass,
     putBackLiveTables,
+    removeUnusedParagraphsBelowTables,
     tablesInTextOf,
 } from "./tableInTextConstants";
 import {
@@ -1647,6 +1648,7 @@ function cleanCloneOfPageForSave(
 
     removeNiceScrollArtifacts(clonedPage);
     removeScrollOffsets(clonedPage);
+    removeUnusedParagraphsBelowTables(clonedPage);
 
     removeEditingDebrisFromClone(clonedPage);
 }

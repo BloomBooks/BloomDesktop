@@ -33,6 +33,7 @@ import {
     getTextBoxLayout,
     insertTableInTextAfter,
     putCaretBesideTable,
+    readSavedTextBoxLayout,
     selectText,
 } from "../helpers/tablesInText";
 
@@ -57,15 +58,19 @@ const LAST_TWO_SENTENCES = "P:The heron fishes. The otter swims.";
 const LAYOUT_AFTER_INSERT = [FIRST_SENTENCE, TABLE, LAST_TWO_SENTENCES];
 
 /**
- * Make a book with one Just Text page, type TEXT on it, and insert a table just after its first
- * sentence.
+ * Make a book with one Just Text page, type TEXT on it, and insert a table just after `afterText`
+ * (by default its first sentence). Returns the book's folder.
  */
-async function makePageWithTableInText(page: Page): Promise<void> {
-    await makeBookFromTemplate(page, "Basic Book");
+async function makePageWithTableInText(
+    page: Page,
+    afterText = "kingfisher waits.",
+): Promise<string> {
+    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
     await addPage(page, "Just Text");
     await goToPage(page, (await getContentPages(page))[0].id);
     await typeInGroup(page, GROUP, LANG, TEXT);
-    await insertTableInTextAfter(page, GROUP, LANG, "kingfisher waits.");
+    await insertTableInTextAfter(page, GROUP, LANG, afterText);
+    return bookFolder;
 }
 
 test("Insert Table puts a table between the halves of the paragraph, and it keeps what was typed in it", async ({
@@ -89,6 +94,35 @@ test("Insert Table puts a table between the halves of the paragraph, and it keep
         LAYOUT_AFTER_INSERT,
     );
     expect(await getCellText(page, 0, 0, LANG)).toBe("Bird");
+});
+
+test("A table that ends the text is saved with no empty paragraph below it, and gets one back in the Edit tab", async ({
+    page,
+    step,
+}) => {
+    test.setTimeout(300000);
+    let bookFolder = "";
+    await step("Make a page with a table at the end of its text", async () => {
+        bookFolder = await makePageWithTableInText(page, "otter swims.");
+    });
+    const withParagraphBelow = ["P:" + TEXT, TABLE, "P:"];
+    expect(await getTextBoxLayout(page, GROUP, LANG)).toEqual(
+        withParagraphBelow,
+    );
+
+    await step("Leave the page, which saves it, and come back", async () =>
+        reloadPageBeingEdited(page),
+    );
+
+    const pageId = (await getContentPages(page))[0].id;
+    expect(
+        await readSavedTextBoxLayout(page, bookFolder, pageId, GROUP, LANG),
+        "The saved page should have no empty paragraph below the table.",
+    ).toEqual(["P:" + TEXT, TABLE]);
+    expect(
+        await getTextBoxLayout(page, GROUP, LANG),
+        "The Edit tab should give the table a paragraph below it again, to type in.",
+    ).toEqual(withParagraphBelow);
 });
 
 test("Backspace and Delete next to a table do not delete it", async ({

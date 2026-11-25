@@ -6,10 +6,14 @@ import {
     insertTableInText,
     pasteTableIntoText,
     selectionTouchesTableInText,
+    setupTablesInText,
     tableInTextMayShowItsButtons,
 } from "./tablesInText";
 import { EditableDivUtils } from "./editableDivUtils";
-import { kTableInTextClass } from "./tableInTextConstants";
+import {
+    kTableInTextClass,
+    removeUnusedParagraphsBelowTables,
+} from "./tableInTextConstants";
 
 // Attaching a table needs the bloom-table library and Bloom's page setup, which these tests are
 // not about; they check where the table goes and what the menu offers. A pasted table loses the
@@ -735,5 +739,71 @@ describe("selectionTouchesTableInText", () => {
         expect(selectionTouchesTableInText()).toBe(false);
         select(lastText, 0, lastText, 4);
         expect(selectionTouchesTableInText()).toBe(false);
+    });
+});
+
+// A saved page has no empty paragraph below a table that ends a box's text, and opening the page
+// puts it back, so that the author can type below the table.
+describe("the empty paragraph below a table that ends the text", () => {
+    beforeEach(setupPage);
+    afterEach(() => (document.body.innerHTML = ""));
+
+    function insertTableAtEnd(): HTMLElement {
+        const last = element("second").firstChild as Text;
+        const caret = document.createRange();
+        caret.setStart(last, last.length);
+        caret.collapse(true);
+        return insertTableInText(element("text"), caret);
+    }
+
+    it("is removed from the page that is saved, and only that paragraph", () => {
+        insertTableAtEnd();
+        expect(childrenOfText()).toEqual([
+            "P:First half and second half.",
+            "P:Last paragraph.",
+            "[table]",
+            "P:",
+        ]);
+
+        removeUnusedParagraphsBelowTables(document.body);
+
+        expect(childrenOfText()).toEqual([
+            "P:First half and second half.",
+            "P:Last paragraph.",
+            "[table]",
+        ]);
+    });
+
+    it("is kept when something has been typed in it", () => {
+        const table = insertTableAtEnd();
+        table.nextElementSibling!.textContent = "Typed below.";
+
+        removeUnusedParagraphsBelowTables(document.body);
+
+        expect(childrenOfText()).toEqual([
+            "P:First half and second half.",
+            "P:Last paragraph.",
+            "[table]",
+            "P:Typed below.",
+        ]);
+    });
+
+    it("is put back when the page is set up", () => {
+        insertTableAtEnd();
+        removeUnusedParagraphsBelowTables(document.body);
+        expect(childrenOfText()).toEqual([
+            "P:First half and second half.",
+            "P:Last paragraph.",
+            "[table]",
+        ]);
+
+        setupTablesInText(document.body);
+
+        expect(childrenOfText()).toEqual([
+            "P:First half and second half.",
+            "P:Last paragraph.",
+            "[table]",
+            "P:",
+        ]);
     });
 });

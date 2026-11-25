@@ -10,7 +10,8 @@ export const kTableInTextClass = "bloom-tableInText";
 /**
  * The empty paragraph at the end of `box` that comes right after a table in text, if there is one
  * and nothing has been typed in it. ensureParagraphOnEachSide in tablesInText.ts adds it so that
- * the user has somewhere to type below a table that ends the text.
+ * the user has somewhere to type below a table that ends the text; setupTablesInText adds it each
+ * time a page is opened, and removeUnusedParagraphsBelowTables takes it out of the page Bloom saves.
  */
 export function unusedParagraphBelowLastTable(
     box: HTMLElement,
@@ -26,6 +27,18 @@ export function unusedParagraphBelowLastTable(
         (last.textContent ?? "").trim() === "" &&
         !last.querySelector(":not(br, span)");
     return isEmpty ? last : undefined;
+}
+
+/**
+ * Remove from each text box in `root` the empty paragraph below a table that ends its text
+ * (unusedParagraphBelowLastTable), so that a saved page does not have it. A reader would show it
+ * as a line of nothing below the table, and give the box a scroll bar when the table reaches the
+ * bottom of the box. For the page that Bloom saves, never the page being edited.
+ */
+export function removeUnusedParagraphsBelowTables(root: HTMLElement): void {
+    root.querySelectorAll<HTMLElement>(".bloom-editable").forEach((box) =>
+        unusedParagraphBelowLastTable(box)?.remove(),
+    );
 }
 
 /** The element `node` is, or for a text node the element it is in. */

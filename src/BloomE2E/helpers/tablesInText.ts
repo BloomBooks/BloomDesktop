@@ -10,9 +10,11 @@
 // Coordinates measured inside the page are relative to the page's frame; mouse coordinates are
 // relative to Bloom's window. pointInWindow adds the frame's offset, in one place.
 
+import * as fs from "node:fs";
 import { expect, type Locator, type Page } from "@playwright/test";
 import { clickAndWaitForApiPost } from "./api";
 import { editablePageFrame } from "./bookMaking";
+import { bookHtmlPath } from "./bookHtml";
 import {
     clickContextMenuCommand,
     rightClickAt,
@@ -47,6 +49,50 @@ async function pointInWindow(
 ): Promise<{ x: number; y: number }> {
     const offset = await pageFrameOffset(page);
     return { x: offset.x + point.x, y: offset.y + point.y };
+}
+
+/**
+ * Like getTextBoxLayout, but of the page as Bloom saved it in the book in `bookFolder`: the
+ * `languageTag` text box of the first `groupSelector` group on the page with id `pageId`. `page`
+ * is used only as a DOM parser. Throws if the file has no such page or text box.
+ */
+export async function readSavedTextBoxLayout(
+    page: Page,
+    bookFolder: string,
+    pageId: string,
+    groupSelector: string,
+    languageTag: string,
+): Promise<string[]> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate(
+        (args) => {
+            const saved = new DOMParser().parseFromString(
+                args.html,
+                "text/html",
+            );
+            const box = saved
+                .getElementById(args.pageId)
+                ?.querySelector(
+                    `${args.groupSelector} .bloom-editable[lang="${args.languageTag}"]`,
+                );
+            if (!box)
+                throw new Error(
+                    `The saved book has no "${args.languageTag}" text box in ${args.groupSelector} on page ${args.pageId}.`,
+                );
+            return Array.from(box.children).map((child) =>
+                child.classList.contains(args.tableClass)
+                    ? "[table]"
+                    : `${child.tagName}:${(child.textContent ?? "").trim()}`,
+            );
+        },
+        {
+            html,
+            pageId,
+            groupSelector,
+            languageTag,
+            tableClass: kTableInTextClass,
+        },
+    );
 }
 
 /**
