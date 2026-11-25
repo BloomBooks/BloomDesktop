@@ -13,6 +13,7 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
 import { editablePageFrame, waitForEditablePage } from "./bookMaking";
+import { chooseInList } from "./collectionSettings";
 import { realClick, waitForClickToSettle } from "./realClick";
 
 /** The book's appearance settings that tests here change. Only these fields. */
@@ -232,6 +233,31 @@ export async function setFullBleedInBookSettings(
     ).toHaveCount(1);
     if ((await checkbox.isChecked()) !== checked) await realClick(checkbox);
     await expect(checkbox).toBeChecked({ checked });
+}
+
+/**
+ * Choose a page theme in the "Page Theme" list on the dialog's Theme & Layout page, which must be
+ * showing, by the name the list shows, e.g. "Rounded Border Ebook", as a person does by opening the
+ * list and clicking it. Returns once the list shows it. Fails naming the themes the list offered
+ * when it has no such theme. Nothing is saved until OK.
+ */
+export async function choosePageThemeInBookSettings(
+    page: Page,
+    themeName: string,
+): Promise<void> {
+    // Config-R puts a setting's label in an h4 in its row; the list itself is an MUI Select,
+    // whose clickable part is the element that announces a listbox.
+    const list = bookSettingsDialog(page)
+        .locator("li")
+        .filter({
+            has: page.locator("h4").getByText("Page Theme", { exact: true }),
+        })
+        .locator('[aria-haspopup="listbox"]');
+    await expect(
+        list,
+        'the showing Book and Page Settings page has no "Page Theme" list',
+    ).toHaveCount(1);
+    await chooseInList(page, list, "Page Theme", themeName);
 }
 
 /** The warning on the Theme & Layout page that Edge to Edge needs full bleed on paper. */
