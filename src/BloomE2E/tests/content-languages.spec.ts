@@ -21,10 +21,6 @@ import {
     waitForEditTabSettled,
 } from "../helpers/bookMaking";
 import { openBookSettings } from "../helpers/bookSettings";
-import {
-    markEditablePage,
-    waitForEditablePageReload,
-} from "../helpers/pageThumbnails";
 import { realClick } from "../helpers/realClick";
 import {
     getCurrentUiLanguageTag,
@@ -273,29 +269,7 @@ async function toggleInTopBar(
         item,
         `The top bar should let ${language} be turned ${turnOn ? "on" : "off"}`,
     ).not.toHaveAttribute("aria-disabled", "true");
-    await waitForPageRebuiltAfter(page, () => realClick(item));
-}
-
-/**
- * Do something that makes Bloom rebuild the page being edited, such as changing which languages
- * it shows, and wait until the rebuilt page has loaded and settled. waitForEditTabSettled alone
- * is not enough: on a tab that has been quiet for a while it returns at once, before the rebuild
- * has started, and Bloom drops a language change that arrives while the page is loading.
- */
-async function waitForPageRebuiltAfter(
-    page: Page,
-    action: () => Promise<void>,
-): Promise<void> {
-    const pageId = await editablePageFrame(page)
-        .locator(".bloom-page")
-        .getAttribute("id");
-    if (!pageId)
-        throw new Error(
-            "The page in the Edit tab has no id, so its rebuild cannot be awaited.",
-        );
-    await markEditablePage(page);
-    await action();
-    await waitForEditablePageReload(page, pageId);
+    await realClick(item);
     await waitForEditTabSettled(page);
 }
 
@@ -322,19 +296,16 @@ async function openLanguagesPage(page: Page): Promise<void> {
 
 /** Click OK in Book and Page Settings, and wait until the page has been redrawn. */
 async function okBookSettings(page: Page): Promise<void> {
-    await waitForPageRebuiltAfter(page, async () => {
-        await realClick(
-            page
-                .getByRole("dialog")
-                .filter({ hasText: "Book and Page Settings" })
-                .getByTestId("dialog-ok"),
-        );
-        await expect(
-            page
-                .getByRole("dialog")
-                .filter({ hasText: "Book and Page Settings" }),
-        ).toHaveCount(0, { timeout: 30000 });
-    });
+    await realClick(
+        page
+            .getByRole("dialog")
+            .filter({ hasText: "Book and Page Settings" })
+            .getByTestId("dialog-ok"),
+    );
+    await expect(
+        page.getByRole("dialog").filter({ hasText: "Book and Page Settings" }),
+    ).toHaveCount(0, { timeout: 30000 });
+    await waitForEditTabSettled(page);
 }
 
 /** Close Book and Page Settings with Cancel. */

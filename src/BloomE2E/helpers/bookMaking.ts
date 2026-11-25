@@ -562,12 +562,13 @@ interface IEditTabState {
     pageId: string;
     /** Whether the Edit tab is the tab being shown. */
     visible: boolean;
-    /** How many milliseconds ago a page last told Bloom its DOM had loaded. */
-    msSinceLastPageLoadAnnouncement: number;
+    /** How many times the page now shown has told Bloom its DOM had loaded. */
+    pageLoadAnnouncements: number;
 }
 
 /**
- * How long ago the last page-load announcement must be before the Edit tab counts as settled. It has to cover the gap between the two announcements of one page load, which has
+ * How long the Edit tab must report the same page, with no new announcement, before this counts
+ * as settled. It has to cover the gap between the two announcements of one page load, which has
  * been seen to reach a second. John approved this wait on 2026-09-03, as
  * src/BloomBrowserUI/AGENTS.md asks.
  */
@@ -580,9 +581,9 @@ const kEditTabQuietPeriodMs = 1500;
  * Ask this before any request that changes the page. The Edit tab refuses such a request while it
  * navigates, and a page announces itself to Bloom more than once, so the Editing state can show
  * between two announcements of one load, before the page has finished arriving. Waiting for the
- * Editing state alone is therefore not enough. The condition this waits for is that Bloom is in
- * the Editing state and its last announcement came at least kEditTabQuietPeriodMs ago, by Bloom's
- * own clock, so on a tab that settled earlier it returns at its first reading.
+ * Editing state alone is therefore not enough. The condition this waits for is that the page and
+ * the count of announcements have both held still for kEditTabQuietPeriodMs, so it returns as
+ * soon as that holds.
  *
  * The DOM is no help here. Bloom leaves the previous page in the frame while it loads the next
  * one, so a test looking at the frame sees a settled Edit tab throughout.
@@ -591,6 +592,8 @@ export async function waitForEditTabSettled(
     page: Page,
     timeoutMs = 90000,
 ): Promise<void> {
+    let lastReading = "";
+    let unchangedSince = 0;
     await expect
         .poll(
             async () => {
@@ -598,8 +601,16 @@ export async function waitForEditTabSettled(
                     page,
                     "e2e/editState",
                 );
-                if (!now.visible || now.state !== "Editing") return now.state;
-                const quietFor = now.msSinceLastPageLoadAnnouncement;
+                if (!now.visible || now.state !== "Editing") {
+                    lastReading = "";
+                    return now.state;
+                }
+                const reading = `${now.pageId} ${now.pageLoadAnnouncements}`;
+                if (reading !== lastReading) {
+                    lastReading = reading;
+                    unchangedSince = Date.now();
+                }
+                const quietFor = Date.now() - unchangedSince;
                 if (quietFor < kEditTabQuietPeriodMs)
                     return `Editing, but page ${now.pageId} last announced itself ${quietFor}ms ago`;
                 return "Editing";
