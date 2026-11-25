@@ -838,7 +838,7 @@ export async function waitForPageToSettle(page: Page): Promise<void> {
  * Only for a page known to be loaded and editable; a frame still loading its page has no stream to
  * ask, and this fails rather than guess.
  */
-async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
+export async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
     await expect
         .poll(
             () =>
