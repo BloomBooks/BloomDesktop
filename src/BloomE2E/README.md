@@ -195,6 +195,10 @@ real bug in the code under test; read the message and fix it rather than working
   and its results (`expectRotateHandleShown`, `dragRotateHandle`, `getCanvasElementRotation`,
   `getCanvasElementPlacement`). The palette drag is dispatched rather than pressed, for a reason the
   file and AUTOMATION-DEBT.md give.
+- `helpers/speechBubbleTail.ts` — a speech bubble's tail as its data-bubble spec holds it
+  (`readTail`), and the handles ComicalJS draws for it: `dragTailMidpoint`,
+  `doubleClickTailMidpoint`, and `expectMidpointHandleFilled`, which reads the drawing to tell a
+  filled midpoint handle from an open one.
 - `helpers/images.ts` — `chooseImageFile`, `cropImage`, `getImagePlacement`; `getPictureRotation`,
   which says how a picture is rotated and mirrored on screen, box and picture together, with
   `kUprightPicture` and `mirroredAboutOwnAxis` to build the expected answer; `getPictureInlineLayout`,
