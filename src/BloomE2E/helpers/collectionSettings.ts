@@ -575,9 +575,10 @@ export async function chooseCollectionSettingsListChoice(
 
 /**
  * Open a drop-down list in the dialog, click `choice` in it, and return once the list shows it.
- * `label` names the list in failure messages.
+ * `label` names the list in failure messages. Book and Page Settings is a Config-R dialog too,
+ * with the same lists, so bookSettings.ts chooses in its lists with this.
  */
-async function chooseInList(
+export async function chooseInList(
     page: Page,
     list: Locator,
     label: string,

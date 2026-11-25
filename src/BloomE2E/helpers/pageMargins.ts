@@ -189,3 +189,39 @@ async function measureFromEdge(
         { insidePadding, bleedMm: kBleedMm },
     );
 }
+
+/** One corner of a box on the page. */
+export type Corner = "topLeft" | "topRight" | "bottomRight" | "bottomLeft";
+
+/** All four corners, in the order getMarginBoxRoundedCorners reports them. */
+export const kAllCorners: Corner[] = [
+    "topLeft",
+    "topRight",
+    "bottomRight",
+    "bottomLeft",
+];
+
+/**
+ * Which corners of the page's margin box are drawn rounded. A theme such as Rounded Border Ebook
+ * draws the margin box as a frame with rounded corners; most themes leave every corner square.
+ */
+export async function getMarginBoxRoundedCorners(
+    page: Page,
+): Promise<Corner[]> {
+    const marginBox = editablePageFrame(page)
+        .locator(".bloom-page .marginBox")
+        .first();
+    if ((await marginBox.count()) === 0)
+        throw new Error("The page being edited has no margin box to measure.");
+    return marginBox.evaluate((element, corners) => {
+        const style = getComputedStyle(element);
+        // A computed corner radius reads "15px", or "15px 10px" when the corner is an ellipse.
+        const radius = (corner: string) =>
+            parseFloat(
+                style.getPropertyValue(
+                    `border-${corner.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase())}-radius`,
+                ),
+            );
+        return corners.filter((corner) => radius(corner) > 0);
+    }, kAllCorners);
+}
