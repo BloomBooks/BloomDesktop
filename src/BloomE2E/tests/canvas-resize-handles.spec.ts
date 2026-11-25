@@ -37,6 +37,7 @@ import {
     moveHeldHandle,
     pressHandle,
     resizeHandle,
+    type IElementSize,
     type IGuideShown,
 } from "../helpers/canvasResize";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
@@ -135,8 +136,21 @@ function shapeOf(size: { width: number; height: number }): number {
 }
 
 /**
+ * Where each edge of an element is, in the page's own pixels. A corner drag moves the two edges
+ * that meet at that corner and leaves the other two where they were.
+ */
+function edgesOf(size: IElementSize) {
+    return {
+        n: size.top,
+        w: size.left,
+        s: size.top + size.height,
+        e: size.left + size.width,
+    };
+}
+
+/**
  * Drag each corner of the selected element in turn, and check that its shape is kept (a picture
- * or a video) or changed (anything else) each time.
+ * or a video) or changed (anything else) each time, and that the opposite corner stays put.
  */
 async function expectCornersResize(
     page: Page,
@@ -154,6 +168,15 @@ async function expectCornersResize(
             Math.abs(after.width - before.width),
             `${where}: the width should have changed`,
         ).toBeGreaterThan(5);
+        // The edges that do not meet at the dragged corner: for "nw", the s and e edges.
+        const fixedEdges = (["n", "s", "e", "w"] as const).filter(
+            (edge) => !drag.corner.includes(edge),
+        );
+        for (const edge of fixedEdges)
+            expect(
+                Math.abs(edgesOf(after)[edge] - edgesOf(before)[edge]),
+                `${where}: the ${edge} edge should not have moved`,
+            ).toBeLessThanOrEqual(1);
         const change = Math.abs(shapeOf(after) / shapeOf(before) - 1);
         if (shape === "kept")
             expect(
@@ -470,6 +493,8 @@ test("Resize handles resize each kind of canvas element as it should, on the gri
                             },
                         )
                         .toBe(false);
+                    // A line along both buttons' bottoms: it runs from the resized button's left
+                    // edge, which a drag of its se corner leaves where it is, to the other's right.
                     const lineAtOtherBottom = async () =>
                         guidesOf(
                             await getGuidesShown(page),
@@ -482,6 +507,7 @@ test("Resize handles resize each kind of canvas element as it should, on the gri
                                         line.rect.height / 2 -
                                         bottom(otherBox),
                                 ) <= 2 &&
+                                line.rect.x <= startBox.x + 2 &&
                                 right(line.rect) >= right(otherBox) - 2,
                         );
                     expect(
