@@ -7,7 +7,7 @@
 //
 // The handle is a paper.js shape on ComicalJS's drawing surface, not an element, so the test finds
 // it where the bubble's data-bubble spec says the midpoint is, and reads the drawing there to tell a
-// filled circle from an open one (helpers/speechBubbleTail.ts).
+// filled circle from an open one, and either from no circle at all (helpers/speechBubbleTail.ts).
 
 import { type Locator, type Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
@@ -27,7 +27,8 @@ import { watchForScriptErrors } from "../helpers/scriptErrors";
 import {
     doubleClickTailMidpoint,
     dragTailMidpoint,
-    expectMidpointHandleFilled,
+    expectMidpointHandle,
+    getHandleDrawingAt,
     readTail,
 } from "../helpers/speechBubbleTail";
 
@@ -103,18 +104,28 @@ test("Double-clicking a dragged tail's midpoint handle gives the curve back to B
             autoTail.autoCurve,
             `A new speech bubble's tail should start with its curve placed by Bloom: ${JSON.stringify(autoTail)}`,
         ).toBe(true);
-        await expectMidpointHandleFilled(
+        await expectMidpointHandle(
             page,
             bubble,
-            false,
+            "open",
             "A new speech bubble's tail midpoint handle should be drawn open.",
         );
+        // The reading must also see a missing handle as missing: a point beyond the midpoint,
+        // where no handle is drawn.
+        const away = await awayFromBubble(bubble, {
+            x: autoTail.midpointX,
+            y: autoTail.midpointY,
+        });
+        expect(
+            await getHandleDrawingAt(
+                page,
+                autoTail.midpointX + away.x * kDragDistance,
+                autoTail.midpointY + away.y * kDragDistance,
+            ),
+            "The drawing should show no handle away from the tail's midpoint.",
+        ).toBe("none");
 
         await step("Drag the middle grab point of the tail", async () => {
-            const away = await awayFromBubble(bubble, {
-                x: autoTail.midpointX,
-                y: autoTail.midpointY,
-            });
             const dragged = await dragTailMidpoint(
                 page,
                 bubble,
@@ -129,10 +140,10 @@ test("Double-clicking a dragged tail's midpoint handle gives the curve back to B
                 `Dragging the midpoint handle did not move the midpoint far: it went from ` +
                     `${JSON.stringify(autoTail)} to ${JSON.stringify(dragged)}.`,
             ).toBeGreaterThan(kDragDistance / 2);
-            await expectMidpointHandleFilled(
+            await expectMidpointHandle(
                 page,
                 bubble,
-                true,
+                "filled",
                 "After the tail's midpoint was dragged, its handle should be drawn filled.",
             );
         });
@@ -157,10 +168,10 @@ test("Double-clicking a dragged tail's midpoint handle gives the curve back to B
                     `(${autoTail.midpointX}, ${autoTail.midpointY}); it is at ` +
                     `(${reset.midpointX}, ${reset.midpointY}).`,
             ).toBe(true);
-            await expectMidpointHandleFilled(
+            await expectMidpointHandle(
                 page,
                 bubble,
-                false,
+                "open",
                 "After the double-click, the tail's midpoint handle should be drawn open again.",
             );
         });

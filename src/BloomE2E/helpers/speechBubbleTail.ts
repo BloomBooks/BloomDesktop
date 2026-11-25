@@ -85,65 +85,111 @@ export async function drawingPointOnScreen(
     return { x: box.x + x * scale, y: box.y + y * scale };
 }
 
+/** How a tail handle is drawn at a point: filled, an open circle, or not there at all. */
+export type HandleDrawing = "filled" | "open" | "none";
+
+/** The radius ComicalJS gives a handle's circle (Handle in comicaljs), in drawing pixels. */
+const kHandleRadius = 5;
+/** How many directions round a handle's circle are looked at for its outline. */
+const kRingDirections = 16;
+/** How many of those must show the outline for the circle to count as drawn. */
+const kRingDirectionsNeeded = 12;
+
 /**
- * Whether the drawing shows the handle color at a point of the drawing surface: true at the middle
- * of a filled handle, false at the middle of an open one, where the tail it sits on shows through.
- * Reads the pixel ComicalJS last painted there.
+ * How the drawing shows a handle centred at a point of the drawing surface. A handle's circle is
+ * outlined in the handle color whether it is filled or not; a filled one has that color at its
+ * middle too, while an open one lets the tail it sits on show through there. Reads the pixels
+ * ComicalJS last painted.
  */
-async function isHandleColorDrawnAt(
+export async function getHandleDrawingAt(
     page: Page,
     x: number,
     y: number,
-): Promise<boolean> {
-    const pixel = await comicalDrawing(page).evaluate(
-        (c, at) => {
+): Promise<HandleDrawing> {
+    return comicalDrawing(page).evaluate(
+        (c, args) => {
             const drawing = c as HTMLCanvasElement;
             // paper.js may give the surface more backing pixels than layout pixels (on a high-DPI
-            // display), so map the point onto the backing store.
+            // display), so map points onto the backing store.
             const ratio = drawing.width / drawing.offsetWidth;
-            const data = drawing
-                .getContext("2d")!
-                .getImageData(
-                    Math.round(at.x * ratio),
-                    Math.round(at.y * ratio),
+            const context = drawing.getContext("2d")!;
+            const pixelAt = (px: number, py: number) => {
+                const d = context.getImageData(
+                    Math.round(px * ratio),
+                    Math.round(py * ratio),
                     1,
                     1,
                 ).data;
-            return { r: data[0], g: data[1], b: data[2], a: data[3] };
+                return { r: d[0], g: d[1], b: d[2], a: d[3] };
+            };
+            const { color, tolerance } = args;
+            const centre = pixelAt(args.x, args.y);
+            const filled =
+                centre.a === 255 &&
+                Math.abs(centre.r - color.r) <= tolerance &&
+                Math.abs(centre.g - color.g) <= tolerance &&
+                Math.abs(centre.b - color.b) <= tolerance;
+            // The outline is a line one pixel wide, so the browser smooths it into whatever lies
+            // under it (the tail's white or black). Count a pixel as outline when it is opaque
+            // and clearly leans to the handle's teal: green and blue well above red, which
+            // neither white, black nor grey has.
+            const isOutline = (p: {
+                r: number;
+                g: number;
+                b: number;
+                a: number;
+            }) => p.a >= 128 && p.g - p.r >= 40 && p.b - p.r >= 40;
+            let directionsWithOutline = 0;
+            for (let i = 0; i < args.directions; i++) {
+                const angle = (2 * Math.PI * i) / args.directions;
+                for (let r = args.radius - 1; r <= args.radius + 1; r += 0.25) {
+                    if (
+                        isOutline(
+                            pixelAt(
+                                args.x + r * Math.cos(angle),
+                                args.y + r * Math.sin(angle),
+                            ),
+                        )
+                    ) {
+                        directionsWithOutline++;
+                        break;
+                    }
+                }
+            }
+            if (directionsWithOutline < args.needed) return "none";
+            return filled ? "filled" : "open";
         },
-        { x, y },
-    );
-    return (
-        pixel.a === 255 &&
-        Math.abs(pixel.r - kTailHandleColor.r) <= kColorTolerance &&
-        Math.abs(pixel.g - kTailHandleColor.g) <= kColorTolerance &&
-        Math.abs(pixel.b - kTailHandleColor.b) <= kColorTolerance
+        {
+            x,
+            y,
+            color: kTailHandleColor,
+            tolerance: kColorTolerance,
+            radius: kHandleRadius,
+            directions: kRingDirections,
+            needed: kRingDirectionsNeeded,
+        },
     );
 }
 
 /**
  * Wait until the selected bubble's tail midpoint handle, where its data-bubble says the midpoint
- * is, is drawn filled or open.
+ * is, is drawn as `expected`.
  */
-export async function expectMidpointHandleFilled(
+export async function expectMidpointHandle(
     page: Page,
     element: Locator,
-    filled: boolean,
+    expected: HandleDrawing,
     why: string,
 ): Promise<void> {
     await expect
         .poll(
             async () => {
                 const tail = await readTail(element);
-                return isHandleColorDrawnAt(
-                    page,
-                    tail.midpointX,
-                    tail.midpointY,
-                );
+                return getHandleDrawingAt(page, tail.midpointX, tail.midpointY);
             },
             { timeout: 15000, message: why },
         )
-        .toBe(filled);
+        .toBe(expected);
 }
 
 /**
