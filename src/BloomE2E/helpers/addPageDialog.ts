@@ -22,6 +22,14 @@ export interface IAddPageThumbnail {
     templateBookFolder: string;
     /** True when the browser has the image and it has a size; false while loading or on error. */
     thumbnailLoaded: boolean;
+    /**
+     * The size of the image the browser has for the thumbnail, in the image's own pixels; 0 while
+     * it has none. A test tells which image Bloom served (a template author's own thumbnail, one
+     * Bloom generated, or the placeholder Bloom shows while it generates one) by comparing this
+     * with the size of the file it expects.
+     */
+    naturalWidth: number;
+    naturalHeight: number;
 }
 
 /**
@@ -159,7 +167,12 @@ export async function getAddPageDialogGroups(
     const raw = await dialog.evaluate((dialogElement) => {
         const result: {
             title: string;
-            pages: { src: string; loaded: boolean }[];
+            pages: {
+                src: string;
+                loaded: boolean;
+                naturalWidth: number;
+                naturalHeight: number;
+            }[];
         }[] = [];
         for (const group of Array.from(
             dialogElement.querySelectorAll(".templateBookGroup"),
@@ -171,6 +184,8 @@ export async function getAddPageDialogGroups(
                 (img) => ({
                     src: img.getAttribute("src") ?? "",
                     loaded: img.complete && img.naturalWidth > 0,
+                    naturalWidth: img.naturalWidth,
+                    naturalHeight: img.naturalHeight,
                 }),
             );
             result.push({ title, pages });
@@ -181,6 +196,8 @@ export async function getAddPageDialogGroups(
         const pages = group.pages.map((p) => ({
             ...parseThumbnailSource(p.src),
             thumbnailLoaded: p.loaded,
+            naturalWidth: p.naturalWidth,
+            naturalHeight: p.naturalHeight,
         }));
         if (pages.length === 0)
             throw new Error(
