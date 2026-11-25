@@ -44,21 +44,26 @@ async function readSavedBox(
     pageId: string,
 ): Promise<{ text: string; markers: number }> {
     const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
-    return page.evaluate(
+    const saved = await page.evaluate(
         ({ html, pageId }) => {
             const doc = new DOMParser().parseFromString(html, "text/html");
             const box = doc.querySelector(
                 `.bloom-page[id="${pageId}"] .bloom-editable[lang="en"]`,
             );
+            if (!box) return undefined;
             return {
-                text: box?.textContent?.trim() ?? "",
-                markers:
-                    box?.querySelectorAll(".bloom-audio-split-marker").length ??
-                    0,
+                text: box.textContent?.trim() ?? "",
+                markers: box.querySelectorAll(".bloom-audio-split-marker")
+                    .length,
             };
         },
         { html, pageId },
     );
+    if (!saved)
+        throw new Error(
+            `The saved book has no English text box on page "${pageId}".`,
+        );
+    return saved;
 }
 
 test.use({
