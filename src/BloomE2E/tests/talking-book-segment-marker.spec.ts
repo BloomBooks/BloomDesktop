@@ -29,9 +29,37 @@ import {
 } from "../helpers/publish";
 import { openToolboxWithTalkingBook } from "../helpers/talkingBook";
 import { hideToolbox } from "../helpers/toolbox";
+import type { Page } from "@playwright/test";
 
 const TEXT_WITH_MARKER = "Two |words";
 const TEXT_SEEN_WITHOUT_TOOL = "Two words";
+
+/**
+ * The English text box of the page `pageId` as the saved book file holds it: its text, and how many
+ * hidden segment markers it has.
+ */
+async function readSavedBox(
+    page: Page,
+    bookFolder: string,
+    pageId: string,
+): Promise<{ text: string; markers: number }> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate(
+        ({ html, pageId }) => {
+            const doc = new DOMParser().parseFromString(html, "text/html");
+            const box = doc.querySelector(
+                `.bloom-page[id="${pageId}"] .bloom-editable[lang="en"]`,
+            );
+            return {
+                text: box?.textContent?.trim() ?? "",
+                markers:
+                    box?.querySelectorAll(".bloom-audio-split-marker").length ??
+                    0,
+            };
+        },
+        { html, pageId },
+    );
+}
 
 test.use({
     collectionSpec: { name: "talking-book-segment-marker", languages: ["en"] },
@@ -50,15 +78,11 @@ test("the segment marker shows only while the Talking Book tool is open [Test Ca
     // Leaving the page saves it, with the bar turned into Bloom's hidden marker; coming back with
     // the tool open must turn the marker back into a bar the person can see.
     await reloadPageBeingEdited(page);
-    const savedHtml = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    const saved = await readSavedBox(page, bookFolder, contentPage.id);
     expect(
-        savedHtml,
-        "Saving the page should keep the bar as Bloom's hidden marker.",
-    ).toContain("bloom-audio-split-marker");
-    expect(
-        savedHtml,
-        'Saving the page should not keep the "|" as a plain character.',
-    ).not.toContain(TEXT_WITH_MARKER);
+        saved,
+        'Saving the page should keep the "|" as Bloom\'s hidden marker, not as a plain character.',
+    ).toEqual({ text: TEXT_SEEN_WITHOUT_TOOL, markers: 1 });
     const box = await clickInGroup(page, ".bloom-translationGroup", "en");
     await expect(
         box,
