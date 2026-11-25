@@ -169,8 +169,22 @@ export async function pickFont(
     kind: FontKind,
     preferred: string[] = [],
 ): Promise<string> {
-    const fonts = await getFontsMetadata(page);
-    const candidates = fonts.filter((f) => f.name && isKind(f, kind));
+    // Bloom scans the machine's fonts in the background at startup, and fonts/metadata answers with
+    // the fonts scanned so far, so a kind can be missing only because the scan has not reached its
+    // fonts yet. Ask again until there is one; the throw below reports a kind still missing.
+    let fonts: IFontMetadata[] = [];
+    let candidates: IFontMetadata[] = [];
+    await expect
+        .poll(
+            async () => {
+                fonts = await getFontsMetadata(page);
+                candidates = fonts.filter((f) => f.name && isKind(f, kind));
+                return candidates.length;
+            },
+            { timeout: 30000 },
+        )
+        .toBeGreaterThan(0)
+        .catch(() => undefined);
     const chosen =
         preferred
             .map((name) => candidates.find((f) => f.name === name))

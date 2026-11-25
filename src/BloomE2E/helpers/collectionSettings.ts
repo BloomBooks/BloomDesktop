@@ -893,13 +893,22 @@ export async function chooseCollectionSettingsLanguageFont(
 /**
  * The Default Font picker of one language on the Languages page, as the font chooser's helpers
  * (fontChooser.ts) take it, for a test of the chooser itself: its marks and information pane.
+ * Returns once the picker has its fonts.
  */
 export async function collectionSettingsFontChooser(
     page: Page,
     heading: string,
 ): Promise<IFontChooserPlace> {
     await expectLanguageGroup(page, heading);
-    return { scope: page, chooser: languageFontList(page, heading) };
+    const chooser = languageFontList(page, heading);
+    // The dialog asks Bloom for the fonts as it opens, and the Languages page makes its pickers
+    // anew when they come, which would close a list opened before then. Until then the picker
+    // shows no mark for its font.
+    await expect(
+        chooser.locator("svg"),
+        `the ${heading} Default Font picker never got its fonts`,
+    ).toBeVisible({ timeout: 30000 });
+    return { scope: page, chooser };
 }
 
 /** The "More" row at the bottom of one language's group, which opens its page of more settings. */
