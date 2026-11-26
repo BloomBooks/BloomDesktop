@@ -193,6 +193,23 @@ test("records image descriptions by sentence, by whole text box and on the cover
         descriptionIds: [wholeBoxId],
         textIds: pageTwoTextIds,
     });
+    // Each recording has a file of its own: two sentences with one id would play one recording
+    // for both.
+    const allIds = Object.values(saved).flatMap((recordings) => [
+        ...recordings.descriptionIds,
+        ...recordings.textIds,
+    ]);
+    expect(
+        allIds.filter((id, index) => allIds.indexOf(id) !== index),
+        "Some recordings in the saved book share an id.",
+    ).toEqual([]);
+    expect(allIds).toHaveLength(
+        kCoverDescription.length +
+            kBySentenceDescription.length +
+            kPageOneText.length +
+            1 +
+            kPageTwoText.length,
+    );
 });
 
 /** Wait until the page being edited is showing its image descriptions. */

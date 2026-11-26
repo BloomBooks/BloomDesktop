@@ -410,7 +410,8 @@ export async function armFileChooser(
 }
 
 /**
- * Choose one of the Talking Book tool's recording modes, by the label its radio shows.
+ * Choose one of the Talking Book tool's recording modes. `mode` is the English label of its
+ * radio; the radio is found by its value, since the label is localized.
  *
  * Both radios can legitimately be unavailable, and for different reasons: whole-text-box mode
  * needs a Pro subscription, and By Sentence is refused once the box holds a whole-text-box
@@ -422,11 +423,11 @@ export async function setRecordingMode(
     mode: "By Sentence" | "By Whole Text Box",
 ): Promise<void> {
     await openAdvancedSection(page);
-    const radio = toolboxFrame(page)
-        .locator("label")
-        .filter({ hasText: mode })
-        .first()
-        .locator('input[type="radio"]');
+    // The radio's value is a RecordingMode (recordingMode.ts).
+    const value = mode === "By Sentence" ? "Sentence" : "TextBox";
+    const radio = toolboxFrame(page).locator(
+        `input[type="radio"][value="${value}"]`,
+    );
     await radio.waitFor({ state: "visible", timeout: 30000 });
     await expect(
         radio,
