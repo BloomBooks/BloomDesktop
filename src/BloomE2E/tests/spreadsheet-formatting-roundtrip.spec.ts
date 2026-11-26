@@ -364,10 +364,16 @@ test("text formatted with the selection toolbar keeps its formatting through a s
     );
     if (!original) throw new Error("The book was not made.");
     const originalBox = await readSavedBox(page, original);
-    /** A hash of each sentence's recording, in the order of kSentences. */
-    const originalRecordings = originalBox.sentences.map((sentence) =>
-        fileHash(narrationFilePath(original, sentence.id)),
-    );
+    /**
+     * A hash of each sentence's recording, in the order of kSentences. A missing recording is left
+     * for the check below, which names its sentence.
+     */
+    const originalRecordings = originalBox.sentences.map((sentence) => {
+        const recording = narrationFilePath(original, sentence.id);
+        return fs.existsSync(recording)
+            ? fileHash(recording)
+            : `no recording of "${sentence.text}"`;
+    });
 
     await step(
         "Check the saved book has the formatting and the recordings",
