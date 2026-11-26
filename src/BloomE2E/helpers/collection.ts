@@ -774,9 +774,12 @@ export async function readBookTileThumbnail(
                 { timeout: 60000 },
             )
             .toBe(true);
-    } catch {
+    } catch (error) {
+        // The poll fails either on its timeout, when `result` says what the last try saw, or
+        // because reading the tile threw, which `error` says.
         throw new Error(
-            `The tile of the book in ${bookFolder} never showed its thumbnail.png: ${String(result)}`,
+            `The tile of the book in ${bookFolder} never showed its thumbnail.png. ` +
+                `Last try: ${String(result)}. ${error}`,
         );
     }
     if (typeof result === "string") throw new Error(result);
