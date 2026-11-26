@@ -1078,8 +1078,17 @@ export async function getLanguagesShownInGroup(
     page: Page,
     groupSelector: string,
 ): Promise<string[]> {
-    return editablePageFrame(page)
-        .locator(`${groupSelector} .bloom-editable[lang]`)
+    return getLanguagesShownIn(editablePageFrame(page).locator(groupSelector));
+}
+
+/**
+ * The languages whose box is showing in the translation groups `groups`, in document order: the
+ * same as getLanguagesShownInGroup, for a test that tells one group from another by its position
+ * rather than by a selector.
+ */
+export async function getLanguagesShownIn(groups: Locator): Promise<string[]> {
+    return groups
+        .locator(".bloom-editable[lang]")
         .evaluateAll((boxes) =>
             boxes
                 .filter(
