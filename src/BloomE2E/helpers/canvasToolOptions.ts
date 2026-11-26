@@ -1,5 +1,6 @@
-// The Canvas tool's options for the selected text element (its Rounded Corners box and its
-// Background Color bar), and the shape ComicalJS saves for each element of a canvas page.
+// The Canvas tool's options for the selected text element (its Rounded Corners box, its
+// Background, Text and Text Outline Color bars, and its Outer Outline Color), the colors its text
+// is drawn in, and the shape ComicalJS saves for each element of a canvas page.
 //
 // ComicalJS draws an element's outline and background on a drawing surface while the page is
 // edited, and Bloom saves that drawing into the page as an SVG (svg.comical-generated) when the page
@@ -29,8 +30,7 @@ const ELEMENT_TYPE_INPUT = "#canvasElement-style-dropdown";
 const ELEMENT_TYPE_SELECT = `.MuiFormControl-root:has(${ELEMENT_TYPE_INPUT}) .MuiSelect-select`;
 const ELEMENT_TYPE_MENU = ".canvasElement-options-dropdown-menu";
 /** The Background Color bar: the input box beside its label (the ColorBar has no id of its own). */
-const BACKGROUND_COLOR_BAR =
-    ':has(> label[for="background-color-bar"]) > .MuiInput-formControl';
+const BACKGROUND_COLOR_BAR = colorBar("background-color-bar");
 /** Bloom's color picker dialog, and one swatch in it (the inner div is the part that takes the click). */
 const COLOR_PICKER = '[role="dialog"]:has(.color-swatch)';
 const COLOR_SWATCH = ".color-swatch > div:last-child";
@@ -189,8 +189,133 @@ export async function typeCanvasElementBackgroundColor(
     page: Page,
     color: string,
 ): Promise<void> {
+    await typeColorFromCanvasToolBar(page, BACKGROUND_COLOR_BAR, color);
+}
+
+/**
+ * Give the selected element's text a color by typing it: open the color picker from the Canvas
+ * tool's Text Color bar, type `color` ("#rrggbb") into its hex box, and OK it. Bloom gives the
+ * text of every bubble in the element's family that color.
+ */
+export async function typeCanvasElementTextColor(
+    page: Page,
+    color: string,
+): Promise<void> {
+    await typeColorFromCanvasToolBar(page, colorBar("text-color-bar"), color);
+}
+
+/**
+ * Give the selected element's text an outline color by typing it: open the color picker from the
+ * Canvas tool's Text Outline Color bar, type `color` ("#rrggbb") into its hex box, and OK it.
+ * Bloom outlines the text of every bubble in the element's family in that color.
+ */
+export async function typeCanvasElementTextOutlineColor(
+    page: Page,
+    color: string,
+): Promise<void> {
+    await typeColorFromCanvasToolBar(
+        page,
+        colorBar("text-outline-color-bar"),
+        color,
+    );
+}
+
+/** The Outer Outline Color choices the Canvas tool offers for a bubble (CanvasToolControls.tsx). */
+export type OuterOutlineColor = "none" | "yellow" | "crimson";
+
+/** The Outer Outline Color choice, by the id of its hidden input. */
+const OUTER_OUTLINE_INPUT = "#canvasElement-outlineColor-dropdown";
+
+/** The Outer Outline Color the Canvas tool shows for the selected bubble. */
+export async function getOuterOutlineColorShown(page: Page): Promise<string> {
     const toolbox = await openCanvasTool(page);
-    await toolbox.locator(BACKGROUND_COLOR_BAR).first().click();
+    return toolbox.locator(OUTER_OUTLINE_INPUT).inputValue({ timeout: 15000 });
+}
+
+/**
+ * Choose the selected bubble's Outer Outline Color in the Canvas tool, the way a person does: open
+ * the list and click the choice, found by its value. Waits for the tool to show it.
+ */
+export async function chooseOuterOutlineColor(
+    page: Page,
+    color: OuterOutlineColor,
+): Promise<void> {
+    const toolbox = await openCanvasTool(page);
+    await toolbox
+        .locator(
+            `.MuiFormControl-root:has(${OUTER_OUTLINE_INPUT}) .MuiSelect-select`,
+        )
+        .first()
+        .click();
+    const choice = toolbox.locator(
+        `${ELEMENT_TYPE_MENU} li[data-value="${color}"]`,
+    );
+    await choice.waitFor({ state: "visible", timeout: 15000 });
+    await choice.click();
+    await expect(
+        toolbox.locator(ELEMENT_TYPE_MENU),
+        "The Outer Outline Color list did not close after a choice was clicked.",
+    ).toBeHidden({ timeout: 15000 });
+    await expect
+        .poll(() => getOuterOutlineColorShown(page), {
+            timeout: 15000,
+            message: `Choosing the Outer Outline Color "${color}" did not show it in the Canvas tool.`,
+        })
+        .toBe(color);
+}
+
+/** The colors a canvas element's text is drawn in, as lower-case "#rrggbb" (or "transparent"). */
+export interface ICanvasTextColors {
+    /** The color of the letters. */
+    color: string;
+    /** The color of the outline drawn round each letter. */
+    outlineColor: string;
+    /** How wide that outline is drawn, e.g. "2px"; "0px" when the text has none. */
+    outlineWidth: string;
+}
+
+/**
+ * The colors the browser draws the text of the canvas element `element` in: those of its visible
+ * text box (the one in the language being shown), read from the computed style.
+ */
+export async function getCanvasElementTextColors(
+    element: Locator,
+): Promise<ICanvasTextColors> {
+    const box = element
+        .locator(".bloom-editable.bloom-visibility-code-on")
+        .first();
+    await box.waitFor({ state: "visible", timeout: 15000 });
+    const colors = await box.evaluate((e) => {
+        const style = getComputedStyle(e);
+        return {
+            color: style.color,
+            outlineColor: style.webkitTextStrokeColor,
+            outlineWidth: style.webkitTextStrokeWidth,
+        };
+    });
+    return {
+        color: cssColorToHex(colors.color),
+        outlineColor: cssColorToHex(colors.outlineColor),
+        outlineWidth: colors.outlineWidth,
+    };
+}
+
+/** The input box of one of the Canvas tool's color bars, by the bar's id (its label's for). */
+function colorBar(id: string): string {
+    return `:has(> label[for="${id}"]) > .MuiInput-formControl`;
+}
+
+/**
+ * Open the color picker from the Canvas tool's color bar `bar` (a selector), type `color`
+ * ("#rrggbb") into its hex box, and OK it.
+ */
+async function typeColorFromCanvasToolBar(
+    page: Page,
+    bar: string,
+    color: string,
+): Promise<void> {
+    const toolbox = await openCanvasTool(page);
+    await toolbox.locator(bar).first().click();
     const frame = await colorPickerFrame(page);
     await typeInHexBox(frame, color);
     // Read the hex box alone: the picker leaves out its alpha slider for a caption, so a reader
