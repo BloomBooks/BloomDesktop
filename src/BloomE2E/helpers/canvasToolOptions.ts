@@ -332,6 +332,9 @@ export interface ISavedShape {
     /** The shape's fill and stroke attributes, to tell the shapes apart in a failure message. */
     fill: string;
     stroke: string;
+    /** The top-left corner of the shape's bounding box, in the SVG's units. */
+    x: number;
+    y: number;
     /** The size of the shape's bounding box, in the SVG's units. */
     width: number;
     height: number;
@@ -445,6 +448,8 @@ export async function readSavedCanvasShapes(
                                 stroke:
                                     shape.getAttribute("stroke") ??
                                     style.stroke,
+                                x: Math.round(box.x),
+                                y: Math.round(box.y),
                                 width: Math.round(box.width),
                                 height: Math.round(box.height),
                                 cornersCovered: coveredOf(corners),
