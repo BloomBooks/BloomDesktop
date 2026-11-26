@@ -19,8 +19,11 @@ import {
     changeSavedReaderSettings,
     setSampleTexts,
 } from "../helpers/readerSetup";
-import { expandReaderTool } from "../helpers/readerTools";
-import { toolboxFrame } from "../helpers/toolbox";
+import {
+    expandReaderTool,
+    generateDecodableReport,
+} from "../helpers/readerTools";
+import { getUiStrings } from "../helpers/uiLanguage";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
@@ -29,37 +32,84 @@ test.use({
 
 const kReportName = "Decodable Books Letters and Words.txt";
 
-/** What the report should say about one stage, as sets of words. */
+/**
+ * The report's headings and labels, by their ids in Bloom's localization files, with their
+ * English. Bloom writes the report in the UI language it is running in, putting the stage's number
+ * or words in place of {0}.
+ */
+const kReportLabels = {
+    stage: {
+        id: "EditTab.Toolbox.DecodableReaderTool.LetterWordReportStage",
+        english: "Stage {0}",
+    },
+    letters: {
+        id: "EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters",
+        english: "Letters: {0}",
+    },
+    sightWords: {
+        id: "EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords",
+        english: "New Sight Words: {0}",
+    },
+    newDecodableWords: {
+        id: "EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords",
+        english: "New Decodable Words: {0}",
+    },
+    allUsableWords: {
+        id: "EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords",
+        english: "All Usable Words: {0}",
+    },
+};
+type ReportLabel = keyof typeof kReportLabels;
+
+/** What the report says about one stage: its number, and its lists as sorted words. */
 interface IStageReport {
+    number: number;
     letters: string[];
     sightWords: string[];
     newDecodableWords: string[];
     allUsableWords: string[];
 }
 
+/** A pattern for a whole line of the report written with `format`, capturing what fills {0}. */
+function linePattern(format: string): RegExp {
+    const [before, after] = format
+        .split("{0}")
+        .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    return new RegExp(`^${before}(.*?)${after}\\s*$`, "m");
+}
+
 /**
- * Split the report into its stages, reading each "Label: words" line. Letters and sight words are
- * separated by commas, the word lists by spaces.
+ * Split the report into its stages, at each stage heading, and read each stage's lines. Letters and
+ * sight words are separated by commas, the word lists by spaces.
  */
-function readStageReports(report: string): IStageReport[] {
-    const stages = report.split(/^Stage \d+\s*$/m).slice(1);
-    return stages.map((stage) => {
-        const field = (label: string) => {
-            const match = new RegExp(`^${label}: ?(.*)$`, "m").exec(stage);
-            if (!match)
+function readStageReports(
+    report: string,
+    formats: Record<ReportLabel, string>,
+): IStageReport[] {
+    const heading = new RegExp(linePattern(formats.stage).source, "gm");
+    const headings = [...report.matchAll(heading)];
+    return headings.map((match, index) => {
+        const text = report.slice(
+            match.index,
+            headings[index + 1]?.index ?? report.length,
+        );
+        const field = (label: Exclude<ReportLabel, "stage">) => {
+            const line = linePattern(formats[label]).exec(text);
+            if (!line)
                 throw new Error(
-                    `The report's stage has no "${label}" line:\n${stage}`,
+                    `The report's stage has no "${formats[label]}" line:\n${text}`,
                 );
-            return match[1]
+            return line[1]
                 .split(/[ ,]+/)
                 .filter((word) => word)
                 .sort();
         };
         return {
-            letters: field("Letters"),
-            sightWords: field("New Sight Words"),
-            newDecodableWords: field("New Decodable Words"),
-            allUsableWords: field("All Usable Words"),
+            number: Number(match[1]),
+            letters: field("letters"),
+            sightWords: field("sightWords"),
+            newDecodableWords: field("newDecodableWords"),
+            allUsableWords: field("allUsableWords"),
         };
     });
 }
@@ -100,31 +150,43 @@ test("Generate Report lists each stage's letters, sight words, new decodable wor
 
     const reportPath = Path.join(bloomApp.collectionDir, kReportName);
     fs.rmSync(reportPath, { force: true });
-    const button = toolboxFrame(page).getByTestId(
-        "EditTab.Toolbox.DecodableReaderTool.GenerateReport",
-    );
-    await button.scrollIntoViewIfNeeded();
-    await button.click();
-    await expect
-        .poll(() => fs.existsSync(reportPath), {
-            timeout: 30000,
-            message: `Generate Report never wrote ${reportPath}.`,
-        })
-        .toBe(true);
+    await generateDecodableReport(page);
+    expect(
+        fs.existsSync(reportPath),
+        `Generate Report did not write ${reportPath}.`,
+    ).toBe(true);
 
-    const stages = readStageReports(fs.readFileSync(reportPath, "utf8"));
+    const labels = Object.keys(kReportLabels) as ReportLabel[];
+    const strings = await getUiStrings(
+        page,
+        Object.fromEntries(
+            labels.map((label) => [
+                kReportLabels[label].id,
+                kReportLabels[label].english,
+            ]),
+        ),
+    );
+    const formats = Object.fromEntries(
+        labels.map((label) => [label, strings[kReportLabels[label].id]]),
+    ) as Record<ReportLabel, string>;
+    const stages = readStageReports(
+        fs.readFileSync(reportPath, "utf8"),
+        formats,
+    );
     expect(
         stages,
         "The report should have one section per stage.",
     ).toHaveLength(4);
     expect(stages).toEqual([
         {
+            number: 1,
             letters: ["a", "e", "l", "m", "s"],
             sightWords: ["uno"],
             newDecodableWords: ["ama", "mesa", "sala"],
             allUsableWords: ["ama", "mesa", "sala", "uno"],
         },
         {
+            number: 2,
             letters: ["o", "p", "t"],
             sightWords: ["dos"],
             newDecodableWords: ["lata", "pato"],
@@ -139,6 +201,7 @@ test("Generate Report lists each stage's letters, sight words, new decodable wor
             ],
         },
         {
+            number: 3,
             letters: ["d", "i", "n", "u"],
             sightWords: [],
             newDecodableWords: [],
@@ -153,6 +216,7 @@ test("Generate Report lists each stage's letters, sight words, new decodable wor
             ],
         },
         {
+            number: 4,
             letters: ["b", "c", "r", "ñ"],
             sightWords: [],
             newDecodableWords: ["niño"],

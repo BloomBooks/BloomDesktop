@@ -18,7 +18,7 @@
 // its shell document ("Saving the reader settings costs the next test in the file its shell
 // document" in AUTOMATION-DEBT.md).
 
-import type { Frame, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
@@ -29,7 +29,6 @@ import {
     makeBookFromTemplate,
     pasteTextInGroup,
     waitForEditablePage,
-    editablePageFrame,
 } from "../helpers/bookMaking";
 import {
     acceptReaderSetup,
@@ -40,17 +39,26 @@ import {
     openReaderSetupTab,
     selectStageLetter,
     setAlphabetLetters,
+    setBookIsDecodable,
     setSampleTexts,
     setStageSightWords,
     setTypedSampleWords,
 } from "../helpers/readerSetup";
 import {
+    clickDecodableSortButton,
+    type DecodableSort,
     expandReaderTool,
     expectReaderToolToShow,
+    getDecodableStageWords,
+    getWordsMarkedNotDecodable,
+    isReaderSwitchOn,
+    kDecodableSortTips,
+    readDecodableSortButtonTip,
     setReaderPhase,
     waitForReaderToolToRestore,
 } from "../helpers/readerTools";
-import { expectExpandedTool, toolboxFrame } from "../helpers/toolbox";
+import { expectExpandedTool } from "../helpers/toolbox";
+import { getUiStrings } from "../helpers/uiLanguage";
 
 test.use({
     collectionSpec: { name: "spanish-decodable", languages: ["es"] },
@@ -78,35 +86,7 @@ const kSampleTexts = {
     "cuento dos.txt": "mesa mesa sala pato niño",
 };
 
-const SWITCH = '[data-testid="decodable-reader-switch"] input';
-const STAGE_WORD = '[data-testid="decodable-reader-stage-word"]';
 const GROUP = ".bloom-translationGroup";
-
-/** The words the page's text box shows painted with one of the reader tools' highlights. */
-async function getHighlightedWords(
-    frame: Frame,
-    highlight: string,
-): Promise<string[]> {
-    return frame.evaluate((name) => {
-        const registry = (
-            CSS as unknown as {
-                highlights?: Map<string, Iterable<Range>>;
-            }
-        ).highlights;
-        const ranges = registry?.get(name);
-        return ranges ? [...ranges].map((range) => range.toString()) : [];
-    }, highlight);
-}
-
-/** The words that the tool marks as not decodable at the stage it is on. */
-async function getWordsMarkedNotDecodable(page: Page): Promise<string[]> {
-    return (
-        await getHighlightedWords(
-            editablePageFrame(page),
-            "bloom-reader-word-not-decodable",
-        )
-    ).sort();
-}
 
 /** Wait until the tool marks exactly these words, in any order, as not decodable. */
 async function expectMarkedNotDecodable(
@@ -123,15 +103,6 @@ async function expectMarkedNotDecodable(
         .toEqual([...words].sort());
 }
 
-/** The words the tool's panel lists under "Sample words in this stage", in the order shown. */
-async function getStageWords(page: Page): Promise<string[]> {
-    return toolboxFrame(page)
-        .locator(STAGE_WORD)
-        .evaluateAll((words) =>
-            words.map((word) => (word.textContent ?? "").trim()),
-        );
-}
-
 test("a Spanish decodable reader built from scratch marks, sorts and remembers its stage [Test Case ID 427]", async ({
     page,
     bloomApp,
@@ -145,10 +116,13 @@ test("a Spanish decodable reader built from scratch marks, sorts and remembers i
             "decodableReader",
             "A book made from the Decodable Reader template should open on the Decodable Reader tool.",
         );
-        await expect(
-            toolboxFrame(page).locator(SWITCH),
-            "A book made from the Decodable Reader template should be decodable from the start.",
-        ).toBeChecked({ timeout: 30000 });
+        await expect
+            .poll(async () => isReaderSwitchOn(page, "decodableReader"), {
+                timeout: 30000,
+                message:
+                    "A book made from the Decodable Reader template should be decodable from the start.",
+            })
+            .toBe(true);
     });
 
     await test.step("set up four stages with the Spanish alphabet and two sample texts", async () => {
@@ -191,7 +165,7 @@ test("a Spanish decodable reader built from scratch marks, sorts and remembers i
         await expandReaderTool(page, "decodableReader");
         await setReaderPhase(page, "decodableReader", 1);
         await expect
-            .poll(async () => getStageWords(page), {
+            .poll(async () => getDecodableStageWords(page), {
                 timeout: 30000,
                 message:
                     "At stage 1, the panel should list the sample-text words that need only " +
@@ -200,7 +174,7 @@ test("a Spanish decodable reader built from scratch marks, sorts and remembers i
             .toEqual(
                 expect.arrayContaining(["mesa", "sala", "ama", "aaa", "uno"]),
             );
-        const stage1 = await getStageWords(page);
+        const stage1 = await getDecodableStageWords(page);
         expect(
             stage1,
             "pato needs p, t and o, which stage 1 does not teach",
@@ -211,7 +185,7 @@ test("a Spanish decodable reader built from scratch marks, sorts and remembers i
 
         await setReaderPhase(page, "decodableReader", 4);
         await expect
-            .poll(async () => getStageWords(page), {
+            .poll(async () => getDecodableStageWords(page), {
                 timeout: 30000,
                 message:
                     "At stage 4, which teaches b, the panel should list bbb.",
@@ -221,37 +195,36 @@ test("a Spanish decodable reader built from scratch marks, sorts and remembers i
     });
 
     await test.step("each sort button has a tip, and sorts the stage's words", async () => {
-        const frame = toolboxFrame(page);
-        const tips: [string, string][] = [
-            ["decodable-reader-sort-alphabetic", "Sort alphabetically"],
-            ["decodable-reader-sort-by-length", "Sort by word length"],
-            ["decodable-reader-sort-by-frequency", "Sort by frequency"],
-        ];
-        for (const [testId, tip] of tips) {
-            await frame.getByTestId(testId).hover();
-            await expect(
-                frame.getByRole("tooltip"),
-                `Hovering the "${tip}" button should show its tip.`,
-            ).toHaveText(tip, { timeout: 15000 });
-            // Move off it, so the next tip is the only one.
-            await frame.locator(SWITCH).hover();
-            await expect(frame.getByRole("tooltip")).toHaveCount(0, {
-                timeout: 15000,
-            });
+        const sorts = Object.keys(kDecodableSortTips) as DecodableSort[];
+        // The tips in the UI language Bloom is running in.
+        const tips = await getUiStrings(
+            page,
+            Object.fromEntries(
+                sorts.map((sort) => [
+                    kDecodableSortTips[sort].id,
+                    kDecodableSortTips[sort].english,
+                ]),
+            ),
+        );
+        for (const sort of sorts) {
+            expect(
+                await readDecodableSortButtonTip(page, sort),
+                `Hovering the ${sort} sort button should show its tip.`,
+            ).toBe(tips[kDecodableSortTips[sort].id]);
         }
 
-        await frame.getByTestId("decodable-reader-sort-alphabetic").click();
+        await clickDecodableSortButton(page, "alphabetic");
         await expect
-            .poll(async () => getStageWords(page), {
+            .poll(async () => getDecodableStageWords(page), {
                 timeout: 15000,
                 message:
                     "Sorting alphabetically should put the stage's words in alphabetical order.",
             })
             .toEqual(["aaa", "ama", "mesa", "sala", "uno"]);
 
-        await frame.getByTestId("decodable-reader-sort-by-length").click();
+        await clickDecodableSortButton(page, "by-length");
         await expect
-            .poll(async () => getStageWords(page), {
+            .poll(async () => getDecodableStageWords(page), {
                 timeout: 15000,
                 message:
                     "Sorting by word length should put the shortest words first, alphabetically " +
@@ -259,14 +232,17 @@ test("a Spanish decodable reader built from scratch marks, sorts and remembers i
             })
             .toEqual(["aaa", "ama", "uno", "mesa", "sala"]);
 
-        await frame.getByTestId("decodable-reader-sort-by-frequency").click();
+        await clickDecodableSortButton(page, "by-frequency");
         await expect
-            .poll(async () => (await getStageWords(page)).slice(0, 2), {
-                timeout: 15000,
-                message:
-                    "Sorting by frequency should put mesa (four times in the sample texts) " +
-                    "first, then sala (twice).",
-            })
+            .poll(
+                async () => (await getDecodableStageWords(page)).slice(0, 2),
+                {
+                    timeout: 15000,
+                    message:
+                        "Sorting by frequency should put mesa (four times in the sample texts) " +
+                        "first, then sala (twice).",
+                },
+            )
             .toEqual(["mesa", "sala"]);
     });
 
@@ -288,17 +264,14 @@ test("a Spanish decodable reader built from scratch marks, sorts and remembers i
     });
 
     await test.step("turning the switch off removes the marks, and on puts them back at once", async () => {
-        const toggle = toolboxFrame(page).locator(SWITCH);
-        await toggle.click();
-        await expect(toggle).not.toBeChecked({ timeout: 15000 });
+        await setBookIsDecodable(page, false);
         await expectMarkedNotDecodable(
             page,
             [],
             "With the book no longer decodable, no word should be marked.",
         );
 
-        await toggle.click();
-        await expect(toggle).toBeChecked({ timeout: 15000 });
+        await setBookIsDecodable(page, true);
         await expectMarkedNotDecodable(
             page,
             ["pato"],
@@ -378,6 +351,8 @@ test("a Spanish decodable reader built from scratch marks, sorts and remembers i
         );
         await setReaderPhase(page, "decodableReader", 2);
 
+        // Each book is reopened while the stage last chosen is some other stage, so that a book
+        // that lost its own stage and fell back to that one would show the wrong stage.
         await editBook(page, firstBook);
         await waitForEditablePage(page);
         await expandReaderTool(page, "decodableReader");
@@ -385,15 +360,16 @@ test("a Spanish decodable reader built from scratch marks, sorts and remembers i
             page,
             "decodableReader",
             4,
-            "The first book should still be on stage 4, where it was left.",
+            "The first book should still be on stage 4, where it was left, not stage 2, the stage last chosen.",
         );
+        await setReaderPhase(page, "decodableReader", 3);
         await editBook(page, secondBook);
         await expandReaderTool(page, "decodableReader");
         await expectReaderToolToShow(
             page,
             "decodableReader",
             2,
-            "The second book should still be on stage 2, where it was left.",
+            "The second book should still be on stage 2, where it was left, not stage 3, the stage last chosen.",
         );
     });
 });

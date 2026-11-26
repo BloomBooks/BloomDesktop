@@ -11,7 +11,7 @@ import { expect, type Frame, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet } from "./api";
-import { makeBookFromTemplate } from "./bookMaking";
+import { editablePageFrame, makeBookFromTemplate } from "./bookMaking";
 import { enableToolForBook, expandTool, toolboxFrame } from "./toolbox";
 
 /** The two reader tools, by the `data-toolid` their toolbox headers carry. */
@@ -246,4 +246,124 @@ export async function expectReaderToolToShow(
             message,
         })
         .toBe(expected);
+}
+
+/** The ways the Decodable Reader tool can sort the words of a stage. */
+export type DecodableSort = "alphabetic" | "by-length" | "by-frequency";
+
+/** The string id of each sort button's tip, in Bloom's localization files, and its English. */
+export const kDecodableSortTips: Record<
+    DecodableSort,
+    { id: string; english: string }
+> = {
+    alphabetic: {
+        id: "EditTab.Toolbox.DecodableReaderTool.SortAlphabetically",
+        english: "Sort alphabetically",
+    },
+    "by-length": {
+        id: "EditTab.Toolbox.DecodableReaderTool.SortByWordLength",
+        english: "Sort by word length",
+    },
+    "by-frequency": {
+        id: "EditTab.Toolbox.DecodableReaderTool.SortByFrequency",
+        english: "Sort by frequency",
+    },
+};
+
+function sortButton(frame: Frame, sort: DecodableSort) {
+    return frame.getByTestId(`decodable-reader-sort-${sort}`);
+}
+
+/**
+ * The words the Decodable Reader's panel lists under "Sample words in this stage", in the order
+ * it shows them. The panel has to be showing; see expandReaderTool.
+ */
+export async function getDecodableStageWords(page: Page): Promise<string[]> {
+    return toolboxFrame(page)
+        .getByTestId("decodable-reader-stage-word")
+        .evaluateAll((words) =>
+            words.map((word) => (word.textContent ?? "").trim()),
+        );
+}
+
+/** Click one of the Decodable Reader's sort buttons, the way a person does. */
+export async function clickDecodableSortButton(
+    page: Page,
+    sort: DecodableSort,
+): Promise<void> {
+    await sortButton(toolboxFrame(page), sort).click();
+}
+
+/**
+ * Hover one of the Decodable Reader's sort buttons, return the tip that appears, and move the
+ * mouse away again until the tip has gone, so that the next tip read is the only one showing.
+ */
+export async function readDecodableSortButtonTip(
+    page: Page,
+    sort: DecodableSort,
+): Promise<string> {
+    const frame = toolboxFrame(page);
+    const tip = frame.getByRole("tooltip");
+    await sortButton(frame, sort).hover();
+    await tip.waitFor({ state: "visible", timeout: 15000 });
+    const text = (await tip.textContent())?.trim() ?? "";
+    await frame.locator(SWITCH.decodableReader).hover();
+    await expect(tip, "The sort button's tip did not go away.").toHaveCount(0, {
+        timeout: 15000,
+    });
+    return text;
+}
+
+/**
+ * The words of the page being edited that the Decodable Reader marks as not decodable at the
+ * stage it is on, sorted. The tool paints them with a CSS highlight over the text rather than
+ * changing the text, so this reads the highlight's ranges.
+ */
+export async function getWordsMarkedNotDecodable(
+    page: Page,
+): Promise<string[]> {
+    const words = await editablePageFrame(page).evaluate(() => {
+        const ranges = (
+            CSS as unknown as {
+                highlights?: Map<string, Iterable<Range>>;
+            }
+        ).highlights?.get("bloom-reader-word-not-decodable");
+        return ranges ? [...ranges].map((range) => range.toString()) : [];
+    });
+    return words.sort();
+}
+
+/**
+ * Press the Decodable Reader's "Generate Report" button and wait until Bloom has written the report
+ * ("Decodable Books Letters and Words.txt" in the collection's folder). Bloom answers the button's
+ * request only after it has written the file. It then opens the report in the program the machine
+ * opens .txt files with, which takes the foreground even under --dont-disturb.
+ */
+export async function generateDecodableReport(page: Page): Promise<void> {
+    const button = toolboxFrame(page).getByTestId(
+        "EditTab.Toolbox.DecodableReaderTool.GenerateReport",
+    );
+    await button.scrollIntoViewIfNeeded({ timeout: 30000 });
+    const written = page.waitForResponse(
+        (response) =>
+            response.url().includes("readers/ui/makeLetterAndWordList"),
+        { timeout: 30000 },
+    );
+    await button.click();
+    const response = await written;
+    expect(
+        response.ok(),
+        `Bloom failed to write the report: ${response.status()}`,
+    ).toBe(true);
+}
+
+/**
+ * Whether a reader tool's "This book is decodable" / "This book is leveled" switch is on. The
+ * tool's panel has to be expanded (see expandTool); this does not turn the switch on.
+ */
+export async function isReaderSwitchOn(
+    page: Page,
+    tool: ReaderTool,
+): Promise<boolean> {
+    return toolboxFrame(page).locator(SWITCH[tool]).isChecked();
 }
