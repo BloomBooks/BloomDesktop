@@ -79,10 +79,10 @@ export async function goToPreviewPage(
 }
 
 /**
- * Whether Bloom Player is showing its Previous and Next arrows, as a reader sees them: an arrow
- * counts as shown when the browser draws it (checkVisibility), not merely when it is in the
- * document. A page whose player options say hideNavigation, such as a Captive Widget Page, has
- * Bloom Player hide both.
+ * Whether Bloom Player offers its Previous and Next arrows to the reader: an arrow counts as there
+ * when the browser lays it out and does not hide it with visibility: hidden (checkVisibility), not
+ * merely when it is in the document. A page whose player options say hideNavigation, such as a
+ * Captive Widget Page, has Bloom Player take both away.
  */
 export async function getPreviewArrowsShown(
     player: Frame,
@@ -93,14 +93,12 @@ export async function getPreviewArrowsShown(
             arrows.first(),
             `Bloom Player has no "${selector}" arrow in its document at all.`,
         ).toBeAttached({ timeout: 30000 });
-        // An arrow made invisible with visibility: hidden or opacity: 0 is hidden from the reader
-        // as surely as one with display: none.
+        // display: none and visibility: hidden both leave the reader nothing to see, tap or reach
+        // with the Tab key. An arrow at opacity 0 still takes taps and focus, so it still lets the
+        // reader leave the page, and counts as there.
         return arrows.evaluateAll((elements) =>
             elements.some((e) =>
-                e.checkVisibility({
-                    visibilityProperty: true,
-                    opacityProperty: true,
-                }),
+                e.checkVisibility({ visibilityProperty: true }),
             ),
         );
     };
