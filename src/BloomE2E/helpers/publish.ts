@@ -638,6 +638,99 @@ export async function getCollectionSignLanguage(
     );
 }
 
+/** The Game row of a Publish screen's Features list, as a person sees it. */
+export interface IGameFeature {
+    /** Whether the check mark beside the Game label shows. */
+    checked: boolean;
+    /** Whether the row is dimmed, as Bloom shows a feature this book's publication will not have. */
+    disabled: boolean;
+    /** The words of its tooltip, e.g. "This book has games." */
+    tooltip: string;
+}
+
+/**
+ * The Game row of the Features list on the Publish screen showing (Web, BloomPUB).
+ *
+ * The row is never a real check box (PublishFeaturesGroup.tsx gives it BloomCheckbox's hideBox),
+ * so there is no input to ask. What a person sees is read instead: the check mark is always in the
+ * DOM and is either visible or `visibility: hidden`, and a disabled row's label is dimmed to
+ * kBloomDisabledOpacity.
+ */
+export async function getGameFeature(page: Page): Promise<IGameFeature> {
+    const label = page.getByText(await getGameLabel(page), { exact: true });
+    await label.waitFor({ state: "visible", timeout: 30000 });
+    const row = page.locator(".bloom-checkbox").filter({ has: label });
+    const checked = await row.locator('[data-testid="CheckIcon"]').isVisible();
+    const opacity = await row
+        .locator(".bloom-checkbox-label")
+        .evaluate((e) => Number(getComputedStyle(e).opacity));
+    const tooltip = await hoverForTooltip(page, label);
+    return {
+        checked,
+        disabled: opacity < 1,
+        tooltip: (await tooltip.innerText()).trim(),
+    };
+}
+
+/**
+ * Wait until the Game row of the Publish screen showing is as expected. The row is filled in from
+ * requests the screen makes after it shows (whether the book has games, what the subscription
+ * allows), so reading it once races them.
+ */
+export async function expectGameFeature(
+    page: Page,
+    expected: IGameFeature,
+    message: string,
+): Promise<void> {
+    await expect
+        .poll(() => getGameFeature(page), { timeout: 30000, message })
+        .toEqual(expected);
+}
+
+/**
+ * What the Game row's tooltip says, in the UI language: the book has games it may publish, it has
+ * none, or it has games that need the subscription tier `needsTier`, e.g. { needsTier: "Pro" }.
+ * The tier is named by the caller, not asked of Bloom, so a tooltip naming the wrong tier fails.
+ */
+export async function getGameTooltipText(
+    page: Page,
+    tooltip: "hasGames" | "noGames" | { needsTier: string },
+): Promise<string> {
+    if (tooltip === "hasGames")
+        return getUiString(
+            page,
+            "PublishTab.Feature.Games.Present",
+            "This book has games.",
+        );
+    if (tooltip === "noGames")
+        return getUiString(
+            page,
+            "PublishTab.Feature.Games.None",
+            "This book does not have any games.",
+        );
+    // Bloom names a tier by this key (FeatureStatus.ToJson); "LocalCommunity" is the one tier
+    // whose English name is not its id.
+    const tierName = await getUiString(
+        page,
+        `Subscription.Tier.${tooltip.needsTier}`,
+        tooltip.needsTier.replace("LocalCommunity", "Local Community"),
+    );
+    const sentence = await getUiString(
+        page,
+        "Subscription.RequiredTierForFeatureSentence",
+        'This feature requires a Bloom subscription tier of at least "{0}".',
+    );
+    return sentence.replace("{0}", tierName);
+}
+
+/**
+ * The Game row's label in the UI language. A test Bloom starts in the Windows UI language, so the
+ * row is found by what Bloom calls it, not by its English name.
+ */
+function getGameLabel(page: Page): Promise<string> {
+    return getUiString(page, "PublishTab.Game", "Game");
+}
+
 /**
  * What the Sign Language row's tooltip says, in the UI language, when the book has no videos, or
  * when its videos are in the sign language named `signLanguageName`.
