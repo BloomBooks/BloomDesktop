@@ -587,29 +587,35 @@ export async function playCurrentNarration(
 
     // Over means at least one narration played to its end, and the button is back to Check: it
     // shows a play picture again, not the pause picture it shows while anything is playing. Read
-    // the plays only then, so that one still playing is not missed.
+    // the plays only then, so that one still playing is not missed. The poll returns what it saw,
+    // so that a failure shows whether nothing played to its end or the button did not come back.
     await expect
         .poll(
             async () => {
                 const plays = await getPlays(page);
-                const pictures = await button
+                const checkPictures = await button
                     .locator("img")
                     .evaluateAll((imgs) =>
                         imgs.map((img) => img.getAttribute("src") ?? ""),
                     );
-                return (
-                    plays.length > 0 &&
-                    pictures.length === 1 &&
-                    /\/play_(enabled|expected)\.svg$/.test(pictures[0])
-                );
+                return {
+                    over:
+                        plays.length > 0 &&
+                        checkPictures.length === 1 &&
+                        /\/play_(enabled|expected)\.svg$/.test(
+                            checkPictures[0],
+                        ),
+                    playedToTheEnd: plays,
+                    checkPictures,
+                };
             },
             {
                 timeout: 60000,
                 message:
-                    "Check never finished playing a narration: none played to its end, or the button did not go back to Check.",
+                    "Check never finished playing a narration: either none played to its end (playedToTheEnd), or the button did not go back to one Check button showing a play picture (checkPictures).",
             },
         )
-        .toBe(true);
+        .toMatchObject({ over: true });
     return await getPlays(page);
 }
 
