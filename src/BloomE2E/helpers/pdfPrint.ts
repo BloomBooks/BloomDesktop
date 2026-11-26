@@ -212,8 +212,8 @@ function getPdfPageObjectsInPageOrder(pdf: string): string[] {
  *
  * Bloom's PDF maker puts a picture into the PDF at the size of its file, so a picture of a known
  * size that is listed for a page was found and drawn on that page when the PDF was made, and one
- * that is missing was not. A picture with transparency is listed twice, because a PDF holds its
- * transparency as a second image of the same size.
+ * that is missing was not. Each picture is listed once: the second image in which a PDF holds a
+ * picture's transparency belongs to the picture, not to the page, and is not listed.
  */
 export async function getPdfPreviewPicturesByPage(
     page: Page,
