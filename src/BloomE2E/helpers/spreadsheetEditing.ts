@@ -122,8 +122,8 @@ function columnOf(cellRef: string): string {
 }
 
 /**
- * Delete the rows of the spreadsheet at `xlsxPath` that hold the content of the book page Bloom
- * exported as page `pageNumber` (its "(exported page)" column), as a person does by selecting
+ * Delete the rows of the spreadsheet at `xlsxPath` that hold the book page Bloom exported as page
+ * `pageNumber` (its "(exported page)" column), as a person does by selecting
  * those rows in their spreadsheet program and choosing Delete: the rows below move up to close the
  * gap. The result is saved as `savePath`, which should be in the same folder so that the
  * spreadsheet's pictures are still beside it: the export's own file stays open in the spreadsheet
@@ -175,18 +175,16 @@ export function deleteSpreadsheetPageRows(
         if (!column) throw new Error(`${xlsxPath} has no "${key}" column.`);
         return column;
     };
-    const rowTypeColumn = columnWithKey("[row type]");
     const pageColumn = columnWithKey("(exported page)");
 
+    // Every row of the page, whatever its type: a picture's description has a row of its own
+    // ("[image description]") with the same page number as the page's content rows.
     const doomed = new Set(
         rows
-            .filter((row) => {
-                const cells = cellsOf(row.body);
-                return (
-                    cells.get(rowTypeColumn) === "[page content]" &&
-                    cells.get(pageColumn) === String(pageNumber)
-                );
-            })
+            .filter(
+                (row) =>
+                    cellsOf(row.body).get(pageColumn) === String(pageNumber),
+            )
             .map((row) => row.number),
     );
     if (doomed.size === 0)

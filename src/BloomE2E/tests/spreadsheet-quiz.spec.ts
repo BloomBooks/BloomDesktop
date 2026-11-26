@@ -334,11 +334,18 @@ test("Comprehension Quiz pages survive export to a spreadsheet and import [Test 
                 `quiz page ${index + 1} should have its English heading`,
             ).toContain("en: Check Your Understanding");
             // The heading's translations are what BL-15680's import added a second time, so the
-            // check of the imported headings below needs some to be there.
+            // check of the imported headings below needs some to be there: boxes in other
+            // languages, and some of them translated.
             expect(
-                quiz.heading.length,
-                `quiz page ${index + 1}'s heading should have its translations`,
+                new Set(quiz.heading.map((text) => text.split(":")[0])).size,
+                `quiz page ${index + 1}'s heading should have boxes in other languages than English`,
             ).toBeGreaterThan(1);
+            expect(
+                quiz.heading.filter(
+                    (text) => !text.endsWith(": Check Your Understanding"),
+                ),
+                `quiz page ${index + 1}'s heading should have some translated texts`,
+            ).not.toEqual([]);
         }
     });
 
@@ -440,6 +447,10 @@ test("Comprehension Quiz pages survive export to a spreadsheet and import [Test 
                 after.map(quizContent),
                 "the quiz book should have only its first quiz page, as it was",
             ).toEqual([expectedQuiz(kQuizzes[0])]);
+            expect(
+                after[0].id,
+                "the remaining quiz page should be the book's own first quiz page, kept, not a new one",
+            ).toBe(original[0].id);
             // The import fills the boxes the page already has, so the heading keeps exactly the
             // ones it had, BL-17212's second "qaa" box included, and gains none (BL-15680).
             expect(
