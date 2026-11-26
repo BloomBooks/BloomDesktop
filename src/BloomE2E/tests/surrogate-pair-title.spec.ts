@@ -23,8 +23,9 @@ import {
     pasteTextInGroup,
 } from "../helpers/bookMaking";
 import {
+    clickBookTile,
+    expectBookInPreview,
     listEditableBooks,
-    waitForCollectionReady,
 } from "../helpers/collection";
 import { selectPage } from "../helpers/pageThumbnails";
 import { switchTab } from "../helpers/workspace";
@@ -35,6 +36,10 @@ test.use({
 
 // The title the test case gives: Maithili in the Tirhuta script. Showing it needs no font.
 const kTitle = "𑒮𑒩𑓂𑒫𑒹 𑒧𑒰𑒢𑒫𑒰𑓁 𑒮𑓂𑒫𑒞𑒢𑓂𑒞𑓂𑒩𑒰𑓁 𑒮𑒧𑒳𑒞𑓂𑒣𑒢𑓂𑒢𑒰𑓁 𑒫𑒩𑓂𑒞𑒢𑓂𑒞𑒹";
+
+// The most units of a string that Bloom keeps for a book's name (BookStorage.kMaxFilenameLength).
+// What makes this title dangerous is that a cut there falls between the halves of a pair.
+const kMostUnitsInName = 50;
 
 /** A surrogate that is not half of a pair, which is what a name cut inside a pair ends with. */
 const kLoneSurrogate =
@@ -55,6 +60,12 @@ test("a pasted title in a script made of surrogate pairs names the book's files,
         kLoneSurrogate.test(kTitle),
         "test setup: the title itself is well formed",
     ).toBe(false);
+    expect(
+        kLoneSurrogate.test(
+            kTitle.normalize("NFC").substring(0, kMostUnitsInName),
+        ),
+        `test setup: cutting the title at ${kMostUnitsInName} units splits a surrogate pair`,
+    ).toBe(true);
 
     let oldFolder = "";
     let coverId = "";
@@ -81,6 +92,7 @@ test("a pasted title in a script made of surrogate pairs names the book's files,
     });
 
     let bookFolder = "";
+    let bookId = "";
     await step(
         "Go to another page, so that the book's files take the title's name",
         async () => {
@@ -98,6 +110,7 @@ test("a pasted title in a script made of surrogate pairs names the book's files,
                 "the collection has the one book, under its new name",
             ).toBe(1);
             bookFolder = books[0].folderPath;
+            bookId = books[0].id;
         },
     );
 
@@ -123,11 +136,13 @@ test("a pasted title in a script made of surrogate pairs names the book's files,
 
     await step("Return to the Collections tab", async () => {
         await switchTab(page, "collection");
-        await waitForCollectionReady(page);
         expect(
             (await listEditableBooks(page)).map((book) => book.folderPath),
-            "the Collections tab still has the book",
+            "the collection still has the book",
         ).toEqual([bookFolder]);
+        // The tab draws the book's tile, which takes a click, and previews the book.
+        await clickBookTile(page, bookId);
+        await expectBookInPreview(page, kTitle);
     });
 
     expect(

@@ -1026,9 +1026,12 @@ export async function typeInGroup(
 }
 
 /**
- * Paste plain text over whatever one language's box of one translation group holds, the way a
- * person does who copied the text in another program, clicked in the box, selected all and pressed
- * Ctrl+V. `groupSelector` and `groupIndex` pick the group as for typeInGroup.
+ * Empty one language's box of one translation group and paste plain text into it, the way a person
+ * does who copied the text in another program, clicked in the box, deleted what was there and
+ * pressed Ctrl+V. `groupSelector` and `groupIndex` pick the group as for typeInGroup.
+ *
+ * The box is emptied with the keyboard before the paste, as typeInGroup empties it, so this says
+ * nothing about a paste that replaces selected text; a test of that selects and pastes itself.
  *
  * The text goes through Bloom's clipboard and the page's paste handling (see pasteFromClipboard in
  * helpers/clipboard.ts), not through typing. Nothing reaches the file until the book leaves this
