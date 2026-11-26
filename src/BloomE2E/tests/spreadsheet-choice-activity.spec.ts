@@ -41,6 +41,7 @@ import {
     selectBook,
 } from "../helpers/collection";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
+import { picturePixels } from "../helpers/images";
 import {
     exportSelectedBookToSpreadsheet,
     importSpreadsheetIntoSelectedBook,
@@ -184,9 +185,12 @@ test("a Choose Word from Image page goes into the spreadsheet with its page type
                 "Sanity check: the game page should hold the chosen picture",
             ).toMatch(/^bird/);
             expect(
-                fs.existsSync(Path.join(book, pages[0].promptPicture)),
-                "Sanity check: the book's folder should hold the picture",
-            ).toBe(true);
+                await picturePixels(
+                    page,
+                    Path.join(book, pages[0].promptPicture),
+                ),
+                "Sanity check: the book's folder should hold the chosen picture",
+            ).toBe(await picturePixels(page, kPicture));
             return pages[0];
         },
     );
@@ -268,12 +272,18 @@ test("a Choose Word from Image page goes into the spreadsheet with its page type
             ).toEqual([
                 Path.join("images", Path.basename(original.promptPicture)),
             ]);
+            const exportedPicture = Path.join(
+                Path.dirname(spreadsheet),
+                pictures[0],
+            );
             expect(
-                fs.existsSync(
-                    Path.join(Path.dirname(spreadsheet), pictures[0]),
-                ),
-                "the export should carry the picture beside the spreadsheet",
+                fs.existsSync(exportedPicture),
+                `the export should carry the picture beside the spreadsheet, at ${exportedPicture}`,
             ).toBe(true);
+            expect(
+                await picturePixels(page, exportedPicture),
+                "the picture beside the spreadsheet should be the game page's picture",
+            ).toBe(await picturePixels(page, kPicture));
         },
     );
 
@@ -329,10 +339,15 @@ test("a Choose Word from Image page goes into the spreadsheet with its page type
                     answers: kExpectedAnswers,
                 },
             ]);
+            const importedPicture = Path.join(imported, original.promptPicture);
             expect(
-                fs.existsSync(Path.join(imported, original.promptPicture)),
-                "the new book's folder should hold the picture",
+                fs.existsSync(importedPicture),
+                `the new book's folder should hold the picture, at ${importedPicture}`,
             ).toBe(true);
+            expect(
+                await picturePixels(page, importedPicture),
+                "the new book's picture should be the game page's picture",
+            ).toBe(await picturePixels(page, kPicture));
         },
     );
 });
