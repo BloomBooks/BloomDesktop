@@ -179,8 +179,24 @@ export async function recordVideo(
     page: Page,
     videoBox: Locator,
 ): Promise<string> {
-    const before = await getVideoSource(videoBox);
     await realClick(videoBox);
+    return recordWithOpenSignLanguageTool(page, videoBox);
+}
+
+/**
+ * Record a video into `videoBox` with the Sign Language tool that is already open on it: press
+ * record, wait out the countdown and about a second of recording, press stop, and wait until the
+ * box shows the recording. Returns its source. recordVideo opens the tool by clicking the box
+ * first; this is for a test that opened it another way, such as a canvas video's "Record
+ * yourself..." button.
+ *
+ * Needs a Bloom launched with a fake camera, as recordVideo does.
+ */
+export async function recordWithOpenSignLanguageTool(
+    page: Page,
+    videoBox: Locator,
+): Promise<string> {
+    const before = await getVideoSource(videoBox);
     const toolbox = toolboxFrame(page);
     const recordButton = toolbox.locator("#videoToggleRecording");
     await expect(
