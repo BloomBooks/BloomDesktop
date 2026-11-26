@@ -108,15 +108,20 @@ async function expectPlaying(audio: Locator, fileName: string, what: string) {
     await expect
         .poll(
             async () => {
+                // The whole state goes in, so a failure shows what the player was doing.
                 const now = await audioState(audio);
-                return !now.paused && now.time > 0 && now.time !== start;
+                return {
+                    ...now,
+                    start,
+                    movedOn: !now.paused && now.time > 0 && now.time !== start,
+                };
             },
             {
                 timeout: 15000,
                 message: `${what}: the music's time should move on while it plays.`,
             },
         )
-        .toBe(true);
+        .toMatchObject({ movedOn: true });
 }
 
 /** The page attributes the Music tool writes. */
