@@ -27,6 +27,11 @@ test.use({
 const kFirstTitle = "Sunrise Hills";
 const kSecondTitle = "Moon Over Sea";
 
+/** `text` with everything but its letters and digits left out. */
+function lettersAndDigits(text: string): string {
+    return text.replace(/[^\p{L}\p{N}]/gu, "");
+}
+
 /** The words under the book's tile on the Collections tab. */
 function tileLabel(page: Page, bookId: string) {
     return page.locator(`.book-button[data-book-id="${bookId}"] .bookButton`);
@@ -70,15 +75,18 @@ test("the book's name on the Collections tab, its folder and its file follow its
     await step("Make a new book and see its placeholder name", async () => {
         placeholderFolder = await makeBookFromTemplate(page, "Basic Book");
         bookId = readBookId(placeholderFolder);
-        // The placeholder is Bloom's name for an untitled book in its UI language, made unique
-        // with a suffix when that folder already exists.
+        // The placeholder is Bloom's name for an untitled book in its UI language, with any
+        // character a folder name cannot hold replaced, and a suffix when that folder already
+        // exists. So only its letters and digits are compared.
         const untitledName = await getUiString(
             page,
             "EditTab.NewBookName",
             "Book",
         );
         expect(
-            Path.basename(placeholderFolder).startsWith(untitledName),
+            lettersAndDigits(Path.basename(placeholderFolder)).startsWith(
+                lettersAndDigits(untitledName),
+            ),
             `Sanity check: a book with no title yet should be in a folder named for an untitled book ("${untitledName}"), not "${Path.basename(placeholderFolder)}"`,
         ).toBe(true);
         await switchTab(page, "collection");
