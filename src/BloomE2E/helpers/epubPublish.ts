@@ -1,4 +1,5 @@
-// Drive and read the Publish tab's ePUB screen: its ePUB mode, and its preview.
+// Drive and read the Publish tab's ePUB screen: its ePUB mode, its Book Metadata dialog, and its
+// preview.
 //
 // The preview is the ePUB itself. Clicking Preview has Bloom stage the ePUB's files, exactly the
 // ones Save... then zips, and show them in a reader (Readium's D2 Reader) inside the device frame.
@@ -9,7 +10,7 @@
 // test can answer (see AUTOMATION-DEBT.md).
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
-import { apiGet, getUiString } from "./api";
+import { apiGet, apiGetJson, getUiString } from "./api";
 import { selectPublishDestination } from "./publish";
 
 /** How an ePUB lays its pages out: as Bloom shows them, or however the reader likes. */
@@ -409,4 +410,127 @@ async function waitForEpubPreviewPageToFinishLoading(
             `The ePUB preview could not load ${broken.length === 1 ? "a picture" : "pictures"} ` +
                 `of the page at ${frame.url()}: ${broken.join(", ")}.`,
         );
+}
+
+/** The ePUB screen's Book Metadata dialog; see BookMetadataDialog.tsx. */
+const BOOK_METADATA_DIALOG = ".bookMetadataDialog";
+
+/**
+ * Click the ePUB screen's "Book Metadata" link and wait until its dialog shows the book's
+ * metadata. The ePUB screen must be showing (openEpubPublishScreen).
+ */
+export async function openBookMetadataDialog(page: Page): Promise<Locator> {
+    await page.locator("#bookMetadataDialogLink").click();
+    const dialog = page.locator(BOOK_METADATA_DIALOG);
+    await bookMetadataField(page, "summary").waitFor({
+        state: "visible",
+        timeout: 30000,
+    });
+    return dialog;
+}
+
+/**
+ * One text box of the Book Metadata dialog, by the key Bloom gives it in book/metadata, such as
+ * "summary" or "author".
+ */
+export function bookMetadataField(page: Page, key: string): Locator {
+    return page
+        .locator(BOOK_METADATA_DIALOG)
+        .getByTestId(`book-metadata-${key}`);
+}
+
+/**
+ * Click the Book Metadata dialog's OK button and wait until the dialog is gone. The dialog then
+ * saves what it holds; the caller waits for the value it changed (getBookMetadataValue).
+ */
+export async function clickBookMetadataOk(page: Page): Promise<void> {
+    const dialog = page.locator(BOOK_METADATA_DIALOG);
+    await dialog.locator("#okButton").click();
+    await expect(
+        dialog,
+        "The Book Metadata dialog should close on OK.",
+    ).toHaveCount(0, { timeout: 15000 });
+}
+
+/** A value of the book's metadata as Bloom holds it, by the key book/metadata gives it. */
+export async function getBookMetadataValue(
+    page: Page,
+    key: string,
+): Promise<string> {
+    const answer = await apiGetJson<{
+        metadata: Record<string, { value: unknown }>;
+    }>(page, "book/metadata");
+    return String(answer.metadata[key].value ?? "");
+}
+
+/**
+ * The package document (content/content.opf) of the ePUB the preview is showing, as text: the
+ * file that Save... zips with the rest of the staged ePUB, and that holds the ePUB's metadata.
+ * Click Preview first (showEpubPreview).
+ *
+ * The reader's own address names the staged ePUB's manifest.json in its "url" parameter, which
+ * Bloom writes beside the ePUB's content folder (PublishEpubApi.SetupEpubControlContent).
+ */
+export async function readEpubPreviewPackage(page: Page): Promise<string> {
+    const manifest = new URL(readerFrame(page).url()).searchParams.get("url");
+    if (!manifest)
+        throw new Error(
+            `The ePUB reader's address names no manifest: ${readerFrame(page).url()}`,
+        );
+    const packageUrl = new URL("content/content.opf", manifest).toString();
+    return page.evaluate(async (url) => {
+        const response = await fetch(url);
+        if (!response.ok)
+            throw new Error(`Fetching ${url} answered ${response.status}.`);
+        return response.text();
+    }, packageUrl);
+}
+
+/**
+ * The texts of the entries of an ePUB package document's metadata (readEpubPreviewPackage) that
+ * have the Dublin Core name `name`, such as "description" or "title", in document order. Only the
+ * children of the package's <metadata> count, since that is where a reader app looks for them.
+ */
+export async function getEpubPackageDublinCore(
+    page: Page,
+    packageText: string,
+    name: string,
+): Promise<string[]> {
+    return page.evaluate(
+        ({ text, localName }) => {
+            const doc = new DOMParser().parseFromString(
+                text,
+                "application/xml",
+            );
+            const error = doc.querySelector("parsererror");
+            if (error)
+                throw new Error(
+                    `The ePUB package is not well-formed XML: ${error.textContent}`,
+                );
+            const opf = "http://www.idpf.org/2007/opf";
+            const root = doc.documentElement;
+            if (root.namespaceURI !== opf || root.localName !== "package")
+                throw new Error(
+                    `The ePUB package's root is <${root.tagName}>, not an OPF <package>.`,
+                );
+            const metadata = [...root.children].filter(
+                (child) =>
+                    child.namespaceURI === opf &&
+                    child.localName === "metadata",
+            );
+            if (metadata.length !== 1)
+                throw new Error(
+                    `The ePUB package has ${metadata.length} <metadata> elements, not one.`,
+                );
+            return [...metadata[0].children]
+                .filter(
+                    (child) =>
+                        child.namespaceURI ===
+                            "http://purl.org/dc/elements/1.1/" &&
+                        child.localName === localName,
+                )
+                .map((element) => element.textContent ?? "");
+        },
+        { text: packageText, localName: name },
+    );
 }
