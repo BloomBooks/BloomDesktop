@@ -56,7 +56,7 @@ import {
     addNarration,
     narrationFilePath,
     openToolboxWithTalkingBook,
-    sampleNarrationFile,
+    writeSecondSampleNarration,
     setRecordingMode,
 } from "../helpers/talkingBook";
 import { switchTab } from "../helpers/workspace";
@@ -133,12 +133,70 @@ const kExpectedFormatting: Record<string, IWordFormatting> = Object.fromEntries(
     ]),
 );
 
+/** A stretch of a box's text that is formatted alike throughout. */
+interface IRun {
+    text: string;
+    formatting: IWordFormatting;
+}
+
+/**
+ * The runs kText should be drawn in: each formatted word a run of its own, and everything between
+ * them, spaces and full stops included, plain.
+ */
+function expectedRuns(): IRun[] {
+    const runs: IRun[] = [];
+    let rest = kText;
+    for (const { word } of kWords) {
+        const formatting = kExpectedFormatting[word];
+        const start = rest.indexOf(word);
+        const before = rest.slice(0, start);
+        rest = rest.slice(start + word.length);
+        const plain = Object.values(formatting).every((v) => !v);
+        const last = runs.at(-1);
+        const lastIsPlain =
+            !!last && Object.values(last.formatting).every((v) => !v);
+        // Plain words join the plain text around them, as they do in the box.
+        if (plain) {
+            if (lastIsPlain) last!.text += before + word;
+            else
+                runs.push({
+                    text: before + word,
+                    formatting: { ...formatting },
+                });
+            continue;
+        }
+        if (before) {
+            if (lastIsPlain) last!.text += before;
+            else
+                runs.push({
+                    text: before,
+                    formatting: { ...kExpectedFormatting["Start"] },
+                });
+        }
+        runs.push({ text: word, formatting: { ...formatting } });
+    }
+    if (rest) {
+        const last = runs.at(-1);
+        if (last && Object.values(last.formatting).every((v) => !v))
+            last.text += rest;
+        else
+            runs.push({
+                text: rest,
+                formatting: { ...kExpectedFormatting["Start"] },
+            });
+    }
+    return runs;
+}
+
 /** The English text box of the book's one content page, as the saved book file has it. */
 interface IBoxOnDisk {
     /** The box's text. */
     text: string;
-    /** The formatting of each word of kWords, or a message when no single run holds the word. */
-    formatting: Record<string, IWordFormatting | string>;
+    /**
+     * The box's text cut into runs formatted alike, every letter, space and stop of it, so that
+     * formatting that spread past the word it was given shows as a different cut.
+     */
+    runs: IRun[];
     /** The id and text of each sentence the Talking Book tool marked for recording. */
     sentences: { id: string; text: string }[];
 }
@@ -153,7 +211,7 @@ async function readSavedBox(
 ): Promise<IBoxOnDisk> {
     const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
     const box = await page.evaluate(
-        ({ source, words }) => {
+        ({ source }) => {
             const dom = new DOMParser().parseFromString(source, "text/html");
             const boxes = Array.from(
                 dom.querySelectorAll<HTMLElement>(
@@ -181,20 +239,20 @@ async function readSavedBox(
                         .join("")
                 );
             };
-            const formatting: Record<string, unknown> = {};
-            for (const word of words) {
-                const walker = dom.createTreeWalker(
-                    element,
-                    NodeFilter.SHOW_TEXT,
-                );
-                const holders: Node[] = [];
-                for (let n = walker.nextNode(); n; n = walker.nextNode())
-                    if (n.textContent?.includes(word)) holders.push(n);
-                if (holders.length !== 1) {
-                    formatting[word] =
-                        `${holders.length} runs hold "${word}"; the box holds ${element.innerHTML}`;
-                    continue;
-                }
+            // Every character of the box with the formatting of the text node that holds it, with
+            // the whitespace of the file folded as the page folds it.
+            const runs: {
+                text: string;
+                formatting: {
+                    bold: boolean;
+                    italic: boolean;
+                    underline: boolean;
+                    superscript: boolean;
+                    color: string;
+                };
+            }[] = [];
+            const walker = dom.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+            for (let n = walker.nextNode(); n; n = walker.nextNode()) {
                 const found = {
                     bold: false,
                     italic: false,
@@ -203,7 +261,7 @@ async function readSavedBox(
                     color: "",
                 };
                 for (
-                    let e = holders[0].parentElement;
+                    let e = n.parentElement;
                     e && e !== element;
                     e = e.parentElement
                 ) {
@@ -216,11 +274,30 @@ async function readSavedBox(
                     if (!found.color && e.style.color)
                         found.color = toHex(e.style.color);
                 }
-                formatting[word] = found;
+                for (const raw of (n.textContent ?? "").replace(/[​﻿]/g, "")) {
+                    const char = /[ \t\r\n\f]/.test(raw) ? " " : raw;
+                    const last = runs.at(-1);
+                    const soFar = runs.map((r) => r.text).join("");
+                    if (char === " " && (soFar === "" || soFar.endsWith(" ")))
+                        continue;
+                    if (
+                        last &&
+                        JSON.stringify(last.formatting) ===
+                            JSON.stringify(found)
+                    )
+                        last.text += char;
+                    else runs.push({ text: char, formatting: { ...found } });
+                }
+            }
+            // A trailing space the file's layout left.
+            const last = runs.at(-1);
+            if (last) {
+                last.text = last.text.replace(/ $/, "");
+                if (!last.text) runs.pop();
             }
             return {
                 text: normalize(element.textContent ?? ""),
-                formatting,
+                runs,
                 sentences: Array.from(
                     element.querySelectorAll(".audio-sentence[id]"),
                 ).map((s) => ({
@@ -229,7 +306,7 @@ async function readSavedBox(
                 })),
             };
         },
-        { source: html, words: kWords.map((w) => w.word) },
+        { source: html },
     );
     if (typeof box === "string")
         throw new Error(
@@ -276,7 +353,10 @@ test("text formatted with the selection toolbar keeps its formatting through a s
 
             await openToolboxWithTalkingBook(page);
             await setRecordingMode(page, "By Sentence");
-            await addNarration(page, bookFolder, "en");
+            const ids = await addNarration(page, bookFolder, "en");
+            // A recording of its own for the second sentence, so that recordings swapped or
+            // shared between the sentences show.
+            writeSecondSampleNarration(narrationFilePath(bookFolder, ids[1]));
             // Leaving the Edit tab saves the book.
             await switchTab(page, "collection");
             return bookFolder;
@@ -284,6 +364,10 @@ test("text formatted with the selection toolbar keeps its formatting through a s
     );
     if (!original) throw new Error("The book was not made.");
     const originalBox = await readSavedBox(page, original);
+    /** A hash of each sentence's recording, in the order of kSentences. */
+    const originalRecordings = originalBox.sentences.map((sentence) =>
+        fileHash(narrationFilePath(original, sentence.id)),
+    );
 
     await step(
         "Check the saved book has the formatting and the recordings",
@@ -291,9 +375,9 @@ test("text formatted with the selection toolbar keeps its formatting through a s
             // Without this the round trip below could pass on text that was never formatted.
             expect(originalBox.text).toBe(kText);
             expect(
-                originalBox.formatting,
-                "each word of the saved box should have the formatting it was given, and no other",
-            ).toEqual(kExpectedFormatting);
+                originalBox.runs,
+                "each word of the saved box should have the formatting it was given, and nothing else any",
+            ).toEqual(expectedRuns());
             expect(
                 originalBox.sentences.map((s) => s.text),
                 "the saved box should be marked as two recorded sentences",
@@ -303,6 +387,10 @@ test("text formatted with the selection toolbar keeps its formatting through a s
                     fs.existsSync(narrationFilePath(original, sentence.id)),
                     `"${sentence.text}" should have its recording in the book's audio folder`,
                 ).toBe(true);
+            expect(
+                new Set(originalRecordings).size,
+                "the two sentences should have different recordings",
+            ).toBe(2);
         },
     );
 
@@ -354,15 +442,14 @@ test("text formatted with the selection toolbar keeps its formatting through a s
             const importedBox = await readSavedBox(page, imported);
             expect(importedBox.text).toBe(kText);
             expect(
-                importedBox.formatting,
-                "each word of the new book should have the formatting it had in the original",
-            ).toEqual(kExpectedFormatting);
+                importedBox.runs,
+                "each word of the new book should have the formatting it had in the original, and nothing else any",
+            ).toEqual(originalBox.runs);
             expect(
                 importedBox.sentences.map((s) => s.text),
                 "the new book should have the same recorded sentences",
             ).toEqual(kSentences);
-            const recorded = fileHash(sampleNarrationFile);
-            for (const sentence of importedBox.sentences) {
+            importedBox.sentences.forEach((sentence, index) => {
                 const recording = narrationFilePath(imported, sentence.id);
                 expect(
                     fs.existsSync(recording),
@@ -371,8 +458,8 @@ test("text formatted with the selection toolbar keeps its formatting through a s
                 expect(
                     fileHash(recording),
                     `"${sentence.text}" should play the recording it had in the original`,
-                ).toBe(recorded);
-            }
+                ).toBe(originalRecordings[index]);
+            });
         },
     );
 
