@@ -7,7 +7,8 @@
 // The template is made with Template Starter, as people make them, and a book is made from it.
 // Both have the same cover (the picture placeholder), so the only thing that should tell their
 // thumbnails apart is the border: the template's thumbnail has dashes along its top and left
-// edges, and the book's has no black there at all.
+// edges, and the book's has no black there at all, while inside the border the two are the same
+// picture.
 
 import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
@@ -22,8 +23,9 @@ import {
 import {
     countDashes,
     readBookId,
-    readBookTileThumbnailEdges,
-    type IThumbnailEdges,
+    countThumbnailPixelsDifferingInside,
+    readBookTileThumbnail,
+    type ITileThumbnail,
 } from "../helpers/collection";
 import { switchTab } from "../helpers/workspace";
 
@@ -34,11 +36,14 @@ test.use({
 // Template Starter names every new template "My Template", and a developer's machine can hold a
 // downloaded template of that name, so the test gives its template a name of its own.
 const TEMPLATE_TITLE = "TC76 Custom Template";
-// A dashed edge has at least this many separate dashes; a 2-pixel dash pattern along a thumbnail
+// A dashed edge has at least this many separate dashes; Bloom's dash pattern along a thumbnail
 // edge of any size Bloom makes has many more.
 const MIN_DASHES = 3;
+// Bloom's 2-pixel pen draws the border along the thumbnail's edges, so the two thumbnails are
+// compared only inside a band this wide.
+const BORDER_BAND = 2;
 
-function describeEdges(edges: IThumbnailEdges): string {
+function describeEdges(edges: ITileThumbnail): string {
     return (
         `${edges.width}x${edges.height}; top edge runs (black first) ` +
         `${edges.topRuns.join(",")}; left edge runs ${edges.leftRuns.join(",")}`
@@ -90,36 +95,54 @@ test("a custom template's thumbnail has a dashed border and a book made from it 
         switchTab(page, "collection"),
     );
 
-    await step(
+    const templateThumbnail = await step(
         "Check that the template's thumbnail has a dashed border",
         async () => {
-            const edges = await readBookTileThumbnailEdges(
+            const thumbnail = await readBookTileThumbnail(
                 page,
                 templateFolder,
                 readBookId(templateFolder),
             );
             expect(
-                countDashes(edges.topRuns),
-                `the top edge of the template's thumbnail is not dashed: ${describeEdges(edges)}`,
+                countDashes(thumbnail.topRuns),
+                `the top edge of the template's thumbnail is not dashed: ${describeEdges(thumbnail)}`,
             ).toBeGreaterThanOrEqual(MIN_DASHES);
             expect(
-                countDashes(edges.leftRuns),
-                `the left edge of the template's thumbnail is not dashed: ${describeEdges(edges)}`,
+                countDashes(thumbnail.leftRuns),
+                `the left edge of the template's thumbnail is not dashed: ${describeEdges(thumbnail)}`,
             ).toBeGreaterThanOrEqual(MIN_DASHES);
+            return thumbnail;
         },
     );
+    if (!templateThumbnail)
+        throw new Error("The template's thumbnail was not read.");
 
     await step(
-        "Check that the thumbnail of the book made from it has no border",
+        "Check that the book made from it has the same thumbnail with no border",
         async () => {
-            const edges = await readBookTileThumbnailEdges(
+            const thumbnail = await readBookTileThumbnail(
                 page,
                 bookFolder,
                 readBookId(bookFolder),
             );
+            // The same picture inside the border shows that this is a thumbnail of the book's
+            // cover, not an icon Bloom put in its place (its error icon has no border either).
             expect(
-                countDashes(edges.topRuns) + countDashes(edges.leftRuns),
-                `the thumbnail of the book made from the template has black on its top or left edge: ${describeEdges(edges)}`,
+                `${thumbnail.width}x${thumbnail.height}`,
+                "the book's thumbnail is not the size of the template's",
+            ).toBe(`${templateThumbnail.width}x${templateThumbnail.height}`);
+            expect(
+                countThumbnailPixelsDifferingInside(
+                    thumbnail,
+                    templateThumbnail,
+                    BORDER_BAND,
+                ),
+                "pixels inside the border band that differ between the book's thumbnail and the template's",
+            ).toBe(0);
+            expect(
+                countDashes(thumbnail.topRuns) +
+                    countDashes(thumbnail.leftRuns),
+                `the thumbnail of the book made from the template has black on its top or left edge: ${describeEdges(thumbnail)}`,
             ).toBe(0);
         },
     );

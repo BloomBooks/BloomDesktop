@@ -159,8 +159,9 @@ real bug in the code under test; read the message and fix it rather than working
   on its tile (`openSelectedBookMenu`, `readSelectedBookMenu`, `chooseFromSelectedBookMenu`,
   `chooseFromSelectedBookMenuByTestId`, `chooseFromSelectedBookMoreMenuByTestId`, `closeBookMenu`,
   `getBooksShowingMenuTriangle`), `readBookId`/`findBookFolderById` to find a book again after
-  Bloom renames its folder, and `readBookTileThumbnailEdges`/`countDashes`, which read the
-  outermost row and column of the thumbnail a book's tile shows (a template's has a dashed border).
+  Bloom renames its folder, and `readBookTileThumbnail` (the picture a book's tile shows, once it
+  is the book's thumbnail.png), with `countDashes` and `countThumbnailPixelsDifferingInside` (a
+  template's thumbnail has a dashed border).
 - `helpers/spreadsheet.ts` — `exportSelectedBookToSpreadsheet` and
   `importSpreadsheetIntoSelectedBook`, the More submenu's spreadsheet commands, with their choosers
   answered through Bloom's e2e hook and what the progress box said.
