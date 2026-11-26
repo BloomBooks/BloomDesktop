@@ -28,7 +28,7 @@ import * as Path from "node:path";
 import { apiPost } from "./api";
 import { bookHtmlPath } from "./bookHtml";
 import { clickInGroup, editablePageFrame } from "./bookMaking";
-import { pasteFromClipboard } from "./clipboard";
+import { getClipboard, pasteFromClipboard } from "./clipboard";
 import type { IRect } from "./geometry";
 import { chooseFileInImageChooser } from "./imageChooser";
 import { realClick, realClickAt } from "./realClick";
@@ -48,6 +48,10 @@ const kInsertImageCommand = "EditTab.InlineImage.InsertImage";
 
 /** The localization id of the Delete command on an inline image's right-click menu. */
 const kDeleteCommand = "Common.Delete";
+
+/** The localization ids of Copy image and Paste image on an existing inline image's menu. */
+const kCopyImageCommand = "EditTab.Image.CopyImage";
+const kPasteImageCommand = "EditTab.Image.PasteImage";
 
 /** The localization id of the command that opens the image chooser on an existing inline image. */
 const kChooseImageCommand = "EditTab.Image.ChooseImage";
@@ -2131,18 +2135,48 @@ async function openInlineImageMenu(
     languageTag: string,
     id: string,
 ): Promise<void> {
-    const picture = await pictureRectInView(
+    // A placeholder's img is hidden (there is no placeHolder.png to load), and its wrapper draws
+    // the flower instead (inlineImageEditing.less), so a person right-clicks the wrapper.
+    const isPlaceholder = await inlineImagePicture(
         page,
         groupSelector,
         languageTag,
         id,
+    ).evaluate((img) =>
+        (img.getAttribute("src") ?? "").includes("placeHolder.png"),
     );
+    const target = isPlaceholder
+        ? await placeholderRectInView(page, groupSelector, languageTag, id)
+        : await pictureRectInView(page, groupSelector, languageTag, id);
     await rightClickAt(
         page,
-        picture.x + picture.width / 2,
-        picture.y + picture.height / 2,
+        target.x + target.width / 2,
+        target.y + target.height / 2,
     );
     await waitForInlineImageMenu(page, `inline image ${id}`);
+}
+
+/**
+ * Scroll the page, if it has to, so the whole wrapper of a placeholder inline image, which draws
+ * the placeholder flower, is inside the page frame's view, and then measure it.
+ */
+async function placeholderRectInView(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+): Promise<IRect> {
+    const wrapper = inlineImageWrapper(page, groupSelector, languageTag, id);
+    await wrapper.waitFor({ state: "visible", timeout: 30000 });
+    await wrapper.evaluate((element) =>
+        element.scrollIntoView({ block: "nearest" }),
+    );
+    const box = await wrapper.boundingBox();
+    if (!box)
+        throw new Error(
+            `Placeholder inline image ${id} has no box on the screen.`,
+        );
+    return box;
 }
 
 /**
@@ -2488,6 +2522,175 @@ async function clickInlineImageSubmenuCommand(
         .locator(kMenuSelector)
         .first()
         .waitFor({ state: "hidden", timeout: 30000 });
+}
+
+/**
+ * Copy an inline image's picture the way a person does: right-click the picture and choose Copy
+ * image. Returns the path of the picture file Bloom's clipboard then holds (under --e2e Bloom's
+ * clipboard is its own, not the Windows one; see helpers/clipboard.ts).
+ *
+ * The copy is a round trip through C# (editView/copyImage), so this empties the clipboard first
+ * and then waits until it holds a picture.
+ */
+export async function copyInlineImage(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+): Promise<string> {
+    await apiPost(
+        page,
+        "e2e/clipboard",
+        JSON.stringify({
+            text: null,
+            html: null,
+            picturePath: null,
+            files: null,
+        }),
+        "application/json",
+    );
+    await openInlineImageMenu(page, groupSelector, languageTag, id);
+    await clickInlineImageMenuCommand(page, kCopyImageCommand);
+    let picture: string | undefined;
+    await expect
+        .poll(
+            async () => {
+                picture = (await getClipboard(page)).picture;
+                return picture !== undefined;
+            },
+            {
+                timeout: 30000,
+                message: `Copy image on inline image ${id} put no picture on Bloom's clipboard.`,
+            },
+        )
+        .toBe(true);
+    return picture!;
+}
+
+/**
+ * Paste the picture on Bloom's clipboard into an existing inline image the way a person does:
+ * right-click the picture and choose Paste image. Returns once every language's copy of the image
+ * holds a picture other than the one it held before.
+ *
+ * The paste is a round trip through C# (editView/pasteImage), which copies the picture into the
+ * book folder and then changes the image on the page.
+ */
+export async function pasteIntoInlineImage(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+): Promise<void> {
+    const before = await getInlineImageInEveryLanguage(page, groupSelector, id);
+    await openInlineImageMenu(page, groupSelector, languageTag, id);
+    await clickInlineImageMenuCommand(page, kPasteImageCommand);
+    const priorFiles = new Set(before.map((copy) => copy.fileName));
+    await expect
+        .poll(
+            async () => {
+                const after = await getInlineImageInEveryLanguage(
+                    page,
+                    groupSelector,
+                    id,
+                );
+                return (
+                    after.length === before.length &&
+                    after.every((copy) => !priorFiles.has(copy.fileName))
+                );
+            },
+            {
+                timeout: 30000,
+                message: `Paste image did not change the picture of every copy of inline image ${id}.`,
+            },
+        )
+        .toBe(true);
+}
+
+/** One picture a reader sees in a text block, on a page wherever it is shown. */
+export interface IShownInlinePicture {
+    /** The picture's file name. */
+    file: string;
+    /** The language of the text block the picture is in. */
+    languageTag: string;
+    rect: IRect;
+}
+
+/** One text block a reader sees, with where each line of its own text lies. */
+export interface IShownTextBlock {
+    languageTag: string;
+    rect: IRect;
+    /** One rectangle per line of the block's text, leaving out anything inside an inline image. */
+    lines: IRect[];
+}
+
+/**
+ * What a reader sees of the text blocks of a page and the inline images in them, wherever the
+ * page is shown: in the Edit tab, in the BloomPUB preview (Bloom Player) or in the ePUB preview.
+ * `bookPage` is the page's .bloom-page element in whichever frame shows it.
+ *
+ * Every language's block keeps its own copy of an inline image, and the CSS shows only one of
+ * them, so `pictures` lists only the copies that are drawn: laid out, not display:none, and not
+ * hidden by visibility or opacity anywhere up their ancestors. `blocks` lists the text blocks that
+ * are drawn, in document order.
+ */
+export async function getShownInlineImageLayout(
+    bookPage: Locator,
+): Promise<{ pictures: IShownInlinePicture[]; blocks: IShownTextBlock[] }> {
+    return bookPage.evaluate((root, wrapperClass) => {
+        const isDrawn = (element: Element) =>
+            element.getClientRects().length > 0 &&
+            element.checkVisibility({
+                visibilityProperty: true,
+                opacityProperty: true,
+            });
+        const toRect = (r: DOMRect) => ({
+            x: r.x,
+            y: r.y,
+            width: r.width,
+            height: r.height,
+        });
+        const pictures = Array.from(
+            root.querySelectorAll(`.${wrapperClass} img`),
+        )
+            .filter(isDrawn)
+            .map((img) => ({
+                file: decodeURIComponent(
+                    (img.getAttribute("src") ?? "")
+                        .split("?")[0]
+                        .split("/")
+                        .pop() ?? "",
+                ),
+                languageTag: img.closest("[lang]")?.getAttribute("lang") ?? "",
+                rect: toRect(img.getBoundingClientRect()),
+            }));
+        const blocks = Array.from(
+            root.querySelectorAll(".bloom-translationGroup .bloom-editable"),
+        )
+            .filter(isDrawn)
+            .map((block) => {
+                const lines: ReturnType<typeof toRect>[] = [];
+                const walker = document.createTreeWalker(
+                    block,
+                    NodeFilter.SHOW_TEXT,
+                );
+                while (walker.nextNode()) {
+                    const node = walker.currentNode;
+                    if (node.parentElement?.closest(`.${wrapperClass}`))
+                        continue;
+                    if (!node.textContent?.trim()) continue;
+                    const range = document.createRange();
+                    range.selectNodeContents(node);
+                    for (const line of Array.from(range.getClientRects()))
+                        if (line.width > 0) lines.push(toRect(line));
+                }
+                return {
+                    languageTag: block.getAttribute("lang") ?? "",
+                    rect: toRect(block.getBoundingClientRect()),
+                    lines,
+                };
+            });
+        return { pictures, blocks };
+    }, kWrapperClass);
 }
 
 /**
