@@ -18,14 +18,13 @@ import {
     makeBookFromTemplate,
 } from "../helpers/bookMaking";
 import {
-    getPicturesMarkedNotDescribed,
-    imageNotDescribedBox,
-    openImageDescriptionTool,
+    expectOnePictureNotDescribed,
     readSavedPicturesMarkedNotDescribed,
     setImageNotDescribed,
+    showContentPageInImageDescriptionTool,
 } from "../helpers/imageDescription";
 import { chooseImageFile } from "../helpers/images";
-import { enableToolForBook, toolboxFrame } from "../helpers/toolbox";
+import { enableToolForBook } from "../helpers/toolbox";
 
 test.use({
     collectionSpec: {
@@ -41,53 +40,56 @@ const IMAGES = Path.resolve(
     "images",
 );
 
-/**
- * Show a content page by way of the cover, and wait until the tool has taken up each in turn. The
- * tool greys out its box on front matter, so the box's group losing that grey shows that the box
- * now speaks for the content page, not for whichever page was shown before it.
- */
-async function showContentPage(
-    page: Page,
-    coverId: string,
-    pageId: string,
-): Promise<void> {
-    const boxGroup = toolboxFrame(page).locator(
-        ".imgDescLabelBlock:has(.imageDescriptionCheck)",
-    );
-    await goToPage(page, coverId);
-    await openImageDescriptionTool(page);
-    await expect(boxGroup, "the box is greyed out on the cover").toHaveClass(
-        /\bdisabled\b/,
-    );
-    await goToPage(page, pageId);
-    await expect(
-        boxGroup,
-        "the box is no longer greyed out on a content page",
-    ).not.toHaveClass(/\bdisabled\b/);
+/** The book the test makes: its cover and its two content pages, each with one picture. */
+interface IBook {
+    bookFolder: string;
+    cover: string;
+    first: string;
+    second: string;
 }
 
 /**
- * Wait until the page being edited and the tool both say whether its one picture should not be
- * described: the picture's own mark, and the box.
+ * Quit Bloom the way a person does and start it again, then check that the saved book and the
+ * reopened tool both give each content page's picture the mark expected. Returns the new shell page.
  */
-async function expectPictureNotDescribed(
-    page: Page,
-    where: string,
-    notDescribed: boolean,
-): Promise<void> {
-    await openImageDescriptionTool(page);
-    await expect
-        .poll(
-            async () => ({
-                pictures: await getPicturesMarkedNotDescribed(page),
-                box: await imageNotDescribedBox(page).isChecked(),
-            }),
-            {
-                message: `${where}: the picture's mark and the "should not be described" box`,
-                timeout: 30000,
-            },
-        )
-        .toEqual({ pictures: [notDescribed], box: notDescribed });
+async function restartAndExpectMarks(
+    bloomApp: { quitAndRestart: () => Promise<Page> },
+    book: IBook,
+    expected: { first: boolean; second: boolean },
+    when: string,
+): Promise<Page> {
+    const shell = await bloomApp.quitAndRestart();
+    expect(
+        await readSavedPicturesMarkedNotDescribed(
+            shell,
+            book.bookFolder,
+            book.first,
+        ),
+        `the saved first page, ${when}`,
+    ).toEqual([expected.first]);
+    expect(
+        await readSavedPicturesMarkedNotDescribed(
+            shell,
+            book.bookFolder,
+            book.second,
+        ),
+        `the saved second page, ${when}`,
+    ).toEqual([expected.second]);
+
+    await editBook(shell, book.bookFolder);
+    for (const which of ["first", "second"] as const) {
+        await showContentPageInImageDescriptionTool(
+            shell,
+            book.cover,
+            book[which],
+        );
+        await expectOnePictureNotDescribed(
+            shell,
+            `The ${which} page, ${when}`,
+            expected[which],
+        );
+    }
+    return shell;
 }
 
 test("the image description tool remembers which pictures should not be described [Test Case ID 577]", async ({
@@ -97,9 +99,9 @@ test("the image description tool remembers which pictures should not be describe
 }) => {
     test.setTimeout(600000);
 
-    const made = await step(
-        "Make a book with two content pages, each with its own picture, and open the Image Description tool",
-        async () => {
+    const book = await step(
+        "Make a book with two content pages, each with its own picture",
+        async (): Promise<IBook> => {
             const bookFolder = await makeBookFromTemplate(page, "Basic Book");
             await addPage(page, "Basic Text & Image", 2);
             await enableToolForBook(page, bookFolder, "imageDescription");
@@ -130,138 +132,87 @@ test("the image description tool remembers which pictures should not be describe
             };
         },
     );
-    if (!made) throw new Error("The book was not made.");
-    const { bookFolder, cover, first, second } = made;
+    if (!book) throw new Error("The book was not made.");
+    const { cover, first, second } = book;
 
     await step(
         "Tick the box for the first page's picture only; it stays with that picture across page changes",
         async () => {
-            await showContentPage(page, cover, first);
-            await expectPictureNotDescribed(
+            await showContentPageInImageDescriptionTool(page, cover, first);
+            await expectOnePictureNotDescribed(
                 page,
                 "The first page, before ticking",
                 false,
             );
             await setImageNotDescribed(page, true);
-            await expectPictureNotDescribed(
+            await expectOnePictureNotDescribed(
                 page,
                 "The first page, just ticked",
                 true,
             );
 
-            await showContentPage(page, cover, second);
-            await expectPictureNotDescribed(
-                page,
-                "The second page, after the first page's box was ticked",
-                false,
-            );
-            await showContentPage(page, cover, first);
-            await expectPictureNotDescribed(
-                page,
-                "Back on the first page",
-                true,
-            );
-            await showContentPage(page, cover, second);
-            await expectPictureNotDescribed(
-                page,
-                "Back on the second page",
-                false,
-            );
+            for (let round = 1; round <= 2; round++) {
+                await showContentPageInImageDescriptionTool(
+                    page,
+                    cover,
+                    second,
+                );
+                await expectOnePictureNotDescribed(
+                    page,
+                    `The second page (visit ${round}), with only the first page's box ticked`,
+                    false,
+                );
+                await showContentPageInImageDescriptionTool(page, cover, first);
+                await expectOnePictureNotDescribed(
+                    page,
+                    `Back on the first page (visit ${round})`,
+                    true,
+                );
+            }
         },
     );
 
-    let shell = page;
-    await step(
+    const shell = await step(
         "Close Bloom and open it again: the book saved the mark, and the box shows it on the first page only",
-        async () => {
-            shell = await bloomApp.quitAndRestart();
-            expect(
-                await readSavedPicturesMarkedNotDescribed(
-                    shell,
-                    bookFolder,
-                    first,
-                ),
-                "the saved first page",
-            ).toEqual([true]);
-            expect(
-                await readSavedPicturesMarkedNotDescribed(
-                    shell,
-                    bookFolder,
-                    second,
-                ),
-                "the saved second page",
-            ).toEqual([false]);
-
-            await editBook(shell, bookFolder);
-            await showContentPage(shell, cover, first);
-            await expectPictureNotDescribed(
-                shell,
-                "The first page after a restart",
-                true,
-            );
-            await showContentPage(shell, cover, second);
-            await expectPictureNotDescribed(
-                shell,
-                "The second page after a restart",
-                false,
-            );
-        },
+        async () =>
+            restartAndExpectMarks(
+                bloomApp,
+                book,
+                { first: true, second: false },
+                "after a restart",
+            ),
     );
+    if (!shell) throw new Error("Bloom did not restart.");
 
     await step(
-        "Move the mark: tick the second page's box and untick the first's, then close and open Bloom again",
+        "Move the mark: untick the first page's box, tick the second's, and close Bloom straight from that page",
         async () => {
-            await setImageNotDescribed(shell, true);
-            await showContentPage(shell, cover, first);
-            await expectPictureNotDescribed(
-                shell,
-                "The first page, before unticking",
-                true,
-            );
+            await showContentPageInImageDescriptionTool(shell, cover, first);
             await setImageNotDescribed(shell, false);
-            await showContentPage(shell, cover, second);
-            await expectPictureNotDescribed(
+            await expectOnePictureNotDescribed(
                 shell,
-                "The second page, after its box was ticked",
-                true,
-            );
-            await showContentPage(shell, cover, first);
-            await expectPictureNotDescribed(
-                shell,
-                "The first page, after its box was unticked",
+                "The first page, just unticked",
                 false,
             );
-
-            shell = await bloomApp.quitAndRestart();
-            expect(
-                await readSavedPicturesMarkedNotDescribed(
-                    shell,
-                    bookFolder,
-                    first,
-                ),
-                "the saved first page, after unticking",
-            ).toEqual([false]);
-            expect(
-                await readSavedPicturesMarkedNotDescribed(
-                    shell,
-                    bookFolder,
-                    second,
-                ),
-                "the saved second page, after ticking",
-            ).toEqual([true]);
-
-            await editBook(shell, bookFolder);
-            await showContentPage(shell, cover, second);
-            await expectPictureNotDescribed(
+            await showContentPageInImageDescriptionTool(shell, cover, second);
+            await expectOnePictureNotDescribed(
                 shell,
-                "The second page after a second restart",
+                "The second page, before ticking",
+                false,
+            );
+            // Bloom is closed from this page right after the click, with no page change between,
+            // so only saving on the way out can keep the second page's mark.
+            await setImageNotDescribed(shell, true);
+            await expectOnePictureNotDescribed(
+                shell,
+                "The second page, just ticked",
                 true,
             );
-            await showContentPage(shell, cover, first);
-            await expectPictureNotDescribed(
-                shell,
-                "The first page after a second restart",
-                false,
+            await restartAndExpectMarks(
+                bloomApp,
+                book,
+                { first: false, second: true },
+                "after a restart from the second page",
             );
         },
     );

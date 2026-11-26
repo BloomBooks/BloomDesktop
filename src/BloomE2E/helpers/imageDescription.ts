@@ -6,7 +6,7 @@
 import * as fs from "node:fs";
 import { expect, type Locator, type Page } from "@playwright/test";
 import { bookHtmlPath } from "./bookHtml";
-import { editablePageFrame } from "./bookMaking";
+import { editablePageFrame, goToPage } from "./bookMaking";
 import { expandTool, toolboxFrame } from "./toolbox";
 
 // A page's own pictures: its top-level canvases, not the picture canvas elements placed inside one,
@@ -103,4 +103,55 @@ export async function setImageNotDescribed(
         );
     await box.click();
     await expect(box).toBeChecked({ checked: notDescribed });
+}
+
+/**
+ * Show a content page by way of the front cover, with the Image Description tool open, and wait
+ * until the tool has taken up each page in turn. The tool greys out its "should not be described"
+ * box on front matter, so the box's group losing that grey shows that the box now speaks for the
+ * content page, not for whichever page was shown before it.
+ */
+export async function showContentPageInImageDescriptionTool(
+    page: Page,
+    coverId: string,
+    pageId: string,
+): Promise<void> {
+    const boxGroup = toolboxFrame(page).locator(
+        ".imgDescLabelBlock:has(.imageDescriptionCheck)",
+    );
+    await goToPage(page, coverId);
+    await openImageDescriptionTool(page);
+    await expect(boxGroup, "the box is greyed out on the cover").toHaveClass(
+        /\bdisabled\b/,
+    );
+    await goToPage(page, pageId);
+    await expect(
+        boxGroup,
+        "the box is no longer greyed out on a content page",
+    ).not.toHaveClass(/\bdisabled\b/);
+}
+
+/**
+ * Wait until the page being edited, which must have one picture, and the Image Description tool
+ * both say whether that picture should not be described: the picture's own mark, and the box.
+ * `where` names the moment in the failure message.
+ */
+export async function expectOnePictureNotDescribed(
+    page: Page,
+    where: string,
+    notDescribed: boolean,
+): Promise<void> {
+    await openImageDescriptionTool(page);
+    await expect
+        .poll(
+            async () => ({
+                pictures: await getPicturesMarkedNotDescribed(page),
+                box: await imageNotDescribedBox(page).isChecked(),
+            }),
+            {
+                message: `${where}: the picture's mark and the "should not be described" box`,
+                timeout: 30000,
+            },
+        )
+        .toEqual({ pictures: [notDescribed], box: notDescribed });
 }
