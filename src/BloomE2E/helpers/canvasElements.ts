@@ -1313,6 +1313,76 @@ export async function expectChangeImageButton(
     else await expect(button, why).toBeHidden({ timeout: 15000 });
 }
 
+/**
+ * The large image information button at the top left of the canvas's background picture, which a
+ * person clicks to set the picture's credits, copyright and license. Bloom adds it to the canvas
+ * (SetupMetadataButton in bloomImages.ts) only once the background holds a real picture, marks it
+ * `imgMetadataProblem` when the picture has no copyright, and leaves the stylesheet
+ * (editMode.less) to decide whether it shows and which icon it wears.
+ */
+export function imageInfoButton(page: Page): Locator {
+    return canvas(page).locator(":scope > .editMetadataButton");
+}
+
+/** How the canvas's image information button looks at one moment. */
+export interface IImageInfoButtonState {
+    /** False when the canvas has no such button at all. */
+    present: boolean;
+    showing: boolean;
+    /** True when Bloom marked the button as saying the picture lacks its credits. */
+    missingInfo: boolean;
+    /** The file name of the icon the button shows, e.g. "imageMetaDataButton.svg". */
+    icon: string;
+}
+
+/** Read how the canvas's image information button looks now. */
+export async function getImageInfoButtonState(
+    page: Page,
+): Promise<IImageInfoButtonState> {
+    const button = imageInfoButton(page);
+    if ((await button.count()) === 0)
+        return { present: false, showing: false, missingInfo: false, icon: "" };
+    const showing = await button.isVisible();
+    return button.evaluate((el, isShowing) => {
+        const image = getComputedStyle(el).backgroundImage;
+        const url = /url\("?([^")]*)"?\)/.exec(image)?.[1] ?? "";
+        return {
+            present: true,
+            showing: isShowing,
+            missingInfo: el.classList.contains("imgMetadataProblem"),
+            icon: decodeURIComponent(url.split("/").pop() ?? ""),
+        };
+    }, showing);
+}
+
+/**
+ * Wait until the canvas's image information button is in the page and looks as `expected` says,
+ * and fail with `why` when it does not get there. Fields left out of `expected` are not checked;
+ * `present` is always checked to be true, so "not showing" can never pass merely because Bloom
+ * never added the button.
+ */
+export async function expectImageInfoButton(
+    page: Page,
+    expected: Partial<Omit<IImageInfoButtonState, "present">>,
+    why: string,
+): Promise<void> {
+    await expect
+        .poll(
+            async () => {
+                const state = await getImageInfoButtonState(page);
+                const shown: Record<string, unknown> = {
+                    present: state.present,
+                };
+                for (const key of Object.keys(expected)) {
+                    shown[key] = state[key as keyof IImageInfoButtonState];
+                }
+                return shown;
+            },
+            { timeout: 15000, message: why },
+        )
+        .toEqual({ present: true, ...expected });
+}
+
 async function requireBox(locator: Locator, what: string): Promise<IRect> {
     await locator.waitFor({ state: "visible", timeout: 30000 });
     const box = await locator.boundingBox({ timeout: 30000 });
