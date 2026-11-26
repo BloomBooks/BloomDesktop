@@ -19,6 +19,7 @@ import {
 import { readPagesOnDisk } from "../helpers/bookHtml";
 import {
     addPage,
+    editablePageFrame,
     getContentPages,
     getFactoryTemplateFolder,
     goToPage,
@@ -121,6 +122,20 @@ test("every page layout of the Sign Language template takes a video that the Blo
                     `adding a "${layout.label}" page should give the book one new content page`,
                 ).toBe(1);
                 await goToPage(page, newPages[0].id);
+                // A page Bloom adds records, last in its lineage, the id of the template page it
+                // was made from: that shows the page is this layout, not another with the same
+                // one video box.
+                const lineage = (
+                    (await editablePageFrame(page)
+                        .locator(`.bloom-page[id="${newPages[0].id}"]`)
+                        .getAttribute("data-pagelineage")) ?? ""
+                )
+                    .split(/[;,]/)
+                    .filter((id) => id);
+                expect(
+                    lineage[lineage.length - 1],
+                    `the new page should be made from the template's "${layout.label}" page`,
+                ).toBe(layout.id);
                 const boxes = videoBoxes(page);
                 await expect(
                     boxes,
@@ -192,4 +207,22 @@ test("every page layout of the Sign Language template takes a video that the Blo
             },
         );
     }
+
+    // Each turn above checked the whole record, so a page whose video played twice would have
+    // failed at the next page; the last page has no next page, so turn back to the first one.
+    await step(
+        `Turn back to the "${added[0].label}" page: its video plays once more, and nothing else played since`,
+        async () => {
+            await goToPreviewPage(page, player, added[0].pageId);
+            played.push({
+                pageId: added[0].pageId,
+                fileName: added[0].videoFile,
+            });
+            await expectPreviewVideosPlayed(
+                player,
+                played,
+                `Turning back to the "${added[0].label}" page should play its video once more, with no other video (such as the last page's again) played in between.`,
+            );
+        },
+    );
 });
