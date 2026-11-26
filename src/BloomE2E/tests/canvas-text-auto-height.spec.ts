@@ -6,6 +6,7 @@
 //
 // Automates "Canvas Text Box Height" (Test Case ID 305).
 
+import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import { addPage, makeBookFromTemplate } from "../helpers/bookMaking";
 import {
@@ -17,8 +18,8 @@ import {
     selectCanvasElement,
     setCanvasElementAutoHeight,
     typeInCanvasElement,
+    typeKeyAndWaitForHeightCheck,
     waitForCanvasElementScrollBar,
-    type ICanvasTextFit,
 } from "../helpers/canvasElements";
 import { watchForScriptErrors } from "../helpers/scriptErrors";
 
@@ -33,12 +34,31 @@ const kSentences =
 /** The height the case asks the box to be dragged down to. */
 const kSmallHeight = 20;
 
-/** Assert that a box is tall enough for all of its text. */
-function expectAllTextShows(fit: ICanvasTextFit, when: string): void {
-    expect(
-        fit.textHeight,
-        `${when}, the text box's text is taller than the part that shows.`,
-    ).toBeLessThanOrEqual(fit.shownHeight);
+/**
+ * Wait until the selected text box is taller than `tallerThan` and tall enough for all of its
+ * text. Bloom fits the height a moment after what calls for it, and may take more than one step
+ * to get there, so both are waited for together. `when` starts the failure message.
+ */
+async function waitForBoxToGrowAndShowAllText(
+    page: Page,
+    tallerThan: number,
+    when: string,
+): Promise<void> {
+    await expect
+        .poll(
+            async () => {
+                const fit = await getCanvasElementTextFit(page);
+                return {
+                    grew: fit.elementHeight > tallerThan,
+                    allTextShows: fit.textHeight <= fit.shownHeight,
+                };
+            },
+            {
+                timeout: 15000,
+                message: `${when}, the text box did not grow until all of its text showed.`,
+            },
+        )
+        .toEqual({ grew: true, allTextShows: true });
 }
 
 test("a canvas text box fits its height to its text only while Auto Height is on [Test Case ID 305]", async ({
@@ -59,18 +79,9 @@ test("a canvas text box fits its height to its text only while Auto Height is on
     try {
         // With Auto Height on, the box grows to fit the sentences typed into it.
         await typeInCanvasElement(page, kSentences, { withKeys: true });
-        await expect
-            .poll(
-                async () => (await getCanvasElementTextFit(page)).elementHeight,
-                {
-                    timeout: 15000,
-                    message:
-                        "The text box did not grow as sentences were typed into it.",
-                },
-            )
-            .toBeGreaterThan(empty.elementHeight);
-        expectAllTextShows(
-            await getCanvasElementTextFit(page),
+        await waitForBoxToGrowAndShowAllText(
+            page,
+            empty.elementHeight,
             "With Auto Height on, after typing",
         );
         await waitForCanvasElementScrollBar(page, false);
@@ -103,15 +114,14 @@ test("a canvas text box fits its height to its text only while Auto Height is on
         ).toBeGreaterThan(squashed.shownHeight);
         await waitForCanvasElementScrollBar(page, true);
 
-        // With Auto Height off, typing more does not grow the box. Bloom fits a box's height 100 ms
-        // after each key comes up (OverflowChecker.AddOverflowHandlers), and the box is too full
-        // from the first key on, so a box that wrongly grew would do so after the early keys, well
-        // before typeInCanvasElement has typed the rest and heard back from Bloom. Nothing Bloom
-        // does after that check can be waited for, so a growth only after the last key could
-        // still be missed.
-        await typeInCanvasElement(page, " The sun went down.", {
+        // With Auto Height off, typing more does not grow the box. Bloom fits a box's height a
+        // moment after each key comes up, so the last key is typed by the helper that waits for
+        // that check: the heights below are read after Bloom has checked the box with all of the
+        // text in it.
+        await typeInCanvasElement(page, " The sun went down", {
             withKeys: true,
         });
+        await typeKeyAndWaitForHeightCheck(page, ".");
         const typedMore = await getCanvasElementTextFit(page);
         expect(
             typedMore.textHeight,
@@ -124,18 +134,9 @@ test("a canvas text box fits its height to its text only while Auto Height is on
 
         // Turning Auto Height back on grows the box until all its text shows, with no scrollbar.
         await setCanvasElementAutoHeight(page, true);
-        await expect
-            .poll(
-                async () => (await getCanvasElementTextFit(page)).elementHeight,
-                {
-                    timeout: 15000,
-                    message:
-                        "Turning Auto Height back on did not grow the squashed box.",
-                },
-            )
-            .toBeGreaterThan(squashed.elementHeight);
-        expectAllTextShows(
-            await getCanvasElementTextFit(page),
+        await waitForBoxToGrowAndShowAllText(
+            page,
+            squashed.elementHeight,
             "After Auto Height was turned back on",
         );
         await waitForCanvasElementScrollBar(page, false);

@@ -1385,6 +1385,48 @@ export async function typeInCanvasElement(
     await waitForBloomToHaveTyping(page, text);
 }
 
+/**
+ * Type one more character at the caret in the selected canvas element's text box, with a real key
+ * press, and return once Bloom has checked the box's height with that character in it. Call it
+ * after typeInCanvasElement, which leaves the caret in the box.
+ *
+ * Bloom checks a box 100 ms after a key comes up in it (OverflowChecker.AddOverflowHandlers), and
+ * nothing a correct Bloom changes says that it has done so for a box that was already too full. So
+ * while the key is still down, which is after its character went in, this puts the mark
+ * `thisOverflowingParent` on the box. Every check of a box starts by taking that mark off
+ * (AdjustSizeAndMarkSelfOverflow), in the same turn in which it fits the canvas element's height,
+ * so once the mark is gone a check has run on the text as it now is. The mark changes nothing
+ * about the box's size. A box that Bloom finds running past a box around it gets the mark back,
+ * so this is only for a box that stays inside its canvas element.
+ */
+export async function typeKeyAndWaitForHeightCheck(
+    page: Page,
+    key: string,
+): Promise<void> {
+    const kMark = "thisOverflowingParent";
+    const box = shownTextBoxOfActiveElement(page);
+    await expect(
+        box,
+        `The canvas element's text box does not have the focus, so "${key}" would go elsewhere.`,
+    ).toBeFocused({ timeout: 15000 });
+    await page.keyboard.down(key);
+    await box.evaluate((box, mark) => box.classList.add(mark), kMark);
+    await page.keyboard.up(key);
+    await expect
+        .poll(
+            () =>
+                box.evaluate(
+                    (box, mark) => box.classList.contains(mark),
+                    kMark,
+                ),
+            {
+                timeout: 15000,
+                message: `Bloom did not check the canvas element's text box after "${key}" was typed in it.`,
+            },
+        )
+        .toBe(false);
+}
+
 /** The box that the selected canvas element's text is showing. */
 function shownTextBoxOfActiveElement(page: Page): Locator {
     return activeCanvasElement(page).locator(SHOWN_TEXT_BOX);
