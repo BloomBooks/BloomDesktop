@@ -663,7 +663,11 @@ export async function getEpubPreviewPictures(
 ): Promise<IEpubPicture[]> {
     return frame.locator(".bloom-page img").evaluateAll((images) =>
         images
-            .filter((image) => image.getClientRects().length > 0)
+            // A picture that is display:none, or visibility:hidden anywhere up its ancestors, is
+            // not shown, though the latter still takes up room on the page.
+            .filter((image) =>
+                image.checkVisibility({ visibilityProperty: true }),
+            )
             .map((image) => ({
                 file: decodeURIComponent(
                     (image.getAttribute("src") ?? "").split("/").pop() ?? "",
