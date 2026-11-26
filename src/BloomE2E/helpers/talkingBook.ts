@@ -220,6 +220,93 @@ export async function importNarration(
     const audioFolder = Path.join(bookFolder, "audio");
     const before = narrationFilesIn(audioFolder).length;
 
+    await clickImportRecording(page, groupSelector, languageTag, mp3Path);
+
+    // The import is several round trips -- choose the file, find the book's audio folder, copy,
+    // then write the markup -- so wait for its RESULT: one more narration file on disk than
+    // before. Waiting on the page instead does not work: the tool has already marked the text
+    // box as recordable, so every DOM signal a caller might poll is true before the import
+    // begins, and the wait would return immediately while the copy was still in flight.
+    await expect
+        .poll(() => narrationFilesIn(audioFolder).length, {
+            timeout: 60000,
+            message: `Importing "${mp3Path}" never added a narration file to ${audioFolder}.`,
+        })
+        .toBeGreaterThan(before);
+}
+
+/**
+ * Replace the whole-text-box recording of one language's box on the page being shown with
+ * `mp3Path`, through the tool's real Import Recording button, answering "Replace" when Bloom asks
+ * whether to replace the audio. This is how a test "records again" over narration the box already
+ * has, since recording itself needs a microphone. Returns the id of the recording it replaced,
+ * which is also the base name of its file in `audio/`.
+ *
+ * The box must already hold a whole-text-box recording (see importNarration), and the same
+ * subscription rule applies. Waits until the box's narration file holds the bytes of `mp3Path`, so
+ * `mp3Path` has to differ from what is there.
+ */
+export async function replaceNarrationByImport(
+    page: Page,
+    bookFolder: string,
+    groupSelector: string,
+    languageTag: string,
+    mp3Path: string,
+): Promise<string> {
+    const box = await clickInGroup(page, groupSelector, languageTag);
+    const id = await box.evaluate((element) =>
+        element.classList.contains("audio-sentence") ? element.id : "",
+    );
+    if (!id)
+        throw new Error(
+            `The "${languageTag}" box of "${groupSelector}" holds no whole-text-box recording to replace.`,
+        );
+    const narrationFile = narrationFilePath(bookFolder, id);
+    const isReplaced = () => narrationIs(bookFolder, id, mp3Path) === true;
+    await expect
+        .poll(() => narrationIs(bookFolder, id, mp3Path), {
+            timeout: 30000,
+            message: `${narrationFile} is missing, or already holds the audio of ${mp3Path}, so replacing it would show nothing.`,
+        })
+        .toBe(false);
+
+    await clickImportRecording(page, groupSelector, languageTag, mp3Path);
+
+    // Bloom asks before replacing a recording, but only when the tool's cached Play-button state
+    // says the selection has one (see handleImportRecordingClick in audioRecording.ts), so wait
+    // for whichever comes first: the question, or the import having gone ahead without it.
+    const replaceButton = page.getByRole("button", {
+        name: "Replace",
+        exact: true,
+    });
+    await expect
+        .poll(async () => isReplaced() || (await replaceButton.isVisible()), {
+            timeout: 30000,
+            message:
+                "Import Recording neither asked whether to replace the audio nor replaced it.",
+        })
+        .toBe(true);
+    if (!isReplaced()) await replaceButton.click();
+    await expect
+        .poll(isReplaced, {
+            timeout: 60000,
+            message: `Importing "${mp3Path}" never replaced ${narrationFile}.`,
+        })
+        .toBe(true);
+    return id;
+}
+
+/**
+ * Click in one language's box, put the tool in whole-text-box mode, and press its Import Recording
+ * button with the native file chooser pre-answered by `mp3Path`. Returns without waiting for the
+ * import; each caller waits for the result it expects.
+ */
+async function clickImportRecording(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    mp3Path: string,
+): Promise<void> {
     await clickInGroup(page, groupSelector, languageTag);
     await setRecordingMode(page, "By Whole Text Box");
     await openAdvancedSection(page);
@@ -234,18 +321,65 @@ export async function importNarration(
     // Answer the chooser before opening it: once a native dialog is up, nothing here can close it.
     await armFileChooser(page, Path.resolve(mp3Path));
     await importButton.click();
+}
 
-    // The import is several round trips -- choose the file, find the book's audio folder, copy,
-    // then write the markup -- so wait for its RESULT: one more narration file on disk than
-    // before. Waiting on the page instead does not work: the tool has already marked the text
-    // box as recordable, so every DOM signal a caller might poll is true before the import
-    // begins, and the wait would return immediately while the copy was still in flight.
+/**
+ * The file Bloom plays for the sentence or text box with this id: Bloom names a narration file
+ * after the id of the text it belongs to. The file exists only once that text has narration.
+ */
+export function narrationFilePath(bookFolder: string, id: string): string {
+    return Path.join(bookFolder, "audio", `${id}.mp3`);
+}
+
+/**
+ * Whether the narration Bloom plays for the text with this id is exactly the audio in `mp3Path`.
+ * Undefined when there is no saying: the text has no narration file, or Bloom has the file open
+ * for itself at this moment, as it does briefly while it copies or loads one.
+ */
+function narrationIs(
+    bookFolder: string,
+    id: string,
+    mp3Path: string,
+): boolean | undefined {
+    const narrationFile = narrationFilePath(bookFolder, id);
+    if (!fs.existsSync(narrationFile)) return undefined;
+    let narration: Buffer;
+    try {
+        narration = fs.readFileSync(narrationFile);
+    } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "EBUSY") return undefined;
+        throw error;
+    }
+    return narration.equals(fs.readFileSync(Path.resolve(mp3Path)));
+}
+
+/**
+ * Assert that the narration Bloom plays for the text with this id is exactly the audio in
+ * `mp3Path`: the file named after the id holds those bytes. `message` says what it means when it
+ * does not.
+ */
+export async function expectNarrationToBe(
+    bookFolder: string,
+    id: string,
+    mp3Path: string,
+    message: string,
+): Promise<void> {
     await expect
-        .poll(() => narrationFilesIn(audioFolder).length, {
-            timeout: 60000,
-            message: `Importing "${mp3Path}" never added a narration file to ${audioFolder}.`,
+        .poll(() => narrationIs(bookFolder, id, mp3Path), {
+            timeout: 15000,
+            message: `${message} (${narrationFilePath(bookFolder, id)} against ${mp3Path}; undefined means the file is missing or stayed locked.)`,
         })
-        .toBeGreaterThan(before);
+        .toBe(true);
+}
+
+/**
+ * Write a second sample narration to `filePath`: the suite's sample played twice, so it is a
+ * playable mp3 that differs from sampleNarrationFile. For a test that replaces one recording with
+ * another and has to tell them apart.
+ */
+export function writeSecondSampleNarration(filePath: string): void {
+    const sample = fs.readFileSync(Path.resolve(sampleNarrationFile));
+    fs.writeFileSync(filePath, Buffer.concat([sample, sample]));
 }
 
 /** The narration files in a book's audio folder; empty when the folder does not exist yet. */
@@ -265,7 +399,14 @@ export async function armFileChooser(
     page: Page,
     filePath: string,
 ): Promise<void> {
-    await apiPost(page, "e2e/nextFileToChoose", filePath, "text/plain");
+    // Bloom unescapes a text/plain body as it would a URL (RequestInfo.UnescapeString), which
+    // turns "+" into a space and "%41" into "A". So the path goes escaped, and arrives as it is.
+    await apiPost(
+        page,
+        "e2e/nextFileToChoose",
+        encodeURIComponent(filePath),
+        "text/plain",
+    );
 }
 
 /**

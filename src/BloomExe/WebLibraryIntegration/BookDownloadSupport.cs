@@ -6,12 +6,16 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
+using Bloom.MiscUI;
+using Bloom.Utils;
 using Microsoft.Win32;
+using SIL.Reporting;
 
 namespace Bloom.WebLibraryIntegration
 {
     /// <summary>
-    /// BookDownloadSupport is used by program.cs at startup to make sure we are ready for download requests from the web.
+    /// BookDownloadSupport makes sure we are ready for download requests from the web: at startup
+    /// (Program), and before each download (BookDownload).
     /// (It had a larger role at one point, but things have been simplified.)
     /// </summary>
     public class BookDownloadSupport
@@ -19,15 +23,37 @@ namespace Bloom.WebLibraryIntegration
         public delegate BookDownloadSupport Factory(); //autofac uses this
         public const string ArgsPipeName = @"SendBloomArgs";
 
-        public static void EnsureDownloadFolderExists()
+        /// <summary>
+        /// At startup, make the collection that downloaded books go into, if Windows lets us.
+        /// Having it early means the collections list shows it (with its link to Bloom Library)
+        /// and we don't have to create it in the UI when we add a downloaded book. Nothing else
+        /// needs it, and a download makes sure of it again, explaining if it can't (see
+        /// BookDownload.OnDoDownload), so a refusal here is only logged. (BL-16728)
+        /// </summary>
+        public static void TryEnsureDownloadFolderExists()
         {
-            // We need the download folder to exist if we are asked to download a book.
-            // We also want it to exist, to show the (planned) link that offers to launch the web site.
-            // Another advantage of creating it early is that we don't have to create it in the UI when we want to add
-            // a downloaded book to the UI.
-            // So, we just make sure it exists here at startup.
+            try
+            {
+                EnsureDownloadFolderExists();
+            }
+            catch (CollectionFolderNotWritableException e)
+            {
+                Logger.WriteEvent(
+                    $"Could not make the collection for downloaded books in {e.FolderPath}: {e.InnerException.GetType().Name}: {e.InnerException.Message}"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Make the collection that downloaded books go into, if it isn't there, and return its
+        /// folder. Throws CollectionFolderNotWritableException if Windows won't let Bloom make it.
+        /// </summary>
+        public static string EnsureDownloadFolderExists()
+        {
             string downloadFolder = BookDownload.DownloadFolder;
-            if (!Directory.Exists(downloadFolder))
+            if (Directory.Exists(downloadFolder))
+                return downloadFolder;
+            try
             {
                 var pathToSettingsFile = CollectionSettings.GetPathForNewSettings(
                     Path.GetDirectoryName(downloadFolder),
@@ -42,6 +68,13 @@ namespace Bloom.WebLibraryIntegration
                 settings.Language1.SetName("English", false);
                 CollectionSettings.CreateNewCollection(settings);
                 ProjectContext.ClearUserInstalledDirectoriesCache();
+                return downloadFolder;
+            }
+            catch (Exception e) when (FileAccessDiagnostics.IsRefusal(e))
+            {
+                // Making the collection's folder (or one above it) or saving its settings can be
+                // refused; callers need only handle one kind of exception.
+                throw new CollectionFolderNotWritableException(downloadFolder, e);
             }
         }
 

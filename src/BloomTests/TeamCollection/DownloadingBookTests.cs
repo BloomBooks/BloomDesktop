@@ -111,6 +111,8 @@ namespace BloomTests.TeamCollection
         {
             _repoFolder?.Dispose();
             _collectionFolder?.Dispose();
+            // The forced user is static; left set, it changes who later fixtures' tests are.
+            TeamCollectionManager.ForceCurrentUserForTests(null);
         }
 
         [Test]
@@ -210,6 +212,8 @@ namespace BloomTests.TeamCollection
         {
             _repoFolder?.Dispose();
             _collectionFolder?.Dispose();
+            // The forced user is static; left set, it changes who later fixtures' tests are.
+            TeamCollectionManager.ForceCurrentUserForTests(null);
         }
 
         private ControllableFolderTeamCollection MakeCollection()

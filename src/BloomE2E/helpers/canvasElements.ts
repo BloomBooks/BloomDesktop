@@ -28,8 +28,11 @@ export type PaletteItem =
     | "image"
     | "video"
     | "speech"
+    | "caption"
     | "sound"
-    | "none";
+    | "none"
+    // A picture button, in the Navigation section; see openCanvasToolNavigationSection.
+    | "navigation-image-button";
 
 /** The controls the Canvas tool shows once it is open. */
 const CANVAS_TOOL_CONTROLS = "#canvasToolControls";
@@ -142,11 +145,17 @@ export function activeCanvasElement(page: Page): Locator {
  * It runs in Bloom's shell document, because that is the only place both frames are in reach: the
  * palette lives in the toolbox frame and the canvas in the page frame, and one DataTransfer has to
  * pass between them.
+ *
+ * `from` names the tool whose palette the item comes from, by a selector for its controls in the
+ * toolbox, and `onto` the canvas it is dropped on, by a selector in the page. They default to the
+ * Canvas tool and a Canvas page's canvas; a game page has the Game tool's palette and canvas.
  */
-async function dispatchPaletteDrag(
+export async function dispatchPaletteDrag(
     page: Page,
     item: PaletteItem,
     at: { xFraction: number; yFraction: number },
+    from: string = CANVAS_TOOL_CONTROLS,
+    onto: string = CANVAS_SELECTOR,
 ): Promise<void> {
     const failure = await page.evaluate(
         (what) => {
@@ -175,9 +184,9 @@ async function dispatchPaletteDrag(
                     `Bloom is not showing both the toolbox and the page ` +
                     `(toolbox: ${!!toolboxDocument}, page: ${!!pageDocument}).`
                 );
-            // The Games tool's panel carries palette items with the same test ids, and the
-            // accordion keeps every tool's panel in the document, so take the Canvas tool's own
-            // item, and only one that is laid out (a hidden panel's items have no rects).
+            // The Canvas and Game tools' panels carry palette items with the same test ids, and
+            // the accordion keeps every tool's panel in the document, so take the item from the
+            // tool named, and only one that is laid out (a hidden panel's items have no rects).
             const source = Array.from(
                 toolboxDocument.querySelectorAll<HTMLElement>(
                     `${what.controls} [data-testid="palette-${what.item}"]`,
@@ -248,8 +257,8 @@ async function dispatchPaletteDrag(
             item,
             xFraction: at.xFraction,
             yFraction: at.yFraction,
-            controls: CANVAS_TOOL_CONTROLS,
-            canvasSelector: CANVAS_SELECTOR,
+            controls: from,
+            canvasSelector: onto,
         },
     );
     if (failure) throw new Error(`Could not drag the ${item} item: ${failure}`);
@@ -307,6 +316,34 @@ export async function dragPaletteItemOntoCanvas(
         })
         .toBe(countBefore + 1);
     return countBefore;
+}
+
+/**
+ * Open the Canvas tool, and its Navigation section, which holds the buttons that take a reader to
+ * another page or book (the picture button among them). The section starts shut, and a shut
+ * section keeps its items in the document but hidden, so dragPaletteItemOntoCanvas cannot drag
+ * them until it is open.
+ */
+export async function openCanvasToolNavigationSection(
+    page: Page,
+): Promise<void> {
+    const toolbox = await openCanvasTool(page);
+    const item = toolbox
+        .locator(
+            `${CANVAS_TOOL_CONTROLS} [data-testid="palette-navigation-image-button"]`,
+        )
+        .first();
+    if (await item.isVisible()) return;
+    // The section's toggle is the button above the collapsing part that holds the item. It is
+    // found by that place rather than by its label, which is in the UI language.
+    await toolbox
+        .locator(
+            `${CANVAS_TOOL_CONTROLS} div:has(> .MuiCollapse-root ` +
+                `[data-testid="palette-navigation-image-button"]) > div > button`,
+        )
+        .first()
+        .click();
+    await item.waitFor({ state: "visible", timeout: 15000 });
 }
 
 /**
@@ -495,8 +532,9 @@ export async function clickCanvasElementMenuItem(
                 `${offered.join(", ") || "(nothing)"}.`,
         );
     }
-    // Bloom answers a click on a tier-gated command by opening the WinForms Settings dialog, which
-    // would hang the run (AUTOMATION-DEBT.md, "Native OS dialogs hang automation"). Refuse first.
+    // Bloom answers a click on a tier-gated command by opening the Collection Settings dialog on its
+    // Subscription page instead of running the command, so the test would go on as if the command
+    // had run. Refuse first.
     if (await item.evaluate((el) => el.hasAttribute("data-subscription-gated")))
         throw new Error(
             `The "${l10nId}" command is behind a subscription tier this collection does not ` +
@@ -1080,6 +1118,41 @@ export async function dragCanvasElementSide(
 }
 
 /**
+ * Move the selected canvas element by pressing on it and dragging it `dx`, `dy` page pixels, the
+ * way a person does, and wait until it has moved. Returns the element's rect before and after.
+ *
+ * The press lands a quarter of the way in from the element's top-left corner, not at its middle:
+ * a video element has its play button in the middle, and a press there that does not move would
+ * play the video instead.
+ */
+export async function dragCanvasElementBy(
+    page: Page,
+    dx: number,
+    dy: number,
+): Promise<{ before: IRect; after: IRect }> {
+    const before = await getActiveCanvasElementRect(page);
+    const x = before.x + before.width / 4;
+    const y = before.y + before.height / 4;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + dx, y + dy, { steps: 12 });
+    await page.mouse.up();
+    await expect
+        .poll(
+            async () => {
+                const now = await getActiveCanvasElementRect(page);
+                return Math.abs(now.x - before.x) + Math.abs(now.y - before.y);
+            },
+            {
+                timeout: 30000,
+                message: `Dragging the selected canvas element by ${dx},${dy} did not move it.`,
+            },
+        )
+        .toBeGreaterThan(2);
+    return { before, after: await getActiveCanvasElementRect(page) };
+}
+
+/**
  * Right-click the selected canvas element's own frame, outside anything inside it. Use this to ask
  * what a right-click on the element's edge does, as opposed to a right-click on what it holds.
  *
@@ -1251,7 +1324,50 @@ export async function typeInCanvasElement(
 
 /** The box that the selected canvas element's text is showing. */
 function shownTextBoxOfActiveElement(page: Page): Locator {
-    return activeCanvasElement(page).locator(
-        ".bloom-translationGroup > .bloom-editable.bloom-visibility-code-on",
+    return activeCanvasElement(page).locator(SHOWN_TEXT_BOX);
+}
+
+/** Within a canvas element, the language box of its text that it is showing. */
+const SHOWN_TEXT_BOX =
+    ".bloom-translationGroup > .bloom-editable.bloom-visibility-code-on";
+
+/**
+ * The box that canvas element `index` (in document order, as canvasElement counts) is showing its
+ * text in. Unlike the selected element's box, this goes on naming the same box after Bloom has
+ * rebuilt the page, as a change of page size does.
+ */
+export function canvasElementTextBox(page: Page, index: number): Locator {
+    return canvasElement(page, index).locator(SHOWN_TEXT_BOX);
+}
+
+/**
+ * Whether the selected canvas element has Auto Height on: Bloom then makes the element as tall as
+ * its text needs, as far as the canvas has room. It is on for a new speech bubble or text block.
+ */
+export async function getCanvasElementAutoHeight(page: Page): Promise<boolean> {
+    return activeCanvasElement(page).evaluate(
+        (element) => !element.classList.contains("bloom-noAutoHeight"),
     );
+}
+
+/**
+ * Turn the selected canvas element's Auto Height on or off with the Auto Height command of its
+ * "..." menu, which is a toggle, and wait until the element has the setting. Does nothing when the
+ * element has it already.
+ */
+export async function setCanvasElementAutoHeight(
+    page: Page,
+    on: boolean,
+): Promise<void> {
+    if ((await getCanvasElementAutoHeight(page)) === on) return;
+    await clickCanvasElementMenuItem(
+        page,
+        "EditTab.Toolbox.ComicTool.Options.AutoHeight",
+    );
+    await expect
+        .poll(async () => getCanvasElementAutoHeight(page), {
+            timeout: 15000,
+            message: `The Auto Height command did not turn Auto Height ${on ? "on" : "off"}.`,
+        })
+        .toBe(on);
 }

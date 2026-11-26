@@ -3254,6 +3254,10 @@ namespace Bloom.Book
                         if (lang == Language1Tag)
                             return true;
                         break;
+                    case "CL1":
+                        if (lang == _bookData.CollectionSettings.Language1Tag)
+                            return true;
+                        break;
                     case "N1":
                         if (lang == _bookData.MetadataLanguage1Tag)
                             return true;

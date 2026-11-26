@@ -8,6 +8,7 @@ using Bloom.Book;
 using Bloom.CollectionChoosing;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
+using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
 
@@ -135,6 +136,11 @@ namespace Bloom
             // The user's service API keys belong to the Windows user, not to a collection, so
             // these endpoints live here rather than in ProjectContext.
             _container.Resolve<ServiceKeysApi>().RegisterWithApiHandler(server.ApiHandler);
+            // Every Bloom dialog sends a click on an http link here to open it in the browser, and
+            // some dialogs come up before any collection is open or after one fails to open, such
+            // as the one saying Bloom can't write in a collection's folder (BL-16728). Its handlers
+            // are static and know nothing about a project.
+            ExternalLinkController.RegisterWithApiHandler(server.ApiHandler);
             server.ApiHandler.RecordApplicationLevelHandlers();
         }
 
