@@ -7,13 +7,19 @@
 
 import * as fs from "fs";
 import * as Path from "path";
-import { expect, type FrameLocator, type Page } from "@playwright/test";
+import {
+    expect,
+    type FrameLocator,
+    type Locator,
+    type Page,
+} from "@playwright/test";
 import type { IBloomApp } from "../fixtures/bloomTest";
 import {
     writeNewCollection,
     type ICollectionSpec,
 } from "../fixtures/launchBloom";
 import { apiGet, apiGetJson, apiPost, getUiString } from "./api";
+import { FIRST_IMAGE } from "./images";
 import { realClick } from "./realClick";
 
 /**
@@ -590,6 +596,18 @@ const kBookPreviewFrame = 'iframe[src*="book-preview/index.htm"]';
  */
 export function collectionBookPreview(page: Page): FrameLocator {
     return page.getByTestId(kBookPane).frameLocator(kBookPreviewFrame);
+}
+
+/** The front cover in the Collections tab's preview of the selected book. */
+export function collectionPreviewCover(page: Page): Locator {
+    return collectionBookPreview(page)
+        .locator(".bloom-page.coverColor")
+        .first();
+}
+
+/** The picture in the front cover's picture slot, in the Collections tab's preview. */
+export function collectionPreviewCoverPicture(page: Page): Locator {
+    return collectionPreviewCover(page).locator(FIRST_IMAGE).first();
 }
 
 /**
