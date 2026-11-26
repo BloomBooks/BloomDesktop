@@ -448,6 +448,45 @@ export async function isImportRecordingEnabled(page: Page): Promise<boolean> {
 }
 
 /**
+ * Align the whole-text-box recording of the text box the tool is on with that box's segments, as a
+ * person does by pressing Adjust Timings... and then OK without moving a boundary. The dialog
+ * splits the box into segments at its sentence ends and its segment markers ("|"), proposes an
+ * end time for each, and OK saves those times on the box (data-audiorecordingendtimes) and shows
+ * the box as split (bloom-postAudioSplit). Returns once the box shows as split.
+ *
+ * The box must hold a whole-text-box recording (see importNarration). The button is found by its
+ * picture, since it has no id and its label is localized.
+ */
+export async function acceptProposedTimings(page: Page): Promise<void> {
+    const button = toolboxFrame(page).locator(
+        'button:has(img[src*="adjustTimings.svg"])',
+    );
+    await expect(
+        button,
+        "Adjust Timings... is disabled; it needs a text box recorded as a whole.",
+    ).toBeEnabled({ timeout: 30000 });
+    // The button itself ignores the pointer (pointer-events: none); its picture takes the click.
+    await button.locator("img").click();
+
+    // The dialog is drawn in the shell page. It shows one region over the recording's waveform
+    // for each segment once it has loaded the recording, and only then are the times it would
+    // save its own rather than a first guess from the lengths of the segments' text.
+    const dialog = page
+        .getByRole("dialog")
+        .filter({ has: page.locator("#waveform") });
+    await expect(
+        dialog.locator("#waveform .playButton").first(),
+        "The Adjust Timings dialog never showed the recording's segments.",
+    ).toBeVisible({ timeout: 60000 });
+    await dialog.getByTestId("dialog-ok").click();
+    await expect(dialog).toBeHidden({ timeout: 30000 });
+    await expect(
+        editablePageFrame(page).locator(".bloom-editable.bloom-postAudioSplit"),
+        "OK in Adjust Timings did not mark the text box as split into timed segments.",
+    ).toHaveCount(1, { timeout: 30000 });
+}
+
+/**
  * Expand the Talking Book tool's Advanced section, which holds the recording modes and Import
  * Recording. It starts collapsed, and its contents are in the DOM but not visible until then.
  * Does nothing if it is already open.
