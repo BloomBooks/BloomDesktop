@@ -380,11 +380,26 @@ test("a recording split into sentences is highlighted sentence by sentence in th
                     turn[0].segments,
                     `"${kSentences[index]}" should be highlighted as a segment of the split box`,
                 ).toEqual([true]);
-                // What a reader sees for the rest of the sentence is its last state.
+                // The highlight must show as the sentence starts and stay until it ends: from the
+                // first painted entry on, every entry of the turn is painted, and that entry
+                // comes within half a second of the sentence's turn starting.
+                const firstPainted = turn.findIndex(
+                    (change) => change.paintedApart[0] === true,
+                );
                 expect(
-                    turn.at(-1)!.paintedApart,
+                    firstPainted,
                     `"${kSentences[index]}" should be painted differently from the other sentences while it plays`,
-                ).toEqual([true]);
+                ).toBeGreaterThanOrEqual(0);
+                expect(
+                    turn
+                        .slice(firstPainted)
+                        .map((change) => change.paintedApart),
+                    `"${kSentences[index]}" should stay painted until the next sentence takes over`,
+                ).toEqual(turn.slice(firstPainted).map(() => [true]));
+                expect(
+                    turn[firstPainted].time - turn[0].time,
+                    `"${kSentences[index]}" should be painted within half a second of its turn starting`,
+                ).toBeLessThan(0.5);
             });
             expect(
                 turns[0][0].time,
@@ -406,9 +421,9 @@ test("a recording split into sentences is highlighted sentence by sentence in th
             }
             // The last sentence is still highlighted when the recording ends, at its saved end.
             expect(
-                all[end].time,
-                `the recording should end where the last sentence does, ${saved.endTimes.at(-1)} s`,
-            ).toBeGreaterThanOrEqual(saved.endTimes.at(-1)! - 0.25);
+                Math.abs(all[end].time - saved.endTimes.at(-1)!),
+                `the recording should end where the last sentence does, ${saved.endTimes.at(-1)} s, not at ${all[end].time} s`,
+            ).toBeLessThan(0.25);
         },
     );
 });
