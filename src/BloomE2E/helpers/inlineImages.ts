@@ -2612,6 +2612,11 @@ export interface IShownInlinePicture {
     file: string;
     /** The language of the text block the picture is in. */
     languageTag: string;
+    /**
+     * True when the browser decoded the picture's file. A picture whose file failed to load keeps
+     * its box (the inline image's styles size the img), so the box alone does not show it.
+     */
+    loaded: boolean;
     rect: IRect;
 }
 
@@ -2636,6 +2641,25 @@ export interface IShownTextBlock {
 export async function getShownInlineImageLayout(
     bookPage: Locator,
 ): Promise<{ pictures: IShownInlinePicture[]; blocks: IShownTextBlock[] }> {
+    // Let every picture finish loading or failing first, so that `loaded` is settled.
+    await bookPage.evaluate(
+        (root, wrapperClass) =>
+            Promise.all(
+                Array.from(
+                    root.querySelectorAll<HTMLImageElement>(
+                        `.${wrapperClass} img`,
+                    ),
+                ).map((img) =>
+                    img.complete
+                        ? undefined
+                        : new Promise((resolve) => {
+                              img.addEventListener("load", resolve);
+                              img.addEventListener("error", resolve);
+                          }),
+                ),
+            ),
+        kWrapperClass,
+    );
     return bookPage.evaluate((root, wrapperClass) => {
         const isDrawn = (element: Element) =>
             element.getClientRects().length > 0 &&
@@ -2661,6 +2685,9 @@ export async function getShownInlineImageLayout(
                         .pop() ?? "",
                 ),
                 languageTag: img.closest("[lang]")?.getAttribute("lang") ?? "",
+                loaded:
+                    (img as HTMLImageElement).complete &&
+                    (img as HTMLImageElement).naturalWidth > 0,
                 rect: toRect(img.getBoundingClientRect()),
             }));
         const blocks = Array.from(

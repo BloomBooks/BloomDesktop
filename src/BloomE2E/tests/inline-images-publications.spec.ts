@@ -68,8 +68,13 @@ import {
 } from "../helpers/publish";
 import {
     countPicturesInSourceBubble,
+    expectSourceBubbleLanguageReadable,
     getSourceBubble,
 } from "../helpers/sourceBubbles";
+import {
+    getCurrentUiLanguageTag,
+    setUiStateViaApi,
+} from "../helpers/uiLanguage";
 import { switchTab } from "../helpers/workspace";
 
 // The ePUB screen needs a Pro subscription or better.
@@ -131,6 +136,10 @@ function expectPictureOnceAtLeftWithEnglishBeside(
     ).toEqual(["bird.png"]);
     const [picture] = layout.pictures;
     expect(
+        picture.loaded,
+        `${where} should show the picture itself, not a picture that failed to load.`,
+    ).toBe(true);
+    expect(
         picture.languageTag,
         `${where} should show the copy of the picture in the English block.`,
     ).toBe(ENGLISH);
@@ -157,7 +166,10 @@ function expectPictureOnceAtLeftWithEnglishBeside(
         `${where} should flow lines of English text on the right of the picture.`,
     ).toBeGreaterThan(1);
     expect(
-        english!.lines.some((line) => line.x < right(pic) - 1),
+        english!.lines.some(
+            (line) =>
+                line.y >= pic.y + pic.height - 1 && line.x < right(pic) - 1,
+        ),
         `${where} should flow the English text under the picture as well, so that it wraps ` +
             "around the picture rather than standing in a column beside it.",
     ).toBe(true);
@@ -187,9 +199,14 @@ function expectPictureOnceAtLeftWithEnglishBeside(
 
 test.describe("inline images in what a reader gets [Test Case ID 825]", () => {
     test("a source bubble shows the other language's text, never the picture", async ({
-        page,
+        bloomApp,
     }) => {
         test.setTimeout(300000);
+        // The Publish tab's helpers (PDF & Print, BloomPUB, ePUB) find its tabs and buttons by
+        // their English labels, and a fresh Bloom takes the operating system's UI language.
+        if ((await getCurrentUiLanguageTag(bloomApp.page)) !== "en")
+            await setUiStateViaApi(bloomApp, "en", false);
+        const page = bloomApp.page;
         await makeBookFromTemplate(page, "Basic Book");
         await typeInGroup(page, ".bookTitle", ENGLISH, BOOK_TITLE);
         await addPage(page, "Just Text");
@@ -220,6 +237,14 @@ test.describe("inline images in what a reader gets [Test Case ID 825]", () => {
             bubble.texts.find((text) => text.lang === FRENCH)?.text,
             "The source bubble should show the French text.",
         ).toBe(FRENCH_TEXT);
+        // Reading the text does not show that the bubble displays it: bring its French tab
+        // forward and check that the French text is what shows.
+        await expectSourceBubbleLanguageReadable(
+            page,
+            BLOCK,
+            FRENCH,
+            FRENCH_TEXT,
+        );
         // The French block the bubble is made from holds a copy of the picture.
         expect(
             (await getInlineImageInEveryLanguage(page, BLOCK, imageId)).some(
@@ -266,7 +291,10 @@ test.describe("inline images in what a reader gets [Test Case ID 825]", () => {
         // own, so the bird is told apart by the size of its file.
         const bird = readImageFileSize(PICTURE);
         const birds = pictures.filter(
-            (p) => p.width === bird.width && p.height === bird.height,
+            (p) =>
+                p.width === bird.width &&
+                p.height === bird.height &&
+                p.shownBox,
         );
         expect(
             birds.length,
@@ -274,6 +302,16 @@ test.describe("inline images in what a reader gets [Test Case ID 825]", () => {
                 JSON.stringify(pictures),
         ).toBe(1);
         const picture = birds[0].box;
+        const shown = birds[0].shownBox!;
+        expect(
+            Math.max(
+                shown.left - picture.left,
+                picture.right - shown.right,
+                shown.bottom - picture.bottom,
+                picture.top - shown.top,
+            ),
+            "The PDF should show the whole picture, not clip part of it away.",
+        ).toBeLessThan(0.5);
 
         // Each piece of text the page draws is a line of one of the two languages.
         const squeeze = (text: string) => text.replace(/\s+/g, "");

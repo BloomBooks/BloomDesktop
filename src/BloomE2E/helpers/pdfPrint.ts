@@ -607,7 +607,13 @@ export async function isPrintInstructionsWindowOpen(
 
 /** A picture a PDF page draws: the size of its file, and where it lands on the page. */
 export interface IPdfPicture extends IPixelSize {
+    /** Where the whole picture lands. */
     box: IPdfBox;
+    /**
+     * The part of `box` that shows: what is left of it inside the clipping region the page sets
+     * when it paints the picture. Undefined when none of it shows.
+     */
+    shownBox?: IPdfBox;
     /** True when the page draws it inside a form (a Form XObject) rather than directly. */
     inForm: boolean;
 }
@@ -629,8 +635,9 @@ export interface IPdfTextRun {
  * words. `pageIndex` counts the PDF's pages from 0, in their order. Call it after choosePdfMode().
  *
  * This follows the page's drawing instructions the way a PDF reader does, as far as Bloom's PDF
- * maker (Chromium's) uses them: the q/Q/cm operators that place things, the Do operator that
- * paints a picture, and the BT/Tf/Tm/Td/Tj/TJ operators that draw text. The words come from each
+ * maker (Chromium's) uses them: the q/Q/cm operators that place things, the path and W/W*
+ * operators that clip (each clipping path is taken as its bounding box, and a form's BBox clips
+ * too), the Do operator that paints a picture, and the BT/Tf/Tm/Td/Tj/TJ operators that draw text. The words come from each
  * font's ToUnicode map, which is how a PDF reader copies text. A form the page paints is followed
  * into, so what it draws is listed too, marked as drawn in a form. Instructions that draw in a way
  * this does not follow throw, rather than report a page as drawing less than it does.
@@ -657,6 +664,7 @@ export async function getPdfPreviewPageDrawing(
             .join("\n"),
         pageObject,
         [1, 0, 0, 1, 0, 0],
+        undefined,
         false,
         pictures,
         texts,
@@ -681,8 +689,9 @@ function multiplyPdfMatrices(m: PdfMatrix, n: PdfMatrix): PdfMatrix {
 /**
  * Follow one stream of drawing instructions of a page or a form (getPdfPreviewPageDrawing), adding
  * what it draws to `pictures` and `texts`. `drawer` is the text of the page or form object, which
- * holds or refers to the resources the instructions name, and `startMatrix` places what they
- * draw on the page. A form painted from here is followed in turn, and what it draws is marked
+ * holds or refers to the resources the instructions name, `startMatrix` places what they draw on
+ * the page, and `startClip` is the region, in millimetres, outside which nothing they draw shows
+ * (undefined for none). A form painted from here is followed in turn, and what it draws is marked
  * `inForm`.
  */
 function followPdfInstructions(
@@ -690,6 +699,7 @@ function followPdfInstructions(
     instructions: string,
     drawer: string,
     startMatrix: PdfMatrix,
+    startClip: IPdfBox | undefined,
     inForm: boolean,
     pictures: IPdfPicture[],
     texts: IPdfTextRun[],
@@ -735,8 +745,31 @@ function followPdfInstructions(
         y: (m[1] * x + m[3] * y + m[5]) * kMillimetresPerPoint,
     });
 
+    // The part of two boxes they share; an empty one when they do not meet.
+    const intersect = (a: IPdfBox | undefined, b: IPdfBox): IPdfBox =>
+        a
+            ? {
+                  left: Math.max(a.left, b.left),
+                  right: Math.min(a.right, b.right),
+                  bottom: Math.max(a.bottom, b.bottom),
+                  top: Math.min(a.top, b.top),
+              }
+            : b;
+    const isEmpty = (box: IPdfBox) =>
+        box.right <= box.left || box.top <= box.bottom;
+    const boundingBox = (points: { x: number; y: number }[]): IPdfBox => ({
+        left: Math.min(...points.map((p) => p.x)),
+        right: Math.max(...points.map((p) => p.x)),
+        bottom: Math.min(...points.map((p) => p.y)),
+        top: Math.max(...points.map((p) => p.y)),
+    });
+
     let ctm = startMatrix;
-    const saved: PdfMatrix[] = [];
+    let clip = startClip;
+    const saved: { ctm: PdfMatrix; clip: IPdfBox | undefined }[] = [];
+    // The points of the path being built, and whether W or W* asked for it to become the clip.
+    let path: { x: number; y: number }[] = [];
+    let clipToPath = false;
     let textLine: PdfMatrix = [1, 0, 0, 1, 0, 0];
     let font = "";
     const operands: string[] = [];
@@ -755,10 +788,54 @@ function followPdfInstructions(
         const last = operands[operands.length - 1];
         switch (token) {
             case "q":
-                saved.push(ctm);
+                saved.push({ ctm, clip });
                 break;
-            case "Q":
-                ctm = saved.pop() ?? startMatrix;
+            case "Q": {
+                const state = saved.pop();
+                ctm = state?.ctm ?? startMatrix;
+                clip = state ? state.clip : startClip;
+                break;
+            }
+            case "re": {
+                const [x, y, w, h] = numbers.slice(-4);
+                path.push(
+                    toMillimetres(ctm, x, y),
+                    toMillimetres(ctm, x + w, y),
+                    toMillimetres(ctm, x, y + h),
+                    toMillimetres(ctm, x + w, y + h),
+                );
+                break;
+            }
+            case "m":
+            case "l":
+            case "c":
+            case "v":
+            case "y":
+                for (let i = 0; i + 1 < numbers.length; i += 2)
+                    path.push(toMillimetres(ctm, numbers[i], numbers[i + 1]));
+                break;
+            case "h":
+                break;
+            case "W":
+            case "W*":
+                clipToPath = true;
+                break;
+            case "n":
+            case "f":
+            case "F":
+            case "f*":
+            case "S":
+            case "s":
+            case "B":
+            case "B*":
+            case "b":
+            case "b*":
+                // A path ends with the operator that paints it (n paints nothing), and it is
+                // only then that a W or W* before it takes effect.
+                if (clipToPath && path.length > 0)
+                    clip = intersect(clip, boundingBox(path));
+                path = [];
+                clipToPath = false;
                 break;
             case "cm":
                 ctm = multiplyPdfMatrices(numbers.slice(-6) as PdfMatrix, ctm);
@@ -830,11 +907,31 @@ function followPdfInstructions(
                               .split(/\s+/)
                               .map(Number) as PdfMatrix)
                         : [1, 0, 0, 1, 0, 0];
+                    const formToPage = multiplyPdfMatrices(formMatrix, ctm);
+                    // A form draws nothing outside its BBox.
+                    const bbox = /\/BBox\s*\[([^\]]*)\]/.exec(dictionary);
+                    let formClip = clip;
+                    if (bbox) {
+                        const [x1, y1, x2, y2] = bbox[1]
+                            .trim()
+                            .split(/\s+/)
+                            .map(Number);
+                        formClip = intersect(
+                            clip,
+                            boundingBox([
+                                toMillimetres(formToPage, x1, y1),
+                                toMillimetres(formToPage, x2, y1),
+                                toMillimetres(formToPage, x1, y2),
+                                toMillimetres(formToPage, x2, y2),
+                            ]),
+                        );
+                    }
                     followPdfInstructions(
                         pdf,
                         readPdfStream(pdf, number),
                         dictionary,
-                        multiplyPdfMatrices(formMatrix, ctm),
+                        formToPage,
+                        formClip,
                         true,
                         pictures,
                         texts,
@@ -845,21 +942,18 @@ function followPdfInstructions(
                     throw new Error(
                         `The PDF page paints /${name}, which is neither a picture nor a form: ${dictionary}`,
                     );
-                const corners = [
+                const box = boundingBox([
                     toMillimetres(ctm, 0, 0),
                     toMillimetres(ctm, 1, 0),
                     toMillimetres(ctm, 0, 1),
                     toMillimetres(ctm, 1, 1),
-                ];
+                ]);
+                const shown = intersect(clip, box);
                 pictures.push({
                     width: Number(/\/Width\s+(\d+)/.exec(dictionary)![1]),
                     height: Number(/\/Height\s+(\d+)/.exec(dictionary)![1]),
-                    box: {
-                        left: Math.min(...corners.map((c) => c.x)),
-                        right: Math.max(...corners.map((c) => c.x)),
-                        bottom: Math.min(...corners.map((c) => c.y)),
-                        top: Math.max(...corners.map((c) => c.y)),
-                    },
+                    box,
+                    shownBox: isEmpty(shown) ? undefined : shown,
                     inForm,
                 });
                 break;
