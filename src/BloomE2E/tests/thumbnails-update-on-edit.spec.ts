@@ -10,6 +10,7 @@
 // the tile's thumbnail, which keeps the cover picture's proportions, shows which cover it was made
 // from.
 
+import * as fs from "node:fs";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page } from "@playwright/test";
@@ -27,8 +28,16 @@ import {
     readBookTileThumbnail,
     type ITileThumbnail,
 } from "../helpers/collection";
-import { chooseImageFile, getImagePlacement } from "../helpers/images";
-import { pageListFrame, selectPage } from "../helpers/pageThumbnails";
+import {
+    chooseImageFile,
+    getImagePlacement,
+    readImageFileSize,
+} from "../helpers/images";
+import {
+    pageListFrame,
+    readUnlessDocumentReplaced,
+    selectPage,
+} from "../helpers/pageThumbnails";
 import type { StepFunction } from "../helpers/caption";
 import { switchTab } from "../helpers/workspace";
 
@@ -50,22 +59,25 @@ interface IEdits {
     text: string;
     contentPicture: string;
     coverPicture: string;
-    /** Whether the cover picture is wider than it is tall. */
-    coverIsWide: boolean;
+    /**
+     * Another picture, which the tile's new thumbnail must look less like than the cover picture:
+     * the content picture in the first round, the cover picture it replaces in the second.
+     */
+    otherPicture: string;
 }
 
 const NEW_BOOK_EDITS: IEdits = {
     text: "TC387 first text",
     contentPicture: "bird.png",
     coverPicture: "house-landscape.png",
-    coverIsWide: true,
+    otherPicture: "bird.png",
 };
 
 const EXISTING_BOOK_EDITS: IEdits = {
     text: "TC387 second text",
     contentPicture: "house-landscape.png",
     coverPicture: "bird.png",
-    coverIsWide: false,
+    otherPicture: "house-landscape.png",
 };
 
 /** A page's thumbnail in the Edit tab's page list. */
@@ -87,13 +99,16 @@ async function expectThumbnailShowsPicture(
         .first();
     await expect
         .poll(
-            () =>
-                picture
-                    .evaluate((img) => {
+            async () => {
+                if ((await picture.count()) === 0) return false;
+                const loaded = await readUnlessDocumentReplaced(() =>
+                    picture.evaluate((img) => {
                         const image = img as HTMLImageElement;
                         return image.complete && image.naturalWidth > 0;
-                    })
-                    .catch(() => false),
+                    }),
+                );
+                return loaded ?? false;
+            },
             {
                 timeout: 30000,
                 message: `The page list's thumbnail of the ${where} never showed ${fileName}.`,
@@ -219,6 +234,50 @@ function differ(before: ITileThumbnail, after: ITileThumbnail): boolean {
 }
 
 /**
+ * The mean difference, per colour channel (0 to 255), between a tile's thumbnail and the fixture
+ * picture `fixtureName` drawn at the thumbnail's size, both over white.
+ */
+async function meanDifferenceFromPicture(
+    page: Page,
+    thumbnail: ITileThumbnail,
+    fixtureName: string,
+): Promise<number> {
+    const pictureBase64 = fs
+        .readFileSync(fixtureImage(fixtureName))
+        .toString("base64");
+    return page.evaluate(
+        async ({ width, height, pixels, pictureBase64 }) => {
+            const picture = new Image();
+            picture.src = `data:image/png;base64,${pictureBase64}`;
+            await picture.decode();
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext("2d")!;
+            context.fillStyle = "white";
+            context.fillRect(0, 0, width, height);
+            context.drawImage(picture, 0, 0, width, height);
+            const drawn = context.getImageData(0, 0, width, height).data;
+            let total = 0;
+            for (let i = 0; i < pixels.length; i += 4) {
+                const alpha = pixels[i + 3] / 255;
+                for (let c = 0; c < 3; c++) {
+                    const shown = pixels[i + c] * alpha + 255 * (1 - alpha);
+                    total += Math.abs(shown - drawn[i + c]);
+                }
+            }
+            return total / ((pixels.length / 4) * 3);
+        },
+        {
+            width: thumbnail.width,
+            height: thumbnail.height,
+            pixels: thumbnail.pixels,
+            pictureBase64,
+        },
+    );
+}
+
+/**
  * Wait until the Collections tab's tile of the book shows a thumbnail other than `before`, and check
  * that it is a thumbnail of the new cover picture. Bloom makes the new thumbnail.png after the
  * Collections tab shows, so the tile may first show the one made before the cover changed.
@@ -246,17 +305,28 @@ async function expectTileThumbnailOfNewCover(
             },
         )
         .toBe(true);
-    const shape = `${after.width}x${after.height}`;
-    if (edits.coverIsWide)
-        expect(
-            after.width,
-            `the tile's thumbnail (${shape}) is not wide like ${edits.coverPicture}, the new cover picture`,
-        ).toBeGreaterThan(after.height * 1.5);
-    else
-        expect(
-            after.height,
-            `the tile's thumbnail (${shape}) is not tall like ${edits.coverPicture}, the new cover picture`,
-        ).toBeGreaterThan(after.width);
+    // Bloom keeps the cover picture's proportions when it makes the thumbnail.
+    const cover = readImageFileSize(fixtureImage(edits.coverPicture));
+    expect(
+        Math.abs(after.width - (after.height * cover.width) / cover.height),
+        `the tile's thumbnail (${after.width}x${after.height}) does not have the proportions of ${edits.coverPicture} (${cover.width}x${cover.height}), the new cover picture`,
+    ).toBeLessThanOrEqual(1);
+    // And it is that picture: drawn at the thumbnail's size, the new cover picture is closer to it
+    // than another picture is.
+    const fromNew = await meanDifferenceFromPicture(
+        page,
+        after,
+        edits.coverPicture,
+    );
+    const fromOther = await meanDifferenceFromPicture(
+        page,
+        after,
+        edits.otherPicture,
+    );
+    expect(
+        fromNew,
+        `the tile's thumbnail looks more like ${edits.otherPicture}, another picture (mean difference ${fromOther.toFixed(1)}), than ${edits.coverPicture}, the new one (${fromNew.toFixed(1)})`,
+    ).toBeLessThan(fromOther);
     return after;
 }
 
