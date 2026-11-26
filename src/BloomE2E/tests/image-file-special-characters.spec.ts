@@ -21,6 +21,7 @@ import {
     addPage,
     editBook,
     getContentPages,
+    getPages,
     goToPage,
     makeBookFromTemplate,
 } from "../helpers/bookMaking";
@@ -39,7 +40,10 @@ import {
     readImageFileSize,
     type IPixelSize,
 } from "../helpers/images";
-import { choosePdfMode, getPdfPreviewPictureSizes } from "../helpers/pdfPrint";
+import {
+    choosePdfMode,
+    getPdfPreviewPicturesByPage,
+} from "../helpers/pdfPrint";
 import {
     selectPublishDestination,
     showBloomPubPreview,
@@ -143,14 +147,20 @@ test("pictures whose file names have special characters show in Edit, the PDF, a
             },
         );
 
-    await step("Make the PDF and look for each picture in it", async () => {
+    await step("Make the PDF and look at each picture's page", async () => {
+        // The Simple PDF has a page for each page of the book, in the book's order.
+        const pagesOfBook = (await getPages(page)).map((p) => p.id);
         await choosePdfMode(page, "Simple");
-        const inPdf = await getPdfPreviewPictureSizes(page);
-        for (const picture of PICTURES)
+        const picturesByPage = await getPdfPreviewPicturesByPage(page);
+        expect(
+            picturesByPage,
+            "test setup: the Simple PDF should have a page for each page of the book",
+        ).toHaveLength(pagesOfBook.length);
+        for (const [index, picture] of PICTURES.entries())
             expect(
-                inPdf,
-                `The PDF should hold the picture "${picture.fileName}" (${picture.why}).`,
-            ).toContainEqual(picture.size);
+                picturesByPage[pagesOfBook.indexOf(book.pages[index].id)],
+                `The PDF should draw the picture "${picture.fileName}" (${picture.why}) on its page, and no other picture.`,
+            ).toEqual([picture.size]);
     });
 
     await step(

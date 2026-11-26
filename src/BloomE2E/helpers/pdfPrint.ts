@@ -152,35 +152,97 @@ export async function getPdfPreviewPageCount(page: Page): Promise<number> {
 }
 
 /**
- * The size in pixels of every picture that the PDF the PDF & Print screen is previewing holds,
- * read from the PDF file itself (its image objects), in the order the file holds them. Call it
- * after choosePdfMode().
+ * The text of the object numbered `number` in a PDF, from its number up to the data of its stream
+ * if it has one, or else to its end. Throws when the file has no such object.
+ */
+function readPdfObject(pdf: string, number: string): string {
+    const start = new RegExp(`(?:^|[\\r\\n])${number}\\s+\\d+\\s+obj`).exec(
+        pdf,
+    );
+    if (!start) throw new Error(`The previewed PDF has no object ${number}.`);
+    const ends = [
+        pdf.indexOf("endobj", start.index),
+        pdf.indexOf("stream", start.index),
+    ].filter((end) => end >= 0);
+    return pdf.slice(start.index, Math.min(...ends));
+}
+
+/** The numbers of the objects that a piece of a PDF refers to, e.g. "21" for "21 0 R", in order. */
+function readPdfReferences(text: string): string[] {
+    return [...text.matchAll(/(\d+)\s+\d+\s+R(?![a-zA-Z])/g)].map(
+        (match) => match[1],
+    );
+}
+
+/**
+ * The page objects of a PDF in the order of its pages, read from its page tree: the catalog names
+ * the root of the tree, and each node lists its children (Kids), which are pages or further nodes.
+ */
+function getPdfPageObjectsInPageOrder(pdf: string): string[] {
+    const catalog = /\/Type\s*\/Catalog(?![a-zA-Z])/.exec(pdf);
+    const root =
+        catalog &&
+        /\/Pages\s+(\d+)\s+\d+\s+R/.exec(
+            pdf.slice(
+                pdf.lastIndexOf(" obj", catalog.index),
+                pdf.indexOf("endobj", catalog.index),
+            ),
+        );
+    if (!root)
+        throw new Error(
+            "The previewed PDF's catalog does not name its page tree, so the order of its pages cannot be read.",
+        );
+    const pagesUnder = (number: string): string[] => {
+        const node = readPdfObject(pdf, number);
+        if (!/\/Type\s*\/Pages(?![a-zA-Z])/.test(node)) return [node];
+        const kids = /\/Kids\s*\[([^\]]*)\]/.exec(node);
+        if (!kids)
+            throw new Error(
+                `A node of the previewed PDF's page tree lists no pages: ${node}`,
+            );
+        return readPdfReferences(kids[1]).flatMap(pagesUnder);
+    };
+    return pagesUnder(root[1]);
+}
+
+/**
+ * The size in pixels of each picture drawn on each page of the PDF that the PDF & Print screen is
+ * previewing, read from the PDF file itself: one list for each page, in the order of the PDF's
+ * pages. Call it after choosePdfMode().
  *
  * Bloom's PDF maker puts a picture into the PDF at the size of its file, so a picture of a known
- * size that is listed here was found and drawn when the PDF was made, and one that is missing was
- * not. A picture with transparency is listed twice, because a PDF holds its transparency as a
- * second image of the same size.
+ * size that is listed for a page was found and drawn on that page when the PDF was made, and one
+ * that is missing was not. A picture with transparency is listed twice, because a PDF holds its
+ * transparency as a second image of the same size.
  */
-export async function getPdfPreviewPictureSizes(
+export async function getPdfPreviewPicturesByPage(
     page: Page,
-): Promise<IPixelSize[]> {
+): Promise<IPixelSize[][]> {
     const pdf = await readPreviewedPdf(page);
-    const sizes: IPixelSize[] = [];
-    // An image is a stream, and a PDF never compresses the dictionary that describes a stream,
-    // so each can be read from the text of the file.
-    for (const match of pdf.matchAll(/\/Subtype\s*\/Image(?![a-zA-Z])/g)) {
-        const start = pdf.lastIndexOf(" obj", match.index);
-        const end = pdf.indexOf("stream", match.index);
-        const dictionary = pdf.slice(start, end);
-        const width = /\/Width\s+(\d+)/.exec(dictionary);
-        const height = /\/Height\s+(\d+)/.exec(dictionary);
-        if (start < 0 || end < 0 || !width || !height)
-            throw new Error(
-                "A picture in the previewed PDF does not give its size, so the PDF's pictures cannot be read.",
-            );
-        sizes.push({ width: Number(width[1]), height: Number(height[1]) });
-    }
-    return sizes;
+    return getPdfPageObjectsInPageOrder(pdf).map((pageObject) => {
+        // What a page draws with is in its resources, which the page object holds or refers to.
+        const elsewhere = /\/Resources\s+(\d+)\s+\d+\s+R/.exec(pageObject);
+        const resources = elsewhere
+            ? readPdfObject(pdf, elsewhere[1])
+            : pageObject;
+        const drawn = /\/XObject\s*<<([^>]*)>>/.exec(resources);
+        if (!drawn) return [];
+        const sizes: IPixelSize[] = [];
+        for (const number of readPdfReferences(drawn[1])) {
+            // An image is a stream, and a PDF never compresses the dictionary that describes a
+            // stream, so its size can be read from the text of the file.
+            const dictionary = readPdfObject(pdf, number);
+            if (!/\/Subtype\s*\/Image(?![a-zA-Z])/.test(dictionary)) continue;
+            const width = /\/Width\s+(\d+)/.exec(dictionary);
+            const height = /\/Height\s+(\d+)/.exec(dictionary);
+            if (!width || !height)
+                throw new Error(
+                    `A picture in the previewed PDF does not give its size: ${dictionary}`,
+                );
+            sizes.push({ width: Number(width[1]), height: Number(height[1]) });
+        }
+        return sizes;
+    });
 }
 
 /** A rectangle on a PDF page, in millimetres from the left and bottom edges of the paper. */

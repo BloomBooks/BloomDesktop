@@ -419,16 +419,17 @@ export interface IShownPicture {
 }
 
 /**
- * The pictures shown inside `container`, which is a book page wherever Bloom draws it: in the Edit
- * tab, in the BloomPUB preview (a page showPreviewPage returned) or in the ePUB preview (the frame
- * showEpubPreviewPage returned, which holds one page). Each comes with the size of its file, which
- * is 0 by 0 when the browser could not load it, so this is how a test learns whether a reader sees
- * the picture.
+ * The pictures a reader sees inside `container`, which is a book page wherever Bloom draws it: in
+ * the Edit tab, in the BloomPUB preview (a page showPreviewPage returned) or in the ePUB preview
+ * (the frame showEpubPreviewPage returned, which holds one page). Each comes with the size of its
+ * file, which is 0 by 0 when the browser could not load it, so this is how a test learns whether a
+ * reader sees the picture.
  *
  * A page holds a picture in one of two ways, and both are read: as an image element, and as the
- * background of an element, which is how a BloomPUB holds the picture behind a canvas. A
- * background has no way of its own to say whether it loaded, so each picture is loaded again from
- * the address the page gives. Returns once every picture has either loaded or failed.
+ * background of an element, which is how a BloomPUB holds the picture behind a canvas. Only an
+ * element that is drawn counts: one that is hidden, or has no area, shows a reader nothing. An
+ * image element answers for itself, once it has loaded or failed. A background has no way of its
+ * own to say whether it loaded, so it is loaded again from the address the page gives.
  */
 export async function getPicturesShownIn(
     container: Locator | Frame,
@@ -437,36 +438,56 @@ export async function getPicturesShownIn(
         "evaluateAll" in container ? container : container.locator("body");
     return within.evaluate(async (root) => {
         const view = root.ownerDocument.defaultView!;
-        const urls: string[] = [];
+        const isDrawn = (element: Element) => {
+            const box = element.getBoundingClientRect();
+            const style = view.getComputedStyle(element);
+            return (
+                box.width > 0 &&
+                box.height > 0 &&
+                style.visibility === "visible" &&
+                style.opacity !== "0"
+            );
+        };
+        // Resolves once `image` has loaded or failed, with what it then holds.
+        const whenSettled = (image: HTMLImageElement, url: string) =>
+            new Promise<{ url: string; width: number; height: number }>(
+                (resolve) => {
+                    const report = () =>
+                        resolve({
+                            url,
+                            width: image.naturalWidth,
+                            height: image.naturalHeight,
+                        });
+                    if (image.complete) {
+                        report();
+                        return;
+                    }
+                    image.addEventListener("load", report, { once: true });
+                    image.addEventListener("error", report, { once: true });
+                },
+            );
+        const pictures: Promise<{
+            url: string;
+            width: number;
+            height: number;
+        }>[] = [];
         for (const element of [root, ...root.querySelectorAll("*")]) {
+            if (!isDrawn(element)) continue;
             if (element instanceof view.HTMLImageElement) {
-                urls.push(element.currentSrc || element.src);
+                pictures.push(
+                    whenSettled(element, element.currentSrc || element.src),
+                );
                 continue;
             }
             const background = /^url\("(.*)"\)$/.exec(
                 view.getComputedStyle(element).backgroundImage,
             );
-            if (background) urls.push(background[1]);
+            if (!background) continue;
+            const probe = new view.Image();
+            probe.src = background[1];
+            pictures.push(whenSettled(probe, background[1]));
         }
-        return Promise.all(
-            urls.map(
-                (url) =>
-                    new Promise<{ url: string; width: number; height: number }>(
-                        (resolve) => {
-                            const probe = new view.Image();
-                            const report = () =>
-                                resolve({
-                                    url,
-                                    width: probe.naturalWidth,
-                                    height: probe.naturalHeight,
-                                });
-                            probe.onload = report;
-                            probe.onerror = report;
-                            probe.src = url;
-                        },
-                    ),
-            ),
-        );
+        return Promise.all(pictures);
     });
 }
 
