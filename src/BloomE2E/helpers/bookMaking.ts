@@ -14,8 +14,11 @@ import * as Path from "node:path";
 import { apiGet, apiGetJson, apiPost } from "./api";
 import {
     chooseFromSelectedBookMenuByTestId,
+    listEditableBooks,
     selectBook,
     waitForCollectionReady,
+    type IBookInfo,
+    type ICollectionInfo,
 } from "./collection";
 import {
     markEditablePage,
@@ -23,18 +26,6 @@ import {
     waitForEditablePageReload,
 } from "./pageThumbnails";
 import { switchTab } from "./workspace";
-
-/** One book as collections/books reports it. Only the fields used here. */
-interface IBookInfo {
-    title: string;
-    folderPath: string;
-}
-
-/** One source collection as collections/list reports it. Only the fields used here. */
-interface ICollectionInfo {
-    id: string;
-    name: string;
-}
 
 /** What editView/topBar/contentLanguageUsage replies with. */
 interface IContentLanguageUsage {
@@ -346,22 +337,6 @@ export async function findBookFolder(
         );
     }
     return book!.folderPath;
-}
-
-/** The books in the collection Bloom has open. */
-async function listEditableBooks(page: Page): Promise<IBookInfo[]> {
-    const name = (
-        await apiGet(page, "collections/getCurrentEditableCollectionName")
-    ).body;
-    const collections = await apiGetJson<ICollectionInfo[]>(
-        page,
-        "collections/list",
-    );
-    const editable = collections.find((c) => c.name === name) ?? collections[0];
-    return apiGetJson<IBookInfo[]>(
-        page,
-        `collections/books?collection-id=${encodeURIComponent(editable.id)}`,
-    );
 }
 
 /**

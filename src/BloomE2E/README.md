@@ -154,8 +154,10 @@ real bug in the code under test; read the message and fix it rather than working
   (hex box, sample, saturation box, hue and alpha sliders) so a test can check they agree;
   `clickPaletteSwatch`, `clickHueSlider`, `clickSaturationBox`, `clickAlphaSliderMiddle`,
   `typeInHexBox`, `appendToHexBox`; and closing it with OK, Cancel, Escape or a click outside.
-- `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`, and the selected book's
-  right-click menu (`chooseFromSelectedBookMenu`, `closeBookMenu`).
+- `helpers/collection.ts` — `selectBook`, `clickBookTile`, `waitForCollectionReady`,
+  `listEditableBooks`, and the selected book's menu, opened by a right-click or by the triangle
+  on its tile (`openSelectedBookMenu`, `readSelectedBookMenu`, `chooseFromSelectedBookMenu`,
+  `chooseFromSelectedBookMenuByTestId`, `closeBookMenu`, `getBooksShowingMenuTriangle`).
 - `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
 - `helpers/addPageDialog.ts` — open, read, scroll and close the real Add Page dialog, and add a
   page through it. Tests that only need a page in their book call `addPage` instead.

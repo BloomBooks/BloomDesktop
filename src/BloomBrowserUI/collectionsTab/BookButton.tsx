@@ -574,6 +574,7 @@ export const BookButton: React.FunctionComponent<{
                 // the button gets the click even if its inside this div.
                 items.length > 0 && (
                     <div
+                        data-testid="book-menu-triangle"
                         css={css`
                             position: absolute;
                             box-sizing: border-box;
