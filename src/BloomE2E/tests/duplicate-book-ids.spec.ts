@@ -40,6 +40,9 @@ test.use({
     experimentalFeatures: ["team-collections"],
 });
 
+/** The email registerTestUser gives Bloom's user, which a Team Collection records on a checkout. */
+const kTestUserEmail = "e2e.tester@example.com";
+
 /**
  * Copy a book folder beside itself as File Explorer does: every file, with its times kept, into
  * `copyName`, such as "<name> - Copy" or "<name> - Copy (2)".
@@ -119,17 +122,19 @@ async function expectEachBookHasItsOwnId(
             "exactly one of the books should keep the original's ID",
         ).toHaveLength(1);
     }
-    const listed = await listEditableBooks(page);
+    const listed: Record<string, string> = {};
+    for (const book of await listEditableBooks(page))
+        listed[Path.basename(book.folderPath)] = book.id;
     for (const folder of folders) {
         expect(
-            listed.find((book) => book.id === ids[folder]),
+            listed[folder],
             `Bloom should list ${folder} with the ID its meta.json holds`,
-        ).toBeDefined();
+        ).toBe(ids[folder]);
     }
 }
 
-/** The book ID in the meta.json of the book `bookFolderName` in a Team Collection's shared folder. */
-function readSharedBookId(sharedFolder: string, bookFolderName: string) {
+/** The path of the .bloom file for the book `bookFolderName` in a Team Collection's shared folder. */
+function sharedBookFile(sharedFolder: string, bookFolderName: string) {
     const books = fs
         .readdirSync(sharedFolder, { recursive: true, encoding: "utf8" })
         .filter(
@@ -141,7 +146,14 @@ function readSharedBookId(sharedFolder: string, bookFolderName: string) {
         books,
         `the shared folder should hold ${bookFolderName}.bloom once`,
     ).toHaveLength(1);
-    const meta = readZip(fs.readFileSync(Path.join(sharedFolder, books[0])))
+    return Path.join(sharedFolder, books[0]);
+}
+
+/** The book ID in the meta.json of the book `bookFolderName` in a Team Collection's shared folder. */
+function readSharedBookId(sharedFolder: string, bookFolderName: string) {
+    const meta = readZip(
+        fs.readFileSync(sharedBookFile(sharedFolder, bookFolderName)),
+    )
         .filter((entry) => Path.basename(entry.name) === "meta.json")
         .map((entry) => JSON.parse(entry.content.toString("utf8")));
     expect(
@@ -149,6 +161,32 @@ function readSharedBookId(sharedFolder: string, bookFolderName: string) {
         `${bookFolderName}.bloom should hold one meta.json`,
     ).toHaveLength(1);
     return meta[0].bookInstanceId as string;
+}
+
+/**
+ * Who the shared folder says has the book `bookFolderName` checked out (the email of the
+ * registered user), or undefined when nobody does. A Team Collection keeps a book's status as JSON
+ * in the comment of its .bloom zip, which follows the zip's end-of-central-directory record.
+ */
+function readSharedBookLockedBy(
+    sharedFolder: string,
+    bookFolderName: string,
+): string | undefined {
+    const zip = fs.readFileSync(sharedBookFile(sharedFolder, bookFolderName));
+    let end = -1;
+    for (let i = zip.length - 22; i >= 0; i--) {
+        if (zip.readUInt32LE(i) === 0x06054b50) {
+            end = i;
+            break;
+        }
+    }
+    expect(end, `${bookFolderName}.bloom should be a zip`).toBeGreaterThan(-1);
+    const comment = zip.toString(
+        "utf8",
+        end + 22,
+        end + 22 + zip.readUInt16LE(end + 20),
+    );
+    return JSON.parse(comment).lockedBy ?? undefined;
 }
 
 test("in a plain collection, Bloom gives copies of a book made with File Explorer new IDs [Test Case ID 664]", async ({
@@ -251,7 +289,15 @@ test("in a Team Collection, Bloom gives new IDs to copies of a shared book, not 
 
         await step("Check the shared book out", async () => {
             await clickBookTile(tcPage, originalId);
+            expect(
+                readSharedBookLockedBy(sharedFolder, name),
+                "Sanity check: the shared folder says nobody has the book checked out",
+            ).toBeUndefined();
             await checkOutSelectedBook(tcPage);
+            expect(
+                readSharedBookLockedBy(sharedFolder, name),
+                "Sanity check: the shared folder records that I checked the book out",
+            ).toBe(kTestUserEmail);
         });
 
         await step(
@@ -283,6 +329,10 @@ test("in a Team Collection, Bloom gives new IDs to copies of a shared book, not 
                     await isSelectedBookSaveable(tcPage),
                     "the book should still be checked out to me",
                 ).toBe(true);
+                expect(
+                    readSharedBookLockedBy(sharedFolder, name),
+                    "the shared folder should still say I have the book checked out",
+                ).toBe(kTestUserEmail);
             },
         );
     } finally {
