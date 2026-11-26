@@ -167,6 +167,31 @@ export async function deleteVideo(
 }
 
 /**
+ * Press the Sign Language tool's "Show in Folder" command for the video in `videoBox`, the way a
+ * person does: click the box, which opens the tool on that video, open the tool's Advanced section,
+ * and press Show in Folder. Bloom then opens the book's video folder in File Explorer with the
+ * video selected; helpers/fileExplorer.ts reads and closes that window.
+ */
+export async function showVideoInFolder(
+    page: Page,
+    videoBox: Locator,
+): Promise<void> {
+    await expect(
+        videoBox,
+        "There is no video in the box to show.",
+    ).not.toHaveClass(/bloom-noVideoSelected/);
+    await realClick(videoBox);
+    await openSignLanguageAdvancedSection(page);
+    const toolbox = toolboxFrame(page);
+    // The tool turns Show in Folder on only once it has read the selected video and is idle.
+    await expect(
+        toolbox.locator("#showInFolderWrapper"),
+        "The Sign Language tool never turned on its Show in Folder command for the selected video.",
+    ).not.toHaveClass(/\bdisabled\b/, { timeout: 30000 });
+    await toolbox.locator("#showInFolder").click();
+}
+
+/**
  * Record a video into `videoBox` with the Sign Language tool's record button, the way a person
  * does: click the box (which opens the tool and turns the camera on), press record, wait out the
  * three-second countdown and about a second of recording, press stop, and wait until the box

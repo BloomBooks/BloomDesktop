@@ -220,7 +220,9 @@ real bug in the code under test; read the message and fix it rather than working
 - `helpers/videos.ts` — `chooseVideoFile` puts a video into a video box through the Sign Language
   tool's own Import, with the native file picker alone answered by an `e2e/*` hook; ships
   `fixtures/videos/short.mp4`. `trimVideoStart` moves that tool's Trim slider, and
-  `getVideoTrim` and `getVideoFileName` read what a box holds.
+  `getVideoTrim` and `getVideoFileName` read what a box holds. `showVideoInFolder` presses the
+  tool's Show in Folder, and `closeExplorerShowing` (`helpers/fileExplorer.ts`) reads and closes
+  the File Explorer window that Bloom opens on the video.
 - `helpers/origami.ts` — the Edit tab's Change Layout mode: `setChangeLayoutMode`,
   `sections`, `splitSection`, `getSectionTypesOffered`, `chooseSectionType`.
 - `helpers/pageSize.ts` — `getPageSize`, `getPageSizeChoices`, `setPageSize`: read and change
