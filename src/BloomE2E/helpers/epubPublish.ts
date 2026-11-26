@@ -111,6 +111,18 @@ async function includeImageDescriptionsBox(page: Page): Promise<Locator> {
 }
 
 /**
+ * How the ePUB screen's "Include image descriptions on page" check box shows: ticked or not, and
+ * whether it can be changed. The ePUB screen must be showing (openEpubPublishScreen).
+ */
+export async function getIncludeImageDescriptionsBoxState(
+    page: Page,
+): Promise<{ ticked: boolean; enabled: boolean }> {
+    const box = await includeImageDescriptionsBox(page);
+    await box.waitFor({ state: "attached", timeout: 30000 });
+    return { ticked: await box.isChecked(), enabled: await box.isEnabled() };
+}
+
+/**
  * Whether Bloom will put the pictures' descriptions on the pages of the selected book's ePUB, as
  * the book's publish settings hold it. The ePUB screen's check box can show otherwise: it is
  * unticked and disabled while the mode is "fixed", whatever the setting.
@@ -472,18 +484,132 @@ export async function getBookMetadataValue(
  * Bloom writes beside the ePUB's content folder (PublishEpubApi.SetupEpubControlContent).
  */
 export async function readEpubPreviewPackage(page: Page): Promise<string> {
+    return fetchText(page, epubPreviewPackageUrl(page));
+}
+
+/** Where the package document of the ePUB the preview is showing is served (readEpubPreviewPackage). */
+function epubPreviewPackageUrl(page: Page): string {
     const manifest = new URL(readerFrame(page).url()).searchParams.get("url");
     if (!manifest)
         throw new Error(
             `The ePUB reader's address names no manifest: ${readerFrame(page).url()}`,
         );
-    const packageUrl = new URL("content/content.opf", manifest).toString();
-    return page.evaluate(async (url) => {
-        const response = await fetch(url);
+    return new URL("content/content.opf", manifest).toString();
+}
+
+/** A file of the staged ePUB, as text, fetched the way the reader fetches it. */
+async function fetchText(page: Page, url: string): Promise<string> {
+    return page.evaluate(async (address) => {
+        const response = await fetch(address);
         if (!response.ok)
-            throw new Error(`Fetching ${url} answered ${response.status}.`);
+            throw new Error(`Fetching ${address} answered ${response.status}.`);
         return response.text();
-    }, packageUrl);
+    }, url);
+}
+
+/** One clip of a page's read-aloud: the text a reader highlights, and the audio it plays then. */
+export interface IEpubReadAloudClip {
+    /** The id, in the page's document, of the text the clip reads. */
+    textId: string;
+    /** The audio file the clip plays, as the ePUB's address of it. */
+    audioUrl: string;
+    /** Where in that file the clip starts and ends, in seconds. */
+    clipBegin: number;
+    clipEnd: number;
+}
+
+/**
+ * What a reader app reads aloud on a page of the ePUB preview (a frame showEpubPreviewPage
+ * returned), in the order it reads it: the clips of the page's media overlay, the SMIL file that
+ * the package's manifest names as the page's "media-overlay" (EpubMaker.AddAudioOverlay). Empty
+ * when the page has none, which is when nothing on it has a recording.
+ */
+export async function getEpubPreviewPageReadAloud(
+    page: Page,
+    frame: Frame,
+): Promise<IEpubReadAloudClip[]> {
+    const packageUrl = epubPreviewPackageUrl(page);
+    const packageText = await fetchText(page, packageUrl);
+    const pageUrl = frame.url().split("#")[0];
+    const overlayUrl = await page.evaluate(
+        ({ text, packageAddress, pageAddress }) => {
+            const doc = new DOMParser().parseFromString(
+                text,
+                "application/xml",
+            );
+            const items = [...doc.getElementsByTagNameNS("*", "item")];
+            const pageItem = items.find(
+                (item) =>
+                    new URL(item.getAttribute("href") ?? "", packageAddress)
+                        .href === pageAddress,
+            );
+            if (!pageItem)
+                throw new Error(
+                    `The ePUB package's manifest lists no item for the page at ${pageAddress}.`,
+                );
+            const overlayId = pageItem.getAttribute("media-overlay");
+            if (!overlayId) return undefined;
+            const overlay = items.find(
+                (item) => item.getAttribute("id") === overlayId,
+            );
+            if (!overlay)
+                throw new Error(
+                    `The ePUB package's manifest names "${overlayId}" as the media overlay of ` +
+                        `${pageAddress}, but has no item with that id.`,
+                );
+            return new URL(overlay.getAttribute("href") ?? "", packageAddress)
+                .href;
+        },
+        { text: packageText, packageAddress: packageUrl, pageAddress: pageUrl },
+    );
+    if (!overlayUrl) return [];
+    const smilText = await fetchText(page, overlayUrl);
+    return page.evaluate(
+        ({ text, smilAddress, pageAddress }) => {
+            const seconds = (clock: string | null) => {
+                const parts = (clock ?? "").split(":").map(Number);
+                if (parts.length !== 3 || parts.some(Number.isNaN))
+                    throw new Error(
+                        `A clip of ${smilAddress} has the time "${clock}", not h:mm:ss.fff.`,
+                    );
+                return parts[0] * 3600 + parts[1] * 60 + parts[2];
+            };
+            const doc = new DOMParser().parseFromString(
+                text,
+                "application/xml",
+            );
+            return [...doc.getElementsByTagNameNS("*", "par")].map((par) => {
+                const textSrc =
+                    par
+                        .getElementsByTagNameNS("*", "text")[0]
+                        ?.getAttribute("src") ?? "";
+                const audio = par.getElementsByTagNameNS("*", "audio")[0];
+                const target = new URL(textSrc, smilAddress);
+                if (target.href.split("#")[0] !== pageAddress)
+                    throw new Error(
+                        `A clip of ${smilAddress} reads ${textSrc}, which is not on the page ${pageAddress}.`,
+                    );
+                return {
+                    textId: decodeURIComponent(target.hash.slice(1)),
+                    audioUrl: new URL(
+                        audio?.getAttribute("src") ?? "",
+                        smilAddress,
+                    ).href,
+                    clipBegin: seconds(audio?.getAttribute("clipBegin")),
+                    clipEnd: seconds(audio?.getAttribute("clipEnd")),
+                };
+            });
+        },
+        { text: smilText, smilAddress: overlayUrl, pageAddress: pageUrl },
+    );
+}
+
+/** Whether the staged ePUB has a file at this address (one getEpubPreviewPageReadAloud gave). */
+export async function epubPreviewHasFile(
+    page: Page,
+    url: string,
+): Promise<boolean> {
+    return page.evaluate(async (address) => (await fetch(address)).ok, url);
 }
 
 /**

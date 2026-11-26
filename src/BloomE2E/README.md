@@ -245,8 +245,9 @@ real bug in the code under test; read the message and fix it rather than working
   `chooseEpubMode`, `setIncludeImageDescriptionsOnPage`, `getEpubPreviewImageDescriptions`,
   `showEpubPreview`, which also closes the "Creating ePUB" dialog that otherwise stays over the
   screen, and `showEpubPreviewPage`, which turns the preview's reader to one page of the book and
-  returns the frame that page is in. The preview shows the files that Save... zips; Save... itself
-  opens the operating system's save dialog.
+  returns the frame that page is in; `getEpubPreviewPageReadAloud` reads what a reader app reads
+  aloud on that page, from its media overlay. The preview shows the files that Save... zips;
+  Save... itself opens the operating system's save dialog.
 - `helpers/pageLayout.ts` — `getPageLayout` reads where a page's canvases, pictures, text boxes and
   words are, relative to the page, from any document that draws the page; `expectSameLayout`
   compares two such readings, such as the Edit tab's and a publication's.
