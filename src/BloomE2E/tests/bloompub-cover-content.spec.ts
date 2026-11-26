@@ -12,6 +12,7 @@ import { test } from "../fixtures/bloomTest";
 import { makeBookFromTemplate } from "../helpers/bookMaking";
 import {
     addBilingualContentPage,
+    expectBlankTextOnlyPageLeftOut,
     expectCoverPagesInBloomPub,
     type ICoverContentCase,
     openBloomPubScreenWithOptionalL2,
@@ -72,6 +73,11 @@ test("Language 2 text on the inside and back covers is in the BloomPUB whether o
             await makeBookFromTemplate(page, "Basic Book");
             await addBilingualContentPage(page, COVER_CASE);
         },
+    );
+
+    await step(
+        "While the inside front cover is blank, the BloomPUB leaves it out",
+        async () => expectBlankTextOnlyPageLeftOut(page, COVER_CASE),
     );
 
     await step(

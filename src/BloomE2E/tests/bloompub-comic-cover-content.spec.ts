@@ -12,6 +12,7 @@ import { expect, test } from "../fixtures/bloomTest";
 import { getPages, makeBookFromTemplate } from "../helpers/bookMaking";
 import {
     addBilingualContentPage,
+    expectBlankTextOnlyPageLeftOut,
     expectCoverPagesInBloomPub,
     type ICoverContentCase,
     openBloomPubScreenWithOptionalL2,
@@ -72,6 +73,11 @@ test("Language 2 text on a Digital Comic Book's End Extra pages is in the BloomP
                 ).toContain(coverPage.caption);
             await addBilingualContentPage(page, COVER_CASE);
         },
+    );
+
+    await step(
+        "While End Extra 1 is blank, the BloomPUB leaves it out",
+        async () => expectBlankTextOnlyPageLeftOut(page, COVER_CASE),
     );
 
     await step("Type Language 2 text on End Extra 1, 2 and 3", async () =>

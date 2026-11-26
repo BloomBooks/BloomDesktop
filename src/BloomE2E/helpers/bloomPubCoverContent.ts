@@ -28,6 +28,7 @@ import {
     showPreviewPage,
     stageBloomPub,
 } from "./publish";
+import { switchTab } from "./workspace";
 import type { Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as Path from "node:path";
@@ -99,6 +100,40 @@ export async function addBilingualContentPage(
     // Back to Language 1 alone, so the book does not require Language 2 and the Text Languages
     // list lets it be left out.
     await setContentLanguages(page, [coverCase.l1]);
+}
+
+/**
+ * Check that a BloomPUB of the book in the Edit tab leaves out the text-only cover page while it is
+ * still blank, then go back to the Edit tab.
+ *
+ * Bloom keeps a page in a BloomPUB for its pictures, video and the like as well as for its text.
+ * This is the control that shows the page has nothing else to keep it, so that, once it has text,
+ * finding it in the BloomPUB shows that its Language 2 text is what kept it.
+ */
+export async function expectBlankTextOnlyPageLeftOut(
+    page: Page,
+    coverCase: ICoverContentCase,
+): Promise<void> {
+    await openPublishDestination(page, "BloomPUB");
+    const stagedPages = await readStagedPages(page);
+    const describePages = () =>
+        JSON.stringify(stagedPages.map((p) => [p.xmatterPage, p.texts]));
+    expect(
+        stagedPages.some((p) =>
+            p.texts.some(
+                (t) => t.lang === coverCase.l1 && t.text === CONTENT_L1,
+            ),
+        ),
+        `test setup: the content page's Language 1 text should be in the BloomPUB; it has ${describePages()}`,
+    ).toBe(true);
+    const textOnlyCoverPage = coverCase.coverPages.find(
+        (p) => p.xmatterPage === coverCase.textOnlyPage,
+    )!;
+    expect(
+        stagedPages.some((p) => p.xmatterPage === coverCase.textOnlyPage),
+        `test setup: a BloomPUB should leave out the ${textOnlyCoverPage.caption} page while it is blank; it has ${describePages()}`,
+    ).toBe(false);
+    await switchTab(page, "edit");
 }
 
 /** Type each cover page's Language 2 text on it, in the book in the Edit tab. */
