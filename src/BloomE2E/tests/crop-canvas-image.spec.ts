@@ -296,10 +296,17 @@ test("crop a picture from each side, move it inside its box, resize it and reset
             [-60, -60, ["right", "bottom"]],
         ];
         for (const [dx, dy, edgesAtLimit] of drags) {
+            const boxBefore = await getBox(element, "the picture's box");
             const pictureBefore = await getBox(picture, "the picture");
             await dragBy(page, moveCropHandle(page), dx, dy);
             const box = await getBox(element, "the picture's box");
             const pictureBox = await getBox(picture, "the picture");
+            for (const edge of ["left", "top", "right", "bottom"] as const)
+                expectNear(
+                    box[edge],
+                    boxBefore[edge],
+                    `Dragging the picture past its limit should not move or resize its box (${edge} edge)`,
+                );
             for (const edge of edgesAtLimit) {
                 expect(
                     Math.abs(pictureBox[edge] - pictureBefore[edge]),
