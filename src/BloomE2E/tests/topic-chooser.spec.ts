@@ -22,8 +22,45 @@ test.use({
     collectionSpec: { name: "topic-chooser", languages: ["en"] },
 });
 
+// The dialog, its radio buttons and its Close button are found by the name of its radio group,
+// the topics' English keys (each radio's value) and the button's
+// l10n id, so that the test does not depend on the UI language. The cover shows the topic in the
+// book's language, English here.
 function topicDialog(page: Page): Locator {
-    return page.getByRole("dialog").filter({ hasText: "Choose Topic" });
+    return page
+        .getByRole("dialog")
+        .filter({ has: page.locator('input[name="topic-radio-group"]') });
+}
+
+function topicRadio(page: Page, topicKey: string): Locator {
+    return topicDialog(page).locator(
+        `input[type="radio"][value="${topicKey}"]`,
+    );
+}
+
+/** The English keys of the topics whose labels the browser shows in bold, in dialog order. */
+async function boldTopics(page: Page): Promise<string[]> {
+    return topicDialog(page)
+        .locator("label")
+        .evaluateAll((labels) =>
+            labels
+                .filter(
+                    (label) =>
+                        Number(
+                            getComputedStyle(
+                                label.querySelector(".MuiTypography-root")!,
+                            ).fontWeight,
+                        ) >= 700,
+                )
+                .map(
+                    (label) =>
+                        (
+                            label.querySelector(
+                                'input[type="radio"]',
+                            ) as HTMLInputElement
+                        ).value,
+                ),
+        );
 }
 
 function topicBox(page: Page): Locator {
@@ -53,41 +90,30 @@ async function openTopicChooser(page: Page): Promise<void> {
     ).toBeVisible({ timeout: 30000 });
 }
 
-/** The font weight of a topic's label in the dialog, as the browser computes it. */
-async function labelWeight(page: Page, topic: string): Promise<number> {
-    return topicDialog(page)
-        .locator("label")
-        .filter({ has: page.getByRole("radio", { name: topic, exact: true }) })
-        .locator(".MuiTypography-root")
-        .evaluate((element) => Number(getComputedStyle(element).fontWeight));
-}
-
-/** Pick `topic` and check that it, and only it, is checked and in bold. */
-async function pickTopic(
+/** Check that `topicKey`, and no other topic, is checked and in bold. */
+async function expectOnlyTopicMarked(
     page: Page,
-    topic: string,
-    previous: string,
+    topicKey: string,
 ): Promise<void> {
-    const radio = topicDialog(page).getByRole("radio", {
-        name: topic,
-        exact: true,
-    });
-    await radio.click();
-    await expect(radio, `${topic} should be checked`).toBeChecked();
+    await expect(
+        topicRadio(page, topicKey),
+        `${topicKey} should be checked`,
+    ).toBeChecked();
     await expect(
         topicDialog(page).getByRole("radio", { checked: true }),
-        `only ${topic} should be checked`,
+        `only ${topicKey} should be checked`,
     ).toHaveCount(1);
     await expect
-        .poll(() => labelWeight(page, topic), {
-            message: `${topic} should be in bold once picked`,
+        .poll(() => boldTopics(page), {
+            message: `${topicKey}, and no other topic, should be in bold`,
         })
-        .toBeGreaterThanOrEqual(700);
-    await expect
-        .poll(() => labelWeight(page, previous), {
-            message: `${previous} should no longer be in bold once ${topic} is picked`,
-        })
-        .toBeLessThan(700);
+        .toEqual([topicKey]);
+}
+
+/** Pick `topicKey` and check that it, and only it, is checked and in bold. */
+async function pickTopic(page: Page, topicKey: string): Promise<void> {
+    await topicRadio(page, topicKey).click();
+    await expectOnlyTopicMarked(page, topicKey);
 }
 
 test("the Choose Topic dialog marks the topic picked, and the cover shows it [Test Case ID 88]", async ({
@@ -104,19 +130,13 @@ test("the Choose Topic dialog marks the topic picked, and the cover shows it [Te
 
     await openTopicChooser(page);
     // A book with no topic starts on "No Topic".
-    await expect(
-        topicDialog(page).getByRole("radio", { name: "No Topic", exact: true }),
-    ).toBeChecked();
-    expect(
-        await labelWeight(page, "No Topic"),
-        "No Topic should start in bold",
-    ).toBeGreaterThanOrEqual(700);
+    await expectOnlyTopicMarked(page, "No Topic");
 
-    await pickTopic(page, "Bible", "No Topic");
-    await pickTopic(page, "Primer", "Bible");
-    await pickTopic(page, "Story Book", "Primer");
+    await pickTopic(page, "Bible");
+    await pickTopic(page, "Primer");
+    await pickTopic(page, "Story Book");
 
-    await topicDialog(page).getByRole("button", { name: "Close" }).click();
+    await topicDialog(page).getByTestId("Common.Close").click();
     await expect(topicDialog(page)).toBeHidden({ timeout: 30000 });
     // Bloom reloads the page with the topic on the cover.
     await expect(
@@ -126,14 +146,5 @@ test("the Choose Topic dialog marks the topic picked, and the cover shows it [Te
 
     // Opening the dialog again starts on the book's topic.
     await openTopicChooser(page);
-    await expect(
-        topicDialog(page).getByRole("radio", {
-            name: "Story Book",
-            exact: true,
-        }),
-    ).toBeChecked();
-    expect(
-        await labelWeight(page, "Story Book"),
-        "the book's topic should be in bold when the dialog opens",
-    ).toBeGreaterThanOrEqual(700);
+    await expectOnlyTopicMarked(page, "Story Book");
 });
