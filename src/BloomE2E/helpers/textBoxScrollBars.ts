@@ -100,16 +100,31 @@ export interface ITextBoxScrollBar {
 }
 
 /**
- * The scroll bar Bloom has given the text box `box` locates, if any. It is found by where it is
- * drawn: a showing rail that covers the box's right edge and overlaps the box's height.
+ * The scroll bar Bloom has given one text box, if any. It is found by where it is drawn: a
+ * showing rail that covers the box's right edge and overlaps the box's height.
  */
-export async function getScrollBarOfBox(
-    box: Locator,
+export async function getTextBoxScrollBar(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    groupIndex = 0,
 ): Promise<ITextBoxScrollBar> {
-    return box.evaluate((box) => {
-        const boxRect = box.getBoundingClientRect();
+    return getScrollBarOf(
+        textBox(page, groupSelector, languageTag, groupIndex),
+    );
+}
+
+/**
+ * The scroll bar of the text box `box` locates, if any, found as getTextBoxScrollBar finds it. For
+ * a box that is not one language's box of a translation group on the page being edited: the text
+ * of a canvas element, or a box of a page in the BloomPUB preview, where bloom-player draws the
+ * same kind of scroll bar.
+ */
+export async function getScrollBarOf(box: Locator): Promise<ITextBoxScrollBar> {
+    return box.evaluate((element) => {
+        const boxRect = element.getBoundingClientRect();
         for (const rail of Array.from(
-            box.ownerDocument.querySelectorAll<HTMLElement>(
+            element.ownerDocument.querySelectorAll<HTMLElement>(
                 ".nicescroll-rails",
             ),
         )) {
@@ -136,53 +151,6 @@ export async function getScrollBarOfBox(
     });
 }
 
-/** The scroll bar Bloom has given one text box, if any; see getScrollBarOfBox. */
-export async function getTextBoxScrollBar(
-    page: Page,
-    groupSelector: string,
-    languageTag: string,
-    groupIndex = 0,
-): Promise<ITextBoxScrollBar> {
-    return getScrollBarOfBox(
-        textBox(page, groupSelector, languageTag, groupIndex),
-    );
-}
-
-/**
- * Wait until the text box `box` locates has a scroll bar (`showing` true) or has none (false),
- * and return it as it then is. `what` names the box in the failure message.
- */
-export async function waitForScrollBarOfBox(
-    box: Locator,
-    showing: boolean,
-    what: string,
-): Promise<ITextBoxScrollBar> {
-    let scrollBar: ITextBoxScrollBar = { showing: !showing, handleHeight: 0 };
-    // A scroll bar that has just appeared can be read before niceScroll has sized its handle (a
-    // handle about one pixel high has been seen), so when waiting for one to show, also wait until
-    // two reads in a row give the same handle height.
-    let previousHandleHeight = -1;
-    await expect
-        .poll(
-            async () => {
-                scrollBar = await getScrollBarOfBox(box);
-                const settled = scrollBar.handleHeight === previousHandleHeight;
-                previousHandleHeight = scrollBar.handleHeight;
-                return showing
-                    ? scrollBar.showing && settled
-                    : scrollBar.showing;
-            },
-            {
-                timeout: kScrollBarWaitMs,
-                message: showing
-                    ? `${what} never got a scroll bar.`
-                    : `${what} kept its scroll bar.`,
-            },
-        )
-        .toBe(showing);
-    return scrollBar;
-}
-
 /**
  * Wait until a text box has a scroll bar (`showing` true) or has none (false), and return it as
  * it then is.
@@ -194,11 +162,48 @@ export async function waitForTextBoxScrollBar(
     showing: boolean,
     groupIndex = 0,
 ): Promise<ITextBoxScrollBar> {
-    return waitForScrollBarOfBox(
+    return waitForScrollBarOf(
         textBox(page, groupSelector, languageTag, groupIndex),
         showing,
         `The "${languageTag}" box of "${groupSelector}"`,
     );
+}
+
+/**
+ * Wait until the text box `box` locates has a scroll bar (`showing` true) or has none (false),
+ * and return it as it then is. `what` names the box in the failure message, as the start of a
+ * sentence. See getScrollBarOf for which boxes this is for.
+ */
+export async function waitForScrollBarOf(
+    box: Locator,
+    showing: boolean,
+    what: string,
+): Promise<ITextBoxScrollBar> {
+    let scrollBar: ITextBoxScrollBar = { showing: !showing, handleHeight: 0 };
+    // A scroll bar that has just appeared can be read before niceScroll has sized its handle (a
+    // handle about one pixel high has been seen), so when waiting for one to show, also wait until
+    // two reads in a row give the same handle height. A rail with no handle to drag is not yet a
+    // scroll bar a person can use, so that does not count as showing either.
+    let previousHandleHeight = -1;
+    await expect
+        .poll(
+            async () => {
+                scrollBar = await getScrollBarOf(box);
+                const settled = scrollBar.handleHeight === previousHandleHeight;
+                previousHandleHeight = scrollBar.handleHeight;
+                return showing
+                    ? scrollBar.showing && settled && scrollBar.handleHeight > 0
+                    : scrollBar.showing;
+            },
+            {
+                timeout: kScrollBarWaitMs,
+                message: showing
+                    ? `${what} never got a scroll bar.`
+                    : `${what} kept its scroll bar.`,
+            },
+        )
+        .toBe(showing);
+    return scrollBar;
 }
 
 /**

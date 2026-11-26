@@ -10,7 +10,9 @@ import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
     editablePageFrame,
+    expectLanguagesShownInGroup,
     getContentPages,
+    getLanguagesShownInGroup,
     getPages,
     goToPage,
     makeBookFromTemplate,
@@ -41,33 +43,13 @@ test.use({
 
 const GROUP = ".bloom-translationGroup.bloom-trailingElement";
 
-/** The languages whose box is showing in the page's text group, in document order. */
-async function getLanguagesShownOnPage(page: Page): Promise<string[]> {
-    return editablePageFrame(page)
-        .locator(`${GROUP} .bloom-editable[lang]`)
-        .evaluateAll((boxes) =>
-            boxes
-                .filter(
-                    (box) =>
-                        box.getAttribute("lang") !== "z" &&
-                        getComputedStyle(box).display !== "none",
-                )
-                .map((box) => box.getAttribute("lang") ?? ""),
-        );
-}
-
-/** Wait until the page shows exactly these languages' boxes. */
+/** Wait until the page's text group shows exactly these languages' boxes. */
 async function expectLanguagesShownOnPage(
     page: Page,
     languages: string[],
     message: string,
 ): Promise<void> {
-    await expect
-        .poll(async () => (await getLanguagesShownOnPage(page)).sort(), {
-            timeout: 30000,
-            message,
-        })
-        .toEqual([...languages].sort());
+    await expectLanguagesShownInGroup(page, GROUP, languages, message);
 }
 
 /** The source bubble of the page's text group. */
@@ -80,7 +62,7 @@ function sourceBubble(page: Page): Locator {
  * shows the group's source bubble.
  */
 async function clickInTextGroup(page: Page): Promise<void> {
-    const shown = await getLanguagesShownOnPage(page);
+    const shown = await getLanguagesShownInGroup(page, GROUP);
     await realClick(
         editablePageFrame(page)
             .locator(`${GROUP} .bloom-editable[lang="${shown[0]}"]`)

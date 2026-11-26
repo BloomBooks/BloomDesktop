@@ -12,7 +12,7 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
-import { apiGetJson, apiPost } from "./api";
+import { apiGetJson, apiPost, getUiString } from "./api";
 import { readImageFileSize, type IPixelSize } from "./images";
 import { waitForLanguageChooser } from "./languageChooser";
 import { switchTab } from "./workspace";
@@ -343,6 +343,112 @@ export async function showBloomPubPreview(page: Page): Promise<Frame> {
 }
 
 /**
+ * Click the BloomPUB screen's refresh button again, as a person does to rebuild the preview, and
+ * return bloom-player's frame once it is showing the rebuilt book. `player` is the frame the preview
+ * showed before; the rebuilt book is recognized by being a different document, so nothing read
+ * from the old one is mistaken for the new.
+ */
+export async function refreshBloomPubPreview(
+    page: Page,
+    player: Frame,
+): Promise<Frame> {
+    await player.evaluate(() => {
+        (window as unknown as { e2eStalePreview?: boolean }).e2eStalePreview =
+            true;
+    });
+    await page.locator('[aria-label="refresh preview"]').click();
+    let rebuilt: Frame | undefined;
+    await expect
+        .poll(
+            async () => {
+                for (const frame of page.frames()) {
+                    if (!frame.url().includes("bloomplayer.htm")) continue;
+                    const ready = await frame
+                        .evaluate(
+                            () =>
+                                !(
+                                    window as unknown as {
+                                        e2eStalePreview?: boolean;
+                                    }
+                                ).e2eStalePreview &&
+                                document.querySelectorAll(".bloom-page")
+                                    .length > 0,
+                        )
+                        .catch(() => false);
+                    if (ready) {
+                        rebuilt = frame;
+                        return true;
+                    }
+                }
+                return false;
+            },
+            {
+                timeout: 120000,
+                message: "The BloomPUB preview never showed the rebuilt book.",
+            },
+        )
+        .toBe(true);
+    return rebuilt!;
+}
+
+/**
+ * Turn the pages of a BloomPUB preview (the frame showBloomPubPreview returns) forward with
+ * bloom-player's own next-page button until it is showing the book page with id `pageId`, and
+ * return that page. bloom-player finishes a page only when it is the one showing (a text box gets
+ * its scroll bar then), so a test of how a page looks to a reader goes to it first.
+ *
+ * Only forward: the preview opens on the cover, so every other page is ahead of it.
+ */
+export async function showPreviewPage(
+    player: Frame,
+    pageId: string,
+): Promise<Locator> {
+    const shown = player.locator(
+        `.swiper-slide-active .bloom-page[id="${pageId}"]`,
+    );
+    const next = player.locator(".swiper-button-next").first();
+    const idOfShownPage = async () =>
+        player
+            .locator(".swiper-slide-active .bloom-page")
+            .first()
+            .getAttribute("id");
+    // A book has far fewer pages than this; the bound only stops a preview that is not turning.
+    for (let turns = 0; turns < 500; turns++) {
+        if ((await shown.count()) > 0) return shown;
+        if (
+            await next.evaluate((button) =>
+                button.classList.contains("swiper-button-disabled"),
+            )
+        )
+            throw new Error(
+                `The BloomPUB preview reached its last page without showing page "${pageId}".`,
+            );
+        const before = await idOfShownPage();
+        await next.click();
+        await expect
+            .poll(idOfShownPage, {
+                timeout: 30000,
+                message:
+                    "The BloomPUB preview's next-page button did not turn the page.",
+            })
+            .not.toBe(before);
+    }
+    throw new Error(
+        `The BloomPUB preview never showed page "${pageId}", after 500 page turns.`,
+    );
+}
+
+/**
+ * The text box holding `text` on a page of a BloomPUB preview (a page showPreviewPage returned):
+ * the language box that the reader sees, whose text contains `text`.
+ */
+export function getPreviewTextBox(previewPage: Locator, text: string): Locator {
+    return previewPage
+        .locator(".bloom-editable.bloom-visibility-code-on")
+        .filter({ hasText: text });
+}
+
+/**
  * The languages bloom-player offers in its "Languages in this book:" menu, in the order shown.
  * Each is the name the language calls itself, which is not the name the check box list shows.
  *
@@ -456,7 +562,9 @@ export interface ISignLanguageFeature {
 export async function getSignLanguageFeature(
     page: Page,
 ): Promise<ISignLanguageFeature> {
-    const checkbox = page.getByRole("checkbox", { name: "Sign Language" });
+    const checkbox = page.getByRole("checkbox", {
+        name: await getSignLanguageLabel(page),
+    });
     await checkbox.waitFor({ state: "attached", timeout: 30000 });
     const tooltip = await hoverSignLanguageFeature(page);
     return {
@@ -511,11 +619,43 @@ export async function getCollectionSignLanguage(
     );
 }
 
+/**
+ * What the Sign Language row's tooltip says, in the UI language, when the book has no videos, or
+ * when its videos are in the sign language named `signLanguageName`.
+ */
+export async function getSignLanguageTooltipText(
+    page: Page,
+    tooltip: "noVideos" | { signLanguageName: string },
+): Promise<string> {
+    if (tooltip === "noVideos")
+        return getUiString(
+            page,
+            "PublishTab.Feature.SignLanguage.NoVideos",
+            "This is disabled because this book does not have any videos.",
+        );
+    const present = await getUiString(
+        page,
+        "PublishTab.Feature.SignLanguage.Present",
+        "The videos in this book contain {N}",
+    );
+    return present.replace("{N}", tooltip.signLanguageName);
+}
+
+/**
+ * The Sign Language row's label in the UI language. A test Bloom starts in the Windows UI
+ * language, so the row is found by what Bloom calls it, not by its English name.
+ */
+function getSignLanguageLabel(page: Page): Promise<string> {
+    return getUiString(page, "PublishTab.Upload.SignLanguage", "Sign Language");
+}
+
 /** Hover the Sign Language row and return its tooltip once it shows. */
-function hoverSignLanguageFeature(page: Page): Promise<Locator> {
+async function hoverSignLanguageFeature(page: Page): Promise<Locator> {
     return hoverForTooltip(
         page,
-        page.getByText("Sign Language", { exact: true }).first(),
+        page
+            .getByText(await getSignLanguageLabel(page), { exact: true })
+            .first(),
     );
 }
 

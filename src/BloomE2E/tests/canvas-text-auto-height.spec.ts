@@ -12,7 +12,7 @@ import {
     dragCanvasElementSide,
     dragPaletteItemOntoCanvas,
     getCanvasElementTextFit,
-    isCanvasElementAutoHeight,
+    getCanvasElementAutoHeight,
     isCanvasElementSideHandleShown,
     selectCanvasElement,
     setCanvasElementAutoHeight,
@@ -51,7 +51,7 @@ test("a canvas text box fits its height to its text only while Auto Height is on
     await selectCanvasElement(page, textBlock);
 
     // Sanity check what the rest stands on: a new Text Block has Auto Height on, so no bottom handle.
-    expect(await isCanvasElementAutoHeight(page)).toBe(true);
+    expect(await getCanvasElementAutoHeight(page)).toBe(true);
     expect(await isCanvasElementSideHandleShown(page, "s")).toBe(false);
     const empty = await getCanvasElementTextFit(page);
 

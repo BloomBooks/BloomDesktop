@@ -5,15 +5,11 @@
 //
 // Test Case IDs 173 ("Pick Sign Language From Video") and 172 ("Sign Language With Video"), their
 // automated portions. Uploading to Bloom Library and checking the Sign Language tag there stays
-// manual (their manual portions in Notion).
+// manual (their manual portions in Notion). The last test is Test Case ID 701's round trip from
+// the Publish tab: the chooser reopens on the sign language, and a name typed there stays.
 
 import { expect, test } from "../fixtures/bloomTest";
-import {
-    addPage,
-    getContentPages,
-    goToPage,
-    makeBookFromTemplate,
-} from "../helpers/bookMaking";
+import { makeBookFromTemplate } from "../helpers/bookMaking";
 import {
     cancelCollectionSettings,
     getCollectionSettingsLanguage,
@@ -24,7 +20,9 @@ import {
 import {
     cancelLanguageChooser,
     confirmLanguageChooser,
+    getLanguageChooserSelection,
     pickLanguageInChooser,
+    setLanguageChooserName,
 } from "../helpers/languageChooser";
 import {
     getCollectionSignLanguage,
@@ -32,7 +30,7 @@ import {
     openSignLanguageChooserFromPublish,
     selectPublishDestination,
 } from "../helpers/publish";
-import { chooseVideoFile, SHORT_VIDEO, videoBoxes } from "../helpers/videos";
+import { addPageWithVideo, SHORT_VIDEO } from "../helpers/videos";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
@@ -52,13 +50,7 @@ test("builds a book with a video, and shows it on the BloomPUB screen", async ({
     page,
 }) => {
     await makeBookFromTemplate(page, "Basic Book");
-    const before = (await getContentPages(page)).map((p) => p.id);
-    await addPage(page, "Video Over Text");
-    const videoPage = (await getContentPages(page)).find(
-        (p) => !before.includes(p.id),
-    )!;
-    await goToPage(page, videoPage.id);
-    await chooseVideoFile(page, videoBoxes(page).first(), SHORT_VIDEO);
+    await addPageWithVideo(page, SHORT_VIDEO);
     await selectPublishDestination(page, "BloomPUB");
 });
 
@@ -149,4 +141,47 @@ test("the tooltip's link changes the sign language, Cancel there changes nothing
         await getCollectionSettingsLanguage(page, kSignLanguageHeading),
     ).toBe("British Sign Language (bfi)");
     await cancelCollectionSettings(page);
+});
+
+test("the chooser reopened from the tooltip's link comes back on the sign language, and a name typed there stays [Test Case ID 701]", async ({
+    page,
+    bloomApp,
+}) => {
+    const kCustomName = "Signing of our deaf club";
+    await selectPublishDestination(page, "BloomPUB");
+    expect(
+        await getCollectionSignLanguage(page),
+        "sanity check: the previous test left British Sign Language",
+    ).toEqual({ tag: "bfi", name: "British Sign Language" });
+
+    await openSignLanguageChooserFromPublish(page);
+    expect(await getLanguageChooserSelection(page)).toEqual({
+        language: "bfi",
+        script: undefined,
+        name: "British Sign Language",
+        tag: "bfi",
+    });
+    await setLanguageChooserName(page, kCustomName);
+    await confirmLanguageChooser(page);
+    await expect
+        .poll(() => getCollectionSignLanguage(page))
+        .toEqual({ tag: "bfi", name: kCustomName });
+    expect(
+        readSavedCollectionSetting(bloomApp.collectionDir, "SignLanguageName"),
+    ).toBe(kCustomName);
+    // The Publish screen itself names the sign language by the typed name.
+    await expectSignLanguageFeature(page, {
+        enabled: true,
+        checked: true,
+        tooltip: `The videos in this book contain ${kCustomName}`,
+    });
+
+    await openSignLanguageChooserFromPublish(page);
+    expect(await getLanguageChooserSelection(page)).toEqual({
+        language: "bfi",
+        script: undefined,
+        name: kCustomName,
+        tag: "bfi",
+    });
+    await cancelLanguageChooser(page);
 });

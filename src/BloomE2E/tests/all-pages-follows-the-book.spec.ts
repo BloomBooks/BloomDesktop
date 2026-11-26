@@ -887,7 +887,6 @@ test.describe("All Pages follows the book", () => {
             })
             .toBe(level);
         await waitForEditablePage(shell);
-        await waitForEditTabSettled(shell);
         await expectGridToMatchBook(shell);
         for (const p of (await getContentPages(shell)).slice(0, 5)) {
             await selectPage(shell, p.id);
