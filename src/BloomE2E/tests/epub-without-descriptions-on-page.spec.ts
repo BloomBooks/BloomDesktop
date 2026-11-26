@@ -12,11 +12,10 @@
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Frame, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
-    editablePageFrame,
     findBookFolder,
     getContentPages,
     getPages,
@@ -29,9 +28,13 @@ import {
     chooseEpubMode,
     epubPreviewHasFile,
     getEpubPreviewImageDescriptions,
-    getIncludeImageDescriptionsBoxState,
+    getEpubPreviewKeptImageDescription,
+    getEpubPreviewLayout,
     getEpubPreviewPageItems,
     getEpubPreviewPageReadAloud,
+    getEpubPreviewPictures,
+    getIncludeImageDescriptionsBoxState,
+    idInEpub,
     openEpubPublishScreen,
     setIncludeImageDescriptionsOnPage,
     showEpubPreview,
@@ -43,7 +46,7 @@ import {
     openImageDescriptionTool,
 } from "../helpers/imageDescription";
 import { chooseImageFile } from "../helpers/images";
-import { addNarration } from "../helpers/talkingBook";
+import { addNarration, waitForSentencesMarked } from "../helpers/talkingBook";
 import { enableToolForBook, expandToolByHeader } from "../helpers/toolbox";
 
 test.use({
@@ -158,12 +161,14 @@ test("an ePUB without image descriptions on the page hides them but still reads 
                 const descriptionIds = await waitForSentencesMarked(
                     page,
                     kImageDescriptionGroup,
-                    description,
+                    L1,
+                    [description],
                 );
                 const otherTextIds = await waitForSentencesMarked(
                     page,
                     otherGroup,
-                    otherText,
+                    L1,
+                    [otherText],
                 );
                 const narrated = await addNarration(page, pages.bookFolder, L1);
                 expect(
@@ -250,44 +255,11 @@ test("an ePUB without image descriptions on the page hides them but still reads 
 });
 
 /**
- * Wait until the Talking Book tool has marked `text` as one sentence to record in the L1 box of the
- * first group `groupSelector` picks, and return the sentence's id.
- */
-async function waitForSentencesMarked(
-    page: Page,
-    groupSelector: string,
-    text: string,
-): Promise<string[]> {
-    const marked = editablePageFrame(page)
-        .locator(groupSelector)
-        .first()
-        .locator(`.bloom-editable[lang="${L1}"] .audio-sentence[id]`);
-    await expect
-        .poll(
-            async () =>
-                (await marked.allTextContents()).map((words) => words.trim()),
-            {
-                timeout: 30000,
-                message: `The Talking Book tool did not mark "${text}" in "${groupSelector}" for recording.`,
-            },
-        )
-        .toEqual([text]);
-    return marked.evaluateAll((elements) => elements.map((e) => e.id));
-}
-
-/**
- * The id an element of the book has in the ePUB: an ePUB validator objects to an id that starts
- * with a digit, so Bloom puts an "i" before one (EpubMaker.FixIllegalIds).
- */
-function idInEpub(id: string): string {
-    return /^\d/.test(id) ? `i${id}` : id;
-}
-
-/**
  * Check one page of the ePUB the preview is showing, made without the descriptions on its pages:
- * the picture is there, with its description as its alternative text; the description is in the
- * page's document but not shown; and the page's read-aloud plays a recording for each sentence of
- * the description and of the page's other text, and for nothing else.
+ * the ePUB has the layout of `mode`; the picture is there, with its description as its
+ * alternative text; the description is in the page's document but not shown; and the page's
+ * read-aloud plays a clip of its own for each sentence of the description and of the page's other
+ * text, and for nothing else.
  */
 async function expectDescriptionHiddenButReadAloud(
     page: Page,
@@ -296,34 +268,35 @@ async function expectDescriptionHiddenButReadAloud(
 ): Promise<void> {
     const { name, pageId, description, otherText } = described;
     const where = `${name} of the ${mode} ePUB`;
+    expect(
+        await getEpubPreviewLayout(page),
+        `the ePUB should be laid out as ${mode}`,
+    ).toBe(mode);
     const { frame } = await showEpubPreviewPage(page, pageId);
 
     await expect(
         getEpubPreviewImageDescriptions(frame),
         `${where} should have no description put on the page`,
     ).toHaveCount(0);
-    const items = await getEpubPreviewPageItems(frame);
     expect(
-        items.filter((item) => item.kind === "picture"),
-        `${where} should show its picture`,
-    ).toContainEqual({
-        kind: "picture",
-        content: expect.stringMatching(/^bird\d*\.png$/),
-    });
-    expect(
-        items
+        (await getEpubPreviewPageItems(frame))
             .filter((item) => item.kind === "text")
             .map((item) => item.content),
         `${where} should show its own text, and not the description`,
     ).toEqual([otherText]);
-    await expect(
-        frame.locator(`img[alt="${description}"]`),
-        `the picture on ${where} should have its description as its alternative text`,
-    ).toHaveCount(1);
-
-    const hidden = await readHiddenDescription(frame, described.descriptionIds);
     expect(
-        hidden,
+        await getEpubPreviewPictures(frame),
+        `${where} should show its picture, with its description as its alternative text`,
+    ).toContainEqual({
+        file: expect.stringMatching(/^bird\d*\.png$/),
+        alt: description,
+    });
+
+    expect(
+        await getEpubPreviewKeptImageDescription(
+            frame,
+            described.descriptionIds,
+        ),
         `${where} should keep the description in the page, with its recording, but not show it`,
     ).toEqual({ text: description, showing: false, recordingsFound: true });
 
@@ -346,40 +319,18 @@ async function expectDescriptionHiddenButReadAloud(
             `the ePUB should have the audio file ${clip.audioUrl} that ${where} plays`,
         ).toBe(true);
     }
-}
-
-/**
- * The description box in a page of the ePUB: its words, whether it is drawn, and whether each
- * recording of it (by id in the book) is in it.
- */
-async function readHiddenDescription(
-    frame: Frame,
-    recordingIds: string[],
-): Promise<{ text: string; showing: boolean; recordingsFound: boolean }> {
-    return frame.evaluate(
-        ({ selector, ids }) => {
-            const groups = [...document.querySelectorAll(selector)];
-            if (groups.length !== 1)
-                throw new Error(
-                    `The page has ${groups.length} description groups, not one.`,
-                );
-            const group = groups[0] as HTMLElement;
-            const showing = (element: Element) =>
-                (element as HTMLElement).getClientRects().length > 0 &&
-                getComputedStyle(element).visibility !== "hidden";
-            return {
-                text: (group.textContent ?? "").trim(),
-                showing:
-                    showing(group) ||
-                    [...group.querySelectorAll("*")].some(showing),
-                recordingsFound: ids.every(
-                    (id) => !!group.querySelector(`[id="${id}"]`),
-                ),
-            };
-        },
-        {
-            selector: kImageDescriptionGroup,
-            ids: recordingIds.map(idInEpub),
-        },
+    // Bloom joins a page's recordings into one file, so each clip must be a stretch of its own:
+    // two clips that overlap would play one recording, or part of it, for two sentences.
+    const byStart = [...clips].sort(
+        (a, b) =>
+            a.audioUrl.localeCompare(b.audioUrl) || a.clipBegin - b.clipBegin,
     );
+    for (let i = 1; i < byStart.length; i++) {
+        const [earlier, later] = [byStart[i - 1], byStart[i]];
+        if (earlier.audioUrl !== later.audioUrl) continue;
+        expect(
+            later.clipBegin,
+            `on ${where}, the clip that reads ${later.textId} should start after the clip that reads ${earlier.textId} ends`,
+        ).toBeGreaterThanOrEqual(earlier.clipEnd);
+    }
 }

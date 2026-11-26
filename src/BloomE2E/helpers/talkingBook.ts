@@ -83,6 +83,35 @@ export async function openToolboxWithTalkingBook(page: Page): Promise<void> {
 }
 
 /**
+ * Wait until the Talking Book tool has marked each of `sentences`, in order, as a sentence to
+ * record in the `languageTag` box of the first translation group `groupSelector` picks (such as
+ * ".bloom-imageDescription" or ".bookTitle"), and return their ids, which name their recordings.
+ * The tool must be open on the page being edited.
+ */
+export async function waitForSentencesMarked(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    sentences: string[],
+): Promise<string[]> {
+    const marked = editablePageFrame(page)
+        .locator(groupSelector)
+        .first()
+        .locator(`.bloom-editable[lang="${languageTag}"] .audio-sentence[id]`);
+    await expect
+        .poll(
+            async () =>
+                (await marked.allTextContents()).map((text) => text.trim()),
+            {
+                timeout: 30000,
+                message: `The Talking Book tool did not mark each sentence of "${groupSelector}" for recording.`,
+            },
+        )
+        .toEqual(sentences);
+    return marked.evaluateAll((elements) => elements.map((e) => e.id));
+}
+
+/**
  * Every sentence the Talking Book tool has marked on the page being shown, in document order.
  * Empty until the toolbox has been opened on this page -- the marking is the tool's work, not the
  * page's.

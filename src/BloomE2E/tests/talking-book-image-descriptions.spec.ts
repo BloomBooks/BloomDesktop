@@ -33,6 +33,7 @@ import {
     narrationFilePath,
     sampleNarrationFile,
     setRecordingMode,
+    waitForSentencesMarked,
 } from "../helpers/talkingBook";
 import {
     enableToolForBook,
@@ -114,14 +115,16 @@ test("records image descriptions by sentence, by whole text box and on the cover
     await expectDescriptionsShown(page);
     await clickInGroup(page, kDescription, "en");
     await setRecordingMode(page, "By Sentence");
-    const bySentenceIds = await expectSentencesMarked(
+    const bySentenceIds = await waitForSentencesMarked(
         page,
         kDescription,
+        "en",
         kBySentenceDescription,
     );
-    const pageOneTextIds = await expectSentencesMarked(
+    const pageOneTextIds = await waitForSentencesMarked(
         page,
         kPageText,
+        "en",
         kPageOneText,
     );
     recordSentences(bookFolder, [...bySentenceIds, ...pageOneTextIds]);
@@ -129,7 +132,12 @@ test("records image descriptions by sentence, by whole text box and on the cover
     // A description recorded as a whole text box: one recording for all of it.
     await goToPage(page, wholeBoxPage.id);
     await expectDescriptionsShown(page);
-    await expectSentencesMarked(page, kDescription, kWholeBoxDescription);
+    await waitForSentencesMarked(
+        page,
+        kDescription,
+        "en",
+        kWholeBoxDescription,
+    );
     await importNarration(page, bookFolder, kDescription, "en");
     const wholeBox = editablePageFrame(page)
         .locator(`${kDescription} .bloom-editable[lang="en"]`)
@@ -147,9 +155,10 @@ test("records image descriptions by sentence, by whole text box and on the cover
         fs.existsSync(narrationFilePath(bookFolder, wholeBoxId)),
         `Import Recording made no ${narrationFilePath(bookFolder, wholeBoxId)} for the description.`,
     ).toBe(true);
-    const pageTwoTextIds = await expectSentencesMarked(
+    const pageTwoTextIds = await waitForSentencesMarked(
         page,
         kPageText,
+        "en",
         kPageTwoText,
     );
     recordSentences(bookFolder, pageTwoTextIds);
@@ -161,9 +170,10 @@ test("records image descriptions by sentence, by whole text box and on the cover
     await expectDescriptionsShown(page);
     await clickInGroup(page, kDescription, "en");
     await setRecordingMode(page, "By Sentence");
-    const coverIds = await expectSentencesMarked(
+    const coverIds = await waitForSentencesMarked(
         page,
         kDescription,
+        "en",
         kCoverDescription,
     );
     recordSentences(bookFolder, coverIds);
@@ -223,32 +233,6 @@ async function expectDescriptionsShown(page: Page): Promise<void> {
             .locator(`${kDescription} .bloom-editable[lang="en"]`)
             .first(),
     ).toBeVisible({ timeout: 30000 });
-}
-
-/**
- * Wait until the Talking Book tool has marked each of `sentences`, in order, as a sentence to
- * record in the "en" box of the first group `groupSelector` picks, and return their ids.
- */
-async function expectSentencesMarked(
-    page: Page,
-    groupSelector: string,
-    sentences: string[],
-): Promise<string[]> {
-    const marked = editablePageFrame(page)
-        .locator(groupSelector)
-        .first()
-        .locator('.bloom-editable[lang="en"] .audio-sentence[id]');
-    await expect
-        .poll(
-            async () =>
-                (await marked.allTextContents()).map((text) => text.trim()),
-            {
-                timeout: 30000,
-                message: `The Talking Book tool did not mark each sentence of "${groupSelector}" for recording.`,
-            },
-        )
-        .toEqual(sentences);
-    return marked.evaluateAll((elements) => elements.map((e) => e.id));
 }
 
 /** Put the recording of each of these sentences where Bloom's own recording would go. */
