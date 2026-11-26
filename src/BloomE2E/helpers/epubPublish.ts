@@ -8,12 +8,21 @@
 // Saving the .epub file is not here: Save... opens the operating system's save dialog, which no
 // test can answer (see AUTOMATION-DEBT.md).
 
-import { expect, type Frame, type Page } from "@playwright/test";
-import { apiGet } from "./api";
+import { expect, type Frame, type Locator, type Page } from "@playwright/test";
+import { apiGet, getUiString } from "./api";
 import { selectPublishDestination } from "./publish";
 
 /** How an ePUB lays its pages out: as Bloom shows them, or however the reader likes. */
 export type EpubMode = "fixed" | "flowable";
+
+/**
+ * The Publish screen that is showing, with its settings beside its preview; see
+ * PublishScreenTemplate.tsx. Each destination draws its own screen in it.
+ */
+const PUBLISH_SCREEN = "#publishScreenTemplate";
+
+/** The "ePUB mode" list, which is the screen's only drop-down list. */
+const MODE_LIST = '[role="combobox"]';
 
 /** The ePUB screen's Preview button. Found by its aria-label, which is not localized. */
 const PREVIEW_BUTTON = '[aria-label="refresh preview"]';
@@ -53,6 +62,153 @@ export async function getEpubMode(page: Page): Promise<EpubMode> {
             `Bloom reported the ePUB mode as "${mode}", which is neither fixed nor flowable.`,
         );
     return mode;
+}
+
+/**
+ * Choose a mode in the ePUB screen's "ePUB mode" list, the way a person does, and wait until Bloom
+ * has it as the book's mode. Does nothing when the list already shows that mode. The ePUB screen
+ * must be showing (openEpubPublishScreen).
+ *
+ * The preview does not follow the change by itself: click Preview again (showEpubPreview).
+ */
+export async function chooseEpubMode(
+    page: Page,
+    mode: EpubMode,
+): Promise<void> {
+    if ((await getEpubMode(page)) === mode) return;
+    await page.locator(`${PUBLISH_SCREEN} ${MODE_LIST}`).click();
+    // MUI draws the list's choices in a popup outside the screen's own element; each carries the
+    // mode it stands for in data-value.
+    const choice = page.locator(`li[role="option"][data-value="${mode}"]`);
+    await choice.waitFor({ state: "visible", timeout: 15000 });
+    if ((await choice.getAttribute("aria-disabled")) === "true")
+        throw new Error(
+            `The ePUB screen offers the "${mode}" mode only as a disabled choice for this book.`,
+        );
+    await choice.click();
+    await expect
+        .poll(() => getEpubMode(page), {
+            timeout: 15000,
+            message: `Bloom never took "${mode}" as the book's ePUB mode.`,
+        })
+        .toBe(mode);
+}
+
+/**
+ * The ePUB screen's "Include image descriptions on page" check box, found by its label in Bloom's
+ * UI language, which is the Windows UI language and so not always English.
+ */
+async function includeImageDescriptionsBox(page: Page): Promise<Locator> {
+    return page.locator(PUBLISH_SCREEN).getByRole("checkbox", {
+        name: await getUiString(
+            page,
+            "PublishTab.Epub.IncludeOnPage",
+            "Include image descriptions on page",
+        ),
+        exact: true,
+    });
+}
+
+/**
+ * Whether Bloom will put the pictures' descriptions on the pages of the selected book's ePUB, as
+ * the book's publish settings hold it. The ePUB screen's check box can show otherwise: it is
+ * unticked and disabled while the mode is "fixed", whatever the setting.
+ */
+async function getIncludeImageDescriptionsSetting(
+    page: Page,
+): Promise<boolean> {
+    return (
+        (
+            await apiGet(page, "publish/epub/imageDescriptionSetting")
+        ).body.trim() === "true"
+    );
+}
+
+/**
+ * Tick or untick the ePUB screen's "Include image descriptions on page" check box, the way a person
+ * does, and wait until Bloom has saved the setting. Does nothing when the box is already as asked.
+ * Throws when the box is disabled, which it is while the ePUB mode is "fixed" (chooseEpubMode).
+ *
+ * The preview does not follow the change by itself: click Preview again (showEpubPreview).
+ */
+export async function setIncludeImageDescriptionsOnPage(
+    page: Page,
+    include: boolean,
+): Promise<void> {
+    const box = await includeImageDescriptionsBox(page);
+    await box.waitFor({ state: "attached", timeout: 30000 });
+    if (!(await box.isEnabled()))
+        throw new Error(
+            'The ePUB screen\'s "Include image descriptions on page" check box is disabled. ' +
+                `The ePUB mode is "${await getEpubMode(page)}"; the box can be changed only in flowable mode.`,
+        );
+    if ((await box.isChecked()) !== include) await box.click();
+    await expect(box).toBeChecked({ checked: include, timeout: 15000 });
+    await expect
+        .poll(() => getIncludeImageDescriptionsSetting(page), {
+            timeout: 15000,
+            message: `Bloom never saved "Include image descriptions on page" as ${include ? "on" : "off"}.`,
+        })
+        .toBe(include);
+}
+
+/**
+ * The picture descriptions that a page of the ePUB preview shows on the page (a frame
+ * showEpubPreviewPage returned), one for each language of each described picture, in document
+ * order. Bloom puts them there, after the picture, only when "Include image descriptions on page"
+ * is ticked (EpubMaker.HandleImageDescriptions); otherwise this matches nothing.
+ */
+export function getEpubPreviewImageDescriptions(frame: Frame): Locator {
+    return frame.locator("aside.imageDescription");
+}
+
+/** One thing a reader meets on a page of an ePUB, and what it holds. */
+export interface IEpubPageItem {
+    kind: "picture" | "description" | "text";
+    /** A picture's file name; the words of a description or of a text box. */
+    content: string;
+}
+
+/**
+ * What a reader meets on a page of the ePUB preview (a frame showEpubPreviewPage returned), in
+ * the order of the page's document, which is the order a reader that lays the page out itself
+ * shows it in: each picture, each picture description that is on the page
+ * (getEpubPreviewImageDescriptions), and each text box that is showing and has words in it.
+ */
+export async function getEpubPreviewPageItems(
+    frame: Frame,
+): Promise<IEpubPageItem[]> {
+    return frame.evaluate(() => {
+        const items: {
+            kind: "picture" | "description" | "text";
+            content: string;
+        }[] = [];
+        const isShowing = (element: Element) =>
+            (element as HTMLElement).getClientRects().length > 0 &&
+            getComputedStyle(element).visibility !== "hidden";
+        const words = (element: Element) =>
+            ((element as HTMLElement).innerText ?? "").trim();
+        for (const element of document.querySelectorAll(
+            ".bloom-page img, .bloom-page aside.imageDescription, .bloom-page .bloom-editable",
+        )) {
+            if (!isShowing(element)) continue;
+            if (element.tagName.toLowerCase() === "img") {
+                const src = element.getAttribute("src") ?? "";
+                items.push({
+                    kind: "picture",
+                    content: decodeURIComponent(src.split("/").pop() ?? ""),
+                });
+            } else if (element.tagName.toLowerCase() === "aside") {
+                items.push({ kind: "description", content: words(element) });
+            } else if (
+                !element.closest("aside.imageDescription") &&
+                words(element)
+            ) {
+                items.push({ kind: "text", content: words(element) });
+            }
+        }
+        return items;
+    });
 }
 
 /**
