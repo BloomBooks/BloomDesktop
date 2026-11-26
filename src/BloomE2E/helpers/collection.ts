@@ -143,7 +143,9 @@ export async function getBooksShowingMenuTriangle(
 ): Promise<string[]> {
     return page
         .locator(kBookTiles)
-        .filter({ has: page.getByTestId(kBookMenuTriangle) })
+        .filter({
+            has: page.getByTestId(kBookMenuTriangle).filter({ visible: true }),
+        })
         .evaluateAll((tiles) =>
             tiles.map((tile) => tile.getAttribute("data-book-id")!),
         );
@@ -181,6 +183,11 @@ export interface IBookMenuEntry {
     label: string;
     /** False for an entry that is greyed out, such as one the book's checkout forbids. */
     enabled: boolean;
+    /**
+     * True for an entry whose command the subscription tier lacks. It is not greyed out: a click
+     * on it opens the Subscription page of the Settings dialog instead.
+     */
+    needsSubscription: boolean;
 }
 
 /** What the selected book's menu offers: its own entries, and those of its More submenu. */
@@ -247,6 +254,8 @@ async function readShowingBookMenuEntries(
             testId: item.getAttribute("data-testid") ?? "(no id)",
             label: (item as HTMLElement).innerText.trim(),
             enabled: item.getAttribute("aria-disabled") !== "true",
+            needsSubscription:
+                item.getAttribute("data-subscription-gated") === "true",
         })),
     );
 }
