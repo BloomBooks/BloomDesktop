@@ -5,9 +5,39 @@
 
 import * as fs from "node:fs";
 import * as Path from "node:path";
-import { expect, type Page } from "@playwright/test";
-import { editablePageFrame, waitForEditTabSettled } from "./bookMaking";
+import { expect, type FrameLocator, type Page } from "@playwright/test";
+import {
+    editablePageFrame,
+    goToPage,
+    waitForEditTabSettled,
+} from "./bookMaking";
 import { armFileChooser } from "./talkingBook";
+
+const kWidgetTextId = "widget-text";
+
+/**
+ * Go to the page with this id in the Edit tab, which has one empty widget box, and put on it a
+ * minimal widget showing `text` (writeWidgetFolder, under `parentFolder`), chosen with the box's
+ * Choose Widget button (chooseWidgetOnPage).
+ */
+export async function putWidgetOnPage(
+    page: Page,
+    pageId: string,
+    parentFolder: string,
+    widgetName: string,
+    text: string,
+): Promise<void> {
+    await goToPage(page, pageId);
+    await chooseWidgetOnPage(
+        page,
+        writeWidgetFolder(parentFolder, widgetName, text),
+    );
+}
+
+/** The text that a widget written by writeWidgetFolder shows, read from the widget's document. */
+export async function getWidgetText(widget: FrameLocator): Promise<string> {
+    return widget.locator(`#${kWidgetTextId}`).innerText({ timeout: 30000 });
+}
 
 /**
  * Write a minimal widget, an index.html that shows `text`, into a folder of its own named

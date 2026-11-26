@@ -11,9 +11,9 @@
 
 import { expect, test } from "../fixtures/bloomTest";
 import {
-    activePreviewPage,
     getActivePreviewPageId,
     getPreviewArrowsShown,
+    getPreviewWidgetFrame,
     goToPreviewPage,
 } from "../helpers/bloomPlayer";
 import {
@@ -27,7 +27,7 @@ import {
     selectPublishDestination,
     showBloomPubPreview,
 } from "../helpers/publish";
-import { chooseWidgetOnPage, writeWidgetFolder } from "../helpers/widgets";
+import { getWidgetText, putWidgetOnPage } from "../helpers/widgets";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
@@ -63,23 +63,20 @@ test("a Captive Widget Page hides Bloom Player's navigation arrows in the BloomP
     const { ordinary, captive, text } = pages;
 
     await step("Choose a widget on each widget page", async () => {
-        await goToPage(page, ordinary.id);
-        await chooseWidgetOnPage(
+        const widgetsFolder = testInfo.outputPath("widgets");
+        await putWidgetOnPage(
             page,
-            writeWidgetFolder(
-                testInfo.outputPath("widgets"),
-                "OrdinaryWidget",
-                ORDINARY_WIDGET_TEXT,
-            ),
+            ordinary.id,
+            widgetsFolder,
+            "OrdinaryWidget",
+            ORDINARY_WIDGET_TEXT,
         );
-        await goToPage(page, captive.id);
-        await chooseWidgetOnPage(
+        await putWidgetOnPage(
             page,
-            writeWidgetFolder(
-                testInfo.outputPath("widgets"),
-                "CaptiveWidget",
-                CAPTIVE_WIDGET_TEXT,
-            ),
+            captive.id,
+            widgetsFolder,
+            "CaptiveWidget",
+            CAPTIVE_WIDGET_TEXT,
         );
         // Leaving the page saves it.
         await goToPage(page, text.id);
@@ -88,20 +85,6 @@ test("a Captive Widget Page hides Bloom Player's navigation arrows in the BloomP
     await switchTab(page, "publish");
     await selectPublishDestination(page, "BloomPUB");
     const player = await showBloomPubPreview(page);
-
-    // What a page shows of its widget: the text inside the widget's frame.
-    const widgetTextShown = async () => {
-        const frameElement = activePreviewPage(player).locator(
-            ".bloom-widgetContainer iframe",
-        );
-        await expect(
-            frameElement,
-            "The page Bloom Player is showing should hold one widget frame.",
-        ).toHaveCount(1, { timeout: 30000 });
-        const widget = await frameElement.contentFrame();
-        if (!widget) throw new Error("The widget's frame has no document.");
-        return widget.locator("#widget-text").innerText({ timeout: 30000 });
-    };
 
     const expectArrows = async (
         expected: { previous: boolean; next: boolean },
@@ -116,7 +99,9 @@ test("a Captive Widget Page hides Bloom Player's navigation arrows in the BloomP
 
     await step("See both arrows on the ordinary Widget Page", async () => {
         await goToPreviewPage(page, player, ordinary.id);
-        expect(await widgetTextShown()).toBe(ORDINARY_WIDGET_TEXT);
+        expect(await getWidgetText(await getPreviewWidgetFrame(player))).toBe(
+            ORDINARY_WIDGET_TEXT,
+        );
         await expectArrows(
             { previous: true, next: true },
             "An ordinary Widget Page, with a page on each side, should show both arrows.",
@@ -125,7 +110,9 @@ test("a Captive Widget Page hides Bloom Player's navigation arrows in the BloomP
 
     await step("See no arrows on the Captive Widget Page", async () => {
         await goToPreviewPage(page, player, captive.id);
-        expect(await widgetTextShown()).toBe(CAPTIVE_WIDGET_TEXT);
+        expect(await getWidgetText(await getPreviewWidgetFrame(player))).toBe(
+            CAPTIVE_WIDGET_TEXT,
+        );
         await expectArrows(
             { previous: false, next: false },
             "A Captive Widget Page should hide both of Bloom Player's arrows.",

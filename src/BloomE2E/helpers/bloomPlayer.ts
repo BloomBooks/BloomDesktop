@@ -11,7 +11,13 @@
 // playCorrectOrWrongSound in src/shared/dragActivityRuntime.ts.
 
 import * as Path from "node:path";
-import { expect, type Frame, type Locator, type Page } from "@playwright/test";
+import {
+    expect,
+    type Frame,
+    type FrameLocator,
+    type Locator,
+    type Page,
+} from "@playwright/test";
 import { getPages } from "./bookMaking";
 import type { IRect } from "./geometry";
 
@@ -87,14 +93,38 @@ export async function getPreviewArrowsShown(
             arrows.first(),
             `Bloom Player has no "${selector}" arrow in its document at all.`,
         ).toBeAttached({ timeout: 30000 });
+        // An arrow made invisible with visibility: hidden or opacity: 0 is hidden from the reader
+        // as surely as one with display: none.
         return arrows.evaluateAll((elements) =>
-            elements.some((e) => e.checkVisibility()),
+            elements.some((e) =>
+                e.checkVisibility({
+                    visibilityProperty: true,
+                    opacityProperty: true,
+                }),
+            ),
         );
     };
     return {
         previous: await shown(".swiper-button-prev"),
         next: await shown(".swiper-button-next"),
     };
+}
+
+/**
+ * The document of the HTML5 widget on the page Bloom Player is showing, which must hold exactly
+ * one widget.
+ */
+export async function getPreviewWidgetFrame(
+    player: Frame,
+): Promise<FrameLocator> {
+    const frameElement = activePreviewPage(player).locator(
+        ".bloom-widgetContainer iframe",
+    );
+    await expect(
+        frameElement,
+        "The page Bloom Player is showing should hold one widget frame.",
+    ).toHaveCount(1, { timeout: 30000 });
+    return frameElement.contentFrame();
 }
 
 /**
