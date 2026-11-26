@@ -12,7 +12,11 @@
 
 import { expect, type Locator, type Page } from "@playwright/test";
 import * as Path from "node:path";
-import { getPages, waitForEditablePage } from "./bookMaking";
+import {
+    getPages,
+    waitForEditablePage,
+    waitForEditTabSettled,
+} from "./bookMaking";
 
 /** One thumbnail in the Add Page dialog. */
 export interface IAddPageThumbnail {
@@ -22,6 +26,16 @@ export interface IAddPageThumbnail {
     templateBookFolder: string;
     /** True when the browser has the image and it has a size; false while loading or on error. */
     thumbnailLoaded: boolean;
+    /**
+     * The size of the image the browser has for the thumbnail, in the image's own pixels; 0 while
+     * it has none. A test tells which image Bloom served (a template author's own thumbnail, one
+     * Bloom generated, or the placeholder Bloom shows while it generates one) by comparing this
+     * with the size of the file it expects.
+     */
+    naturalWidth: number;
+    naturalHeight: number;
+    /** The URL the thumbnail's image is loaded from, as the browser resolved it. */
+    imageUrl: string;
 }
 
 /**
@@ -159,7 +173,13 @@ export async function getAddPageDialogGroups(
     const raw = await dialog.evaluate((dialogElement) => {
         const result: {
             title: string;
-            pages: { src: string; loaded: boolean }[];
+            pages: {
+                src: string;
+                loaded: boolean;
+                naturalWidth: number;
+                naturalHeight: number;
+                imageUrl: string;
+            }[];
         }[] = [];
         for (const group of Array.from(
             dialogElement.querySelectorAll(".templateBookGroup"),
@@ -171,6 +191,9 @@ export async function getAddPageDialogGroups(
                 (img) => ({
                     src: img.getAttribute("src") ?? "",
                     loaded: img.complete && img.naturalWidth > 0,
+                    naturalWidth: img.naturalWidth,
+                    naturalHeight: img.naturalHeight,
+                    imageUrl: img.src,
                 }),
             );
             result.push({ title, pages });
@@ -181,6 +204,9 @@ export async function getAddPageDialogGroups(
         const pages = group.pages.map((p) => ({
             ...parseThumbnailSource(p.src),
             thumbnailLoaded: p.loaded,
+            naturalWidth: p.naturalWidth,
+            naturalHeight: p.naturalHeight,
+            imageUrl: p.imageUrl,
         }));
         if (pages.length === 0)
             throw new Error(
@@ -285,6 +311,10 @@ export async function addPageFromDialog(
         templateBookFolderName,
     );
     const before = (await getPages(page)).length;
+    // Adding a page changes the page being edited, and such a request must not arrive while the
+    // Edit tab is still loading one (see waitForEditTabSettled). The dialog can be open, with a
+    // page selected, before the tab has settled on the page added just before.
+    await waitForEditTabSettled(page);
     await dialog.getByRole("button", { name: "Add Page", exact: true }).click();
     await expect
         .poll(() => isAddPageDialogOpen(page), {
@@ -396,6 +426,43 @@ export async function selectPageInAddPageDialog(
     ).toBeVisible({ timeout: 15000 });
 
     return dialog;
+}
+
+/**
+ * The words of the notice the Add Page dialog shows in place of its Add Page button for a page
+ * whose feature the collection's subscription tier does not include. Select such a page first.
+ */
+export async function getAddPageSubscriptionNoticeText(
+    page: Page,
+): Promise<string> {
+    const dialog = await findAddPageDialog(page);
+    const notice = dialog.locator(".messageSettingsDialogWrapper");
+    await expect(
+        notice,
+        "The Add Page dialog is not showing a subscription notice for the selected page.",
+    ).toBeVisible({ timeout: 15000 });
+    return (await notice.innerText()).trim();
+}
+
+/**
+ * Click the "Bloom Subscription Settings" button on the notice the Add Page dialog shows for a page
+ * whose feature the collection's tier does not include, the way a person does. Select such a page
+ * first. The button opens the Collection Settings dialog on its Subscription page; this returns
+ * once it has been clicked, and the caller asks what opened (getShowingCollectionSettingsPage).
+ *
+ * The button is found by its class, requiresSubscriptionButton, rather than its words, which are
+ * localized (RequiresSubscriptionNotice in react_components/requiresSubscription.tsx).
+ */
+export async function clickAddPageSubscriptionSettings(
+    page: Page,
+): Promise<void> {
+    const dialog = await findAddPageDialog(page);
+    const button = dialog.locator(".requiresSubscriptionButton");
+    await expect(
+        button,
+        "The Add Page dialog's subscription notice has no Bloom Subscription Settings button.",
+    ).toBeVisible({ timeout: 15000 });
+    await button.click();
 }
 
 /** What the Add Page dialog offers for the page that is selected. */

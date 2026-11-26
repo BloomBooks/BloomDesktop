@@ -888,3 +888,27 @@ Two things a test cannot check at all:
 Fix direction: none from Bloom's side short of printing through `CoreWebView2.PrintAsync` with its
 settings chosen in code, which would replace the dialog. (Found 2026-11-09 while automating
 BL-16179.)
+
+## A template page's label is hidden under the controls bar, so no test can rename it
+
+The label of a page in a template book (`div.pageLabel[contenteditable=true]`) sits in the space
+above the page that the bar of controls (`.above-page-control-container.bloom-controls-bar`, fixed
+at the top of the page frame) now covers, so a click on it lands on the bar. A person cannot rename
+a template page either: this is a Bloom bug, BL-17185, not only a gap in automation.
+`make-book-from-template-starter.spec.ts` (Test Case ID 79) therefore leaves its template pages with
+the labels they came with, and does not check a label typed by the template's author. Fix
+direction: fix BL-17185, then have that test type a label of its own on each page. (Found
+2026-11-25 while automating Test Case ID 79.)
+
+## Make All BloomPUBs opens File Explorer
+
+When Publish: BloomPUB's "Make All BloomPUBs from Collection" finishes, Bloom opens the folder it
+made the files in, `%TEMP%\BloomPubs`, in File Explorer (`ProcessExtra.SafeStartInFront` at the end
+of `BulkBloomPubCreator.PublishAllBooksAsync`), and it does so under `--e2e` too. Playwright drives
+only Bloom's WebView2, so the test cannot close the window, and every run of
+`bulk-bloompub-bundle.spec.ts` (Test Case ID 194) leaves one Explorer window open on the machine it
+ran on. The test reads the folder's path from the progress box and checks the files there, so
+nothing it checks depends on the window. Cost: a stray window per run on a developer's desktop or
+the runner. Fix direction: skip opening the folder when `Program.RunningE2eTests` is true, or route
+it through a hook a test can read, as the file choosers are. (Found 2026-11-25 while automating Test
+Case ID 194.)

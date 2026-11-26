@@ -51,6 +51,93 @@ export interface IPageContents {
 }
 
 /**
+ * The style of each language's text box on one page of the book saved in `bookFolder`, as the
+ * saved file has it: e.g. {en: "BigWords", fr: "BigWords"}, from each box's `<name>-style` class,
+ * or "" for a box with none. `page` is used only as a DOM parser. Throws if the file has no page
+ * with that id.
+ */
+export async function readSavedTextBoxStyles(
+    page: Page,
+    bookFolder: string,
+    pageId: string,
+): Promise<Record<string, string>> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate(
+        ({ source, id }) => {
+            const document = new DOMParser().parseFromString(
+                source,
+                "text/html",
+            );
+            const pageDiv = document.getElementById(id);
+            if (!pageDiv)
+                throw new Error(`The saved book has no page with id ${id}.`);
+            const styles: Record<string, string> = {};
+            for (const box of pageDiv.querySelectorAll(
+                ".bloom-translationGroup .bloom-editable[lang]",
+            )) {
+                const lang = box.getAttribute("lang")!;
+                // A group keeps template boxes ("z", "*") that are never shown; skip those.
+                if (lang === "z" || lang === "*") continue;
+                styles[lang] =
+                    Array.from(box.classList)
+                        .find((c) => c.endsWith("-style"))
+                        ?.replace(/-style$/, "") ?? "";
+            }
+            return styles;
+        },
+        { source: html, id: pageId },
+    );
+}
+
+/**
+ * The paragraph indent (`text-indent`) that the book saved in `bookFolder` gives each of these
+ * styles, by style id (e.g. {normal: "20pt", Flush: "0px"}), as the CSS serializes it, or "" for a
+ * style whose saved rules set none. Read from the style rules the Format dialog writes into the
+ * book (the `userModifiedStyles` element of its head), from the rule for the style's paragraphs
+ * (`.<id>-style > p`); the last such rule wins, as it does in the browser. `page` is used only as
+ * a parser. Throws if the file has no `userModifiedStyles` element.
+ */
+export async function readSavedParagraphIndents(
+    page: Page,
+    bookFolder: string,
+    styleIds: string[],
+): Promise<Record<string, string>> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate(
+        ({ source, ids }) => {
+            const document = new DOMParser().parseFromString(
+                source,
+                "text/html",
+            );
+            const styleElement = document.querySelector(
+                'style[title="userModifiedStyles"]',
+            );
+            if (!styleElement)
+                throw new Error(
+                    "The saved book has no userModifiedStyles element.",
+                );
+            const sheet = new CSSStyleSheet();
+            sheet.replaceSync(styleElement.textContent ?? "");
+            const indents: Record<string, string> = {};
+            for (const id of ids) {
+                indents[id] = "";
+                for (const rule of Array.from(sheet.cssRules)) {
+                    if (!(rule instanceof CSSStyleRule)) continue;
+                    const forParagraphs = rule.selectorText
+                        .split(",")
+                        .map((s) => s.trim().replace(/\s+/g, " "))
+                        .some((s) => s === `.${id}-style > p`);
+                    if (forParagraphs && rule.style.textIndent)
+                        indents[id] = rule.style.textIndent;
+                }
+            }
+            return indents;
+        },
+        { source: html, ids: styleIds },
+    );
+}
+
+/**
  * One table as the saved file describes it. Everything here is read from the markup rather than
  * measured, because the file is what a later load, a publish, or a spreadsheet export will read.
  */
@@ -83,6 +170,62 @@ export interface IBookContents {
 /** The path of a book folder's own .htm file, which Bloom names after the folder. */
 export function bookHtmlPath(bookFolder: string): string {
     return Path.join(bookFolder, `${Path.basename(bookFolder)}.htm`);
+}
+
+/** One page of a book's HTML file on disk, front and back matter included. */
+export interface IPageOnDisk {
+    id: string;
+    label: string;
+    /** The ids of the pages this page was made from, oldest first (data-pagelineage). */
+    lineage: string[];
+    /** True for a page the Add Page dialog can offer: a template page (data-page="extra"). */
+    isTemplatePage: boolean;
+    /**
+     * "portrait" or "landscape" for a template page offered only to books of that orientation
+     * (data-initial-page-orientation), and "" for a page offered to both.
+     */
+    onlyForOrientation: string;
+}
+
+/**
+ * Every page in the HTML file of the book in `bookFolder`, in order, read from disk. It finds the
+ * file by its extension, so it reads a template book (.html) as well as a book Bloom saved
+ * (.htm). `page` is used only as a DOM parser.
+ */
+export async function readPagesOnDisk(
+    page: Page,
+    bookFolder: string,
+): Promise<IPageOnDisk[]> {
+    const allHtmlFiles = fs
+        .readdirSync(bookFolder)
+        .filter((name) => /\.html?$/i.test(name));
+    // A template installed with Bloom can hold a ReadMe beside the book's own file, which is the
+    // one named after the folder.
+    const folderName = Path.basename(bookFolder).toLowerCase();
+    const namedAfterFolder = allHtmlFiles.filter(
+        (name) => Path.parse(name).name.toLowerCase() === folderName,
+    );
+    const htmlFiles =
+        namedAfterFolder.length > 0 ? namedAfterFolder : allHtmlFiles;
+    if (htmlFiles.length !== 1)
+        throw new Error(
+            `Expected one HTML file in ${bookFolder}, or one named after the folder, found: ` +
+                `${allHtmlFiles.join(", ") || "(none)"}.`,
+        );
+    const html = fs.readFileSync(Path.join(bookFolder, htmlFiles[0]), "utf8");
+    return page.evaluate((source) => {
+        const dom = new DOMParser().parseFromString(source, "text/html");
+        return Array.from(dom.querySelectorAll(".bloom-page[id]")).map((p) => ({
+            id: p.id,
+            label: p.querySelector(".pageLabel")?.textContent?.trim() ?? "",
+            lineage: (p.getAttribute("data-pagelineage") ?? "")
+                .split(/[;,]/)
+                .filter((id) => id),
+            isTemplatePage: p.getAttribute("data-page") === "extra",
+            onlyForOrientation:
+                p.getAttribute("data-initial-page-orientation") ?? "",
+        }));
+    }, html);
 }
 
 /**

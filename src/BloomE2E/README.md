@@ -138,11 +138,22 @@ real bug in the code under test; read the message and fix it rather than working
 ## Helpers
 
 - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`, and the zoom control's
-  `getZoom`, `setZoom`. Note that Bloom hides the Edit and Publish tabs until a book is selected.
+  `getZoom`, `setZoom`; for a test of the zoom itself, `clickZoomButton`, `turnWheelToZoom`
+  (Ctrl+mouse wheel over the page) and what they change (`getZoomShownInTopBar`,
+  `expectPageDrawnAtZoom`). Note that Bloom hides the Edit and Publish tabs until a book is
+  selected.
 - `helpers/formatDialog.ts` — the format gear beside the text box being edited, and the Format
   dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
   `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
   screen.
+- `helpers/selectionToolbar.ts` — the toolbar that shows above a text box while text in it is
+  selected: `selectLastWordIn`, `toggleSelectionFormatting` (bold, italic, underline,
+  superscript), `chooseSelectionTextColor`, and `getTextRunFormatting`, which reads how one run
+  of a box's text is drawn.
+- `helpers/colorPicker.ts` — Bloom's color picker dialog: `readColorPicker` reads every control
+  (hex box, sample, saturation box, hue and alpha sliders) so a test can check they agree;
+  `clickPaletteSwatch`, `clickHueSlider`, `clickSaturationBox`, `clickAlphaSliderMiddle`,
+  `typeInHexBox`, `appendToHexBox`; and closing it with OK, Cancel, Escape or a click outside.
 - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`, and the selected book's
   right-click menu (`chooseFromSelectedBookMenu`, `closeBookMenu`).
 - `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
@@ -178,6 +189,12 @@ real bug in the code under test; read the message and fix it rather than working
   `getShownTools`. Nothing here turns a tool on through the toolbox's own check boxes; the page
   does that when clicked (a Canvas page's canvas opens the Canvas tool, a video box the Sign
   Language tool), which is the route a person takes.
+- `helpers/canvasToolOptions.ts` — the Canvas tool's options for the selected text element
+  (`setRoundedCorners`, `roundedCornersBox`, `chooseCanvasElementBackgroundColor`,
+  `typeCanvasElementBackgroundColor` for a color the background palette lacks,
+  `chooseCanvasElementType`/`getCanvasElementTypeShown` by ComicalJS style), `readSavedCanvasShapes`,
+  which measures the shapes ComicalJS saved for a page (svg.comical-generated), such as whether each
+  covers the corners of its box, and `readSavedBubbleSpecs`, each element's saved data-bubble.
 - `helpers/canvasElements.ts` — `openCanvasTool`, `dragPaletteItemOntoCanvas`,
   `selectCanvasElement`, the selected element's toolbar and "..." menu by localization id,
   `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`; the menu's groups
@@ -188,7 +205,11 @@ real bug in the code under test; read the message and fix it rather than working
   and its results (`expectRotateHandleShown`, `dragRotateHandle`, `getCanvasElementRotation`,
   `getCanvasElementPlacement`). The palette drag is dispatched rather than pressed, for a reason the
   file and AUTOMATION-DEBT.md give.
-- `helpers/images.ts` — `chooseImageFile`, `cropImage`, `getImagePlacement`; `getPictureRotation`,
+- `helpers/speechBubbleTail.ts` — a speech bubble's tail as its data-bubble spec holds it
+  (`readTail`), and the handles ComicalJS draws for it: `dragTailMidpoint`,
+  `doubleClickTailMidpoint`, and `expectMidpointHandle`, which reads the drawing to tell a
+  filled midpoint handle from an open one or a missing one.
+- `helpers/images.ts` — `chooseImageFile`, `pasteImageIntoEmptySlot`, `cropImage`, `getImagePlacement`; `getPictureRotation`,
   which says how a picture is rotated and mirrored on screen, box and picture together, with
   `kUprightPicture` and `mirroredAboutOwnAxis` to build the expected answer; `getPictureInlineLayout`,
   the inline styles that lay out a picture and its box.
@@ -202,6 +223,14 @@ real bug in the code under test; read the message and fix it rather than working
   `sections`, `splitSection`, `getSectionTypesOffered`, `chooseSectionType`.
 - `helpers/pageSize.ts` — `getPageSize`, `getPageSizeChoices`, `setPageSize`: read and change
   the book's page size and orientation through the Edit tab's layout-choice API.
+- `helpers/epubPublish.ts` — the Publish tab's ePUB screen: `openEpubPublishScreen`, `getEpubMode`,
+  `showEpubPreview`, which also closes the "Creating ePUB" dialog that otherwise stays over the
+  screen, and `showEpubPreviewPage`, which turns the preview's reader to one page of the book and
+  returns the frame that page is in. The preview shows the files that Save... zips; Save... itself
+  opens the operating system's save dialog.
+- `helpers/pageLayout.ts` — `getPageLayout` reads where a page's canvases, pictures, text boxes and
+  words are, relative to the page, from any document that draws the page; `expectSameLayout`
+  compares two such readings, such as the Edit tab's and a publication's.
 - `helpers/uiLanguage.ts` — the UI language menu, in the top bar and in the Choose Collection
   dialog: read what it offers (`getOfferedUiLanguages`, `getUiLanguageMenuEntries`,
   `getCurrentUiLanguageTag`), change the language through it (`chooseUiLanguage`,
@@ -239,6 +268,17 @@ pnpm exec playwright test --debug    # step through it
 ```
 
 A run opens a real Bloom window on your desktop. That is expected; do not click in it.
+
+**Running a failed test again: keep the failure's evidence.** Each run empties `test-results/` as
+it starts, which deletes the trace, screenshot and Bloom log of the run that failed. When the next
+run passes, that was the only evidence of the race. So give each run of a test you are
+investigating its own output folder, outside the repo, and keep the folders until the cause is
+known:
+
+```bash
+pnpm exec playwright test tests/copy-page.spec.ts --output "$TEMP/e2e-runs/copy-page-1"
+pnpm exec playwright test tests/copy-page.spec.ts --output "$TEMP/e2e-runs/copy-page-2"
+```
 
 ### Tests that need a person: `*.manual.ts`
 

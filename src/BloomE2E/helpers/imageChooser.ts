@@ -18,6 +18,7 @@ import { armFileChooser } from "./talkingBook";
 
 const kOpenFileLabel = "Open File...";
 const kUseThisImageLabel = "Use this image";
+const kCancelLabel = "Cancel";
 
 /**
  * The open Image Chooser in one document. The dialog is rendered by ShowEditViewDialog, which puts
@@ -55,14 +56,15 @@ async function waitForImageChooser(page: Page): Promise<Locator> {
 }
 
 /**
- * In the Image Chooser that is open, choose the picture at `filePath` from this computer and click
- * "Use this image", the way a person does. Returns once the dialog has closed. What the picture
- * element then shows is the caller's question.
+ * In the Image Chooser that is open, open the file at `filePath` from this computer, and wait until
+ * the dialog offers to use it. Returns the dialog and its "Use this image" button, not yet clicked,
+ * for a test about what happens when that button is clicked, such as one that offers a file Bloom
+ * cannot read.
  */
-export async function chooseFileInImageChooser(
+export async function pickFileInImageChooser(
     page: Page,
     filePath: string,
-): Promise<void> {
+): Promise<{ chooser: Locator; use: Locator }> {
     const chooser = await waitForImageChooser(page);
     // Armed immediately before the click that opens the picker, because it answers one picker
     // only, and a path left armed would answer some later test's picker.
@@ -74,6 +76,28 @@ export async function chooseFileInImageChooser(
         `After "${kOpenFileLabel}" was answered with ${filePath}, the Image Chooser never ` +
             `enabled "${kUseThisImageLabel}", so it did not take the file.`,
     ).toBeEnabled({ timeout: 30000 });
+    return { chooser, use };
+}
+
+/** Close the Image Chooser `chooser` with its Cancel button, and wait until it has gone. */
+export async function cancelImageChooser(chooser: Locator): Promise<void> {
+    await chooser.getByRole("button", { name: kCancelLabel }).click();
+    await expect(
+        chooser,
+        `The Image Chooser stayed open after "${kCancelLabel}".`,
+    ).toHaveCount(0, { timeout: 30000 });
+}
+
+/**
+ * In the Image Chooser that is open, choose the picture at `filePath` from this computer and click
+ * "Use this image", the way a person does. Returns once the dialog has closed. What the picture
+ * element then shows is the caller's question.
+ */
+export async function chooseFileInImageChooser(
+    page: Page,
+    filePath: string,
+): Promise<void> {
+    const { chooser, use } = await pickFileInImageChooser(page, filePath);
     await use.click();
     await expect(
         chooser,

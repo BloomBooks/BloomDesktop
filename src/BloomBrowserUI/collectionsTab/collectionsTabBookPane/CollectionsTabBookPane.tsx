@@ -294,6 +294,8 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 padding: 10px;
                 background-color: ${kDarkestBackground};
             `}
+            // For the e2e suite (src/BloomE2E), which finds the pane by it.
+            data-testid="collections-tab-book-pane"
             {...props} // allows defining more css rules from container
         >
             <div

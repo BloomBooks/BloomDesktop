@@ -1,0 +1,138 @@
+// A text box's language, set in Change Layout through Text Box Properties: a box set to one of the
+// collection's languages shows only that language, and the book's other languages move into its
+// source bubble; set back to Normal, it shows every language the book shows again.
+// Automates the manual test "Text Box Language Layout" (Test Case ID 369).
+//
+// The book shows all three of the collection's languages, and the box has text in each.
+//
+// On a Debug build this test fails while BL-17169 is open: each time Text Box Properties opens,
+// a Debug build reports that one of the dialog's strings cannot be localized, and the fixture
+// fails a test during which Bloom reports a problem. A Release build, which the nightly runs,
+// reports nothing.
+
+import { expect, test } from "../fixtures/bloomTest";
+import {
+    addPage,
+    getContentPages,
+    goToPage,
+    makeBookFromTemplate,
+    setContentLanguages,
+    typeInGroup,
+} from "../helpers/bookMaking";
+import {
+    expectSourceBubbleLanguageReadable,
+    getShownBoxes,
+    getSourceBubble,
+    type ILanguageText,
+    waitForSourceBubbleSetup,
+} from "../helpers/sourceBubbles";
+import {
+    setTextBoxLanguage,
+    type TextBoxLanguage,
+} from "../helpers/textBoxProperties";
+
+// Language 1, 2 and 3 of the collection, in that order.
+const LANGUAGES = ["en", "fr", "de"];
+
+test.use({
+    collectionSpec: { name: "text-box-language-layout", languages: LANGUAGES },
+});
+
+// The one text box of a "Just Text" page.
+const TEXT_BOX = ".split-pane-component-inner .bloom-translationGroup";
+
+const TEXT: Record<string, string> = {
+    en: "The dog runs.",
+    fr: "Le chien court.",
+    de: "Der Hund rennt.",
+};
+
+/** What a box or a bubble holding these languages shows, sorted by language. */
+const textsOf = (langs: string[]): ILanguageText[] =>
+    langs
+        .map((lang) => ({ lang, text: TEXT[lang] }))
+        .sort((a, b) => a.lang.localeCompare(b.lang));
+
+const sorted = (texts: ILanguageText[]) =>
+    [...texts].sort((a, b) => a.lang.localeCompare(b.lang));
+
+test("a text box set to one language shows it alone and offers the others in its source bubble [Test Case ID 369]", async ({
+    page,
+    step,
+}) => {
+    test.setTimeout(300000);
+
+    await step(
+        "Make a book showing three languages, with text in each",
+        async () => {
+            await makeBookFromTemplate(page, "Basic Book");
+            await addPage(page, "Just Text");
+            const [textPage] = await getContentPages(page);
+            await goToPage(page, textPage.id);
+            await setContentLanguages(page, LANGUAGES);
+            for (const lang of LANGUAGES)
+                await typeInGroup(page, TEXT_BOX, lang, TEXT[lang]);
+            expect(
+                sorted(await getShownBoxes(page, TEXT_BOX)),
+                "The box does not show all three languages to start with.",
+            ).toEqual(textsOf(LANGUAGES));
+        },
+    );
+
+    // The case's choices in its order: Selected Language 1, Collection Language 2 and 3.
+    const choices: [TextBoxLanguage, string][] = [
+        ["L1", "en"],
+        ["L2", "fr"],
+        ["L3", "de"],
+    ];
+    for (const [choice, lang] of choices) {
+        await step(`Set the text box to ${choice}`, async () => {
+            await setTextBoxLanguage(page, choice);
+            await waitForSourceBubbleSetup(page, TEXT_BOX);
+        });
+        await step(
+            `Check the box shows only ${lang}, and the bubble the others`,
+            async () => {
+                expect(
+                    await getShownBoxes(page, TEXT_BOX),
+                    `A box set to ${choice} does not show ${lang} alone.`,
+                ).toEqual(textsOf([lang]));
+                expect(
+                    await getSourceBubble(page, TEXT_BOX, lang),
+                    `The box set to ${choice} does not show a source bubble offering the other two languages.`,
+                ).toEqual({
+                    shown: true,
+                    texts: textsOf(LANGUAGES.filter((l) => l !== lang)),
+                });
+                // Read each language in the bubble by its tab, then go back to the first one, so
+                // that every tab, the one the bubble opens on included, is clicked at least once.
+                const others = LANGUAGES.filter((l) => l !== lang);
+                for (const other of [...others, others[0]])
+                    await expectSourceBubbleLanguageReadable(
+                        page,
+                        TEXT_BOX,
+                        other,
+                        TEXT[other],
+                    );
+            },
+        );
+    }
+
+    await step("Set the text box back to Normal", async () => {
+        await setTextBoxLanguage(page, "normal");
+        await waitForSourceBubbleSetup(page, TEXT_BOX);
+    });
+    await step(
+        "Check the box shows all three languages and no source bubble",
+        async () => {
+            expect(
+                sorted(await getShownBoxes(page, TEXT_BOX)),
+                "A box set back to Normal does not show all three languages.",
+            ).toEqual(textsOf(LANGUAGES));
+            expect(
+                (await getSourceBubble(page, TEXT_BOX, LANGUAGES[0])).texts,
+                "A box showing every language with text still has a source bubble.",
+            ).toEqual([]);
+        },
+    );
+});
