@@ -12,7 +12,12 @@
 //
 // Each picture in the book has a size no other picture has, and that is how it is recognized in a
 // PDF, which does not keep a picture's name. So the test can tell which page of the book was drawn
-// on which sheet, and on which face of it.
+// on which sheet, and on which face of it. Every page has a picture but the inside front cover (the
+// credits page) and the title page, one in each booklet, so no two pages can trade places unseen.
+// The inside back cover and the back cover take one through their Custom layout, which needs a
+// subscription, so the collection has one.
+//
+// The UI is set to English, because the PDF & Print screen and its modes are found by their labels.
 //
 // What stays manual: the case's note to watch Bloom's performance (Performance Measuring) while
 // the PDFs are made, which is for a person to judge. Which half of a sheet a page is drawn on is
@@ -34,6 +39,8 @@ import {
     makeJpegFile,
     type IPixelSize,
 } from "../helpers/images";
+import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
+import { choosePageLayout } from "../helpers/customCover";
 import { getPageSize } from "../helpers/pageSize";
 import {
     choosePdfMode,
@@ -42,10 +49,19 @@ import {
     type IPdfBox,
     type PdfMode,
 } from "../helpers/pdfPrint";
+import {
+    getCurrentUiLanguageTag,
+    setUiStateViaApi,
+} from "../helpers/uiLanguage";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
-    collectionSpec: { name: "pdf-modes-a5", languages: ["en"] },
+    collectionSpec: {
+        name: "pdf-modes-a5",
+        languages: ["en"],
+        // A custom layout for a cover is a subscription feature.
+        subscriptionCode: kEnterpriseSubscriptionCode,
+    },
 });
 
 /** The sheet of each PDF, in millimetres: A5 portrait for Simple, A4 landscape for a booklet. */
@@ -58,8 +74,10 @@ const kA4LandscapeMm = { width: 297, height: 210 };
  */
 const kToleranceMm = 0.3;
 
-/** The front cover's picture. */
-const kCoverPicture: IPixelSize = { width: 331, height: 227 };
+/** The pictures of the front cover, the inside back cover and the back cover. */
+const kFrontCoverPicture: IPixelSize = { width: 331, height: 227 };
+const kInsideBackCoverPicture: IPixelSize = { width: 353, height: 233 };
+const kBackCoverPicture: IPixelSize = { width: 359, height: 239 };
 
 /**
  * One picture for each content page, in the order of the pages. With the one inside page of a
@@ -100,7 +118,12 @@ const sorted = (pictures: IPixelSize[]): IPixelSize[] =>
 const ourPictures = (pictures: IPixelSize[]): IPixelSize[] =>
     sorted(
         pictures.filter((p) =>
-            [kCoverPicture, ...kContentPictures].some(
+            [
+                kFrontCoverPicture,
+                kInsideBackCoverPicture,
+                kBackCoverPicture,
+                ...kContentPictures,
+            ].some(
                 (ours) => ours.width === p.width && ours.height === p.height,
             ),
         ),
@@ -127,13 +150,16 @@ const expectEverySheetIs = (
 };
 
 test("an A5 book makes a Simple PDF, a Booklet Cover and Booklet Insides, each with its pages on the right sheets [Test Case ID 145]", async ({
-    page,
+    bloomApp,
     step,
 }, testInfo) => {
     test.setTimeout(600000);
+    if ((await getCurrentUiLanguageTag(bloomApp.page)) !== "en")
+        await setUiStateViaApi(bloomApp, "en", false);
+    const page = bloomApp.page;
 
     const book = await step(
-        "Make an A5 book with a different picture on the cover and on each content page",
+        "Make an A5 book with a different picture on the covers and on each content page",
         async () => {
             const folder = await makeBookFromTemplate(page, "Basic Book");
             expect(
@@ -146,37 +172,41 @@ test("an A5 book makes a Simple PDF, a Booklet Cover and Booklet Insides, each w
                 contentPages,
                 "test setup: the book should have a content page for each picture",
             ).toHaveLength(kContentPictures.length);
-            const pictures = [
-                { pageId: (await getPages(page))[0].id, size: kCoverPicture },
-                ...contentPages.map((p, i) => ({
-                    pageId: p.id,
-                    size: kContentPictures[i],
-                })),
-            ];
-            for (const [index, picture] of pictures.entries()) {
+            const pageIds = (await getPages(page)).map((p) => p.id);
+            // The inside back cover and the back cover are the last two pages.
+            const pictures = new Map<string, IPixelSize>([
+                [pageIds[0], kFrontCoverPicture],
+                [pageIds[pageIds.length - 2], kInsideBackCoverPicture],
+                [pageIds[pageIds.length - 1], kBackCoverPicture],
+                ...contentPages.map(
+                    (p, i) =>
+                        [p.id, kContentPictures[i]] as [string, IPixelSize],
+                ),
+            ]);
+            for (const [index, [pageId, size]] of [...pictures].entries()) {
                 const file = testInfo.outputPath(`picture-${index}.jpg`);
-                await makeJpegFile(
-                    page,
-                    file,
-                    picture.size.width,
-                    picture.size.height,
-                );
-                await goToPage(page, picture.pageId);
+                await makeJpegFile(page, file, size.width, size.height);
+                await goToPage(page, pageId);
+                if (
+                    size !== kFrontCoverPicture &&
+                    !contentPages.some((p) => p.id === pageId)
+                )
+                    await choosePageLayout(page, "Custom");
                 await chooseImageFile(page, file);
             }
             return {
                 folder,
-                pageIds: (await getPages(page)).map((p) => p.id),
+                pageIds,
                 contentIds: contentPages.map((p) => p.id),
+                pictures,
             };
         },
     );
     if (!book) throw new Error("The book was never made.");
-    const { pageIds, contentIds } = book;
+    const { pageIds, contentIds, pictures } = book;
     const pictureOfPage = (id: string): IPixelSize[] => {
-        if (id === pageIds[0]) return [kCoverPicture];
-        const contentIndex = contentIds.indexOf(id);
-        return contentIndex < 0 ? [] : [kContentPictures[contentIndex]];
+        const picture = pictures.get(id);
+        return picture ? [picture] : [];
     };
 
     // Bloom puts in the Booklet Cover each page whose classes say "cover", and every other page in
@@ -262,7 +292,7 @@ test("an A5 book makes a Simple PDF, a Booklet Cover and Booklet Insides, each w
                 (await getPdfPreviewPicturesByPage(page, true)).map(
                     ourPictures,
                 ),
-                "The Booklet Cover PDF should draw the front cover's picture on the outside of the cover, and no content page's picture.",
+                "The Booklet Cover PDF should draw the front and back covers' pictures on the outside of the cover, the inside back cover's on the inside, and no content page's picture.",
             ).toEqual(sheetsOfBooklet(coverIds));
         },
     );
@@ -283,7 +313,7 @@ test("an A5 book makes a Simple PDF, a Booklet Cover and Booklet Insides, each w
                 (await getPdfPreviewPicturesByPage(page, true)).map(
                     ourPictures,
                 ),
-                "The Booklet Insides PDF should draw each content page's picture on the side of the sheet that puts it in order when folded, and not the cover's picture.",
+                "The Booklet Insides PDF should draw each content page's picture on the side of the sheet that puts it in order when folded, and no cover's picture.",
             ).toEqual(sheetsOfBooklet(insideIds));
         },
     );
