@@ -37,7 +37,11 @@ import {
     importSpreadsheetIntoSelectedBook,
     readSpreadsheetRows,
 } from "../helpers/spreadsheet";
-import { getWidgetText, putWidgetOnPage } from "../helpers/widgets";
+import {
+    chooseWidgetOnPage,
+    getWidgetText,
+    writeWidgetFolder,
+} from "../helpers/widgets";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
@@ -53,6 +57,11 @@ const kWidgetName = "TC-639 Widget";
 const kWidgetText = "TC-639 widget through a spreadsheet";
 /** Where the widget's page is, in the spreadsheet and in the book: Bloom names it this way. */
 const kWidgetSource = `activities/${kWidgetName}/index.html`;
+/**
+ * The same, as the book's file holds it in the widget's iframe: URL-encoded, with its slashes left
+ * as they are, so that the widget's own relative links resolve inside its folder.
+ */
+const kWidgetSourceInBook = encodeURI(kWidgetSource);
 
 /** The first column labels of an export, which the import reads (InternalSpreadsheet.cs). */
 const kRowTypeColumnLabel = "[row type]";
@@ -61,22 +70,56 @@ const kPageContentRowLabel = "[page content]";
 /** The heading that the second row of an export gives the widget column. */
 const kWidgetColumnHeading = "Widgets";
 
+/**
+ * A file that the widget carries besides its index.html, in a folder of its own, as a real widget
+ * carries scripts, pictures and sounds. Export and import copy the widget's whole folder.
+ */
+const kWidgetAsset = Path.join("assets", "data.txt");
+const kWidgetAssetText = "TC-639 widget asset";
+
+/** One widget box of a book, as the book's saved file has it. */
+interface IWidgetBox {
+    pageId: string;
+    /** The template pages that the box's page was made from (data-pagelineage). */
+    pageLineage: string;
+    /** The src of the box's iframe, as the file holds it. */
+    src: string;
+    /** Whether the box still waits for a widget to be chosen. */
+    empty: boolean;
+}
+
 /** The widget boxes of the book in `bookFolder`, as its saved file has them. */
 async function readWidgetBoxes(
     page: Page,
     bookFolder: string,
-): Promise<{ pageId: string; src: string; empty: boolean }[]> {
+): Promise<IWidgetBox[]> {
     const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
     return page.evaluate((source) => {
         const dom = new DOMParser().parseFromString(source, "text/html");
         return Array.from(
             dom.querySelectorAll(".bloom-page .bloom-widgetContainer"),
-        ).map((box) => ({
-            pageId: box.closest(".bloom-page")!.id,
-            src: box.querySelector("iframe")?.getAttribute("src") ?? "",
-            empty: box.classList.contains("bloom-noWidgetSelected"),
-        }));
+        ).map((box) => {
+            const bloomPage = box.closest(".bloom-page")!;
+            return {
+                pageId: bloomPage.id,
+                pageLineage: bloomPage.getAttribute("data-pagelineage") ?? "",
+                src: box.querySelector("iframe")?.getAttribute("src") ?? "",
+                empty: box.classList.contains("bloom-noWidgetSelected"),
+            };
+        });
     }, html);
+}
+
+/** Check that the widget's folder at `widgetFolder` holds the widget's page and its asset. */
+function expectWidgetFolder(widgetFolder: string, what: string): void {
+    for (const [file, text] of [
+        ["index.html", kWidgetText],
+        [kWidgetAsset, kWidgetAssetText],
+    ]) {
+        const path = Path.join(widgetFolder, file);
+        expect(fs.existsSync(path), `${what} should have ${path}`).toBe(true);
+        expect(fs.readFileSync(path, "utf8")).toContain(text);
+    }
 }
 
 test.skip(
@@ -101,13 +144,16 @@ test("a widget page's widget goes into the spreadsheet's Widgets column and come
             const contentPages = await getContentPages(page);
             const widgetPage = contentPages.at(-2)!;
             const textPage = contentPages.at(-1)!;
-            await putWidgetOnPage(
-                page,
-                widgetPage.id,
+            const widgetIndex = writeWidgetFolder(
                 testInfo.outputPath("widgets"),
                 kWidgetName,
                 kWidgetText,
             );
+            const asset = Path.join(Path.dirname(widgetIndex), kWidgetAsset);
+            fs.mkdirSync(Path.dirname(asset), { recursive: true });
+            fs.writeFileSync(asset, kWidgetAssetText);
+            await goToPage(page, widgetPage.id);
+            await chooseWidgetOnPage(page, widgetIndex);
             // Leaving the page saves it.
             await goToPage(page, textPage.id);
             return readBookId(folder);
@@ -115,14 +161,24 @@ test("a widget page's widget goes into the spreadsheet's Widgets column and come
     );
     if (!bookId) throw new Error("The book was never made.");
 
-    await step("Check the book holds the widget", async () => {
+    const original = await step("Check the book holds the widget", async () => {
         const book = findBookFolderById(bloomApp.collectionDir, bookId);
         const boxes = await readWidgetBoxes(page, book);
         expect(
-            boxes.map((box) => ({ src: decodeURI(box.src), empty: box.empty })),
+            boxes.map((box) => ({ src: box.src, empty: box.empty })),
             "Sanity check: the book should have one widget box, holding the chosen widget",
-        ).toEqual([{ src: kWidgetSource, empty: false }]);
+        ).toEqual([{ src: kWidgetSourceInBook, empty: false }]);
+        expect(
+            boxes[0].pageLineage,
+            "Sanity check: the widget page should name the template page it was made from",
+        ).not.toBe("");
+        expectWidgetFolder(
+            Path.join(book, Path.dirname(kWidgetSource)),
+            "Sanity check: the book",
+        );
+        return boxes[0];
     });
+    if (!original) throw new Error("The book holds no widget.");
 
     const exportFolder = testInfo.outputPath("spreadsheets");
     fs.mkdirSync(exportFolder, { recursive: true });
@@ -170,12 +226,13 @@ test("a widget page's widget goes into the spreadsheet's Widgets column and come
                 { rowType: kPageContentRowLabel, widget: kWidgetSource },
             ]);
 
-            const copied = Path.join(Path.dirname(spreadsheet), kWidgetSource);
-            expect(
-                fs.existsSync(copied),
-                `the export should copy the widget to ${copied}`,
-            ).toBe(true);
-            expect(fs.readFileSync(copied, "utf8")).toContain(kWidgetText);
+            expectWidgetFolder(
+                Path.join(
+                    Path.dirname(spreadsheet),
+                    Path.dirname(kWidgetSource),
+                ),
+                "the export",
+            );
         },
     );
 
@@ -217,19 +274,26 @@ test("a widget page's widget goes into the spreadsheet's Widgets column and come
                 newBookId,
             );
             const boxes = await readWidgetBoxes(page, imported);
+            // The same template page as the original's: a Captive Widget Page, which also holds
+            // a widget, would hide Bloom Reader's navigation.
             expect(
                 boxes.map((box) => ({
-                    src: decodeURI(box.src),
+                    pageLineage: box.pageLineage,
+                    src: box.src,
                     empty: box.empty,
                 })),
-                "the new book should have one widget box, holding the widget",
-            ).toEqual([{ src: kWidgetSource, empty: false }]);
-            const copied = Path.join(imported, kWidgetSource);
-            expect(
-                fs.existsSync(copied),
-                `the import should copy the widget to ${copied}`,
-            ).toBe(true);
-            expect(fs.readFileSync(copied, "utf8")).toContain(kWidgetText);
+                "the new book should have one widget box, holding the widget, on the same kind of page as the original's",
+            ).toEqual([
+                {
+                    pageLineage: original.pageLineage,
+                    src: kWidgetSourceInBook,
+                    empty: false,
+                },
+            ]);
+            expectWidgetFolder(
+                Path.join(imported, Path.dirname(kWidgetSource)),
+                "the new book",
+            );
             return boxes[0].pageId;
         },
     );
