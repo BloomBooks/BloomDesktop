@@ -16,7 +16,7 @@ import {
     makeCollectionXml,
     type IRelaunchChanges,
 } from "../fixtures/launchBloom";
-import { apiGetJson, apiPost } from "./api";
+import { apiGetJson, apiPost, getUiString } from "./api";
 import { waitForCollectionReady } from "./collection";
 import type { IFontChooserPlace } from "./fontChooser";
 import {
@@ -202,11 +202,14 @@ export function describeCollectionFolder(
     };
 }
 
-/** The Collection Settings dialog, by the title it shows. */
+/**
+ * The Collection Settings dialog, by its Help button, whose id no other dialog has; its title
+ * would tie the helpers to the UI language.
+ */
 function collectionSettingsDialog(page: Page): Locator {
-    // Not getByRole's name option: the dialog's aria-labelledby="title" does not give it the
-    // accessible name "Collection Settings".
-    return page.getByRole("dialog").filter({ hasText: "Collection Settings" });
+    return page
+        .getByRole("dialog")
+        .filter({ has: page.locator("#collectionSettingsHelpButton") });
 }
 
 /**
@@ -214,9 +217,12 @@ function collectionSettingsDialog(page: Page): Locator {
  * tab's top bar. Returns once the dialog shows its pages.
  */
 export async function openCollectionSettings(page: Page): Promise<void> {
-    await realClick(
-        page.getByRole("button", { name: "Settings", exact: true }),
+    const settings = await getUiString(
+        page,
+        "CollectionTab.SettingsButton",
+        "Settings",
     );
+    await realClick(page.getByRole("button", { name: settings, exact: true }));
     await expect(
         collectionSettingsDialog(page).getByRole("tab").first(),
         "the Collection Settings dialog never showed its pages",
@@ -579,6 +585,44 @@ export async function chooseCollectionSettingsListChoice(
 }
 
 /**
+ * Choose the choice whose value is `value` (e.g. the front/back matter pack "SuperPaperSaver") in
+ * the drop-down list setting with this label, as a person does by opening the list and clicking
+ * it, whatever language the choice is shown in. Returns the label the choice showed, once the list
+ * shows it. Nothing is saved until OK.
+ */
+export async function chooseCollectionSettingsListChoiceByValue(
+    page: Page,
+    label: string,
+    value: string,
+): Promise<string> {
+    const list = collectionSettingsList(page, label);
+    const menusBeforeOpening = await countMenus(page);
+    await realClick(list);
+    const choices = openListChoices(page);
+    await expect(
+        choices.first(),
+        `the "${label}" list did not open`,
+    ).toBeVisible();
+    const choice = choices.and(page.locator(`[data-value="${value}"]`));
+    if ((await choice.count()) !== 1) {
+        const offered = await choices.evaluateAll((options) =>
+            options.map((option) => option.getAttribute("data-value")),
+        );
+        await page.keyboard.press("Escape");
+        throw new Error(
+            `The "${label}" list has no choice with the value ${value}; it offers: ${offered.join(", ")}.`,
+        );
+    }
+    const choiceLabel = ((await choice.textContent()) ?? "").trim();
+    await realClick(choice);
+    await waitForListToClose(page, menusBeforeOpening);
+    await expect
+        .poll(async () => (await readList(list, label)).shown)
+        .toBe(choiceLabel);
+    return choiceLabel;
+}
+
+/**
  * Open a drop-down list in the dialog, click `choice` in it, and return once the list shows it.
  * `label` names the list in failure messages. Book and Page Settings is a Config-R dialog too,
  * with the same lists, so bookSettings.ts chooses in its lists with this.
@@ -775,7 +819,11 @@ export async function restartFromCollectionSettings(
 ): Promise<Page> {
     const page = bloomApp.page;
     const restart = collectionSettingsDialog(page).getByRole("button", {
-        name: "Restart",
+        name: await getUiString(
+            page,
+            "CollectionSettingsDialog.Restart",
+            "Restart",
+        ),
         exact: true,
     });
     await expect(
