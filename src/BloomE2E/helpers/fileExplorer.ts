@@ -1,7 +1,8 @@
 // Read, and close, the File Explorer window that Bloom opens to show a file, as its "Show in
 // Folder" commands do (ProcessExtra.ShowFileInExplorerInFront). Explorer is out of CDP's reach, so
 // this asks Windows' Shell.Application, which lists every open Explorer window with the folder it
-// shows and the items selected in it.
+// shows and the items selected in it. Also read the Recycle Bin, to which Bloom moves what a person
+// deletes.
 
 import { execFile } from "node:child_process";
 import * as Path from "node:path";
@@ -65,26 +66,14 @@ if ($seen) {
   exit 0
 }
 'none'`;
-    const output = await new Promise<string>((resolve, reject) => {
-        execFile(
-            "powershell",
-            ["-NoProfile", "-NonInteractive", "-Command", script],
-            {
-                encoding: "utf8",
-                // Passed in the environment so that nothing needs quoting for PowerShell.
-                env: {
-                    ...process.env,
-                    BLOOM_E2E_FILE: Path.resolve(filePath),
-                    BLOOM_E2E_TIMEOUT_MS: String(timeoutMs),
-                },
-                timeout: timeoutMs + 60000,
-            },
-            (error, stdout, stderr) =>
-                error
-                    ? reject(new Error(`${error.message}\n${stderr}`))
-                    : resolve(stdout.trim()),
-        );
-    });
+    const output = await runPowerShell(
+        script,
+        {
+            BLOOM_E2E_FILE: Path.resolve(filePath),
+            BLOOM_E2E_TIMEOUT_MS: String(timeoutMs),
+        },
+        timeoutMs + 60000,
+    );
     if (output === "none")
         throw new Error(
             `No File Explorer window showed ${Path.dirname(filePath)} within ${timeoutMs} ms.`,
@@ -99,4 +88,82 @@ if ($seen) {
             ? []
             : ([] as string[]).concat(window.selected);
     return { folder: window.folder, selected };
+}
+
+/**
+ * Whether the file that was at `filePath` went into the current Windows user's Recycle Bin at or
+ * after `since`. Pass a time taken just before the delete, so that a file recycled from the same
+ * path by an earlier run does not count.
+ *
+ * Windows keeps, for each recycled item, a small `$I` file beside the item in
+ * `<drive>\$Recycle.Bin\<user's SID>`, written when the item is recycled, which records the item's
+ * original path. Shell.Application shows the same items, but only by display name, which may hide
+ * the extension, so this reads the `$I` files: an 8-byte version (2 since Windows 10), the size,
+ * the deletion time, the path's length in characters, then the path in UTF-16. A Recycle Bin can
+ * hold tens of thousands of items, so only the `$I` files written since `since` are read.
+ */
+export async function wasMovedToRecycleBinSince(
+    filePath: string,
+    since: Date,
+): Promise<boolean> {
+    const script = `
+$ErrorActionPreference = 'Stop'
+$want = [IO.Path]::GetFullPath($env:BLOOM_E2E_FILE)
+$since = [DateTime]::Parse($env:BLOOM_E2E_SINCE, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
+$sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+$bin = Join-Path ([IO.Path]::GetPathRoot($want)) ('$Recycle.Bin\\' + $sid)
+$found = $false
+if (Test-Path -LiteralPath $bin) {
+  # A recycled item's $I file keeps the item's extension, which narrows the listing.
+  $filter = '$I*' + [IO.Path]::GetExtension($want)
+  foreach ($info in @(Get-ChildItem -LiteralPath $bin -Force -Filter $filter | Where-Object { $_.LastWriteTimeUtc -ge $since })) {
+    $bytes = [IO.File]::ReadAllBytes($info.FullName)
+    if ([BitConverter]::ToInt64($bytes, 0) -ne 2) { continue }
+    $chars = [BitConverter]::ToInt32($bytes, 24)
+    $original = [Text.Encoding]::Unicode.GetString($bytes, 28, 2 * $chars).TrimEnd([char]0)
+    if ([string]::Equals($original, $want, [StringComparison]::OrdinalIgnoreCase)) { $found = $true }
+  }
+}
+if ($found) { 'yes' } else { 'no' }`;
+    const output = await runPowerShell(
+        script,
+        {
+            BLOOM_E2E_FILE: Path.resolve(filePath),
+            BLOOM_E2E_SINCE: since.toISOString(),
+        },
+        60000,
+    );
+    return output === "yes";
+}
+
+/**
+ * Run `script` in Windows PowerShell and return what it printed, trimmed. `env` is added to the
+ * environment, so that nothing needs quoting for PowerShell. Output goes through UTF-8, so a path
+ * with characters outside the machine's code page comes back whole.
+ */
+function runPowerShell(
+    script: string,
+    env: Record<string, string>,
+    timeoutMs: number,
+): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+        execFile(
+            "powershell",
+            [
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                `[Console]::OutputEncoding = [Text.Encoding]::UTF8\n${script}`,
+            ],
+            {
+                encoding: "utf8",
+                env: { ...process.env, ...env },
+                timeout: timeoutMs,
+            },
+            (error, stdout, stderr) =>
+                error
+                    ? reject(new Error(`${error.message}\n${stderr}`))
+                    : resolve(stdout.trim()),
+        );
+    });
 }

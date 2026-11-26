@@ -15,7 +15,10 @@ import {
     goToPage,
     makeBookFromTemplate,
 } from "../helpers/bookMaking";
-import { closeExplorerShowing } from "../helpers/fileExplorer";
+import {
+    closeExplorerShowing,
+    wasMovedToRecycleBinSince,
+} from "../helpers/fileExplorer";
 import {
     chooseVideoFile,
     deleteVideo,
@@ -85,9 +88,15 @@ test("the Sign Language tool's Import, Show in Folder and Delete act on the sele
     ).toEqual([videoPath.toLowerCase()]);
 
     // Delete
+    // The file system may round the Recycle Bin record's time down, so allow a second.
+    const beforeDelete = new Date(Date.now() - 1000);
     await deleteVideo(page, bloomApp.bloomPid, videoBox);
     expect(
         videoFolderFiles(bookFolder),
         "Delete emptied the video box but left the video in the book's video folder",
     ).toEqual([]);
+    expect(
+        await wasMovedToRecycleBinSince(videoPath, beforeDelete),
+        "Delete did not move the video to the Recycle Bin",
+    ).toBe(true);
 });
