@@ -16,7 +16,7 @@ import {
     makeCollectionXml,
     type IRelaunchChanges,
 } from "../fixtures/launchBloom";
-import { apiGetJson, apiPost } from "./api";
+import { apiGetJson, apiPost, getUiString } from "./api";
 import { waitForCollectionReady } from "./collection";
 import type { IFontChooserPlace } from "./fontChooser";
 import {
@@ -202,11 +202,14 @@ export function describeCollectionFolder(
     };
 }
 
-/** The Collection Settings dialog, by the title it shows. */
+/**
+ * The Collection Settings dialog, by its Help button, whose id no other dialog has; its title
+ * would tie the helpers to the UI language.
+ */
 function collectionSettingsDialog(page: Page): Locator {
-    // Not getByRole's name option: the dialog's aria-labelledby="title" does not give it the
-    // accessible name "Collection Settings".
-    return page.getByRole("dialog").filter({ hasText: "Collection Settings" });
+    return page
+        .getByRole("dialog")
+        .filter({ has: page.locator("#collectionSettingsHelpButton") });
 }
 
 /**
@@ -214,9 +217,12 @@ function collectionSettingsDialog(page: Page): Locator {
  * tab's top bar. Returns once the dialog shows its pages.
  */
 export async function openCollectionSettings(page: Page): Promise<void> {
-    await realClick(
-        page.getByRole("button", { name: "Settings", exact: true }),
+    const settings = await getUiString(
+        page,
+        "CollectionTab.SettingsButton",
+        "Settings",
     );
+    await realClick(page.getByRole("button", { name: settings, exact: true }));
     await expect(
         collectionSettingsDialog(page).getByRole("tab").first(),
         "the Collection Settings dialog never showed its pages",
@@ -813,7 +819,11 @@ export async function restartFromCollectionSettings(
 ): Promise<Page> {
     const page = bloomApp.page;
     const restart = collectionSettingsDialog(page).getByRole("button", {
-        name: "Restart",
+        name: await getUiString(
+            page,
+            "CollectionSettingsDialog.Restart",
+            "Restart",
+        ),
         exact: true,
     });
     await expect(

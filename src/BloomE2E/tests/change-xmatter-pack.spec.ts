@@ -7,15 +7,17 @@
 // .bloomCollection; collection-settings-front-back-matter.spec.ts checks that the dialog saves the
 // choice. This test joins the two: the choice made in the dialog reaches the book.
 //
-// The pack is chosen by its value, not by the name the dialog shows, so the test does not depend
-// on the UI language.
+// The pack is chosen by its value, not by the name the dialog shows, and the dialog's labels are
+// read in the UI language, so the test does not depend on it.
 
 import type { Page } from "@playwright/test";
 import { expect, test, type IBloomApp } from "../fixtures/bloomTest";
 import { getUiString } from "../helpers/api";
 import {
     addPage,
+    editablePageFrame,
     findBookFolder,
+    getContentPages,
     getPages,
     goToPage,
     makeBookFromTemplate,
@@ -26,7 +28,6 @@ import {
 import { selectBook } from "../helpers/collection";
 import {
     chooseCollectionSettingsListChoiceByValue,
-    getCollectionSettingsOkLabel,
     openCollectionSettings,
     readSavedCollectionSetting,
     restartFromCollectionSettings,
@@ -39,6 +40,7 @@ test.use({
 });
 
 const BOOK_TITLE = "Change Xmatter Pack Test";
+const CONTENT_TEXT = "Typed before the pack changed.";
 
 /** A pack, by its key (its folder name without "-XMatter"), and the pages it gives a book. */
 interface IPack {
@@ -117,8 +119,8 @@ async function choosePackInSettings(
         ),
         pack.key,
     );
-    // Every book has to be rebuilt with the new pack, so OK becomes Restart.
-    await expect.poll(() => getCollectionSettingsOkLabel(page)).toBe("Restart");
+    // Every book has to be rebuilt with the new pack, so OK becomes Restart; this presses it, and
+    // fails if OK did not become Restart.
     return restartFromCollectionSettings(bloomApp);
 }
 
@@ -148,7 +150,11 @@ test("choosing another front/back matter style in Settings changes the books in 
     await typeInGroup(page, ".bookTitle", "en", BOOK_TITLE);
     // One content page, so the book has an inside for the front and back matter to wrap.
     await addPage(page, "Just Text");
-    // Leave the page being edited, so the title reaches the file and names the book's folder.
+    const [contentPage] = await getContentPages(page);
+    await goToPage(page, contentPage.id);
+    await typeInGroup(page, ".bloom-translationGroup", "en", CONTENT_TEXT);
+    // Leave the page being edited, so what was typed reaches the file and the title names the
+    // book's folder.
     const cover = (await getPages(page)).find((p) => !p.isContentPage);
     await goToPage(page, cover!.id);
     const bookFolder = await findBookFolder(page, BOOK_TITLE);
@@ -177,10 +183,15 @@ test("choosing another front/back matter style in Settings changes the books in 
         SUPER_PAPER_SAVER,
     );
 
-    // The book's content page came through both changes.
-    const pages = await getPages(reopened);
+    // The book's own content page, with what was typed on it, came through both changes.
     expect(
-        pages.filter((p) => p.isContentPage),
+        (await getContentPages(reopened)).map((p) => p.id),
         "the book's content page should survive changing its front/back matter",
-    ).toHaveLength(1);
+    ).toEqual([contentPage.id]);
+    await goToPage(reopened, contentPage.id);
+    await expect(
+        editablePageFrame(reopened).locator(
+            `.bloom-page[id="${contentPage.id}"] .bloom-translationGroup .bloom-editable[lang="en"]`,
+        ),
+    ).toHaveText(CONTENT_TEXT);
 });
