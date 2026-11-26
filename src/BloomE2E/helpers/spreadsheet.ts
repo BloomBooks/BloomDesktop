@@ -16,6 +16,8 @@ export interface ISpreadsheetProgress {
     messages: string[];
     /** The messages Bloom marked as errors (ProgressKind.Error or Fatal). */
     errors: string[];
+    /** The messages Bloom marked as warnings (ProgressKind.Warning). */
+    warnings: string[];
 }
 
 /** The progress box's log, where each message is a paragraph. */
@@ -41,6 +43,11 @@ async function readProgress(page: Page): Promise<ISpreadsheetProgress> {
                 )
                 .allInnerTexts(),
         ),
+        warnings: trimmed(
+            await log
+                .locator('p[data-progress-severity="warning"]')
+                .allInnerTexts(),
+        ),
     };
 }
 
@@ -53,8 +60,8 @@ async function readProgress(page: Page): Promise<ISpreadsheetProgress> {
  * brings that program's window to the front; nothing in Bloom holds that back under --e2e (see
  * AUTOMATION-DEBT.md).
  *
- * When the export goes well Bloom closes its progress box by itself; when it reports a problem the
- * box stays open, and this fails with what the box says.
+ * When the export goes well Bloom closes its progress box by itself; when it reports an error or a
+ * warning the box stays open, and this fails with what the box says.
  */
 export async function exportSelectedBookToSpreadsheet(
     page: Page,
@@ -115,14 +122,17 @@ export async function exportSelectedBookToSpreadsheet(
     // Bloom makes one folder for the book, named after the book's file, and writes the
     // spreadsheet there last, after the pictures.
     let spreadsheet: string | undefined;
+    let progress: ISpreadsheetProgress = {
+        messages: [],
+        errors: [],
+        warnings: [],
+    };
     await expect
         .poll(
             async () => {
-                const progress = await readProgress(page);
-                if (progress.errors.length > 0)
-                    throw new Error(
-                        `The export reported problems:\n${progress.messages.join("\n")}`,
-                    );
+                progress = await readProgress(page);
+                if (progress.errors.length + progress.warnings.length > 0)
+                    return "problems";
                 const made = fs
                     .readdirSync(parentFolder)
                     .filter((name) => !bookFolders.has(name));
@@ -131,9 +141,10 @@ export async function exportSelectedBookToSpreadsheet(
                         Path.join(parentFolder, name, `${name}.xlsx`),
                     )
                     .find((path) => fs.existsSync(path));
-                return (
-                    !!spreadsheet && (await progressDialog(page).count()) === 0
-                );
+                return !!spreadsheet &&
+                    (await progressDialog(page).count()) === 0
+                    ? "done"
+                    : "working";
             },
             {
                 timeout: 120000,
@@ -141,7 +152,11 @@ export async function exportSelectedBookToSpreadsheet(
                     "Bloom never finished writing the spreadsheet and closing its progress box",
             },
         )
-        .toBe(true);
+        .not.toBe("working");
+    if (progress.errors.length + progress.warnings.length > 0)
+        throw new Error(
+            `The export reported problems:\n${progress.messages.join("\n")}`,
+        );
     return spreadsheet!;
 }
 
@@ -168,8 +183,8 @@ export async function importSpreadsheetIntoSelectedBook(
         "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
     );
 
-    // The importer's last message is "Done" (SpreadsheetImporter.ImportAsync); an import that
-    // stops early ends with an error instead.
+    // The importer's last message is "Done" (SpreadsheetImporter.ImportAsync), after any
+    // warnings; an import that stops early ends with an error instead.
     await expect
         .poll(
             async () => {

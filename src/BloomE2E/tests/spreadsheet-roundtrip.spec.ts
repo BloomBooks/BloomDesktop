@@ -17,6 +17,7 @@
 // front, under --dont-disturb too, so the test does not run where it would take a developer's
 // keyboard; see "Export to Spreadsheet opens the spreadsheet" in AUTOMATION-DEBT.md.
 
+import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import type { Page } from "@playwright/test";
@@ -61,6 +62,11 @@ interface ITextOnDisk {
      * (data-audiorecordingendtimes), as written.
      */
     sentenceEnds: string[];
+    /**
+     * The text of each sentence a box recorded as a whole is split into, which the end times
+     * belong to in order: what the reader highlights while each part plays.
+     */
+    highlightSegments: string[];
     /** The ids of the recordings that play this box's text: the box's own, or its sentences'. */
     recordingIds: string[];
 }
@@ -120,6 +126,13 @@ async function readContentPages(
                         )
                             .split(" ")
                             .filter((end) => end),
+                        highlightSegments: Array.from(
+                            box.querySelectorAll(".bloom-highlightSegment"),
+                        ).map((segment) =>
+                            (segment.textContent ?? "")
+                                .replace(/\s+/g, " ")
+                                .trim(),
+                        ),
                         recordingIds: recorded
                             .filter((element) =>
                                 element.classList.contains("audio-sentence"),
@@ -155,6 +168,14 @@ function findBookFolderById(collectionDir: string, bookId: string): string {
                 folders.map((f) => Path.basename(f)).join(", "),
         );
     return match;
+}
+
+/** A SHA-1 of the file's bytes. */
+function fileHash(path: string): string {
+    return crypto
+        .createHash("sha1")
+        .update(fs.readFileSync(path))
+        .digest("hex");
 }
 
 /** The bookInstanceId in the meta.json of the book in `bookFolder`. */
@@ -206,9 +227,11 @@ test("A Bloom Library book's content survives export to a spreadsheet and import
             boxes.filter(
                 (box) =>
                     box.recordingMode === "TextBox" &&
-                    box.sentenceEnds.length > 1,
+                    box.sentenceEnds.length > 1 &&
+                    box.highlightSegments.length === box.sentenceEnds.length,
             ).length,
-            "the downloaded book should have text boxes recorded as a whole, with sentence timings",
+            "the downloaded book should have text boxes recorded as a whole, split into sentences " +
+                "with a timing for each",
         ).toBeGreaterThan(0);
     });
 
@@ -242,7 +265,7 @@ test("A Bloom Library book's content survives export to a spreadsheet and import
 
     await step("Check the import reported no problem", () => {
         expect(
-            progress.errors,
+            [...progress.errors, ...progress.warnings],
             `The import said:\n${progress.messages.join("\n")}`,
         ).toEqual([]);
         expect(
@@ -286,19 +309,41 @@ test("A Bloom Library book's content survives export to a spreadsheet and import
                         `${end} s, not ${importedLastEnds[index]} s`,
                 ).toBeLessThan(0.25);
             });
-            for (const id of importedPages.flatMap((p) =>
-                p.texts.flatMap((t) => t.recordingIds),
-            )) {
+            // The recordings and pictures the pages name must be the right files, byte for byte,
+            // not only files of the same names. A recording is the original's. A picture is the
+            // one the spreadsheet carries in its images folder: the export trims each picture's
+            // metadata on purpose (ImageUtils.ReallyCropImages with
+            // alsoTrimMetadataForUncroppedImages), so its bytes differ from the original's.
+            const spreadsheetImages = Path.join(
+                Path.dirname(spreadsheet),
+                "images",
+            );
+            const files = importedPages.flatMap((p) => [
+                ...p.texts.flatMap((t) =>
+                    t.recordingIds.map((id) => ({
+                        file: Path.join("audio", `${id}.mp3`),
+                        source: Path.join(original, "audio", `${id}.mp3`),
+                    })),
+                ),
+                ...p.pictures.map((picture) => ({
+                    file: picture,
+                    source: Path.join(spreadsheetImages, picture),
+                })),
+            ]);
+            expect(
+                files.length,
+                "the pages should name some files",
+            ).toBeGreaterThan(0);
+            for (const { file, source } of files) {
+                const copy = Path.join(imported, file);
                 expect(
-                    fs.existsSync(Path.join(imported, "audio", `${id}.mp3`)),
-                    `the new book should have the recording ${id}.mp3`,
+                    fs.existsSync(copy),
+                    `the new book should have ${file}`,
                 ).toBe(true);
-            }
-            for (const picture of importedPages.flatMap((p) => p.pictures)) {
                 expect(
-                    fs.existsSync(Path.join(imported, picture)),
-                    `the new book should have the picture ${picture}`,
-                ).toBe(true);
+                    fileHash(copy),
+                    `${file} in the new book should be ${source}`,
+                ).toBe(fileHash(source));
             }
         },
     );
