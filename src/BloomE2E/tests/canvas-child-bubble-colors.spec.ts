@@ -13,6 +13,7 @@ import {
     getPages,
     goToPage,
     makeBookFromTemplate,
+    waitForSnapshotStreamIdle,
 } from "../helpers/bookMaking";
 import {
     addChildBubble,
@@ -25,7 +26,9 @@ import {
 import {
     chooseOuterOutlineColor,
     getCanvasElementTextColors,
+    readSavedCanvasShapes,
     type ICanvasTextColors,
+    type ISavedShape,
     type OuterOutlineColor,
     typeCanvasElementBackgroundColor,
     typeCanvasElementTextColor,
@@ -33,6 +36,7 @@ import {
 } from "../helpers/canvasToolOptions";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import { hexToRgba } from "../helpers/colorPicker";
+import { cssColorToHex } from "../helpers/cssValues";
 import { realClickAt } from "../helpers/realClick";
 import { watchForScriptErrors } from "../helpers/scriptErrors";
 import {
@@ -237,6 +241,40 @@ async function expectBubbleColors(
         } satisfies ICanvasTextColors);
 }
 
+/** A saved shape's fill or stroke as lower-case "#rrggbb" where it is a color this can read. */
+function savedColor(value: string): string {
+    if (value.toLowerCase() === "yellow") return "#ffff00";
+    if (value.toLowerCase() === "crimson") return "#dc143c";
+    try {
+        return cssColorToHex(value);
+    } catch {
+        return value.toLowerCase();
+    }
+}
+
+/**
+ * Which of the family's colors a page's saved drawing paints, with its fills or its strokes
+ * (ComicalJS saves an outer outline as a larger filled shape behind the bubble): `colors` are
+ * those of `wanted` that it paints, and `earlierColors` those of `unwanted`. `painted` lists every
+ * color it paints, for a failure message.
+ */
+function describeSavedDrawing(
+    shapes: ISavedShape[],
+    wanted: string[],
+    unwanted: string[],
+): { colors: string[]; earlierColors: string[]; painted: string } {
+    const painted = [
+        ...new Set(
+            shapes.flatMap((s) => [savedColor(s.fill), savedColor(s.stroke)]),
+        ),
+    ];
+    return {
+        colors: wanted.filter((c) => painted.includes(c)),
+        earlierColors: unwanted.filter((c) => painted.includes(c)),
+        painted: painted.join(" "),
+    };
+}
+
 /** The distinct colors along a ray of the drawing, in order, for a failure message. */
 function describeRay(ray: IDrawingPixel[]): string {
     const seen: string[] = [];
@@ -392,7 +430,7 @@ test("Child bubbles merge with their parent and share its colors [Test Case ID 3
     step,
 }) => {
     test.setTimeout(300000);
-    await makeBookFromTemplate(page, "Basic Book");
+    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
     const errors = watchForScriptErrors(page);
     try {
         const before = (await getContentPages(page)).map((p) => p.id);
@@ -613,7 +651,46 @@ test("Child bubbles merge with their parent and share its colors [Test Case ID 3
             );
             if (!otherPage)
                 throw new Error("The book has no page but its content pages.");
+            // Leaving a page saves the last snapshot of it that Bloom received, which is sent a
+            // moment after the page last changed; let the change reach Bloom first.
+            await waitForSnapshotStreamIdle(page);
             await goToPage(page, otherPage.id);
+            // What a reader of the book sees is the drawing Bloom saved into the page as an SVG.
+            const wanted = [
+                kChildChoice.background,
+                kOuterOutlineHex[kChildChoice.outerOutline],
+            ];
+            const unwanted = [
+                kParentChoice.background,
+                kOuterOutlineHex[kParentChoice.outerOutline],
+            ];
+            await expect
+                .poll(
+                    async () => {
+                        const saved = describeSavedDrawing(
+                            await readSavedCanvasShapes(
+                                page,
+                                bookFolder,
+                                canvasPage.id,
+                            ),
+                            wanted,
+                            unwanted,
+                        );
+                        // The full list matters only when something is missing or left over.
+                        return saved.colors.length === wanted.length &&
+                            saved.earlierColors.length === 0
+                            ? { ...saved, painted: "" }
+                            : saved;
+                    },
+                    {
+                        timeout: 15000,
+                        message:
+                            `The page's saved drawing should paint the bubbles' ` +
+                            `${kChildChoice.background} and their yellow outer outline, and none ` +
+                            `of the parent's earlier ${kParentChoice.background} or crimson.`,
+                    },
+                )
+                .toEqual({ colors: wanted, earlierColors: [], painted: "" });
             await goToPage(page, canvasPage.id);
             await clearCanvasElementSelection(page);
             await expectBubbleColors(
@@ -638,6 +715,37 @@ test("Child bubbles merge with their parent and share its colors [Test Case ID 3
                 child,
                 "After the page was saved and shown again",
             );
+        });
+
+        await step("Add another child to the colored bubble", async () => {
+            await selectBubble(page, parent, "left", "parent bubble");
+            await addChildBubble(page);
+            const newChild = canvasElement(page, childIndex + 1);
+            expect(
+                (await readBubbleFamilySpec(newChild)).tails.map(
+                    (t) => t.joiner,
+                ),
+                "The added bubble should be a child, joined to the family by its one tail.",
+            ).toEqual([true]);
+            const newChildMiddle = middleOf(
+                await screenBox(newChild, "new child bubble"),
+            );
+            await expect
+                .poll(
+                    async () =>
+                        describe(await readFillColor(page, newChildMiddle)),
+                    {
+                        timeout: 15000,
+                        message:
+                            "A child added to the family should be filled with its " +
+                            `background color, ${kChildChoice.background}.`,
+                    },
+                )
+                .toBe(`${kChildChoice.background}/255`);
+            expect(
+                (await getCanvasElementTextColors(newChild)).color,
+                "A child added to the family should take its text color.",
+            ).toBe(kChildChoice.text);
         });
 
         expect(errors.errors(), "Bloom raised a script error.").toEqual([]);
