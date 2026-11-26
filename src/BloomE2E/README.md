@@ -167,9 +167,12 @@ real bug in the code under test; read the message and fix it rather than working
 - `helpers/api.ts` — `apiGet`, `apiPost`, `apiGetJson`. These run `fetch` inside the page with a
   relative URL, which is not a style choice: Bloom's server rejects a `127.0.0.1` Host header, and
   the CDP endpoint does not answer on `localhost`. The file explains it.
-- `helpers/realClick.ts` — `realClick`, `realClickAt`. Book tiles, Settings, and PREVIEW ignore a
+- `helpers/realClick.ts` — `realClick`, `realClickAt`, `realRightClick`. Book tiles, Settings, and PREVIEW ignore a
   synthetic `element.click()`. Never hand-roll `Input.dispatchMouseEvent` in a test; add the
   gesture here.
+- `helpers/aiImageEditor.ts` — open the AI image editor from a picture (`openAiImageEditorFromPicture`),
+  its look-around notice, `showAllAiImageTools`, `selectAiImageTool` (returns the tool's Go
+  button) and `cancelAiImageEditor`.
 - `helpers/screenshot.ts` — `captureCurrentBookPage`, `captureElement`, `readPngSize`. Captures an
   element taller than the window. `Page.captureScreenshot` with `captureBeyondViewport` hangs in
   WebView2, so this enlarges the window, clips, clears the override, and times out every CDP
