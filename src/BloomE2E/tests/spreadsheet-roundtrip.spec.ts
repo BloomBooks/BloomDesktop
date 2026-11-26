@@ -173,10 +173,10 @@ function findBookFolderById(collectionDir: string, bookId: string): string {
 /**
  * The size of the picture in the file at `path` and a SHA-1 of its pixels, decoded by the
  * browser: equal for two files that show the same picture even when their metadata differs.
- * `page` is used only to decode it.
+ * `page` is used only to decode it. The hash is made in the page, so only it comes back.
  */
 async function picturePixels(page: Page, path: string): Promise<string> {
-    const pixels = await page.evaluate(async (base64) => {
+    return page.evaluate(async (base64) => {
         const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
         const bitmap = await createImageBitmap(new Blob([bytes]));
         const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
@@ -188,21 +188,14 @@ async function picturePixels(page: Page, path: string): Promise<string> {
             bitmap.width,
             bitmap.height,
         ).data;
-        // Send the pixels back as base64, a chunk at a time to keep each string small.
-        let binary = "";
-        for (let i = 0; i < data.length; i += 0x8000)
-            binary += String.fromCharCode(...data.subarray(i, i + 0x8000));
-        return {
-            width: bitmap.width,
-            height: bitmap.height,
-            data: btoa(binary),
-        };
+        const digest = new Uint8Array(
+            await crypto.subtle.digest("SHA-1", data),
+        );
+        const hash = Array.from(digest, (b) =>
+            b.toString(16).padStart(2, "0"),
+        ).join("");
+        return `${bitmap.width}x${bitmap.height} ${hash}`;
     }, fs.readFileSync(path).toString("base64"));
-    const hash = crypto
-        .createHash("sha1")
-        .update(Buffer.from(pixels.data, "base64"))
-        .digest("hex");
-    return `${pixels.width}x${pixels.height} ${hash}`;
 }
 
 /** A SHA-1 of the file's bytes. */
