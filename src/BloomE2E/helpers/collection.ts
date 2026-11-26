@@ -184,8 +184,9 @@ export interface IBookMenuEntry {
     /** False for an entry that is greyed out, such as one the book's checkout forbids. */
     enabled: boolean;
     /**
-     * True for an entry whose command the subscription tier lacks. It is not greyed out: a click
-     * on it opens the Subscription page of the Settings dialog instead.
+     * True for an entry whose command the subscription tier lacks. That alone does not grey it
+     * out: while `enabled` is true, a click on it opens the Subscription page of the Settings
+     * dialog instead of doing the command.
      */
     needsSubscription: boolean;
 }
