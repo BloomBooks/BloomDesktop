@@ -29,6 +29,7 @@ import {
     chooseSectionType,
     describeSections,
     dragSplitterOf,
+    getSplitLayout,
     isChangeLayoutMode,
     type ISectionDescription,
     type SectionContent,
@@ -85,6 +86,29 @@ async function section(
     index: number,
 ): Promise<ISectionDescription> {
     return (await describeSections(page))[index];
+}
+
+/**
+ * Check that every section is as wide and as tall as it was when Change Layout mode was left, so
+ * that the rebuilt page has its splitters where they were dragged to and not where they started.
+ */
+function expectSameSizes(
+    rebuilt: ISectionDescription[],
+    beforeLeaving: ISectionDescription[],
+): void {
+    expect(rebuilt).toHaveLength(beforeLeaving.length);
+    rebuilt.forEach((s, index) => {
+        const was = beforeLeaving[index].rect;
+        const what = `Section ${index} (${s.content}) after the page was rebuilt`;
+        expect(
+            Math.abs(s.rect.width - was.width),
+            `${what} is ${s.rect.width} wide; it was ${was.width} when Change Layout was left.`,
+        ).toBeLessThanOrEqual(kEdgeTolerance);
+        expect(
+            Math.abs(s.rect.height - was.height),
+            `${what} is ${s.rect.height} tall; it was ${was.height} when Change Layout was left.`,
+        ).toBeLessThanOrEqual(kEdgeTolerance);
+    });
 }
 
 test("splitting sections of a Basic Text & Image page, typing them and dragging the splitters [Test Case ID 366]", async ({
@@ -243,6 +267,7 @@ test("splitting sections of a Basic Text & Image page, typing them and dragging 
         kEdgeTolerance,
     );
 
+    const layoutBeforeDragging = await getSplitLayout(page);
     // Drag the splitter between the picture row and the canvas down: the canvas gets shorter.
     const canvasIndex = await findSection(
         page,
@@ -272,8 +297,15 @@ test("splitting sections of a Basic Text & Image page, typing them and dragging 
         (await section(page, videoIndex)).rect.width,
         "The video beside the picture should get wider by what the picture lost.",
     ).toBeGreaterThan(videoBefore.width + 10);
+    const layoutBeforeLeaving = await getSplitLayout(page);
+    expect(
+        layoutBeforeLeaving,
+        "Dragging the splitters should change the sizes that the page records for its splits.",
+    ).not.toEqual(layoutBeforeDragging);
+    const sizesBeforeLeaving = await describeSections(page);
 
     await setChangeLayoutMode(page, false);
+    expectSameSizes(await describeSections(page), sizesBeforeLeaving);
 
     // Type into the new text box.
     const groupIndex = await editablePageFrame(page)
@@ -331,6 +363,10 @@ test("splitting sections of a Basic Text & Image page, typing them and dragging 
         saved?.layout,
         "The page should be saved with all five splits.",
     ).toHaveLength(5);
+    expect(
+        saved?.layout,
+        "The page should be saved with its splitters where they were dragged to.",
+    ).toEqual(layoutBeforeLeaving);
     expect(saved?.text).toContain("Typed before the splits.");
     expect(saved?.text).toContain("Typed in the new box.");
     expect(saved?.imageSources.map((src) => Path.basename(src))).toEqual(
@@ -371,6 +407,7 @@ test("a new Custom page starts in Change Layout mode and keeps the sections it i
     await chooseSectionType(page, "image", 0);
     await chooseSectionType(page, "text", 1);
 
+    const layoutBeforeDragging = await getSplitLayout(page);
     const bottomBefore = (await section(page, 2)).rect;
     await dragSplitterOf(page, sections(page).nth(2), 0, -40);
     await expect
@@ -387,9 +424,16 @@ test("a new Custom page starts in Change Layout mode and keeps the sections it i
                 "Dragging the splitter right of the picture to the right should make it wider.",
         })
         .toBeGreaterThan(leftBefore.width + 10);
+    const layoutBeforeLeaving = await getSplitLayout(page);
+    expect(
+        layoutBeforeLeaving,
+        "Dragging the splitters should change the sizes that the page records for its splits.",
+    ).not.toEqual(layoutBeforeDragging);
+    const sizesBeforeLeaving = await describeSections(page);
 
     await setChangeLayoutMode(page, false);
     const after = await describeSections(page);
+    expectSameSizes(after, sizesBeforeLeaving);
     expect(after.map((s) => s.content)).toEqual(["image", "text", "widget"]);
     expect(after[1].rect.x).toBeGreaterThanOrEqual(
         right(after[0].rect) - kEdgeTolerance,
@@ -409,4 +453,8 @@ test("a new Custom page starts in Change Layout mode and keeps the sections it i
         saved?.layout,
         "The page should be saved with both splits.",
     ).toHaveLength(2);
+    expect(
+        saved?.layout,
+        "The page should be saved with its splitters where they were dragged to.",
+    ).toEqual(layoutBeforeLeaving);
 });

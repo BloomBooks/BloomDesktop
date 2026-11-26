@@ -356,19 +356,14 @@ export async function describeSections(
             const child = (selector: string) =>
                 inner.querySelector(`:scope > ${selector}`);
             const canvas = child(".bloom-canvas");
-            const content = canvas
-                ? canvas.getAttribute("data-tool-id") === "canvas"
-                    ? "canvas"
-                    : "image"
-                : child(".bloom-videoContainer")
-                  ? "video"
-                  : child(".bloom-widgetContainer")
-                    ? "widget"
-                    : child(".bloom-table")
-                      ? "table"
-                      : child(".bloom-translationGroup")
-                        ? "text"
-                        : "empty";
+            let content = "empty";
+            if (canvas?.getAttribute("data-tool-id") === "canvas")
+                content = "canvas";
+            else if (canvas) content = "image";
+            else if (child(".bloom-videoContainer")) content = "video";
+            else if (child(".bloom-widgetContainer")) content = "widget";
+            else if (child(".bloom-table")) content = "table";
+            else if (child(".bloom-translationGroup")) content = "text";
             const src = canvas?.querySelector("img")?.getAttribute("src");
             const editable = child(".bloom-translationGroup")?.querySelector(
                 ".bloom-editable.bloom-visibility-code-on",
@@ -393,6 +388,31 @@ export async function describeSections(
         });
     }
     return result;
+}
+
+/**
+ * The splits of the page being edited, in document order, each written the way readBook writes a
+ * saved page's `layout`: the orientation and the size origami has recorded on each half. So what
+ * this returns after a splitter is dragged is what the saved page's `layout` should hold.
+ */
+export async function getSplitLayout(page: Page): Promise<string[]> {
+    return editablePageFrame(page)
+        .locator(".split-pane")
+        .evaluateAll((splits) =>
+            splits.map((split) => {
+                const horizontal =
+                    split.classList.contains("horizontal-percent");
+                const sizeOf = (position: string) =>
+                    split
+                        .querySelector(
+                            `:scope > .split-pane-component.position-${position}`,
+                        )
+                        ?.getAttribute("style") ?? "";
+                return horizontal
+                    ? `horizontal ${sizeOf("top")} | ${sizeOf("bottom")}`
+                    : `vertical ${sizeOf("left")} | ${sizeOf("right")}`;
+            }),
+        );
 }
 
 /**
