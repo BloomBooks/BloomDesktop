@@ -33,6 +33,10 @@ import {
 } from "../helpers/bookMaking";
 import { makeBlackSquareOnWhitePng } from "../helpers/paintedPixels";
 import { readPngSize } from "../helpers/screenshot";
+import {
+    getCurrentUiLanguageTag,
+    setUiStateViaApi,
+} from "../helpers/uiLanguage";
 
 test.use({
     collectionSpec: {
@@ -112,10 +116,16 @@ async function getTemplateGroup(
 }
 
 test("a book made from a custom template shows the author's own SVG and PNG page thumbnails in Add Page [Test Case ID 78]", async ({
-    page,
+    bloomApp,
     step,
 }) => {
     test.setTimeout(600000);
+
+    // The Add Page helpers find the dialog and its buttons by their English wording, and a freshly
+    // launched Bloom takes its UI language from the operating system.
+    if ((await getCurrentUiLanguageTag(bloomApp.page)) !== "en")
+        await setUiStateViaApi(bloomApp, "en", false);
+    const page = bloomApp.page;
 
     const templateFolder = await step(
         "Make a template with Template Starter and give it a title",
@@ -230,6 +240,10 @@ test("a book made from a custom template shows the author's own SVG and PNG page
     );
 
     const svgFile = Path.join(thumbnailFolder, `${SVG_THUMBNAIL_LABEL}.svg`);
+    // The author's files as the test wrote them, so that a later rewrite by Bloom, even one of the
+    // same size, shows as a difference.
+    let authorSvgBase64 = "";
+    let authorPngBase64 = "";
     await step(
         "Replace one page's PNG thumbnail with an SVG of the same name, and the other's with a PNG of the author's own",
         async () => {
@@ -252,6 +266,10 @@ test("a book made from a custom template shows the author's own SVG and PNG page
                 width: PNG_THUMBNAIL_SIZE,
                 height: PNG_THUMBNAIL_SIZE,
             });
+            authorSvgBase64 = fs.readFileSync(svgFile).toString("base64");
+            authorPngBase64 = fs
+                .readFileSync(pngPageThumbnail)
+                .toString("base64");
         },
     );
 
@@ -282,8 +300,8 @@ test("a book made from a custom template shows the author's own SVG and PNG page
             });
             expect(
                 await fetchAsBase64(page, svgPage.imageUrl),
-                `the image of "${SVG_THUMBNAIL_LABEL}" at ${svgPage.imageUrl} is not the file ${svgFile}`,
-            ).toBe(fs.readFileSync(svgFile).toString("base64"));
+                `the image of "${SVG_THUMBNAIL_LABEL}" at ${svgPage.imageUrl} is not the SVG the author wrote`,
+            ).toBe(authorSvgBase64);
 
             expect(
                 { width: pngPage.naturalWidth, height: pngPage.naturalHeight },
@@ -294,20 +312,21 @@ test("a book made from a custom template shows the author's own SVG and PNG page
             });
             expect(
                 await fetchAsBase64(page, pngPage.imageUrl),
-                `the image of "${PNG_THUMBNAIL_LABEL}" at ${pngPage.imageUrl} is not the file ${pngPageThumbnail}`,
-            ).toBe(fs.readFileSync(pngPageThumbnail).toString("base64"));
+                `the image of "${PNG_THUMBNAIL_LABEL}" at ${pngPage.imageUrl} is not the PNG the author wrote`,
+            ).toBe(authorPngBase64);
             // Bloom must have left the author's pictures as they were, not made thumbnails over them.
             expect(
                 fs.existsSync(svgPageThumbnail),
                 `Bloom made a PNG thumbnail again beside the author's SVG: ${svgPageThumbnail}`,
             ).toBe(false);
             expect(
-                pngFileSize(pngPageThumbnail),
-                "Bloom replaced the author's PNG",
-            ).toEqual({
-                width: PNG_THUMBNAIL_SIZE,
-                height: PNG_THUMBNAIL_SIZE,
-            });
+                fs.readFileSync(svgFile).toString("base64"),
+                "Bloom changed the author's SVG",
+            ).toBe(authorSvgBase64);
+            expect(
+                fs.readFileSync(pngPageThumbnail).toString("base64"),
+                "Bloom changed the author's PNG",
+            ).toBe(authorPngBase64);
             await closeAddPageDialog(page);
         },
     );
