@@ -17,6 +17,7 @@ import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     clickInGroup,
+    editablePageFrame,
     editBook,
     getPages,
     makeBookFromTemplate,
@@ -73,6 +74,14 @@ async function makeUntitledBook(
         pages.length,
         "test setup: the book has a page besides its cover to go to",
     ).toBeGreaterThan(1);
+    // So the title typed next is the book's first, and the save after it gives the folder its
+    // first real name.
+    await expect(
+        editablePageFrame(page)
+            .locator('.bookTitle .bloom-editable[lang="en"]')
+            .first(),
+        "test setup: the new book has no title yet",
+    ).toHaveText("", { timeout: 30000, useInnerText: true });
     return { oldFolder, coverId: pages[0].id, otherPageId: pages[1].id };
 }
 
