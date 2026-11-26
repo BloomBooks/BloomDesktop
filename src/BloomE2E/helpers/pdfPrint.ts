@@ -214,35 +214,59 @@ function getPdfPageObjectsInPageOrder(pdf: string): string[] {
  * size that is listed for a page was found and drawn on that page when the PDF was made, and one
  * that is missing was not. Each picture is listed once: the second image in which a PDF holds a
  * picture's transparency belongs to the picture, not to the page, and is not listed.
+ *
+ * A booklet's sheet (Booklet Cover or Booklet Insides) draws each page of the book as a form (a
+ * Form XObject) of its own, which holds that page's pictures. Pass `booklet` true for those, and
+ * the pictures of the forms each sheet draws are listed for the sheet. Without it a form's
+ * pictures are not listed: a page of a Simple PDF can draw small images of Bloom's own in forms.
  */
 export async function getPdfPreviewPicturesByPage(
     page: Page,
+    booklet = false,
 ): Promise<IPixelSize[][]> {
     const pdf = await readPreviewedPdf(page);
-    return getPdfPageObjectsInPageOrder(pdf).map((pageObject) => {
-        // What a page draws with is in its resources, which the page object holds or refers to.
-        const elsewhere = /\/Resources\s+(\d+)\s+\d+\s+R/.exec(pageObject);
-        const resources = elsewhere
-            ? readPdfObject(pdf, elsewhere[1])
-            : pageObject;
-        const drawn = /\/XObject\s*<<([^>]*)>>/.exec(resources);
-        if (!drawn) return [];
-        const sizes: IPixelSize[] = [];
-        for (const number of readPdfReferences(drawn[1])) {
-            // An image is a stream, and a PDF never compresses the dictionary that describes a
-            // stream, so its size can be read from the text of the file.
-            const dictionary = readPdfObject(pdf, number);
-            if (!/\/Subtype\s*\/Image(?![a-zA-Z])/.test(dictionary)) continue;
-            const width = /\/Width\s+(\d+)/.exec(dictionary);
-            const height = /\/Height\s+(\d+)/.exec(dictionary);
-            if (!width || !height)
-                throw new Error(
-                    `A picture in the previewed PDF does not give its size: ${dictionary}`,
-                );
-            sizes.push({ width: Number(width[1]), height: Number(height[1]) });
+    return getPdfPageObjectsInPageOrder(pdf).map((pageObject) =>
+        getPicturesDrawnBy(pdf, pageObject, booklet),
+    );
+}
+
+/**
+ * The size in pixels of each picture that a page object, or a form, draws: the images among the
+ * things its resources name (XObjects), and, when `inForms` is true, the images that the forms
+ * among them draw in the same way.
+ */
+function getPicturesDrawnBy(
+    pdf: string,
+    drawer: string,
+    inForms: boolean,
+): IPixelSize[] {
+    // What a page or form draws with is in its resources, which it holds or refers to.
+    const elsewhere = /\/Resources\s+(\d+)\s+\d+\s+R/.exec(drawer);
+    const resources = elsewhere ? readPdfObject(pdf, elsewhere[1]) : drawer;
+    // The list of what it draws is in the resources, or in an object of its own that they refer to.
+    const drawn = /\/XObject\s*(?:<<([^>]*)>>|(\d+)\s+\d+\s+R)/.exec(resources);
+    if (!drawn) return [];
+    const list = drawn[1] ?? readPdfObject(pdf, drawn[2]);
+    const sizes: IPixelSize[] = [];
+    for (const number of readPdfReferences(list)) {
+        // An image or a form is a stream, and a PDF never compresses the dictionary that describes
+        // a stream, so it can be read from the text of the file.
+        const dictionary = readPdfObject(pdf, number);
+        if (/\/Subtype\s*\/Form(?![a-zA-Z])/.test(dictionary)) {
+            if (inForms)
+                sizes.push(...getPicturesDrawnBy(pdf, dictionary, false));
+            continue;
         }
-        return sizes;
-    });
+        if (!/\/Subtype\s*\/Image(?![a-zA-Z])/.test(dictionary)) continue;
+        const width = /\/Width\s+(\d+)/.exec(dictionary);
+        const height = /\/Height\s+(\d+)/.exec(dictionary);
+        if (!width || !height)
+            throw new Error(
+                `A picture in the previewed PDF does not give its size: ${dictionary}`,
+            );
+        sizes.push({ width: Number(width[1]), height: Number(height[1]) });
+    }
+    return sizes;
 }
 
 /** A rectangle on a PDF page, in millimetres from the left and bottom edges of the paper. */
