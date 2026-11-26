@@ -226,8 +226,28 @@ test("builds the full tag from the script, country and dialect chosen in Customi
     await chooseCustomizeCountry(page, /^Andorra/);
     await typeCustomizeDialect(page, "foo");
     await expect.poll(() => getCustomizeTag(page)).toBe("es-Arab-AD-x-foo");
+    // Cancel in Customize leaves the chooser with the language as it was.
     await cancelCustomizeDialog(page);
+    await expect.poll(() => getChosenLanguageTag(page)).toBe("es");
 
+    // OK in Customize gives the whole tag, with its script, country and dialect, to the chooser,
+    // and OK there gives it to the collection.
+    await openCustomizeDialog(page);
+    await chooseCustomizeScript(page, /^Arabic/);
+    await chooseCustomizeCountry(page, /^Andorra/);
+    await typeCustomizeDialect(page, "foo");
+    await expect.poll(() => getCustomizeTag(page)).toBe("es-Arab-AD-x-foo");
+    await okCustomizeDialog(page);
+    await expect
+        .poll(() => getChosenLanguageTag(page))
+        .toBe("es-Arab-AD-x-foo");
+    await okLanguageChooser(page);
+    expect(await getCollectionSettingsLanguage(page, kLanguage3)).toBe(
+        // The chooser names Spanish in Spanish.
+        "español (es-Arab-AD-x-foo)",
+    );
+
+    await openLanguageChooser(page, kLanguage3, "change");
     await searchForLanguage(page, "tok pisin");
     await chooseLanguage(page, "tpi");
     await openCustomizeDialog(page);
@@ -238,7 +258,6 @@ test("builds the full tag from the script, country and dialect chosen in Customi
     // Latin script and Papua New Guinea are what Tok Pisin has anyway, so the tag leaves them out.
     await expect.poll(() => getCustomizeTag(page)).toBe("tpi-x-foo");
 
-    // OK in Customize gives the tag to the chooser, and OK there gives it to the collection.
     await okCustomizeDialog(page);
     await expect.poll(() => getChosenLanguageTag(page)).toBe("tpi-x-foo");
     await okLanguageChooser(page);
