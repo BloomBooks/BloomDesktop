@@ -85,6 +85,13 @@ export interface ILaunchedBloom {
      * within `timeoutMs`. The ports change, as for restart().
      */
     quitAndRestart: (timeoutMs?: number) => Promise<void>;
+    /**
+     * Return the messages of the problems that the Bloom running now reported with
+     * NonFatalProblem since the last call, and forget them. Under --e2e Bloom shows such a
+     * problem to nobody and writes it to stderr instead, so this is the only place a test can see
+     * it. Each restart starts a new, empty list.
+     */
+    takeNonFatalProblems: () => string[];
 }
 
 /**
@@ -936,6 +943,42 @@ interface IRunningBloom {
     cdpPort: number;
     servingPid: number;
     pids: number[];
+    /** See ILaunchedBloom.takeNonFatalProblems. */
+    takeNonFatalProblems: () => string[];
+}
+
+// What Bloom writes to stderr, under --e2e, in place of showing a problem that it reports with
+// NonFatalProblem (NonFatalProblem.Report). The message follows it on the same line.
+const NON_FATAL_PROBLEM_MARKER = "Nonfatal problem (e2e): ";
+
+/**
+ * Collect the messages of the problems that Bloom reports with NonFatalProblem from what it
+ * writes to stderr, which arrives in chunks that need not end at a line's end.
+ */
+function makeNonFatalProblemCollector(): {
+    addStderr: (chunk: string) => void;
+    take: () => string[];
+} {
+    let unread = "";
+    const problems: string[] = [];
+    return {
+        addStderr: (chunk) => {
+            unread += chunk;
+            const lastNewline = unread.lastIndexOf("\n");
+            if (lastNewline < 0) return;
+            for (const line of unread.substring(0, lastNewline).split("\n")) {
+                const at = line.indexOf(NON_FATAL_PROBLEM_MARKER);
+                if (at >= 0)
+                    problems.push(
+                        line
+                            .substring(at + NON_FATAL_PROBLEM_MARKER.length)
+                            .trim(),
+                    );
+            }
+            unread = unread.substring(lastNewline + 1);
+        },
+        take: () => problems.splice(0),
+    };
 }
 
 /** Type guard for the pid lists below, which hold `number | undefined`. */
@@ -1011,6 +1054,10 @@ async function startBloomOn(
     let exitStatus: { code: number | null; signal: string | null } | undefined;
     bloomProcess.stdout?.on("data", (d) => recordOutput(String(d)));
     bloomProcess.stderr?.on("data", (d) => recordOutput(String(d)));
+    const nonFatalProblems = makeNonFatalProblemCollector();
+    bloomProcess.stderr?.on("data", (d) =>
+        nonFatalProblems.addStderr(String(d)),
+    );
     // 'error' fires when the exe cannot even be spawned.
     bloomProcess.on("error", (err) =>
         recordOutput(`\n[spawn error] ${err.message}\n`),
@@ -1098,6 +1145,7 @@ async function startBloomOn(
         cdpPort: found.info.cdpPort,
         servingPid: found.info.processId ?? bloomProcess.pid!,
         pids: [bloomProcess.pid, found.info.processId].filter(isPid),
+        takeNonFatalProblems: nonFatalProblems.take,
     };
 }
 
@@ -1133,6 +1181,13 @@ async function waitForRelaunchedBloom(
                 cdpPort: found.info.cdpPort,
                 servingPid: found.info.processId,
                 pids: [found.info.processId],
+                // A copy that Bloom started itself is not our child, so its stderr is not ours.
+                takeNonFatalProblems: () => {
+                    throw new Error(
+                        "A Bloom that relaunched itself writes its problems where no test can " +
+                            "read them, so this cannot say which problems it reported.",
+                    );
+                },
             };
         }
         await delay(1000);
@@ -1336,6 +1391,8 @@ export async function launchBloom(
         bloomPid: running.servingPid,
         collectionDir,
         userSettingsDir,
+
+        takeNonFatalProblems: () => running!.takeNonFatalProblems(),
 
         restart: async (betweenStopAndStart, changes) => {
             await killAndWaitForBloomToExit(running!);

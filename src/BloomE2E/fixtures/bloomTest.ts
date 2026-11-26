@@ -109,6 +109,13 @@ export interface IBloomApp extends IBloomAppBase {
      * Bloom is on its way out first (wait for the old page's "close" event).
      */
     followRelaunch: (newCollectionDir: string) => Promise<Page>;
+    /**
+     * The messages of the problems that Bloom reported with NonFatalProblem since the last call
+     * (or since it started), which it then forgets. Under --e2e Bloom shows such a problem to
+     * nobody, not even in the problem dialog that failOnBloomProblem watches, and writes it to
+     * stderr instead.
+     */
+    takeNonFatalProblems: () => string[];
 }
 
 /**
@@ -506,6 +513,8 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                     bloomPid: launched.bloomPid,
                     collectionDir: launched.collectionDir,
                     userSettingsDir: launched.userSettingsDir,
+                    takeNonFatalProblems: () =>
+                        launched!.takeNonFatalProblems(),
                     restart: async (betweenStopAndStart, changes) => {
                         // Close the old CDP connection first: it holds a socket into the process
                         // that is about to be killed.
