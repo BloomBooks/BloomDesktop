@@ -57,18 +57,23 @@ function FindDialogs {
   }
   return $found
 }
-# Press a button, then hand the foreground back to whoever had it until the dialog is gone:
-# pressing a button over UI Automation lets Bloom take the foreground as the dialog closes, even
-# under --dont-disturb. Bounded, so a dialog that never closes is reported instead of hanging.
+# The window that had the foreground before the command that shows the dialog was started, when
+# the caller read it (getForegroundWindow); otherwise whatever has it when the button is pressed.
+function WindowPid($h) { $p = 0; [Fg]::GetWindowThreadProcessId($h, [ref]$p) | Out-Null; $p }
+# Hand the foreground back to $before when Bloom has taken it: a dialog Bloom shows, and the press
+# of its button over UI Automation, let Bloom take the foreground, even under --dont-disturb.
+function GiveBack($before) {
+  if ((WindowPid $before) -ne $bloomPid -and (ForegroundPid) -eq $bloomPid) { [Fg]::SetForegroundWindow($before) | Out-Null }
+}
+# Press a button, then keep handing the foreground back until the dialog is gone. Bounded, so a
+# dialog that never closes is reported instead of hanging.
 function PressAndWaitForClose($button, $stillOpen) {
-  $before = [Fg]::GetForegroundWindow()
-  $beforeWasBloom = (ForegroundPid) -eq $bloomPid
+  $before = if ($env:BLOOM_E2E_FOREGROUND) { [IntPtr][long]$env:BLOOM_E2E_FOREGROUND } else { [Fg]::GetForegroundWindow() }
+  GiveBack $before
   $button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
   $watch = [Diagnostics.Stopwatch]::StartNew()
-  do {
-    if (-not $beforeWasBloom -and (ForegroundPid) -eq $bloomPid) { [Fg]::SetForegroundWindow($before) | Out-Null }
-  } while ($watch.ElapsedMilliseconds -lt 30000 -and (& $stillOpen))
-  if (-not $beforeWasBloom -and (ForegroundPid) -eq $bloomPid) { [Fg]::SetForegroundWindow($before) | Out-Null }
+  do { GiveBack $before } while ($watch.ElapsedMilliseconds -lt 30000 -and (& $stillOpen))
+  GiveBack $before
   if (& $stillOpen) { throw 'The dialog was still open 30 seconds after its button was pressed.' }
 }
 $deadline = (Get-Date).AddMilliseconds([int]$env:BLOOM_E2E_TIMEOUT_MS)
@@ -117,14 +122,44 @@ function runUiaScript(
 }
 
 /**
+ * The window that has the foreground now, as a number for readAndCloseMessageBox and
+ * answerSaveAsDialog. Read it before starting a command that shows a dialog, so that the
+ * foreground can go back to that window if the dialog takes it.
+ */
+export async function getForegroundWindow(): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+        execFile(
+            "powershell",
+            [
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                `Add-Type @'
+using System; using System.Runtime.InteropServices;
+public static class Fg { [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow(); }
+'@
+[Fg]::GetForegroundWindow().ToInt64()`,
+            ],
+            { encoding: "utf8", timeout: 60000 },
+            (error, stdout, stderr) =>
+                error
+                    ? reject(new Error(`${error.message}\n${stderr}`))
+                    : resolve(stdout.trim()),
+        );
+    });
+}
+
+/**
  * Wait up to `timeoutMs` for a message box (MessageBox.Show) of the Bloom with process id
  * `bloomPid`, read its message, press its button and wait until it has closed. Returns the message.
  * The box must have one button, as the boxes that report the end of a command do. Fails when no
- * such box appeared in time.
+ * such box appeared in time. `foregroundBefore` (from getForegroundWindow, read before the command
+ * started) is the window the foreground goes back to if Bloom takes it.
  */
 export async function readAndCloseMessageBox(
     bloomPid: number,
     timeoutMs: number,
+    foregroundBefore?: string,
 ): Promise<string> {
     const output = await runUiaScript(
         `
@@ -152,7 +187,10 @@ do {
 ${kPauseBetweenScans}
 } while ((Get-Date) -lt $deadline)
 'none'`,
-        { BLOOM_E2E_PID: String(bloomPid) },
+        {
+            BLOOM_E2E_PID: String(bloomPid),
+            BLOOM_E2E_FOREGROUND: foregroundBefore ?? "",
+        },
         timeoutMs,
     );
     if (output === "none")
@@ -166,12 +204,13 @@ ${kPauseBetweenScans}
  * Wait up to `timeoutMs` for the Save As dialog of the Bloom with process id `bloomPid`, type
  * `filePath` into its "File name:" box, press Save, and wait until it has closed. `filePath` must
  * not exist yet, so that no "replace it?" box comes up, and must be outside the collection folder,
- * which Bloom refuses.
+ * which Bloom refuses. `foregroundBefore` is as for readAndCloseMessageBox.
  */
 export async function answerSaveAsDialog(
     bloomPid: number,
     filePath: string,
     timeoutMs: number,
+    foregroundBefore?: string,
 ): Promise<void> {
     if (fs.existsSync(filePath))
         throw new Error(
@@ -210,7 +249,11 @@ if ($dialogs.Count) {
     }
   }
 } else { 'none' }`,
-        { BLOOM_E2E_PID: String(bloomPid), BLOOM_E2E_FILE: filePath },
+        {
+            BLOOM_E2E_PID: String(bloomPid),
+            BLOOM_E2E_FILE: filePath,
+            BLOOM_E2E_FOREGROUND: foregroundBefore ?? "",
+        },
         timeoutMs,
     );
     if (output === "saved") return;

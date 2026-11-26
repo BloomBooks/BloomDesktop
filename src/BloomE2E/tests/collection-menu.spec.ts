@@ -40,6 +40,7 @@ import {
 import { chooseImageFile, getImagePlacement } from "../helpers/images";
 import {
     answerSaveAsDialog,
+    getForegroundWindow,
     readAndCloseMessageBox,
 } from "../helpers/nativeDialogs";
 import { writeZip } from "../helpers/spreadsheetEditing";
@@ -97,23 +98,38 @@ async function makeTitledBook(page: Page, title: string): Promise<string> {
 /**
  * Run `act`, which starts a command of the collection menu and answers whatever native dialogs it
  * shows, and wait until Bloom has finished the command, which is when it answers the menu's request
- * for `endpoint`: Bloom answers only once its dialogs are closed. Returns what `act` returned.
+ * for `endpoint`: Bloom answers only once its dialogs are closed. `act` is given the window that had
+ * the foreground before the command started, for the dialog helpers to give it back to. Returns
+ * what `act` returned.
  */
 async function runCollectionCommand<T>(
     page: Page,
     endpoint: string,
-    act: () => Promise<T>,
+    act: (foregroundBefore: string) => Promise<T>,
 ): Promise<T> {
+    const foregroundBefore = await getForegroundWindow();
     const answered = page.waitForResponse(
         (response) =>
             response.request().method() === "POST" &&
             new URL(response.url()).pathname.endsWith(`/${endpoint}`),
         { timeout: 180000 },
     );
-    const result = await act();
+    const result = await act(foregroundBefore);
     const response = await answered;
     expect(response.ok(), `Bloom should have done ${endpoint}`).toBe(true);
     return result;
+}
+
+/** Choose Troubleshooting > Do Checks of All Books, and return what Bloom's message box says at its end. */
+function doChecksOfAllBooks(page: Page, bloomPid: number): Promise<string> {
+    return runCollectionCommand(
+        page,
+        "collections/doChecksOfAllBooks",
+        async (foregroundBefore) => {
+            await chooseFromCollectionMenu(page, [kTroubleshooting, kDoChecks]);
+            return readAndCloseMessageBox(bloomPid, 120000, foregroundBefore);
+        },
+    );
 }
 
 /** The files of a Bloom Pack, by their path in it, once Bloom has written all of it. */
@@ -262,17 +278,7 @@ test("The collection menu offers its commands, and those that need no saved file
     await step(
         "Do Checks of All Books finds no problem in a book whose cover has no picture (BL-15712)",
         async () => {
-            const message = await runCollectionCommand(
-                page,
-                "collections/doChecksOfAllBooks",
-                async () => {
-                    await chooseFromCollectionMenu(page, [
-                        kTroubleshooting,
-                        kDoChecks,
-                    ]);
-                    return readAndCloseMessageBox(bloomApp.bloomPid, 120000);
-                },
-            );
+            const message = await doChecksOfAllBooks(page, bloomApp.bloomPid);
             expect(message).toBe(kNoProblems);
         },
     );
@@ -347,12 +353,13 @@ test("The collection menu's commands that save a Bloom Pack or open a log do the
             await runCollectionCommand(
                 page,
                 "collections/makeShellBooksBloompack",
-                async () => {
+                async (foregroundBefore) => {
                     await chooseFromCollectionMenu(page, [kMakeShellBloomPack]);
                     return answerSaveAsDialog(
                         bloomApp.bloomPid,
                         packPath,
                         60000,
+                        foregroundBefore,
                     );
                 },
             );
@@ -382,22 +389,29 @@ test("The collection menu's commands that save a Bloom Pack or open a log do the
             ]);
             const dialog = page.getByRole("dialog");
             const save = dialog.locator("#saveButton");
+            // The dialog lists the books it will make into templates. Save also waits for that
+            // list, so wait for it first: then only the checkbox can be holding Save back.
+            await expect(
+                dialog.getByText("Pack book", { exact: true }),
+                "The dialog should list the collection's book",
+            ).toBeVisible({ timeout: 30000 });
             // Save is offered only once the person says they understand what a template is.
             await expect(
                 save,
                 "Save should wait for the checkbox",
-            ).toBeDisabled({ timeout: 30000 });
+            ).toBeDisabled();
             await dialog.getByRole("checkbox").check();
             await expect(save).toBeEnabled({ timeout: 30000 });
             await runCollectionCommand(
                 page,
                 "collections/makeBloompack",
-                async () => {
+                async (foregroundBefore) => {
                     await save.click();
                     await answerSaveAsDialog(
                         bloomApp.bloomPid,
                         packPath,
                         60000,
+                        foregroundBefore,
                     );
                 },
             );
@@ -416,20 +430,14 @@ test("The collection menu's commands that save a Bloom Pack or open a log do the
         "Do Checks of All Books finds a picture that is missing",
         async () => {
             const bookPicture = Path.join(bookFolder, pictureFile);
+            expect(
+                await doChecksOfAllBooks(page, bloomApp.bloomPid),
+                "Sanity check: Do Checks should find no problem while the picture is there",
+            ).toBe(kNoProblems);
             fs.mkdirSync(Path.dirname(savedPicture), { recursive: true });
             fs.copyFileSync(bookPicture, savedPicture);
             fs.rmSync(bookPicture);
-            const message = await runCollectionCommand(
-                page,
-                "collections/doChecksOfAllBooks",
-                async () => {
-                    await chooseFromCollectionMenu(page, [
-                        kTroubleshooting,
-                        kDoChecks,
-                    ]);
-                    return readAndCloseMessageBox(bloomApp.bloomPid, 120000);
-                },
-            );
+            const message = await doChecksOfAllBooks(page, bloomApp.bloomPid);
             expect(message).toBe(kProblemsFound);
         },
     );
@@ -446,12 +454,16 @@ test("The collection menu's commands that save a Bloom Pack or open a log do the
             const message = await runCollectionCommand(
                 page,
                 "collections/rescueMissingImages",
-                async () => {
+                async (foregroundBefore) => {
                     await chooseFromCollectionMenu(page, [
                         kTroubleshooting,
                         kRescueMissingImages,
                     ]);
-                    return readAndCloseMessageBox(bloomApp.bloomPid, 120000);
+                    return readAndCloseMessageBox(
+                        bloomApp.bloomPid,
+                        120000,
+                        foregroundBefore,
+                    );
                 },
             );
             expect(message).toBe(kNoMoreMissingImages);
