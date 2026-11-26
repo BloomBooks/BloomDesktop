@@ -9,6 +9,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
+import { getUiString } from "../helpers/api";
 import {
     makeBookFromTemplate,
     typeInGroup,
@@ -69,12 +70,17 @@ test("the book's name on the Collections tab, its folder and its file follow its
     await step("Make a new book and see its placeholder name", async () => {
         placeholderFolder = await makeBookFromTemplate(page, "Basic Book");
         bookId = readBookId(placeholderFolder);
-        // The placeholder's words follow Bloom's UI language, so only its difference from the
-        // title is checked.
+        // The placeholder is Bloom's name for an untitled book in its UI language, made unique
+        // with a suffix when that folder already exists.
+        const untitledName = await getUiString(
+            page,
+            "EditTab.NewBookName",
+            "Book",
+        );
         expect(
-            Path.basename(placeholderFolder),
-            "Sanity check: a book with no title yet is not in a folder named for the title to come",
-        ).not.toBe(kFirstTitle);
+            Path.basename(placeholderFolder).startsWith(untitledName),
+            `Sanity check: a book with no title yet should be in a folder named for an untitled book ("${untitledName}"), not "${Path.basename(placeholderFolder)}"`,
+        ).toBe(true);
         await switchTab(page, "collection");
         await expect(
             tileLabel(page, bookId),
