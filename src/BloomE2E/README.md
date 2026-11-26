@@ -147,7 +147,7 @@ real bug in the code under test; read the message and fix it rather than working
   `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
   screen.
 - `helpers/selectionToolbar.ts` — the toolbar that shows above a text box while text in it is
-  selected: `selectLastWordIn`, `toggleSelectionFormatting` (bold, italic, underline,
+  selected: `selectLastWordIn`, `selectTextIn`, `toggleSelectionFormatting` (bold, italic, underline,
   superscript), `chooseSelectionTextColor`, and `getTextRunFormatting`, which reads how one run
   of a box's text is drawn.
 - `helpers/colorPicker.ts` — Bloom's color picker dialog: `readColorPicker` reads every control
@@ -191,6 +191,8 @@ real bug in the code under test; read the message and fix it rather than working
   `getShownTools`. Nothing here turns a tool on through the toolbox's own check boxes; the page
   does that when clicked (a Canvas page's canvas opens the Canvas tool, a video box the Sign
   Language tool), which is the route a person takes.
+- `helpers/imageDescription.ts` — the Image Description tool: `openImageDescriptionTool`, and
+  `kImageDescriptionGroup`, the translation group that holds a picture's descriptions.
 - `helpers/canvasToolOptions.ts` — the Canvas tool's options for the selected text element
   (`setRoundedCorners`, `roundedCornersBox`, `chooseCanvasElementBackgroundColor`,
   `typeCanvasElementBackgroundColor` for a color the background palette lacks,
@@ -226,6 +228,7 @@ real bug in the code under test; read the message and fix it rather than working
 - `helpers/pageSize.ts` — `getPageSize`, `getPageSizeChoices`, `setPageSize`: read and change
   the book's page size and orientation through the Edit tab's layout-choice API.
 - `helpers/epubPublish.ts` — the Publish tab's ePUB screen: `openEpubPublishScreen`, `getEpubMode`,
+  `chooseEpubMode`, `setIncludeImageDescriptionsOnPage`, `getEpubPreviewImageDescriptions`,
   `showEpubPreview`, which also closes the "Creating ePUB" dialog that otherwise stays over the
   screen, and `showEpubPreviewPage`, which turns the preview's reader to one page of the book and
   returns the frame that page is in. The preview shows the files that Save... zips; Save... itself
