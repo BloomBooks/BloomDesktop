@@ -925,3 +925,22 @@ spreadsheet from disk, so nothing it checks depends on the window. Cost: no unat
 and a spreadsheet window left open on a machine with a spreadsheet program. Fix direction: skip
 opening the spreadsheet when `Program.RunningE2eTests` is true, or route it through a hook a test
 can read, as the file choosers are. (Found 2026-11-26 while automating Test Case ID 626.)
+
+## Collection menu commands open Notepad and File Explorer
+
+Three commands of the collection's own menu on the Collections tab end by opening a window of
+another program, under `--e2e` and `--dont-disturb` too: Troubleshooting > Do Checks of All Books,
+when it finds a problem, and Rescue Missing Images, always, open their log in the program the
+machine opens `.txt` files with (`ProcessExtra.SafeStartInFront`, in `CollectionModel`), and Make
+Bloom Pack of Shell Books and Make Reader Template Bloom Pack show the new Bloom Pack in File
+Explorer (`ProcessExtra.ShowFileInExplorerInFront`, in `CollectionModel.MakeBloomPackWithUI`). The
+Bloom Packs are also named in Windows' own Save As dialog, which `helpers/nativeDialogs.ts` answers
+over UI Automation, and which Windows brings to the front whatever `--dont-disturb` says. So the
+test of those commands in `collection-menu.spec.ts` (Test Case ID 660) skips itself under
+`--dont-disturb` and runs only where Bloom may take the foreground: on CI, or with
+`BLOOM_E2E_DONT_DISTURB=0`. It reads the Bloom Packs and the book folder from disk, so nothing it
+checks depends on those windows. Cost: no unattended local run, and windows left open on the
+machine it ran on. Fix direction: skip opening the log and the folder when
+`Program.RunningE2eTests` is true, and let `e2e/nextFileToChoose` (or a twin) answer
+`MiscUtils.GetOutputFilePathOutsideCollectionFolder`, so every save command is drivable with no
+native window. (Found 2026-11-26 while automating Test Case ID 660.)
