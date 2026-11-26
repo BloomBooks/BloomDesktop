@@ -86,9 +86,16 @@ test("the ePUB's description is the book's summary, edited on the Web screen or 
     });
 
     await step(
-        "The ePUB screen's Book Metadata dialog shows the same summary",
+        "The ePUB carries the summary typed on the Web screen as its description",
         async () => {
             await openEpubPublishScreen(page);
+            await expectEpubDescription(page, WEB_SUMMARY);
+        },
+    );
+
+    await step(
+        "The ePUB screen's Book Metadata dialog shows the same summary",
+        async () => {
             await openBookMetadataDialog(page);
             await expect(
                 bookMetadataField(page, "summary"),
@@ -140,16 +147,41 @@ test("the ePUB's description is the book's summary, edited on the Web screen or 
         },
     );
 
-    await step("The ePUB carries the summary as its description", async () => {
-        await openEpubPublishScreen(page);
-        await showEpubPreview(page);
-        const packageText = await readEpubPreviewPackage(page);
-        expect(
-            await getEpubPackageDublinCore(page, packageText, "description"),
-            "The ePUB's content.opf should have one dc:description, the book's summary.",
-        ).toEqual([EPUB_SUMMARY]);
-    });
+    await step(
+        "The ePUB carries the summary changed in Book Metadata as its description",
+        async () => {
+            await openEpubPublishScreen(page);
+            await expectEpubDescription(page, EPUB_SUMMARY);
+        },
+    );
 });
+
+/**
+ * Click Preview on the ePUB screen and expect the ePUB it stages to have exactly one description,
+ * `summary`. The ePUB is read again until it has, because a preview made earlier can still be
+ * showing while Bloom stages the new one; a description that never becomes `summary` fails.
+ */
+async function expectEpubDescription(
+    page: Page,
+    summary: string,
+): Promise<void> {
+    await showEpubPreview(page);
+    await expect
+        .poll(
+            async () =>
+                getEpubPackageDublinCore(
+                    page,
+                    await readEpubPreviewPackage(page),
+                    "description",
+                ),
+            {
+                timeout: 30000,
+                message:
+                    "The ePUB's content.opf should have one dc:description in its metadata, the book's summary.",
+            },
+        )
+        .toEqual([summary]);
+}
 
 /**
  * Select all the text of a text box the way a person does with the mouse: press at the start of

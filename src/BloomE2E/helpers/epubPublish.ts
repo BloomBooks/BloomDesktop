@@ -487,8 +487,9 @@ export async function readEpubPreviewPackage(page: Page): Promise<string> {
 }
 
 /**
- * The texts of the elements of an ePUB package document (readEpubPreviewPackage) that have the
- * Dublin Core name `name`, such as "description" or "title", in document order.
+ * The texts of the entries of an ePUB package document's metadata (readEpubPreviewPackage) that
+ * have the Dublin Core name `name`, such as "description" or "title", in document order. Only the
+ * children of the package's <metadata> count, since that is where a reader app looks for them.
  */
 export async function getEpubPackageDublinCore(
     page: Page,
@@ -506,12 +507,29 @@ export async function getEpubPackageDublinCore(
                 throw new Error(
                     `The ePUB package is not well-formed XML: ${error.textContent}`,
                 );
-            return [
-                ...doc.getElementsByTagNameNS(
-                    "http://purl.org/dc/elements/1.1/",
-                    localName,
-                ),
-            ].map((element) => element.textContent ?? "");
+            const opf = "http://www.idpf.org/2007/opf";
+            const root = doc.documentElement;
+            if (root.namespaceURI !== opf || root.localName !== "package")
+                throw new Error(
+                    `The ePUB package's root is <${root.tagName}>, not an OPF <package>.`,
+                );
+            const metadata = [...root.children].filter(
+                (child) =>
+                    child.namespaceURI === opf &&
+                    child.localName === "metadata",
+            );
+            if (metadata.length !== 1)
+                throw new Error(
+                    `The ePUB package has ${metadata.length} <metadata> elements, not one.`,
+                );
+            return [...metadata[0].children]
+                .filter(
+                    (child) =>
+                        child.namespaceURI ===
+                            "http://purl.org/dc/elements/1.1/" &&
+                        child.localName === localName,
+                )
+                .map((element) => element.textContent ?? "");
         },
         { text: packageText, localName: name },
     );
