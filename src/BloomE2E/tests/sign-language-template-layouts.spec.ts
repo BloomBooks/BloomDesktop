@@ -209,19 +209,21 @@ test("every page layout of the Sign Language template takes a video that the Blo
     }
 
     // Each turn above checked the whole record, so a page whose video played twice would have
-    // failed at the next page; the last page has no next page, so turn back to the first one.
+    // failed at the next page; the last page has no next page, so turn back one page. Only one
+    // turn, so that no other page's video can play on the way.
+    const previous = added[added.length - 2];
     await step(
-        `Turn back to the "${added[0].label}" page: its video plays once more, and nothing else played since`,
+        `Turn back to the "${previous.label}" page: its video plays once more, and nothing else played since`,
         async () => {
-            await goToPreviewPage(page, player, added[0].pageId);
+            await goToPreviewPage(page, player, previous.pageId);
             played.push({
-                pageId: added[0].pageId,
-                fileName: added[0].videoFile,
+                pageId: previous.pageId,
+                fileName: previous.videoFile,
             });
             await expectPreviewVideosPlayed(
                 player,
                 played,
-                `Turning back to the "${added[0].label}" page should play its video once more, with no other video (such as the last page's again) played in between.`,
+                `Turning back to the "${previous.label}" page should play its video once more, with no other video (such as the last page's again) played in between.`,
             );
         },
     );
