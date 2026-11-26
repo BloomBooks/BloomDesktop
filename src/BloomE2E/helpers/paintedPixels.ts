@@ -167,6 +167,33 @@ export async function readPaintedPictureColors(
     return colors;
 }
 
+/**
+ * The colour the browser paints at `point` of the window, in the page's own coordinates (where
+ * page.mouse goes): everything there composited, whatever lies in front. Taken from a screenshot
+ * of that one pixel, so the point must be inside the window; this throws when it is not.
+ */
+export async function readPaintedColorAt(
+    page: Page,
+    point: { x: number; y: number },
+): Promise<IRgba> {
+    const window = await page.evaluate(() => ({
+        width: innerWidth,
+        height: innerHeight,
+    }));
+    const x = Math.floor(point.x);
+    const y = Math.floor(point.y);
+    if (x < 0 || y < 0 || x >= window.width || y >= window.height)
+        throw new Error(
+            `The point (${x}, ${y}) is outside the window (${window.width} x ${window.height}), ` +
+                `so no screenshot shows it.`,
+        );
+    const shot = await page.screenshot({ clip: { x, y, width: 1, height: 1 } });
+    const [color] = await readEncodedImageColors(page, shot, [
+        { name: `(${x}, ${y})`, x: 0.5, y: 0.5 },
+    ]);
+    return color;
+}
+
 /** The background colour an element is drawn with, as its computed style gives it. */
 export async function readBackgroundColor(element: Locator): Promise<IRgba> {
     return element.evaluate((e) => {
