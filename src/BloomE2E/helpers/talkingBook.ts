@@ -585,23 +585,28 @@ export async function playCurrentNarration(
     await recordPlays(page);
     await button.locator("img").click();
 
-    // Over means at least one narration played to its end, and the button no longer shows the
-    // pause picture it shows while anything is playing. Read the plays only then, so that one
-    // still playing is not missed.
-    let plays: INarrationPlay[] = [];
+    // Over means at least one narration played to its end, and the button is back to Check: it
+    // shows a play picture again, not the pause picture it shows while anything is playing. Read
+    // the plays only then, so that one still playing is not missed.
     await expect
         .poll(
             async () => {
-                plays = await getPlays(page);
-                const playing = await button
-                    .locator('img[src$="/pause_yellow.svg"]')
-                    .count();
-                return plays.length > 0 && playing === 0;
+                const plays = await getPlays(page);
+                const pictures = await button
+                    .locator("img")
+                    .evaluateAll((imgs) =>
+                        imgs.map((img) => img.getAttribute("src") ?? ""),
+                    );
+                return (
+                    plays.length > 0 &&
+                    pictures.length === 1 &&
+                    /\/play_(enabled|expected)\.svg$/.test(pictures[0])
+                );
             },
             {
                 timeout: 60000,
                 message:
-                    "Check never finished playing a narration (none played to its end, or the button still shows Pause).",
+                    "Check never finished playing a narration: none played to its end, or the button did not go back to Check.",
             },
         )
         .toBe(true);
