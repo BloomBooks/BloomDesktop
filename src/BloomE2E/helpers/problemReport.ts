@@ -120,15 +120,19 @@ export async function showReportDiagnosticInfo(dialog: Page): Promise<string> {
     );
     // The screen shows a "Loading..." message in the report's place until Bloom has answered, so
     // what the screen shows is compared with Bloom's answer and not with that message.
-    const answered = dialog.waitForResponse(
-        (response) => response.url().includes("problemReport/diagnosticInfo"),
-        { timeout: 60000 },
-    );
-    await dialog
-        .locator(kDialogRoot)
-        .getByRole("button", { name: learnMoreText, exact: true })
-        .click();
-    const diagnosticInfo = await (await answered).text();
+    // Awaited together, so that a click that fails leaves no wait for the answer behind it.
+    const [answer] = await Promise.all([
+        dialog.waitForResponse(
+            (response) =>
+                response.url().includes("problemReport/diagnosticInfo"),
+            { timeout: 60000 },
+        ),
+        dialog
+            .locator(kDialogRoot)
+            .getByRole("button", { name: learnMoreText, exact: true })
+            .click(),
+    ]);
+    const diagnosticInfo = await answer.text();
     expect(
         diagnosticInfo,
         "Bloom's diagnostic information for the report",
