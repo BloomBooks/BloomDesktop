@@ -23,7 +23,7 @@ import {
     type IBookPage,
 } from "../helpers/bookMaking";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
-import { kEdgeTolerance } from "../helpers/geometry";
+import { expectSameRect } from "../helpers/geometry";
 import {
     chooseSectionType,
     describeSections,
@@ -73,8 +73,8 @@ async function onlySectionContent(page: Page, when: string): Promise<string> {
 }
 
 /**
- * Check that the one section holds a picture box whose picture is Bloom's placeholder, loaded, and
- * that the box fills the section.
+ * Check that the one section holds a picture box that shows Bloom's placeholder and fills the
+ * section.
  */
 async function expectPlaceholderPictureFillsSection(
     page: Page,
@@ -111,14 +111,28 @@ async function expectPlaceholderPictureFillsSection(
         throw new Error(
             `The section, or the picture box that ${type} put in it, is not drawn.`,
         );
-    for (const [what, inner, outer] of [
-        ["width", box.width, sectionBox.width],
-        ["height", box.height, sectionBox.height],
-    ] as const)
-        expect(
-            Math.abs(inner - outer),
-            `The ${type} box should fill the section: its ${what} is ${inner}, the section's is ${outer}.`,
-        ).toBeLessThanOrEqual(kEdgeTolerance);
+    expectSameRect(
+        box,
+        sectionBox,
+        `The ${type} box, which should fill its section exactly,`,
+    );
+}
+
+/**
+ * Check that the page has one section and that it holds `type`, with its placeholder picture
+ * filling the section when `type` is a picture box.
+ */
+async function expectSectionHolds(
+    page: Page,
+    type: SectionType,
+    when: string,
+): Promise<void> {
+    expect(
+        await onlySectionContent(page, when),
+        `The section should hold a ${type} ${when}.`,
+    ).toBe(type);
+    if (type === "image" || type === "canvas")
+        await expectPlaceholderPictureFillsSection(page, type);
 }
 
 test("each type that Change Layout offers can be put on a Custom page and stays there [Test Case ID 768]", async ({
@@ -138,37 +152,34 @@ test("each type that Change Layout offers can be put on a Custom page and stays 
                 await getSectionTypesOffered(page, 0),
                 "The empty section of a new Custom page should offer every type.",
             ).toEqual(kTypes);
+            // A type that origami offers but this test does not know would be missing from the
+            // list above, so count every link in the row too.
+            await expect(
+                sections(page).first().locator(".selector-links a[data-i18n]"),
+                "The row should offer exactly the types this test tries.",
+            ).toHaveCount(kTypes.length);
 
             await chooseSectionType(page, type, 0);
-            expect(
-                await onlySectionContent(page, `after choosing ${type}`),
-                `Choosing ${type} should put a ${type} in the section.`,
-            ).toBe(type);
+            await expectSectionHolds(page, type, `after choosing ${type}`);
             await expect(
                 sections(page).first().locator(".selector-links"),
                 `The row of types should be gone once ${type} is chosen.`,
             ).toHaveCount(0);
-            if (type === "image" || type === "canvas")
-                await expectPlaceholderPictureFillsSection(page, type);
 
             await setChangeLayoutMode(page, false);
-            expect(
-                await onlySectionContent(
-                    page,
-                    "after Change Layout is turned off",
-                ),
-                `The ${type} should still be on the page after Change Layout is turned off.`,
-            ).toBe(type);
+            await expectSectionHolds(
+                page,
+                type,
+                "after Change Layout is turned off",
+            );
 
             await goToPage(page, cover.id);
             await goToPage(page, custom.id);
-            expect(
-                await onlySectionContent(
-                    page,
-                    "after going to another page and back",
-                ),
-                `The ${type} should still be on the page after going to another page and back.`,
-            ).toBe(type);
+            await expectSectionHolds(
+                page,
+                type,
+                "after going to another page and back",
+            );
         });
     }
 });
