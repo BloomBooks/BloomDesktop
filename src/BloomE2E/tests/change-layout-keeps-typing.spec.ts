@@ -5,9 +5,8 @@
 // pageSnapshot.ts; BL-13502). If the page Bloom saves predates the change, the rebuilt page loses
 // either the split or the typing.
 //
-// Covers part of "Change Layout Splits" (Test Case ID 366), which stays Planned for the rest: this
-// test makes one split, and does not try every section type or delete splits. Automates "Change
-// Layout Keeps Typing" (Test Case ID 843).
+// "Change Layout Splits" (Test Case ID 366) is automated by change-layout-splits.spec.ts; this test
+// makes one split. Automates "Change Layout Keeps Typing" (Test Case ID 843).
 
 import { expect, test } from "../fixtures/bloomTest";
 import {
