@@ -32,6 +32,9 @@ const kExportToSpreadsheet = "CollectionTab.BookMenu.ExportToSpreadsheet";
 const kImportFromSpreadsheet =
     "CollectionTab.BookMenu.ImportContentFromSpreadsheet";
 
+// A feature of the Pro tier (FeatureRegistry.cs), by which the test tells Pro from Basic.
+const kProFeature = "Motion";
+
 type SpreadsheetCommands = Record<
     string,
     Omit<IBookMenuEntry, "label"> | undefined
@@ -112,12 +115,26 @@ test("the spreadsheet commands are offered, but gated, below the Local Community
     await step(
         "Basic: both commands show, marked as needing a subscription",
         async () => {
+            expect(
+                (await getFeatureStatus(page, kProFeature)).enabled,
+                `Sanity check: at Basic, the Pro feature "${kProFeature}" should be unavailable`,
+            ).toBe(false);
             await expectSpreadsheetCommands(page, "Basic", false);
         },
     );
 
     await step("Pro: both commands still need a subscription", async () => {
         await setBranding(page, "Sample-Pro");
+        // Basic and Pro give the spreadsheet commands the same answer, so prove the collection
+        // really reached Pro: a Pro feature that Basic lacks must now be available.
+        await expect
+            .poll(
+                async () => (await getFeatureStatus(page, kProFeature)).enabled,
+                {
+                    message: `the collection should be on Pro: the Pro feature "${kProFeature}" should be available`,
+                },
+            )
+            .toBe(true);
         await expectSpreadsheetCommands(page, "Pro", false);
     });
 
