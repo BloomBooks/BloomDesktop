@@ -73,6 +73,31 @@ export async function goToPreviewPage(
 }
 
 /**
+ * Whether Bloom Player is showing its Previous and Next arrows, as a reader sees them: an arrow
+ * counts as shown when the browser draws it (checkVisibility), not merely when it is in the
+ * document. A page whose player options say hideNavigation, such as a Captive Widget Page, has
+ * Bloom Player hide both.
+ */
+export async function getPreviewArrowsShown(
+    player: Frame,
+): Promise<{ previous: boolean; next: boolean }> {
+    const shown = async (selector: string) => {
+        const arrows = player.locator(selector);
+        await expect(
+            arrows.first(),
+            `Bloom Player has no "${selector}" arrow in its document at all.`,
+        ).toBeAttached({ timeout: 30000 });
+        return arrows.evaluateAll((elements) =>
+            elements.some((e) => e.checkVisibility()),
+        );
+    };
+    return {
+        previous: await shown(".swiper-button-prev"),
+        next: await shown(".swiper-button-next"),
+    };
+}
+
+/**
  * Wait until Bloom Player has settled on the first page of a book it has just loaded. Until then
  * it holds the book on that page, so a click on an arrow is undone (startingUpSwiper in
  * bloom-player-core). When it lets go, it makes the arrows reachable with the Tab key by giving
