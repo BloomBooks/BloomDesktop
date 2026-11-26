@@ -291,9 +291,17 @@ test("Cancel in Collection Settings discards every change, and only a change tha
     ))!;
 
     await step(
-        "Check Bloom saved both changes, and still has them",
+        "Check Bloom saved both changes and none of the cancelled ones",
         async () => {
             expect(saves.length, "Restart posts the settings once").toBe(1);
+            // OK posts every setting, so the save must also not bring back what was cancelled.
+            expect(
+                readSavedLanguageSetting(
+                    bloomApp.collectionDir,
+                    2,
+                    "LanguageIso639Code",
+                ),
+            ).toBe("fr");
             expect(
                 readSavedLanguageSetting(
                     bloomApp.collectionDir,
@@ -301,6 +309,13 @@ test("Cancel in Collection Settings discards every change, and only a change tha
                     "LanguageIso639Code",
                 ),
             ).toBe("de");
+            expect(
+                readSavedLanguageSetting(
+                    bloomApp.collectionDir,
+                    1,
+                    "DefaultLanguageFontName",
+                ),
+            ).toBe(stateBefore!.language1Font);
             await expect
                 .poll(() =>
                     readSavedUserSetting(
@@ -309,16 +324,15 @@ test("Cancel in Collection Settings discards every change, and only a change tha
                     ),
                 )
                 .toBe("False");
+            expect(
+                await getSavedExperimentalFeatures(bloomApp.userSettingsDir),
+            ).not.toContain(kTeamCollectionsToken);
             await openCollectionSettings(reopened);
-            await showCollectionSettingsPage(reopened, "Languages");
-            expect(
-                await getCollectionSettingsLanguage(reopened, kLanguage3),
-            ).toMatch(/\(de\)$/);
-            await showCollectionSettingsPage(reopened, "Advanced");
-            expect(
-                (await getCollectionSettingsCheckbox(reopened, kAutoUpdate))
-                    .checked,
-            ).toBe(false);
+            expect(await readDialogState(reopened)).toEqual({
+                ...stateBefore!,
+                language3: expect.stringMatching(/\(de\)$/),
+                autoUpdate: false,
+            });
             await cancelCollectionSettings(reopened);
         },
     );
