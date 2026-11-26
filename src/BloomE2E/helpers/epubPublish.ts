@@ -689,8 +689,11 @@ export async function getEpubPreviewReadAlongHighlights(
  * The reader plays the page's media overlay (getEpubPreviewPageReadAloud) through one audio element
  * of its own document, and marks each clip's text with its active class
  * (getEpubPreviewReadAlongClass) while it plays that clip. It takes the class off and puts it back
- * on every frame; an element counts as unmarked only once it is left without the class. It is told not to turn the page by itself (Readium/index.html), so it stops at the end of
- * the page.
+ * on every frame; an element counts as unmarked only once it is left without the class. It is
+ * told not to turn the page by itself (Readium/index.html), so it stops at the end of the page.
+ *
+ * Play does nothing until the reader has loaded the page's first clip into its audio element,
+ * which it does by itself after showing the page; so this waits for that before clicking.
  */
 export async function playEpubPreviewReadAlong(
     page: Page,
@@ -698,6 +701,28 @@ export async function playEpubPreviewReadAlong(
 ): Promise<EpubReadAlongEvent[]> {
     const reader = readerFrame(page);
     const activeClass = await getEpubPreviewReadAlongClass(page);
+    const clips = await getEpubPreviewPageReadAloud(page, frame);
+    if (clips.length === 0)
+        throw new Error(
+            `The page at ${frame.url()} has nothing to read aloud: its media overlay has no clip.`,
+        );
+    await expect
+        .poll(
+            () =>
+                reader.evaluate(() => {
+                    const audio = document.getElementById(
+                        "AUDIO_MO_ID",
+                    ) as HTMLAudioElement | null;
+                    return audio ? audio.src : "";
+                }),
+            {
+                timeout: 30000,
+                message:
+                    "The ePUB preview's reader never loaded the page's first clip into its audio " +
+                    "element, so Play would do nothing.",
+            },
+        )
+        .toBe(clips[0].audioUrl);
     // The reader replaces its audio element for each new audio file, so the audio events are
     // caught on its document (media events do not bubble, but they do pass through the capture
     // phase), and the page's frame finds the element by its id whenever it needs it.

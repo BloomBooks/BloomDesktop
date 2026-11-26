@@ -194,6 +194,13 @@ test("a fixed-mode ePUB highlights the cover's title while it reads it aloud [Te
                 await getEpubPreviewReadAlongHighlights(page, cover.frame),
                 "before Play, nothing on the cover should be highlighted",
             ).toEqual([]);
+            const titleBackground = () =>
+                cover.frame
+                    .locator(`[id="${titleId}"]`)
+                    .evaluate(
+                        (element) => getComputedStyle(element).backgroundColor,
+                    );
+            const backgroundBefore = await titleBackground();
 
             const events = await playEpubPreviewReadAlong(page, cover.frame);
             const log = JSON.stringify(events);
@@ -223,6 +230,14 @@ test("a fixed-mode ePUB highlights the cover's title while it reads it aloud [Te
                 isPainted(on.background),
                 `the highlighted title should have a background that shows, not ${on.background}`,
             ).toBe(true);
+            expect(
+                on.background,
+                "the highlight should change the title's background from what it was before Play",
+            ).not.toBe(backgroundBefore);
+            expect(
+                await titleBackground(),
+                "after the read-aloud, the title's background should be as it was before Play",
+            ).toBe(backgroundBefore);
             // The highlight goes on as the clip starts playing, and comes off only once it has
             // played to its end: it covers the whole of the title's recording.
             expect(
