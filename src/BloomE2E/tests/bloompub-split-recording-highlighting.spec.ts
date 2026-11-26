@@ -380,9 +380,8 @@ test("a recording split into sentences is highlighted sentence by sentence in th
                     turn[0].segments,
                     `"${kSentences[index]}" should be highlighted as a segment of the split box`,
                 ).toEqual([true]);
-                // The highlight must show as the sentence starts and stay until it ends: from the
-                // first painted entry on, every entry of the turn is painted, and that entry
-                // comes within half a second of the sentence's turn starting.
+                // The highlight must stay visible until the next sentence takes over: from the
+                // first painted entry on, every entry of the turn is painted.
                 const firstPainted = turn.findIndex(
                     (change) => change.paintedApart[0] === true,
                 );
@@ -396,27 +395,34 @@ test("a recording split into sentences is highlighted sentence by sentence in th
                         .map((change) => change.paintedApart),
                     `"${kSentences[index]}" should stay painted until the next sentence takes over`,
                 ).toEqual(turn.slice(firstPainted).map(() => [true]));
-                expect(
-                    turn[firstPainted].time - turn[0].time,
-                    `"${kSentences[index]}" should be painted within half a second of its turn starting`,
-                ).toBeLessThan(0.5);
             });
+            /** When in the recording a reader first sees each sentence highlighted. */
+            const visibleAt = turns.map(
+                (turn) =>
+                    turn.find((change) => change.paintedApart[0] === true)!
+                        .time,
+            );
             expect(
                 turns[0][0].time,
-                "the first sentence should be highlighted before the recording has played",
+                "the first sentence should be marked before the recording has played",
             ).toBe(0);
-            // Each sentence after the first is highlighted when the recording reaches the end of
-            // the one before it. Bloom Player moves the highlight on a timer it sets from the
-            // recording's position, so it may be a little late, never early.
+            expect(
+                visibleAt[0],
+                "the first sentence should be visibly highlighted as the recording starts",
+            ).toBeLessThan(0.5);
+            // Each sentence after the first is visibly highlighted when the recording reaches the
+            // end of the one before it. Bloom Player moves the highlight on a timer it sets from
+            // the recording's position, so it may be a little late, never early; the half second
+            // allowed covers both the move and the paint.
             for (let index = 1; index < turns.length; index++) {
                 const previousEnd = saved.endTimes[index - 1];
                 expect(
                     turns[index][0].time,
-                    `"${kSentences[index]}" should be highlighted once the recording reaches ${previousEnd} s, where the sentence before it ends`,
+                    `"${kSentences[index]}" should not be marked before the recording reaches ${previousEnd} s, where the sentence before it ends`,
                 ).toBeGreaterThanOrEqual(previousEnd - 0.05);
                 expect(
-                    turns[index][0].time,
-                    `"${kSentences[index]}" should be highlighted soon after the recording reaches ${previousEnd} s`,
+                    visibleAt[index],
+                    `"${kSentences[index]}" should be visibly highlighted soon after the recording reaches ${previousEnd} s`,
                 ).toBeLessThan(previousEnd + 0.5);
             }
             // The last sentence is still highlighted when the recording ends, at its saved end.
