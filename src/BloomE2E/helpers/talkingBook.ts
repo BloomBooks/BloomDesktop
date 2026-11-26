@@ -399,7 +399,14 @@ export async function armFileChooser(
     page: Page,
     filePath: string,
 ): Promise<void> {
-    await apiPost(page, "e2e/nextFileToChoose", filePath, "text/plain");
+    // Bloom unescapes a text/plain body as it would a URL (RequestInfo.UnescapeString), which
+    // turns "+" into a space and "%41" into "A". So the path goes escaped, and arrives as it is.
+    await apiPost(
+        page,
+        "e2e/nextFileToChoose",
+        encodeURIComponent(filePath),
+        "text/plain",
+    );
 }
 
 /**
