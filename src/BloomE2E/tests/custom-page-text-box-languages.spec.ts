@@ -11,6 +11,11 @@
 //
 // The book always shows Language 1 here. A box set to Language 1 in a book that hides Language 1 is
 // BL-16787, which this test does not cover.
+//
+// On a Debug build this test fails while BL-17169 is open: each time Text Box Properties opens,
+// a Debug build reports that one of the dialog's strings cannot be localized, and the fixture
+// fails a test during which Bloom reports a problem. A Release build, which the nightly runs,
+// reports nothing.
 
 import { expect, test } from "../fixtures/bloomTest";
 import {
@@ -102,6 +107,12 @@ async function expectCustomPageBoxes(
                 },
             )
             .toEqual([...expected].sort());
+        // getLanguagesShownIn looks only at each language's own box, so a group hidden as a
+        // whole would still count as showing its languages.
+        await expect(
+            textBoxes(page).nth(index),
+            `Text box ${index + 1}, set to ${choice}, should be shown ${when}.`,
+        ).toBeVisible();
     }
 }
 
