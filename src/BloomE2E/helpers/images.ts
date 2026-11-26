@@ -9,11 +9,15 @@
 //
 // Cropping IS driven through the real UI: a mouse drag on a side handle of the selected image.
 //
+// chooseImageFileInChooser is the route a person takes instead, through the picture's menu and the
+// Image Chooser, for the test whose subject is choosing the file. getPicturesShownIn reads the
+// pictures of a page wherever Bloom draws it, a publication's preview included.
+//
 // Every function here works on the page's first image slot by default. A page can hold more than
 // one picture box, so each takes an optional `within` locator to say which one to act on; pass an
 // element that holds a picture box and everything below applies to the picture in it instead.
 
-import { expect, type Locator, type Page } from "@playwright/test";
+import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiPost } from "./api";
@@ -22,6 +26,7 @@ import {
     clickCanvasElementMenuItem,
     selectCanvasElementAt,
 } from "./canvasElements";
+import { chooseFileInImageChooser } from "./imageChooser";
 import { realClick } from "./realClick";
 
 /** The first image on the page: the background picture of the page's first image slot. */
@@ -32,6 +37,8 @@ const FIRST_IMAGE =
 const PLACEHOLDER = "placeHolder.png";
 /** The Paste image command on a picture's "..." menu, by its localization id. */
 const PASTE_IMAGE_COMMAND = "EditTab.Image.PasteImage";
+/** The "Choose image from your computer..." command on that menu, by its localization id. */
+const CHOOSE_IMAGE_COMMAND = "EditTab.Image.ChooseImage";
 
 /** The side handles of the selected image's control frame, by compass side. */
 const SIDE_HANDLE: Record<"n" | "s" | "e" | "w", string> = {
@@ -332,15 +339,7 @@ export async function pasteImageIntoEmptySlot(page: Page): Promise<string> {
         before.fileName,
         "test setup: the page's first image slot starts with no picture",
     ).toBe(PLACEHOLDER);
-    // An empty picture shows no image to click, so select the picture's box itself.
-    await selectCanvasElementAt(
-        editablePageFrame(page)
-            .locator(
-                ".bloom-canvas .bloom-canvas-element.bloom-backgroundImage",
-            )
-            .first(),
-        "the page's first picture",
-    );
+    await selectFirstPictureBox(page);
     await clickCanvasElementMenuItem(page, PASTE_IMAGE_COMMAND);
     await expect
         .poll(
@@ -355,6 +354,120 @@ export async function pasteImageIntoEmptySlot(page: Page): Promise<string> {
         )
         .toBe(true);
     return (await getImagePlacement(page)).fileName;
+}
+
+/**
+ * Put the image file at `filePath` into the empty first image slot of the page being edited the
+ * way a person does: select the picture's box, choose "Choose image from your computer..." from
+ * its menu, and in the Image Chooser open the file and click "Use this image". Returns the file
+ * name the slot shows once the picture has loaded, which is the name Bloom gave the file in the
+ * book.
+ *
+ * This is for a test whose subject is choosing the file. One that only needs a picture in place
+ * calls chooseImageFile, which is quicker.
+ */
+export async function chooseImageFileInChooser(
+    page: Page,
+    filePath: string,
+): Promise<string> {
+    const before = await getImagePlacement(page);
+    expect(
+        before.fileName,
+        "test setup: the page's first image slot starts with no picture",
+    ).toBe(PLACEHOLDER);
+    await selectFirstPictureBox(page);
+    await clickCanvasElementMenuItem(page, CHOOSE_IMAGE_COMMAND);
+    await chooseFileInImageChooser(page, filePath);
+    await expect
+        .poll(
+            async () => {
+                const placement = await getImagePlacement(page);
+                return placement.fileName !== PLACEHOLDER && placement.loaded;
+            },
+            {
+                timeout: 30000,
+                message: `The page never showed the picture chosen from ${filePath}.`,
+            },
+        )
+        .toBe(true);
+    return (await getImagePlacement(page)).fileName;
+}
+
+/**
+ * Select the box of the first picture on the page being edited. An empty picture shows no image
+ * to click, so this clicks the box itself.
+ */
+async function selectFirstPictureBox(page: Page): Promise<void> {
+    await selectCanvasElementAt(
+        editablePageFrame(page)
+            .locator(
+                ".bloom-canvas .bloom-canvas-element.bloom-backgroundImage",
+            )
+            .first(),
+        "the page's first picture",
+    );
+}
+
+/** A picture that a page shows, as the browser drawing the page has it. */
+export interface IShownPicture {
+    /** The address the browser loads the picture from. */
+    url: string;
+    /** The width of the picture file in pixels; 0 when the browser could not load it. */
+    width: number;
+    /** The height of the picture file in pixels; 0 when the browser could not load it. */
+    height: number;
+}
+
+/**
+ * The pictures shown inside `container`, which is a book page wherever Bloom draws it: in the Edit
+ * tab, in the BloomPUB preview (a page showPreviewPage returned) or in the ePUB preview (the frame
+ * showEpubPreviewPage returned, which holds one page). Each comes with the size of its file, which
+ * is 0 by 0 when the browser could not load it, so this is how a test learns whether a reader sees
+ * the picture.
+ *
+ * A page holds a picture in one of two ways, and both are read: as an image element, and as the
+ * background of an element, which is how a BloomPUB holds the picture behind a canvas. A
+ * background has no way of its own to say whether it loaded, so each picture is loaded again from
+ * the address the page gives. Returns once every picture has either loaded or failed.
+ */
+export async function getPicturesShownIn(
+    container: Locator | Frame,
+): Promise<IShownPicture[]> {
+    const within =
+        "evaluateAll" in container ? container : container.locator("body");
+    return within.evaluate(async (root) => {
+        const view = root.ownerDocument.defaultView!;
+        const urls: string[] = [];
+        for (const element of [root, ...root.querySelectorAll("*")]) {
+            if (element instanceof view.HTMLImageElement) {
+                urls.push(element.currentSrc || element.src);
+                continue;
+            }
+            const background = /^url\("(.*)"\)$/.exec(
+                view.getComputedStyle(element).backgroundImage,
+            );
+            if (background) urls.push(background[1]);
+        }
+        return Promise.all(
+            urls.map(
+                (url) =>
+                    new Promise<{ url: string; width: number; height: number }>(
+                        (resolve) => {
+                            const probe = new view.Image();
+                            const report = () =>
+                                resolve({
+                                    url,
+                                    width: probe.naturalWidth,
+                                    height: probe.naturalHeight,
+                                });
+                            probe.onload = report;
+                            probe.onerror = report;
+                            probe.src = url;
+                        },
+                    ),
+            ),
+        );
+    });
 }
 
 /**

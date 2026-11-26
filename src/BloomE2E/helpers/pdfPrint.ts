@@ -15,6 +15,7 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Browser, type Page } from "@playwright/test";
 import { apiGet } from "./api";
+import type { IPixelSize } from "./images";
 import { selectPublishDestination } from "./publish";
 
 /** The PDF & Print screen's booklet modes, by the label each one shows. */
@@ -148,6 +149,38 @@ function getPdfPageObjects(pdf: string): string[] {
  */
 export async function getPdfPreviewPageCount(page: Page): Promise<number> {
     return getPdfPageObjects(await readPreviewedPdf(page)).length;
+}
+
+/**
+ * The size in pixels of every picture that the PDF the PDF & Print screen is previewing holds,
+ * read from the PDF file itself (its image objects), in the order the file holds them. Call it
+ * after choosePdfMode().
+ *
+ * Bloom's PDF maker puts a picture into the PDF at the size of its file, so a picture of a known
+ * size that is listed here was found and drawn when the PDF was made, and one that is missing was
+ * not. A picture with transparency is listed twice, because a PDF holds its transparency as a
+ * second image of the same size.
+ */
+export async function getPdfPreviewPictureSizes(
+    page: Page,
+): Promise<IPixelSize[]> {
+    const pdf = await readPreviewedPdf(page);
+    const sizes: IPixelSize[] = [];
+    // An image is a stream, and a PDF never compresses the dictionary that describes a stream,
+    // so each can be read from the text of the file.
+    for (const match of pdf.matchAll(/\/Subtype\s*\/Image(?![a-zA-Z])/g)) {
+        const start = pdf.lastIndexOf(" obj", match.index);
+        const end = pdf.indexOf("stream", match.index);
+        const dictionary = pdf.slice(start, end);
+        const width = /\/Width\s+(\d+)/.exec(dictionary);
+        const height = /\/Height\s+(\d+)/.exec(dictionary);
+        if (start < 0 || end < 0 || !width || !height)
+            throw new Error(
+                "A picture in the previewed PDF does not give its size, so the PDF's pictures cannot be read.",
+            );
+        sizes.push({ width: Number(width[1]), height: Number(height[1]) });
+    }
+    return sizes;
 }
 
 /** A rectangle on a PDF page, in millimetres from the left and bottom edges of the paper. */
