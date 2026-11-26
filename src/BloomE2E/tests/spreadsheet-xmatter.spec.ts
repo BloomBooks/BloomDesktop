@@ -24,7 +24,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page } from "@playwright/test";
-import { expect, test } from "../fixtures/bloomTest";
+import { expect, test, type IBloomApp } from "../fixtures/bloomTest";
 import { launchWithDontDisturb } from "../fixtures/launchBloom";
 import {
     addPage,
@@ -57,6 +57,10 @@ import {
     exportSelectedBookToSpreadsheet,
     importSpreadsheetIntoSelectedBook,
 } from "../helpers/spreadsheet";
+import {
+    getCurrentUiLanguageTag,
+    setUiStateViaApi,
+} from "../helpers/uiLanguage";
 import { switchTab } from "../helpers/workspace";
 
 const kLanguages = ["en"];
@@ -125,22 +129,63 @@ async function readCreditsShown(page: Page): Promise<ICreditsShown> {
         }));
 }
 
-/** Wait until the credits page shows a copyright line that names kHolder, and return it. */
+/**
+ * Wait until the credits page shows a copyright line that names kHolder, and return it. With
+ * `exactly`, the line must be that, year and all.
+ */
 async function expectCreditsNameHolder(
     page: Page,
     message: string,
+    exactly?: string,
 ): Promise<ICreditsShown> {
     let last: ICreditsShown | undefined;
-    await expect
-        .poll(
-            async () => {
-                last = await readCreditsShown(page).catch(() => undefined);
-                return last?.copyright ?? "";
-            },
-            { timeout: 30000, message },
-        )
-        .toMatch(new RegExp(`^Copyright © \\d{4},? ${kHolder}$`));
+    const poll = expect.poll(
+        async () => {
+            last = await readCreditsShown(page).catch(() => undefined);
+            return last?.copyright ?? "";
+        },
+        { timeout: 30000, message },
+    );
+    if (exactly !== undefined) await poll.toBe(exactly);
+    else await poll.toMatch(new RegExp(`^Copyright © \\d{4},? ${kHolder}$`));
     return last!;
+}
+
+/**
+ * The size of the picture in the file at `path` and a SHA-1 of its pixels, decoded by the
+ * browser: equal for two files that show the same picture even when their metadata differs, as
+ * the export trims it. `page` is used only to decode it.
+ */
+async function picturePixels(page: Page, path: string): Promise<string> {
+    return page.evaluate(async (base64) => {
+        const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+        const bitmap = await createImageBitmap(new Blob([bytes]));
+        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+        const context = canvas.getContext("2d")!;
+        context.drawImage(bitmap, 0, 0);
+        const data = context.getImageData(
+            0,
+            0,
+            bitmap.width,
+            bitmap.height,
+        ).data;
+        const digest = new Uint8Array(
+            await crypto.subtle.digest("SHA-1", data),
+        );
+        const hash = Array.from(digest, (b) =>
+            b.toString(16).padStart(2, "0"),
+        ).join("");
+        return `${bitmap.width}x${bitmap.height} ${hash}`;
+    }, fs.readFileSync(path).toString("base64"));
+}
+
+/**
+ * The dialogs and page captions this test finds are in English, and a freshly launched Bloom
+ * takes its UI language from the operating system.
+ */
+async function useEnglishUi(bloomApp: IBloomApp): Promise<void> {
+    if ((await getCurrentUiLanguageTag(bloomApp.page)) !== "en")
+        await setUiStateViaApi(bloomApp, "en", false);
 }
 
 /** The text of the selected book's content pages and the pictures on them, from its saved file. */
@@ -179,6 +224,7 @@ test("front matter from a Paper Saver book lands on a Traditional book's own pag
     step,
 }, testInfo) => {
     test.setTimeout(600000);
+    await useEnglishUi(bloomApp);
     let page = bloomApp.page;
 
     const originalId = await step(
@@ -204,7 +250,7 @@ test("front matter from a Paper Saver book lands on a Traditional book's own pag
     const originalFolder = () =>
         findBookFolderById(bloomApp.collectionDir, originalId);
 
-    await step(
+    const originalCopyright = await step(
         "Check Paper Saver puts the credits on the inside of the front cover",
         async () => {
             const front = await frontMatterPages(page);
@@ -224,8 +270,10 @@ test("front matter from a Paper Saver book lands on a Traditional book's own pag
             // Leaving the Edit tab saves the book.
             await switchTab(page, "collection");
             expect(readXmatterPackOfBook(originalFolder())).toBe("Factory");
+            return credits.copyright;
         },
     );
+    if (!originalCopyright) throw new Error("The copyright was not read.");
 
     const exportFolder = testInfo.outputPath("spreadsheets");
     fs.mkdirSync(exportFolder, { recursive: true });
@@ -235,6 +283,15 @@ test("front matter from a Paper Saver book lands on a Traditional book's own pag
         return exportSelectedBookToSpreadsheet(page, exportFolder);
     });
     if (!spreadsheet) throw new Error("The book was not exported.");
+    const originalPages = await readContentPages(page, originalFolder());
+
+    await step("Check Bloom reported no problem before the restart", () => {
+        // A restart starts the record of problems afresh.
+        expect(
+            bloomApp.takeNonFatalProblems(),
+            "Bloom should report no problem while making and exporting the book",
+        ).toEqual([]);
+    });
 
     const restarted = await step(
         "Change the collection to the Traditional pack",
@@ -247,6 +304,9 @@ test("front matter from a Paper Saver book lands on a Traditional book's own pag
     );
     if (!restarted) throw new Error("Bloom did not restart.");
     page = restarted;
+    await useEnglishUi(bloomApp);
+    // Changing the UI language can reopen the collection in a new page.
+    page = bloomApp.page;
 
     const newBookId = await step("Make a new blank book", async () => {
         await switchTab(page, "collection");
@@ -300,6 +360,7 @@ test("front matter from a Paper Saver book lands on a Traditional book's own pag
             const credits = await expectCreditsNameHolder(
                 page,
                 "the new book's credits page should show the copyright from the spreadsheet",
+                originalCopyright,
             );
             expect(credits.xmatterPage).toBe("credits");
             expect(
@@ -321,10 +382,20 @@ test("front matter from a Paper Saver book lands on a Traditional book's own pag
                 contentPages[0].pictures,
                 "the content page should have the picture",
             ).toHaveLength(1);
+            const picture = Path.join(imported, contentPages[0].pictures[0]);
             expect(
-                fs.existsSync(Path.join(imported, contentPages[0].pictures[0])),
+                fs.existsSync(picture),
                 "the picture's file should be in the new book",
             ).toBe(true);
+            expect(
+                await picturePixels(page, picture),
+                "the new book's picture should show the original's picture",
+            ).toBe(
+                await picturePixels(
+                    page,
+                    Path.join(originalFolder(), originalPages[0].pictures[0]),
+                ),
+            );
         },
     );
 });
