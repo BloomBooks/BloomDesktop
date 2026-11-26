@@ -302,6 +302,8 @@ export interface IPageOnDisk {
      * (data-initial-page-orientation), and "" for a page offered to both.
      */
     onlyForOrientation: string;
+    /** How many video boxes (.bloom-videoContainer) the page has. */
+    videoBoxCount: number;
 }
 
 /**
@@ -341,6 +343,7 @@ export async function readPagesOnDisk(
             isTemplatePage: p.getAttribute("data-page") === "extra",
             onlyForOrientation:
                 p.getAttribute("data-initial-page-orientation") ?? "",
+            videoBoxCount: p.querySelectorAll(".bloom-videoContainer").length,
         }));
     }, html);
 }
