@@ -19,6 +19,7 @@ import {
     findBookFolder,
     getContentPages,
     getPages,
+    getShownPageId,
     goToPage,
     makeBookFromTemplate,
     typeInGroup,
@@ -78,7 +79,14 @@ test("a video imported into a new Sign Language book after it got its title land
                 newPages,
                 'adding a "Just Video" page should give the book one new content page',
             ).toHaveLength(1);
-            await goToPage(page, newPages[0].id);
+            // Add Page opens the new page itself. The import below is made on that first load
+            // after the rename, as a person makes it, so the test does not jump to the page again.
+            await expect
+                .poll(() => getShownPageId(page), {
+                    timeout: 30000,
+                    message: "Adding the page did not open it",
+                })
+                .toBe(newPages[0].id);
             return newPages[0];
         },
     );
@@ -139,24 +147,46 @@ test("a video imported into a new Sign Language book after it got its title land
             `Import put something back in the book's old folder, ${firstFolder}`,
         ).toBe(false);
 
-        // The page asks Bloom's server for the video by its path in the book, so the video playing
-        // there shows that the server found the file where the page says it is.
+        // The page asks Bloom's server for the video by its path in the book, so a frame of the
+        // video showing in the box shows that the server found the file where the page says it is.
         const video = videoBox.locator("video");
+        await expect(video, "The video box has no video to show").toBeVisible();
         await expect
             .poll(
                 () =>
-                    video.evaluate((v: HTMLVideoElement) => ({
-                        error: v.error?.code ?? 0,
-                        hasMetadata: v.readyState >= 1,
-                        duration: v.duration,
-                    })),
+                    video.evaluate((v: HTMLVideoElement) => {
+                        const box = v.getBoundingClientRect();
+                        // A video with no decoded frame draws nothing on a canvas, so an opaque
+                        // pixel there is a frame the box can show.
+                        let opaquePixels = 0;
+                        if (v.videoWidth > 0 && v.videoHeight > 0) {
+                            const canvas = document.createElement("canvas");
+                            canvas.width = v.videoWidth;
+                            canvas.height = v.videoHeight;
+                            const context = canvas.getContext("2d")!;
+                            context.drawImage(v, 0, 0);
+                            const data = context.getImageData(
+                                0,
+                                0,
+                                canvas.width,
+                                canvas.height,
+                            ).data;
+                            for (let i = 3; i < data.length; i += 4)
+                                if (data[i] === 255) opaquePixels++;
+                        }
+                        return {
+                            error: v.error?.code ?? 0,
+                            hasSize: box.width > 0 && box.height > 0,
+                            hasFrame: opaquePixels > 0,
+                        };
+                    }),
                 {
                     timeout: 30000,
                     message:
-                        "The video box never loaded the imported video from the book.",
+                        "The video box never showed a frame of the imported video from the book.",
                 },
             )
-            .toMatchObject({ error: 0, hasMetadata: true });
+            .toEqual({ error: 0, hasSize: true, hasFrame: true });
         const duration = await video.evaluate(
             (v: HTMLVideoElement) => v.duration,
         );
