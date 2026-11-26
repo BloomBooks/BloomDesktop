@@ -396,6 +396,112 @@ export async function closeBookMenu(page: Page): Promise<void> {
 }
 
 /**
+ * Open the collection's own menu on the Collections tab, which must be showing, as a person does:
+ * click the triangle beside the collection's name above its books. Returns once its entries show.
+ */
+export async function openCollectionMenu(page: Page): Promise<void> {
+    await waitForCollectionReady(page);
+    const name = (
+        await apiGet(page, "collections/getCurrentEditableCollectionName")
+    ).body;
+    // The name heading holds the triangle, the one button in it.
+    await realClick(
+        page
+            .locator("h1")
+            .filter({ has: page.getByText(name, { exact: true }) })
+            .getByRole("button"),
+    );
+    await page
+        .locator(kShowingBookMenuEntries)
+        .first()
+        .waitFor({ state: "visible", timeout: 15000 });
+}
+
+/**
+ * The test ids (their localization ids) of the entries the open collection menu shows, at the top
+ * level, or in the submenu of the entry whose test id is `submenuTestId`, which this opens by
+ * hovering it, as a person does.
+ */
+export async function readCollectionMenu(
+    page: Page,
+    submenuTestId?: string,
+): Promise<string[]> {
+    const showing = page.locator(kShowingBookMenuEntries);
+    const ids = () =>
+        showing.evaluateAll((items) =>
+            items.map((i) => i.getAttribute("data-testid") ?? "(no id)"),
+        );
+    if (!submenuTestId) return ids();
+    const before = await ids();
+    await page
+        .locator(`${kShowingBookMenuEntries}[data-testid="${submenuTestId}"]`)
+        .hover();
+    // The submenu adds its entries to the ones showing.
+    await expect
+        .poll(async () => (await ids()).length, {
+            timeout: 15000,
+            message: `The collection menu's "${submenuTestId}" did not open its submenu.`,
+        })
+        .toBeGreaterThan(before.length);
+    const after = await ids();
+    return after.filter((id) => !before.includes(id));
+}
+
+/**
+ * Close the open collection menu with Escape, as a person does, and wait until it has gone. A
+ * submenu that was opened by hovering stays open, and keeps the menu open, while the pointer is on
+ * it (BL-17198), so the pointer moves off the menu first.
+ */
+export async function closeCollectionMenu(page: Page): Promise<void> {
+    const showingEntries = page.locator(kShowingBookMenuEntries);
+    await expect(
+        showingEntries.first(),
+        "there is no collection menu open to close",
+    ).toBeVisible();
+    // The top left corner of the page, the Collections tab's button, which no menu covers.
+    await page.mouse.move(1, 1);
+    await expect(async () => {
+        await page.keyboard.press("Escape");
+        await expect(showingEntries).toHaveCount(0, { timeout: 1000 });
+    }, "the collection menu did not close").toPass({ timeout: 10000 });
+}
+
+/**
+ * Choose a command from the collection's own menu on the Collections tab, which must be showing:
+ * open the menu, hover each submenu entry of `testIds` but the last, and click the last. Each is
+ * an entry's test id, its localization id, e.g. ["CollectionTab.ContextMenu.Troubleshooting",
+ * "CollectionTab.CollectionMenu.doChecksOfAllBooks"]. Fails naming what the menu offered when an
+ * entry is not there.
+ */
+export async function chooseFromCollectionMenu(
+    page: Page,
+    testIds: string[],
+): Promise<void> {
+    await openCollectionMenu(page);
+    for (const [index, testId] of testIds.entries()) {
+        const item = page.locator(
+            `${kShowingBookMenuEntries}[data-testid="${testId}"]`,
+        );
+        try {
+            await item.waitFor({ state: "visible", timeout: 15000 });
+        } catch {
+            const offered = await page
+                .locator(kShowingBookMenuEntries)
+                .evaluateAll((items) =>
+                    items.map(
+                        (i) => i.getAttribute("data-testid") ?? "(no id)",
+                    ),
+                );
+            throw new Error(
+                `The collection menu has no "${testId}"; it offers: ${offered.join(", ")}.`,
+            );
+        }
+        if (index < testIds.length - 1) await item.hover();
+        else await realClick(item);
+    }
+}
+
+/**
  * Make a new, empty collection beside the one Bloom has open, and return its folder. It is in the
  * launch's temp folder, so it is deleted with the rest of the run. For a test that changes
  * collections with openOtherCollection.

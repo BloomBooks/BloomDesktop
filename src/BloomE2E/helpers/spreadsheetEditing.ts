@@ -7,7 +7,7 @@ import * as fs from "node:fs";
 import * as zlib from "node:zlib";
 
 /** One file in a zip. */
-interface IZipEntry {
+export interface IZipEntry {
     name: string;
     data: Buffer;
 }
@@ -53,7 +53,7 @@ function readZip(zip: Buffer): IZipEntry[] {
 }
 
 /** A zip holding `entries`, each deflated. */
-function writeZip(entries: IZipEntry[]): Buffer {
+export function writeZip(entries: IZipEntry[]): Buffer {
     const locals: Buffer[] = [];
     const centrals: Buffer[] = [];
     let offset = 0;
