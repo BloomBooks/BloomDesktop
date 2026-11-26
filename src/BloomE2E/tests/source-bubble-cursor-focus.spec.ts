@@ -32,12 +32,12 @@ import {
     clickIntoGroup,
     clickOnPicture,
     clickOutsidePage,
+    expectMouseMovesLeaveSourceBubbles,
+    expectPictureSelected,
     expectSourceBubbleStates,
     getFocusedGroupIndex,
     getGroupTexts,
     getSourceBubble,
-    getSourceBubbleStates,
-    moveMouseAroundWithoutClicking,
     type SourceBubbleState,
     sourceBubbleOverlapsPicture,
 } from "../helpers/sourceBubbles";
@@ -469,10 +469,15 @@ async function expectFocusInGroup(
         .toBe(group);
 }
 
-async function doAction(page: Page, action: Action): Promise<void> {
+async function doAction(
+    page: Page,
+    action: Action,
+    says: string,
+): Promise<void> {
     switch (action.do) {
         case "picture":
             await clickOnPicture(page);
+            await expectPictureSelected(page, says);
             break;
         case "outside":
             await clickOutsidePage(page);
@@ -481,7 +486,7 @@ async function doAction(page: Page, action: Action): Promise<void> {
             await clickIntoGroup(page, action.group, kVernacular);
             break;
         case "mouse":
-            await moveMouseAroundWithoutClicking(page);
+            await expectMouseMovesLeaveSourceBubbles(page, says);
             break;
         case "type and revisit":
             await typeInGroup(
@@ -563,16 +568,9 @@ test("the insertion point and the source bubbles follow the clicks on each kind 
                 ).toEqual(["en", "fr"]);
             }
             for (const check of pageCase.checks) {
-                const before = await getSourceBubbleStates(page);
-                await doAction(page, check.action);
-                if (check.action.do === "mouse") {
-                    expect(
-                        await getSourceBubbleStates(page),
-                        check.says,
-                    ).toEqual(before);
-                } else if (check.focus !== undefined) {
+                await doAction(page, check.action, check.says);
+                if (check.focus !== undefined)
                     await expectFocusInGroup(page, check.focus, check.says);
-                }
                 await expectSourceBubbleStates(page, check.bubbles, check.says);
                 if (
                     index === 1 &&

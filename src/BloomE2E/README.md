@@ -169,10 +169,11 @@ real bug in the code under test; read the message and fix it rather than working
   from bloomlibrary.org, or from its sandbox dev.bloomlibrary.org, as Bloom's own download does,
   for a test that needs a real book.
 - `helpers/sourceBubbles.ts` — a text box's source bubble: `getSourceBubble` (the languages it
-  offers), `getSourceBubbleStates`/`expectSourceBubbleStates` (each group's bubble hidden, full or
-  truncated), `getFocusedGroupIndex`, and the clicks that move the focus: `clickIntoGroup` (two
-  clicks for the text of a canvas element), `clickOnPicture` (clear of every box and of ComicalJS's
-  drawing), `clickOutsidePage`, `moveMouseAroundWithoutClicking`.
+  offers), `getSourceBubbleStates`/`expectSourceBubbleStates` (each group's bubble hidden, full,
+  or passive and cut short), `getFocusedGroupIndex`, the clicks that move the focus:
+  `clickIntoGroup` (two clicks for the text of a canvas element), `clickOnPicture` (clear of every
+  box and of ComicalJS's drawing) with `expectPictureSelected`, `clickOutsidePage`, and
+  `expectMouseMovesLeaveSourceBubbles`.
 - `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
 - `helpers/addPageDialog.ts` — open, read, scroll and close the real Add Page dialog, and add a
   page through it. Tests that only need a page in their book call `addPage` instead.

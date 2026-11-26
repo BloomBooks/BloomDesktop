@@ -172,12 +172,16 @@ export async function expectSourceBubbleLanguageReadable(
 }
 
 /**
- * How a translation group's source bubble shows: not at all, in full, or truncated. Bloom shows a
- * bubble that would overlap its neighbours only while its group has the focus, and when a page has
- * several groups it cuts each bubble whose group does not have the focus down to the height of the
- * group ("passive-bubble", BloomSourceBubbles.tsx), so that the bubbles do not cover each other.
+ * How a translation group's source bubble shows. Bloom shows a bubble that would overlap its
+ * neighbours only while its group has the focus. When a page has several groups, it marks each
+ * bubble whose group does not have the focus "passive-bubble" (BloomSourceBubbles.tsx) and limits
+ * its height to the group's, so that the bubbles do not cover each other:
+ * - "none": not shown;
+ * - "full": shown, and not passive;
+ * - "truncated": passive, with text cut off by the height limit;
+ * - "passive": passive, but all its text fits.
  */
-export type SourceBubbleState = "none" | "full" | "truncated";
+export type SourceBubbleState = "none" | "full" | "truncated" | "passive";
 
 /**
  * The state of the source bubble of each translation group on the page being shown, in document
@@ -202,9 +206,14 @@ export async function getSourceBubbleStates(
                     })
                 )
                     return "none";
-                return bubble.classList.contains("passive-bubble")
+                if (!bubble.classList.contains("passive-bubble")) return "full";
+                // A passive bubble hides whatever of its text runs past its height limit
+                // (qtipOverrides.less); it is cut only when some text does run past.
+                const content = bubble.querySelector(".qtip-content");
+                return content &&
+                    content.scrollHeight > content.clientHeight + 1
                     ? "truncated"
-                    : "full";
+                    : "passive";
             },
         ),
     );
@@ -452,6 +461,30 @@ export async function clickIntoGroup(
     ).toBeFocused({ timeout: 15000 });
 }
 
+/**
+ * Wait until the page's picture is selected (its background-image canvas element is the active
+ * one, as a click on the picture makes it) and no text box has the insertion point, failing with
+ * `message` otherwise.
+ */
+export async function expectPictureSelected(
+    page: Page,
+    message: string,
+): Promise<void> {
+    const frame = editablePageFrame(page);
+    await expect(
+        frame.locator(
+            '.bloom-canvas .bloom-backgroundImage[data-bloom-active="true"]',
+        ),
+        `${message} The click did not select the picture.`,
+    ).toHaveCount(1, { timeout: 15000 });
+    await expect
+        .poll(() => getFocusedGroupIndex(page), {
+            timeout: 15000,
+            message: `${message} A text box kept the insertion point after the click on the picture.`,
+        })
+        .toBe(-1);
+}
+
 /** Click in the Edit tab outside the page, on the background around it. */
 export async function clickOutsidePage(page: Page): Promise<void> {
     const point = await findPointInPageFrame(page, "outsidePage");
@@ -459,43 +492,69 @@ export async function clickOutsidePage(page: Page): Promise<void> {
 }
 
 /**
- * Move the mouse over the Edit tab without pressing a button: across the page frame from corner to
- * corner through the middle of each translation group, picture and source bubble, then out over
- * the page list and the toolbox. Returns once the page has drawn whatever the moves caused.
+ * Move the mouse over the Edit tab without pressing a button, and check that the source bubbles
+ * stay as they were all the while: the pointer goes across the page frame from corner to corner,
+ * stopping in the middle of each translation group, picture and source bubble, then out over the
+ * page list and the toolbox. At every stop, once the page has drawn whatever the move caused, the
+ * bubbles must be in the states they were in before the first move; otherwise this fails with
+ * `message`, the stop, and the states there.
  */
-export async function moveMouseAroundWithoutClicking(
+export async function expectMouseMovesLeaveSourceBubbles(
     page: Page,
+    message: string,
 ): Promise<void> {
     const origin = await pageFrameOrigin(page);
     const frame = editablePageFrame(page);
+    const before = await getSourceBubbleStates(page);
     const points = await frame.evaluate(() => {
         const middles = Array.from(
             document.querySelectorAll(
                 ".bloom-translationGroup, .bloom-canvas, .qtip",
             ),
         )
-            .map((element) => element.getBoundingClientRect())
-            .filter((rect) => rect.width > 0 && rect.height > 0)
-            .map((rect) => ({
-                x: rect.left + rect.width / 2,
-                y: rect.top + rect.height / 2,
-            }));
+            .filter((element) => element.getClientRects().length > 0)
+            .map((element) => {
+                const rect = element.getBoundingClientRect();
+                return {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2,
+                    over: element.className.toString().split(" ")[0],
+                };
+            })
+            .filter((point) => point.x > 0 && point.y > 0);
         const width = document.documentElement.clientWidth;
         const height = document.documentElement.clientHeight;
-        return [{ x: 5, y: 5 }, ...middles, { x: width - 5, y: height - 5 }];
+        return [
+            { x: 5, y: 5, over: "the frame's top left corner" },
+            ...middles,
+            {
+                x: width - 5,
+                y: height - 5,
+                over: "the frame's bottom right corner",
+            },
+        ];
     });
-    for (const point of points)
-        await page.mouse.move(origin.x + point.x, origin.y + point.y, {
-            steps: 5,
-        });
     const viewport = await page.evaluate(() => ({
         width: window.innerWidth,
         height: window.innerHeight,
     }));
-    // Out over the page list on the left, then across to the toolbox on the right.
-    await page.mouse.move(20, viewport.height / 2, { steps: 5 });
-    await page.mouse.move(viewport.width - 20, viewport.height / 2, {
-        steps: 10,
-    });
-    await waitForClickToSettle(frame);
+    const stops = [
+        ...points.map((point) => ({
+            x: origin.x + point.x,
+            y: origin.y + point.y,
+            over: point.over,
+        })),
+        { x: 20, y: viewport.height / 2, over: "the page list" },
+        { x: viewport.width - 20, y: viewport.height / 2, over: "the toolbox" },
+    ];
+    for (const stop of stops) {
+        await page.mouse.move(stop.x, stop.y, { steps: 5 });
+        await waitForClickToSettle(frame);
+        const now = await getSourceBubbleStates(page);
+        expect(
+            now,
+            `${message} With the pointer over ${stop.over}, the groups' bubbles went from ` +
+                `[${before.join(", ")}] to [${now.join(", ")}].`,
+        ).toEqual(before);
+    }
 }
