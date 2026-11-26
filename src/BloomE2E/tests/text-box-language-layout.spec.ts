@@ -104,7 +104,10 @@ test("a text box set to one language shows it alone and offers the others in its
                     shown: true,
                     texts: textsOf(LANGUAGES.filter((l) => l !== lang)),
                 });
-                for (const other of LANGUAGES.filter((l) => l !== lang))
+                // Read each language in the bubble by its tab, then go back to the first one, so
+                // that every tab, the one the bubble opens on included, is clicked at least once.
+                const others = LANGUAGES.filter((l) => l !== lang);
+                for (const other of [...others, others[0]])
                     await expectSourceBubbleLanguageReadable(
                         page,
                         TEXT_BOX,
