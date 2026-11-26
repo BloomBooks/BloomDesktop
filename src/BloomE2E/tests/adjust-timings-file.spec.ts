@@ -21,6 +21,7 @@
 // edited, against how far the tool's own player had played.
 
 import * as fs from "node:fs";
+import * as Path from "node:path";
 import type { Frame, Locator, Page, Request } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
@@ -83,7 +84,10 @@ interface IMediaEvent {
 /** Start noting every play() and pause() of an audio element in the shell page. */
 async function startNotingPlayback(page: Page): Promise<void> {
     await page.evaluate(() => {
-        const w = window as unknown as { e2eMediaEvents?: unknown[] };
+        const w = window as unknown as {
+            e2eMediaEvents?: unknown[];
+            e2eMedia?: HTMLMediaElement;
+        };
         if (w.e2eMediaEvents) return;
         const events: unknown[] = [];
         w.e2eMediaEvents = events;
@@ -91,6 +95,7 @@ async function startNotingPlayback(page: Page): Promise<void> {
         const play = proto.play;
         const pause = proto.pause;
         proto.play = function (this: HTMLMediaElement) {
+            w.e2eMedia = this;
             events.push({
                 what: "play",
                 time: this.currentTime,
@@ -106,6 +111,17 @@ async function startNotingPlayback(page: Page): Promise<void> {
             });
             return pause.call(this);
         };
+    });
+}
+
+/** How far the audio that played last has played, in seconds, and whether it is paused. */
+async function getPlayingPosition(
+    page: Page,
+): Promise<{ time: number; paused: boolean }> {
+    return page.evaluate(() => {
+        const media = (window as unknown as { e2eMedia: HTMLMediaElement })
+            .e2eMedia;
+        return { time: media.currentTime, paused: media.paused };
     });
 }
 
@@ -412,12 +428,19 @@ test("Adjust Timings plays to its boundaries, and its timings file round-trips i
             Math.abs(play.time - segments[1].start),
             `the second segment should play from where it starts, ${segments[1].start} s`,
         ).toBeLessThan(0.05);
-        // A click on the segment that is playing stops it.
-        await clickSegment(page, dialog, 1);
-        const [, stop] = await waitForPlayback(
+        // A click on the segment that is playing stops it. The click must land well before the
+        // segment ends by itself; otherwise it would start the segment again rather than stop it.
+        const position = await getPlayingPosition(page);
+        expect(
+            position,
+            `the second segment should still be playing, well before its end at ${segments[1].end} s`,
+        ).toEqual({ time: expect.any(Number), paused: false });
+        expect(position.time).toBeLessThan(segments[1].end - 0.5);
+        const beforeStop = await clickSegment(page, dialog, 1);
+        const [stop] = await waitForPlayback(
             page,
-            before,
-            2,
+            beforeStop,
+            1,
             "Clicking the playing segment did not stop it.",
         );
         expect(stop.what).toBe("pause");
@@ -550,6 +573,7 @@ test("Adjust Timings plays to its boundaries, and its timings file round-trips i
                 message,
                 "Edit Timings File... did not say which file to edit.",
             ).toBeVisible({ timeout: 30000 });
+            const messageText = (await message.textContent()) ?? "";
             await message
                 .getByRole("button", { name: ui["Common.OK"], exact: true })
                 .click();
@@ -560,10 +584,26 @@ test("Adjust Timings plays to its boundaries, and its timings file round-trips i
                         "OK on the message did not ask Bloom to open the timings file.",
                 })
                 .toBe(1);
-            const file = opened[0];
-            expect(file, "the timings file is named for the text box").toMatch(
-                /[\\/]audio[\\/][^\\/]+_timings\.txt$/,
+            // The timings file is named for the text box, whose id also names its recording.
+            const boxId = await editablePageFrame(page)
+                .locator(`${kGroup} .bloom-editable[lang="en"]`)
+                .first()
+                .getAttribute("id");
+            expect(boxId, "the text box should have an id").toBeTruthy();
+            const expectedFile = Path.join(
+                bookFolder,
+                "audio",
+                `${boxId}_timings.txt`,
             );
+            const file = opened[0];
+            expect(
+                Path.resolve(file).toLowerCase(),
+                "OK should open the text box's own timings file",
+            ).toBe(Path.resolve(expectedFile).toLowerCase());
+            expect(
+                messageText,
+                "the message should name the file that OK opens",
+            ).toContain(file);
 
             const written = readTimingsFile(file);
             expect(
@@ -581,6 +621,12 @@ test("Adjust Timings plays to its boundaries, and its timings file round-trips i
                         `line ${index + 1} of the timings file should end at the dialog's boundary`,
                     ).toBeCloseTo(dragged[index].end, 2);
             });
+            // The last segment has no boundary to drag; it ends with the recording.
+            expect(
+                written[2].end,
+                `the last line should end after it starts, and no later than the recording, ${duration} s`,
+            ).toBeGreaterThan(written[2].start);
+            expect(written[2].end).toBeLessThanOrEqual(duration + 0.05);
 
             // Move both boundaries, as a person would in an editor.
             const firstEnd = Number((written[0].end - 0.6).toFixed(3));
@@ -602,7 +648,7 @@ test("Adjust Timings plays to its boundaries, and its timings file round-trips i
                     )
                     .join(""),
             );
-            return { path: file, ends: [firstEnd, secondEnd] };
+            return { path: file, ends: [firstEnd, secondEnd], lastEnd };
         },
     );
     if (!timingsFile) throw new Error("The timings file was not edited.");
@@ -674,9 +720,9 @@ test("Adjust Timings plays to its boundaries, and its timings file round-trips i
                 .split(" ")
                 .map(Number);
             expect(
-                saved.slice(0, 2),
-                "OK should keep the times applied from the file",
-            ).toEqual(timingsFile.ends);
+                saved,
+                "OK should keep all three end times applied from the file",
+            ).toEqual([...timingsFile.ends, timingsFile.lastEnd]);
 
             const pageFrame = editablePageFrame(page);
             await startNotingHighlights(pageFrame);
