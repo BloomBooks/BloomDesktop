@@ -53,7 +53,11 @@ interface IPictureBox {
     box: { width: number; height: number };
     /** Its <img>'s size on screen. */
     img: { width: number; height: number };
-    /** The picture file's own size, as the browser loaded it. */
+    /**
+     * The picture file's own size, as the browser loaded it. The <img> draws its picture with
+     * object-fit: contain, so its box shows the picture's shape only while this is the size of
+     * the file that was pasted.
+     */
     natural: { width: number; height: number };
 }
 
@@ -160,12 +164,12 @@ test("a short, wide picture pasted onto a canvas keeps its shape [Test Case ID 7
             .locator(".bloom-canvas-element.bloom-backgroundImage")
             .first();
         await expect
-            .poll(async () => (await getPictureBox(background)).natural.width, {
+            .poll(async () => (await getPictureBox(background)).natural, {
                 message:
                     "The pasted picture never loaded as the canvas's background.",
                 timeout: 30000,
             })
-            .toBe(WIDE_WIDTH);
+            .toEqual({ width: WIDE_WIDTH, height: WIDE_HEIGHT });
         expect(
             await canvasElements(page).count(),
             "Pasting onto the empty canvas added an element instead of filling its background.",
@@ -199,11 +203,11 @@ test("a short, wide picture pasted onto a canvas keeps its shape [Test Case ID 7
         ).toHaveCount(before + 1, { timeout: 30000 });
         const added = canvasElements(page).nth(before);
         await expect
-            .poll(async () => (await getPictureBox(added)).natural.width, {
+            .poll(async () => (await getPictureBox(added)).natural, {
                 message: "The pasted picture never loaded in its new element.",
                 timeout: 30000,
             })
-            .toBe(WIDE_WIDTH);
+            .toEqual({ width: WIDE_WIDTH, height: WIDE_HEIGHT });
         // Bloom makes the box the canvas's shape first and then fits it to the picture. This waits
         // only until the box is fitted at all; expectShape below is the exact check.
         await expect
