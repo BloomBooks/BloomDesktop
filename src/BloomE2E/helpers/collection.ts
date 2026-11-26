@@ -224,7 +224,14 @@ export async function readSelectedBookMenu(
     // While the pointer rests on More its submenu stays open, and the menu then ignores Escape:
     // the key goes to the menu, which has the focus, and only the topmost menu, the submenu,
     // answers it. So move the pointer to another entry, which shuts the submenu, before closing.
-    await page.locator(kShowingBookMenuEntries).first().hover();
+    // A greyed-out entry sits under the tooltip that explains it, which takes the pointer, so the
+    // entry must be one that is not greyed out.
+    await page
+        .locator(
+            `${kShowingBookMenuEntries}:not([aria-disabled="true"]):not([data-testid="CollectionTab.ContextMenu.More"])`,
+        )
+        .first()
+        .hover();
     await expect(
         page.locator(kShowingBookMenuEntries),
         "the More submenu should shut when the pointer leaves More",
