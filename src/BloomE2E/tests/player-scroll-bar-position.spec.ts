@@ -35,7 +35,10 @@ import {
 } from "../helpers/bookMaking";
 import { right } from "../helpers/geometry";
 import { getTextBoxView, scrollTextBox } from "../helpers/overflowMarks";
-import { scrollPageFrameBy } from "../helpers/pageView";
+import {
+    isPageFrameTallerThanFrame,
+    scrollPageFrameBy,
+} from "../helpers/pageView";
 import {
     getPreviewTextBox,
     openPublishDestination,
@@ -170,6 +173,12 @@ async function scrollEditTabDown(page: Page): Promise<void> {
     // From the top, since an earlier scroll at a larger zoom can leave the page at its bottom.
     await scrollPageFrameBy(page, -100000);
     if ((await scrollPageFrameBy(page, 400)) > 0) return;
+    // A page that does not fit and yet does not scroll is a failure, not a tall screen; making the
+    // window shorter would hide it.
+    expect(
+        await isPageFrameTallerThanFrame(page),
+        "The page being edited is taller than its frame, but the frame did not scroll down.",
+    ).toBe(false);
     const window = await getWindowSize(page);
     const pageHeight = (await getSizeOfPageBeingEdited(page)).height;
     await resizeWindow(page, {
