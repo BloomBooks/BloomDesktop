@@ -123,22 +123,26 @@ export async function getPageNumberShown(
                 // something there: a background, a picture, or text whose letters reach the
                 // point. The Edit tab's own controls outside the page, and the page's
                 // transparent containers away from their text, cover nothing.
+                // Letter by letter, so that the space between two words is not counted.
                 const hasTextAtPoint = (hit: Element) =>
                     [...hit.childNodes].some((child) => {
-                        if (
-                            child.nodeType !== Node.TEXT_NODE ||
-                            !child.textContent?.trim()
-                        )
-                            return false;
+                        if (child.nodeType !== Node.TEXT_NODE) return false;
+                        const chars = child.textContent ?? "";
                         const range = document.createRange();
-                        range.selectNodeContents(child);
-                        return [...range.getClientRects()].some(
-                            (r) =>
+                        for (let i = 0; i < chars.length; i++) {
+                            if (/\s/.test(chars[i])) continue;
+                            range.setStart(child, i);
+                            range.setEnd(child, i + 1);
+                            const r = range.getBoundingClientRect();
+                            if (
                                 x >= r.left &&
                                 x <= r.right &&
                                 y >= r.top &&
-                                y <= r.bottom,
-                        );
+                                y <= r.bottom
+                            )
+                                return true;
+                        }
+                        return false;
                     });
                 const paints = (hit: Element) => {
                     const style = getComputedStyle(hit);
