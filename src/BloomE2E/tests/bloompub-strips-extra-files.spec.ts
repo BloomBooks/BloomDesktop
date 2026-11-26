@@ -13,7 +13,14 @@
 //   - a picture in a folder the list does not take;
 //   - an .mp3 in the audio folder that no sentence of the book plays;
 //   - a .wav beside the narration .mp3 of a sentence the book does play;
-//   - a video in the video folder that no page plays.
+//   - a video in the video folder that no page plays;
+//   - thumbnail-70.png, a picture that uploading to Bloom Library leaves and a BloomPUB has no
+//     use for.
+// Bloom applies the white list twice: when it copies the book into a staging folder
+// (PublishHelper.MakeDeviceXmatterTempBook) and when it zips that folder (BloomPubMaker.MakeFilter).
+// The first copy already drops most stray files. thumbnail-70.png passes it (a .png at the top of
+// the folder), and so does thumbnail-256.png, which Bloom writes into the staged copy itself, so
+// only the zip's filter keeps those two out, and the test checks the zip for both.
 // The narration .mp3 the book plays must come through, so the audio folder is filtered file by
 // file and not dropped whole. The test also checks every stray file is still in the book's folder
 // once the BloomPUB is made, so that it is the white list that kept each out, not something that
@@ -54,6 +61,10 @@ import {
     openToolboxWithTalkingBook,
     sampleNarrationFile,
 } from "../helpers/talkingBook";
+import {
+    getCurrentUiLanguageTag,
+    setUiStateViaApi,
+} from "../helpers/uiLanguage";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
@@ -101,7 +112,15 @@ const STRAY_FILES: IStrayFile[] = [
         why: "a video that no page of the book plays",
         copyOf: "fixtures/videos/short.mp4",
     },
+    {
+        path: "thumbnail-70.png",
+        why: "a thumbnail that uploading to Bloom Library leaves, which only the zip's filter rejects",
+        copyOf: "fixtures/images/blue-square.png",
+    },
 ];
+
+/** A file Bloom writes into the staged copy of the book, which the zip's filter must leave out. */
+const STAGED_THUMBNAIL = "thumbnail-256.png";
 
 /** Put a stray file in the book's folder. */
 function writeStrayFile(bookFolder: string, stray: IStrayFile): void {
@@ -112,9 +131,15 @@ function writeStrayFile(bookFolder: string, stray: IStrayFile): void {
 }
 
 test("A BloomPUB leaves out the files not on Bloom's white list [Test Case ID 196]", async ({
-    page,
+    bloomApp,
     step,
 }) => {
+    // The Make All BloomPUBs helpers find the command and its dialog by their English labels, and
+    // a fresh Bloom takes the operating system's UI language.
+    if ((await getCurrentUiLanguageTag(bloomApp.page)) !== "en")
+        await setUiStateViaApi(bloomApp, "en", false);
+    const page = bloomApp.page;
+
     const made = await step(
         "Make a book with one narrated sentence",
         async () => {
@@ -205,6 +230,10 @@ test("A BloomPUB leaves out the files not on Bloom's white list [Test Case ID 19
                 `The BloomPUB should leave out ${stray.path}, ${stray.why}. ${listed}`,
             ).toEqual([]);
         }
+        expect(
+            entries,
+            `The BloomPUB should leave out ${STAGED_THUMBNAIL}, which Bloom makes while publishing. ${listed}`,
+        ).not.toContain(STAGED_THUMBNAIL);
     });
 
     await step("Check the stray files are still in the book's folder", () => {
