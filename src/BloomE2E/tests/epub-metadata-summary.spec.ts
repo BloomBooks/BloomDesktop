@@ -158,29 +158,22 @@ test("the ePUB's description is the book's summary, edited on the Web screen or 
 
 /**
  * Click Preview on the ePUB screen and expect the ePUB it stages to have exactly one description,
- * `summary`. The ePUB is read again until it has, because a preview made earlier can still be
- * showing while Bloom stages the new one; a description that never becomes `summary` fails.
+ * `summary`. Preview starts the reader over with no book until Bloom has staged the new ePUB, so
+ * once the reader shows a page it is the new one.
  */
 async function expectEpubDescription(
     page: Page,
     summary: string,
 ): Promise<void> {
     await showEpubPreview(page);
-    await expect
-        .poll(
-            async () =>
-                getEpubPackageDublinCore(
-                    page,
-                    await readEpubPreviewPackage(page),
-                    "description",
-                ),
-            {
-                timeout: 30000,
-                message:
-                    "The ePUB's content.opf should have one dc:description in its metadata, the book's summary.",
-            },
-        )
-        .toEqual([summary]);
+    expect(
+        await getEpubPackageDublinCore(
+            page,
+            await readEpubPreviewPackage(page),
+            "description",
+        ),
+        "The ePUB's content.opf should have one dc:description in its metadata, the book's summary.",
+    ).toEqual([summary]);
 }
 
 /**
