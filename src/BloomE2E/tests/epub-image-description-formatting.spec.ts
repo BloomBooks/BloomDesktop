@@ -23,7 +23,7 @@ import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
     chooseEpubMode,
     getEpubPreviewImageDescriptions,
-    isEpubPreviewImageDescriptionAfterItsPicture,
+    getEpubPreviewPageItems,
     openEpubPublishScreen,
     setIncludeImageDescriptionsOnPage,
     showEpubPreview,
@@ -168,11 +168,13 @@ test("words of an image description keep their bold, italic and color in a flowa
             ).toHaveCount(1);
             await expect(descriptions).toBeVisible();
             expect(
-                await isEpubPreviewImageDescriptionAfterItsPicture(
-                    descriptions,
-                ),
-                "the description should come straight after the picture it describes, before the page's text",
-            ).toBe(true);
+                await getEpubPreviewPageItems(frame),
+                "the page of the ePUB should show the picture, then its description, then the page's text",
+            ).toEqual([
+                { kind: "picture", content: Path.basename(PICTURE) },
+                { kind: "description", content: DESCRIPTION },
+                { kind: "text", content: PAGE_TEXT },
+            ]);
             await expect(descriptions).toHaveText(DESCRIPTION, {
                 useInnerText: true,
             });

@@ -162,40 +162,52 @@ export function getEpubPreviewImageDescriptions(frame: Frame): Locator {
     return frame.locator("aside.imageDescription");
 }
 
+/** One thing a reader meets on a page of an ePUB, and what it holds. */
+export interface IEpubPageItem {
+    kind: "picture" | "description" | "text";
+    /** A picture's file name; the words of a description or of a text box. */
+    content: string;
+}
+
 /**
- * Whether a picture description on a page of the ePUB preview (one of
- * getEpubPreviewImageDescriptions) comes after a picture of its page and before any text box of
- * the page that follows that picture: the place a reader that lays the page out itself gives it,
- * straight after the picture it describes. Throws when the page has no picture.
+ * What a reader meets on a page of the ePUB preview (a frame showEpubPreviewPage returned), in
+ * the order of the page's document, which is the order a reader that lays the page out itself
+ * shows it in: each picture, each picture description that is on the page
+ * (getEpubPreviewImageDescriptions), and each text box that is showing and has words in it.
  */
-export async function isEpubPreviewImageDescriptionAfterItsPicture(
-    description: Locator,
-): Promise<boolean> {
-    return description.evaluate((aside) => {
-        const page = aside.closest(".bloom-page");
-        if (!page)
-            throw new Error("The description is not on a page of the book.");
-        const pictures = [...page.querySelectorAll("img")];
-        if (pictures.length === 0)
-            throw new Error(
-                "The page of the ePUB has no picture: " + page.outerHTML,
-            );
-        const follows = (later: Element, earlier: Element) =>
-            (earlier.compareDocumentPosition(later) &
-                Node.DOCUMENT_POSITION_FOLLOWING) !==
-            0;
-        // The last picture before the description is the one it describes.
-        const picture = pictures.filter((p) => follows(aside, p)).pop();
-        if (!picture) return false;
-        const textBetween = [...page.querySelectorAll(".bloom-editable")].some(
-            (box) =>
-                !aside.contains(box) &&
-                !box.contains(aside) &&
-                follows(box, picture) &&
-                follows(aside, box) &&
-                (box.textContent ?? "").trim() !== "",
-        );
-        return !textBetween;
+export async function getEpubPreviewPageItems(
+    frame: Frame,
+): Promise<IEpubPageItem[]> {
+    return frame.evaluate(() => {
+        const items: {
+            kind: "picture" | "description" | "text";
+            content: string;
+        }[] = [];
+        const isShowing = (element: Element) =>
+            (element as HTMLElement).getClientRects().length > 0 &&
+            getComputedStyle(element).visibility !== "hidden";
+        const words = (element: Element) =>
+            ((element as HTMLElement).innerText ?? "").trim();
+        for (const element of document.querySelectorAll(
+            ".bloom-page img, .bloom-page aside.imageDescription, .bloom-page .bloom-editable",
+        )) {
+            if (!isShowing(element)) continue;
+            if (element.tagName.toLowerCase() === "img") {
+                const src = element.getAttribute("src") ?? "";
+                items.push({
+                    kind: "picture",
+                    content: decodeURIComponent(src.split("/").pop() ?? ""),
+                });
+            } else if (element.tagName.toLowerCase() === "aside") {
+                items.push({ kind: "description", content: words(element) });
+            } else if (
+                !element.closest("aside.imageDescription") &&
+                words(element)
+            ) {
+                items.push({ kind: "text", content: words(element) });
+            }
+        }
+        return items;
     });
 }
 
