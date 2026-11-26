@@ -142,6 +142,42 @@ function boxesOverlap(a: ScreenBox, b: ScreenBox): boolean {
     );
 }
 
+/**
+ * How far, in screen pixels, ComicalJS may draw a bubble's shape outside its box: its fill reaches
+ * about 9 page pixels out and its outer outline about 17.
+ */
+const kShapeReach = 24;
+
+/**
+ * A point inside `box`, at least a fifth of its size in from its edges, that lies more than
+ * kShapeReach from every box of `others`, so that no shape of theirs can be drawn there; the one
+ * farthest from them. Undefined when there is none.
+ */
+function pointClearOf(
+    box: ScreenBox,
+    others: ScreenBox[],
+): IScreenPoint | undefined {
+    const distanceTo = (p: IScreenPoint, o: ScreenBox) =>
+        Math.hypot(
+            Math.max(o.x - p.x, 0, p.x - (o.x + o.width)),
+            Math.max(o.y - p.y, 0, p.y - (o.y + o.height)),
+        );
+    let best: { point: IScreenPoint; distance: number } | undefined;
+    for (let i = 0; i <= 6; i++)
+        for (let j = 0; j <= 2; j++) {
+            const point = {
+                x: box.x + box.width * (0.2 + (0.6 * i) / 6),
+                y: box.y + box.height * (0.2 + (0.6 * j) / 2),
+            };
+            const distance = Math.min(
+                ...others.map((o) => distanceTo(point, o)),
+            );
+            if (distance > kShapeReach && (!best || distance > best.distance))
+                best = { point, distance };
+        }
+    return best?.point;
+}
+
 /** The middle of a screen box. */
 function middleOf(box: {
     x: number;
@@ -265,7 +301,8 @@ interface IPlacedBubble {
  * Leave the page, which saves it, and wait until the drawing Bloom saved into it, which is what a
  * reader of the book sees, paints each bubble of `bubbles` in `colors`: ComicalJS saves each
  * bubble as its own shape filled with the background color, over a larger one filled with the
- * outer outline color, both centred on the bubble. Also that it paints none of `earlierColors`.
+ * outer outline color, both centred on the bubble. Every fill must paint after (over) every outer
+ * outline, so that no outline shows across a fill. Also that it paints none of `earlierColors`.
  * Then come back to the page and leave nothing selected.
  */
 async function expectSavedDrawing(
@@ -286,8 +323,9 @@ async function expectSavedDrawing(
     const outerHex = kOuterOutlineHex[colors.outerOutline];
     const readSaved = async () => {
         const shapes = await readSavedCanvasShapes(page, bookFolder, pageId);
+        // The shapes centred on `bubble` filled with `color`.
         const filledAround = (bubble: IPlacedBubble, color: string) =>
-            shapes.some(
+            shapes.filter(
                 (s) =>
                     savedColor(s.fill) === color &&
                     Math.abs(
@@ -309,14 +347,31 @@ async function expectSavedDrawing(
                 ]),
             ),
         ];
-        const missing = bubbles.flatMap((b) => [
-            ...(filledAround(b, colors.background)
-                ? []
-                : [`${b.what}: ${colors.background} fill`]),
-            ...(filledAround(b, outerHex)
-                ? []
-                : [`${b.what}: ${colors.outerOutline} outer outline`]),
-        ]);
+        const missing = bubbles.flatMap((b) => {
+            const fills = filledAround(b, colors.background);
+            const outlines = filledAround(b, outerHex);
+            if (fills.length === 0)
+                return [`${b.what}: ${colors.background} fill`];
+            if (outlines.length === 0)
+                return [`${b.what}: ${colors.outerOutline} outer outline`];
+            return [];
+        });
+        // Every bubble's fill must paint over every outer outline of the family, its own and
+        // those of the bubbles it overlaps, or an outline would show across a fill.
+        const fillOrders = shapes
+            .filter((s) => savedColor(s.fill) === colors.background)
+            .map((s) => s.paintOrder);
+        const outlineOrders = shapes
+            .filter((s) => savedColor(s.fill) === outerHex)
+            .map((s) => s.paintOrder);
+        if (
+            fillOrders.length &&
+            outlineOrders.length &&
+            Math.max(...outlineOrders) > Math.min(...fillOrders)
+        )
+            missing.push(
+                `every ${colors.background} fill painted over every ${colors.outerOutline} outer outline`,
+            );
         const leftOver = earlierColors.filter((c) => painted.includes(c));
         return {
             missing,
@@ -768,6 +823,33 @@ test("Child bubbles merge with their parent and share its colors [Test Case ID 3
                 (await getCanvasElementTextColors(newChild)).color,
                 "A child added to the family should take its text color.",
             ).toBe(kChildChoice.text);
+            // In the drawing shown while editing, read the new child's fill at a point of it that
+            // no other bubble's shape can reach.
+            await clearCanvasElementSelection(page);
+            const newChildBox = await screenBox(newChild, "new child bubble");
+            // Measured without scrolling again, so that every box is where the page is now.
+            const otherBoxes = await Promise.all(
+                [parent, child].map(async (b) => {
+                    const box = await b.boundingBox();
+                    if (!box) throw new Error("A bubble has no on-screen box.");
+                    return box;
+                }),
+            );
+            const clear = pointClearOf(newChildBox, otherBoxes);
+            if (!clear)
+                throw new Error(
+                    `Bloom put the new child wholly within reach of the other bubbles' shapes ` +
+                        `(${JSON.stringify(newChildBox)}), so its own fill cannot be read apart ` +
+                        `from theirs.`,
+                );
+            await expect
+                .poll(async () => describe(await readFillColor(page, clear)), {
+                    timeout: 15000,
+                    message:
+                        "A child added to the family should be filled with its background " +
+                        `color, ${kChildChoice.background}.`,
+                })
+                .toBe(`${kChildChoice.background}/255`);
             // The new child may lie over the others, so its fill is read from the saved drawing,
             // where it is a shape of its own.
             await expectSavedDrawing(

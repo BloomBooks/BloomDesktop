@@ -332,6 +332,11 @@ export interface ISavedShape {
     /** The shape's fill and stroke attributes, to tell the shapes apart in a failure message. */
     fill: string;
     stroke: string;
+    /**
+     * Where the shape comes among the drawing's shapes in document order, which is the order
+     * they are painted in: a shape with a higher number paints over one with a lower number.
+     */
+    paintOrder: number;
     /** The top-left corner of the shape's bounding box, in the SVG's units. */
     x: number;
     y: number;
@@ -386,7 +391,7 @@ export async function readSavedCanvasShapes(
                         "path, rect, ellipse, circle, polygon",
                     ),
                 )
-                    .map((shape) => {
+                    .map((shape, paintOrder) => {
                         const style = getComputedStyle(shape);
                         // A shape painted at zero opacity is drawn but not seen (ComicalJS so
                         // draws an element with a transparent background).
@@ -448,6 +453,7 @@ export async function readSavedCanvasShapes(
                                 stroke:
                                     shape.getAttribute("stroke") ??
                                     style.stroke,
+                                paintOrder,
                                 x: Math.round(box.x),
                                 y: Math.round(box.y),
                                 width: Math.round(box.width),
