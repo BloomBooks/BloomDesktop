@@ -5,7 +5,9 @@
 //
 // Automates the manual test "Delete A Book" (Test Case ID 388).
 
+import { createHash } from "node:crypto";
 import * as fs from "node:fs";
+import * as Path from "node:path";
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import { makeBookFromTemplate, typeInGroup } from "../helpers/bookMaking";
@@ -28,6 +30,25 @@ test.use({
 // The titles of the two books, which also name their folders.
 const kKeptTitle = "Book to keep";
 const kDeletedTitle = "Book to delete";
+
+/**
+ * Every file in `folder` and below, by its path inside the folder, with a hash of its bytes, so
+ * that two readings differ when any file was added, removed or changed.
+ */
+function readFolderContents(folder: string): Record<string, string> {
+    const contents: Record<string, string> = {};
+    for (const entry of fs.readdirSync(folder, {
+        recursive: true,
+        withFileTypes: true,
+    })) {
+        if (!entry.isFile()) continue;
+        const full = Path.join(entry.parentPath, entry.name);
+        contents[Path.relative(folder, full)] = createHash("sha256")
+            .update(fs.readFileSync(full))
+            .digest("hex");
+    }
+    return contents;
+}
 
 /** The tile of the book with id `bookId` on the Collections tab. */
 function bookTile(page: Page, bookId: string) {
@@ -78,9 +99,15 @@ test("Delete Book moves the selected book to the Recycle Bin and out of the coll
     });
 
     let beforeDelete = new Date();
+    let keptContents: Record<string, string> = {};
     await step("Select the book and choose Delete Book", async () => {
         await clickBookTile(page, deletedId);
         await expectBookInPreview(page, kDeletedTitle);
+        keptContents = readFolderContents(keptFolder);
+        expect(
+            Object.keys(keptContents).length,
+            "Sanity check: the book to keep should have files in its folder",
+        ).toBeGreaterThan(0);
         // The file system may round the Recycle Bin record's time down, so allow a second.
         beforeDelete = new Date(Date.now() - 1000);
         await chooseFromSelectedBookMenuByTestId(
@@ -100,14 +127,18 @@ test("Delete Book moves the selected book to the Recycle Bin and out of the coll
     await step("See the book gone, and the other book kept", async () => {
         await expect
             .poll(
-                async () => (await listEditableBooks(page)).map((b) => b.id),
+                async () =>
+                    (await listEditableBooks(page)).map((b) => ({
+                        id: b.id,
+                        title: b.title,
+                    })),
                 {
                     timeout: 30000,
                     message:
                         "the deleted book should leave the collection, and only it",
                 },
             )
-            .toEqual([keptId]);
+            .toEqual([{ id: keptId, title: kKeptTitle }]);
         await expect(
             bookTile(page, deletedId),
             "the deleted book's tile should leave the Collections tab",
@@ -124,6 +155,10 @@ test("Delete Book moves the selected book to the Recycle Bin and out of the coll
             fs.existsSync(keptFolder),
             `the other book's folder ${keptFolder} should stay in the collection`,
         ).toBe(true);
+        expect(
+            readFolderContents(keptFolder),
+            "deleting one book should leave every file of the other book as it was",
+        ).toEqual(keptContents);
         expect(
             await wasMovedToRecycleBinSince(deletedFolder, beforeDelete),
             "Delete Book should move the book's folder to the Recycle Bin",
