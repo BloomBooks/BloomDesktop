@@ -41,29 +41,39 @@ export async function getShownBoxes(
         );
 }
 
+/** A translation group's source bubble, as a person looking at the group sees it. */
+export interface ISourceBubble {
+    /** Whether the group has a source bubble and it is showing on the page. */
+    shown: boolean;
+    /** The languages the bubble offers, with the text of each, sorted by language. */
+    texts: ILanguageText[];
+}
+
 /**
- * The languages one translation group's source bubble offers, with the text of each, sorted by
- * language. Empty when the group has no source bubble.
+ * One translation group's source bubble: whether it shows, and the languages it offers with the
+ * text of each. `texts` is empty when the group has no source bubble.
  *
  * The bubble is shown when its group has the focus, so this first clicks in the group's box in
- * `shownLanguage`, the way a person looks at the bubble. Then it waits until the bubble's
- * languages hold still, because Bloom rebuilds a bubble after a change of focus.
+ * `shownLanguage`, the way a person looks at the bubble. Then it waits until the bubble holds
+ * still, because Bloom rebuilds a bubble after a change of focus.
  */
-export async function getSourceBubbleTexts(
+export async function getSourceBubble(
     page: Page,
     groupSelector: string,
     shownLanguage: string,
     groupIndex = 0,
-): Promise<ILanguageText[]> {
+): Promise<ISourceBubble> {
     await clickInGroup(page, groupSelector, shownLanguage, groupIndex);
     const group = editablePageFrame(page)
         .locator(groupSelector)
         .nth(groupIndex);
-    const read = async (): Promise<ILanguageText[]> => {
+    const read = async (): Promise<ISourceBubble> => {
         const bubbleId = await group.getAttribute("aria-describedby");
-        if (!bubbleId) return [];
-        const texts = await editablePageFrame(page)
-            .locator(`[id="${bubbleId}"] .source-text`)
+        if (!bubbleId) return { shown: false, texts: [] };
+        const bubble = editablePageFrame(page).locator(`[id="${bubbleId}"]`);
+        const shown = await bubble.isVisible();
+        const texts = await bubble
+            .locator(".source-text")
             .evaluateAll((sources) =>
                 sources.map((source) => ({
                     lang: source.getAttribute("lang") ?? "",
@@ -78,7 +88,10 @@ export async function getSourceBubbleTexts(
                     })(),
                 })),
             );
-        return texts.sort((a, b) => a.lang.localeCompare(b.lang));
+        return {
+            shown,
+            texts: texts.sort((a, b) => a.lang.localeCompare(b.lang)),
+        };
     };
     let last = "";
     await expect
@@ -96,5 +109,5 @@ export async function getSourceBubbleTexts(
             },
         )
         .toBe(true);
-    return JSON.parse(last) as ILanguageText[];
+    return JSON.parse(last) as ISourceBubble;
 }

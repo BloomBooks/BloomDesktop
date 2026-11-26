@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderRoot, unmountRoot } from "../utils/reactRender";
 import { administratorsAreValid } from "../teamCollection/administrators";
 import {
+    ICollectionSettingsReply,
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
@@ -78,7 +79,6 @@ const settingsResponse: ICollectionSettingsResponse = {
         { value: "Decimal", label: "Decimal" },
         { value: "Devanagari", label: "Devanagari" },
     ],
-    notAllowedMessage: null,
 };
 
 const {
@@ -174,7 +174,7 @@ vi.mock("../react_components/boxes", () => ({
 
 // The Team Collection page's pieces talk to Bloom themselves. These stand-ins show what they were
 // given, and let a test type administrators or choose a folder.
-vi.mock("../teamCollection/TeamCollectionSettingsPanel", () => ({
+vi.mock("../teamCollection/TeamCollectionSettings", () => ({
     TeamCollectionSettings: (props: {
         administrators: string;
         onAdministratorsChange: (administrators: string) => void;
@@ -232,6 +232,15 @@ vi.mock("../utils/bloomApi", () => ({
     get: mockGet,
     postJson: mockPostJson,
     useApiObject: mockUseApiObject,
+    // Like the real one, asks once per URL through get, so the GETs the tests answer and check
+    // all go through mockGet.
+    useApiData: <T,>(urlSuffix: string, defaultValue: T): T => {
+        const [value, setValue] = React.useState<T>(defaultValue);
+        React.useEffect(() => {
+            mockGet(urlSuffix, (result: { data: T }) => setValue(result.data));
+        }, [urlSuffix]);
+        return value;
+    },
 }));
 
 vi.mock("../react_components/l10nHooks", () => ({
@@ -655,7 +664,7 @@ describe("CollectionSettingsDialog", () => {
 
     // Answers GET collection/settings with the given response, and the pages' own GETs with their
     // test data.
-    const respondWith = (response: ICollectionSettingsResponse) => {
+    const respondWith = (response: ICollectionSettingsReply) => {
         mockGet.mockImplementation(
             (url: string, successCallback: (r: unknown) => void) => {
                 switch (url) {
@@ -708,6 +717,32 @@ describe("CollectionSettingsDialog", () => {
         document.body.innerHTML = "";
     });
 
+    it("closes, so Settings can open it again, when Bloom cannot send the settings", async () => {
+        const failure = new Error("the settings request failed");
+        let reported: unknown;
+        mockGet.mockImplementation(
+            (
+                url: string,
+                _success: unknown,
+                errorCallback: (error: unknown) => void,
+            ) => {
+                expect(url).toBe("collection/settings");
+                try {
+                    errorCallback(failure);
+                } catch (error) {
+                    reported = error;
+                }
+            },
+        );
+        expect(mockCloseDialog).not.toHaveBeenCalled();
+
+        await renderDialog();
+
+        expect(mockCloseDialog).toHaveBeenCalledTimes(1);
+        // Rethrown, so bloomApi still reports it.
+        expect(reported).toBe(failure);
+    });
+
     it("asks for the settings when it opens and shows the seven pages", async () => {
         respondWith({
             ...settingsResponse,
@@ -720,6 +755,7 @@ describe("CollectionSettingsDialog", () => {
 
         expect(mockGet).toHaveBeenCalledWith(
             "collection/settings",
+            expect.any(Function),
             expect.any(Function),
         );
         expect(
@@ -859,11 +895,9 @@ describe("CollectionSettingsDialog", () => {
 
     it("shows only the reason and a Close button when the user may not edit", async () => {
         respondWith({
-            values: null,
-            restartPaths: null,
             notAllowedMessage:
                 "You must be an administrator to change collection settings",
-        } as unknown as ICollectionSettingsResponse);
+        });
 
         await renderDialog();
 
@@ -1366,10 +1400,7 @@ describe("CollectionSettingsDialog", () => {
     });
 
     it("offers Help even when the user may not edit the settings", async () => {
-        respondWith({
-            ...settingsResponse,
-            notAllowedMessage: "You must be an administrator",
-        });
+        respondWith({ notAllowedMessage: "You must be an administrator" });
         await renderDialog();
 
         expect(

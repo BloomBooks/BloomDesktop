@@ -9,19 +9,36 @@
 //
 // Cropping IS driven through the real UI: a mouse drag on a side handle of the selected image.
 //
+// chooseImageFileInChooser is the route a person takes instead, through the picture's menu and the
+// Image Chooser, for the test whose subject is choosing the file. getPicturesShownIn reads the
+// pictures of a page wherever Bloom draws it, a publication's preview included.
+//
 // Every function here works on the page's first image slot by default. A page can hold more than
 // one picture box, so each takes an optional `within` locator to say which one to act on; pass an
 // element that holds a picture box and everything below applies to the picture in it instead.
 
-import { expect, type Locator, type Page } from "@playwright/test";
+import { expect, type Frame, type Locator, type Page } from "@playwright/test";
+import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiPost } from "./api";
 import { editablePageFrame } from "./bookMaking";
+import {
+    clickCanvasElementMenuItem,
+    selectCanvasElementAt,
+} from "./canvasElements";
+import { chooseFileInImageChooser } from "./imageChooser";
 import { realClick } from "./realClick";
 
 /** The first image on the page: the background picture of the page's first image slot. */
 const FIRST_IMAGE =
     ".bloom-canvas .bloom-backgroundImage .bloom-imageContainer img";
+
+/** What the first image slot shows while it holds no picture. */
+const PLACEHOLDER = "placeHolder.png";
+/** The Paste image command on a picture's "..." menu, by its localization id. */
+const PASTE_IMAGE_COMMAND = "EditTab.Image.PasteImage";
+/** The "Choose image from your computer..." command on that menu, by its localization id. */
+const CHOOSE_IMAGE_COMMAND = "EditTab.Image.ChooseImage";
 
 /** The side handles of the selected image's control frame, by compass side. */
 const SIDE_HANDLE: Record<"n" | "s" | "e" | "w", string> = {
@@ -311,10 +328,292 @@ export async function getPictureInlineLayout(
 }
 
 /**
+ * Paste the picture on Bloom's clipboard into the empty first image slot of the page being
+ * edited, such as a new book's cover picture, the way a person does: select the picture's box,
+ * then choose Paste image from its menu. Returns the file name the slot shows once the picture
+ * has loaded. Put the picture on the clipboard first, with copyToClipboard.
+ */
+export async function pasteImageIntoEmptySlot(page: Page): Promise<string> {
+    const before = await getImagePlacement(page);
+    expect(
+        before.fileName,
+        "test setup: the page's first image slot starts with no picture",
+    ).toBe(PLACEHOLDER);
+    await selectFirstPictureBox(page);
+    await clickCanvasElementMenuItem(page, PASTE_IMAGE_COMMAND);
+    await expect
+        .poll(
+            async () => {
+                const placement = await getImagePlacement(page);
+                return placement.fileName !== PLACEHOLDER && placement.loaded;
+            },
+            {
+                timeout: 120000,
+                message: "The page never showed the pasted picture.",
+            },
+        )
+        .toBe(true);
+    return (await getImagePlacement(page)).fileName;
+}
+
+/**
+ * Put the image file at `filePath` into the empty first image slot of the page being edited the
+ * way a person does: select the picture's box, choose "Choose image from your computer..." from
+ * its menu, and in the Image Chooser open the file and click "Use this image". Returns the file
+ * name the slot shows once the picture has loaded, which is the name Bloom gave the file in the
+ * book.
+ *
+ * This is for a test whose subject is choosing the file. One that only needs a picture in place
+ * calls chooseImageFile, which is quicker.
+ */
+export async function chooseImageFileInChooser(
+    page: Page,
+    filePath: string,
+): Promise<string> {
+    const before = await getImagePlacement(page);
+    expect(
+        before.fileName,
+        "test setup: the page's first image slot starts with no picture",
+    ).toBe(PLACEHOLDER);
+    await selectFirstPictureBox(page);
+    await clickCanvasElementMenuItem(page, CHOOSE_IMAGE_COMMAND);
+    await chooseFileInImageChooser(page, filePath);
+    await expect
+        .poll(
+            async () => {
+                const placement = await getImagePlacement(page);
+                return placement.fileName !== PLACEHOLDER && placement.loaded;
+            },
+            {
+                timeout: 30000,
+                message: `The page never showed the picture chosen from ${filePath}.`,
+            },
+        )
+        .toBe(true);
+    return (await getImagePlacement(page)).fileName;
+}
+
+/**
+ * Select the box of the first picture on the page being edited. An empty picture shows no image
+ * to click, so this clicks the box itself.
+ */
+async function selectFirstPictureBox(page: Page): Promise<void> {
+    await selectCanvasElementAt(
+        editablePageFrame(page)
+            .locator(
+                ".bloom-canvas .bloom-canvas-element.bloom-backgroundImage",
+            )
+            .first(),
+        "the page's first picture",
+    );
+}
+
+/** A picture that a page shows, as the browser drawing the page has it. */
+export interface IShownPicture {
+    /** The address the browser loads the picture from. */
+    url: string;
+    /** The width of the picture file in pixels; 0 when the browser could not load it. */
+    width: number;
+    /** The height of the picture file in pixels; 0 when the browser could not load it. */
+    height: number;
+}
+
+/**
+ * The pictures a reader sees inside `container`, which is a book page wherever Bloom draws it: in
+ * the Edit tab, in the BloomPUB preview (a page showPreviewPage returned) or in the ePUB preview
+ * (the frame showEpubPreviewPage returned, which holds one page). Each comes with the size of its
+ * file, which is 0 by 0 when the browser could not load it, so this is how a test learns whether a
+ * reader sees the picture.
+ *
+ * A page holds a picture in one of two ways, and both are read: as an image element, and as the
+ * background of an element, which is how a BloomPUB holds the picture behind a canvas. Only an
+ * element that is drawn counts: one that is hidden, or has no area, shows a reader nothing. An
+ * image element answers for itself, once it has loaded or failed. A background has no way of its
+ * own to say whether it loaded, so it is loaded again from the address the page gives.
+ */
+export async function getPicturesShownIn(
+    container: Locator | Frame,
+): Promise<IShownPicture[]> {
+    const within =
+        "evaluateAll" in container ? container : container.locator("body");
+    return within.evaluate(async (root) => {
+        const view = root.ownerDocument.defaultView!;
+        const isDrawn = (element: Element) => {
+            const box = element.getBoundingClientRect();
+            const style = view.getComputedStyle(element);
+            return (
+                box.width > 0 &&
+                box.height > 0 &&
+                style.visibility === "visible" &&
+                style.opacity !== "0"
+            );
+        };
+        // Resolves once `image` has loaded or failed, with what it then holds.
+        const whenSettled = (image: HTMLImageElement, url: string) =>
+            new Promise<{ url: string; width: number; height: number }>(
+                (resolve) => {
+                    const report = () =>
+                        resolve({
+                            url,
+                            width: image.naturalWidth,
+                            height: image.naturalHeight,
+                        });
+                    if (image.complete) {
+                        report();
+                        return;
+                    }
+                    image.addEventListener("load", report, { once: true });
+                    image.addEventListener("error", report, { once: true });
+                },
+            );
+        const pictures: Promise<{
+            url: string;
+            width: number;
+            height: number;
+        }>[] = [];
+        for (const element of [root, ...root.querySelectorAll("*")]) {
+            if (!isDrawn(element)) continue;
+            if (element instanceof view.HTMLImageElement) {
+                pictures.push(
+                    whenSettled(element, element.currentSrc || element.src),
+                );
+                continue;
+            }
+            const background = /^url\("(.*)"\)$/.exec(
+                view.getComputedStyle(element).backgroundImage,
+            );
+            if (!background) continue;
+            const probe = new view.Image();
+            probe.src = background[1];
+            pictures.push(whenSettled(probe, background[1]));
+        }
+        return Promise.all(pictures);
+    });
+}
+
+/**
  * The picture to act on: the one inside `within` when a scope is given, otherwise the page's first
  * image slot.
  */
 function imageIn(page: Page, within?: Locator): Locator {
     if (within) return within.locator(".bloom-imageContainer img").first();
     return editablePageFrame(page).locator(FIRST_IMAGE).first();
+}
+
+/** The size of a picture in pixels. */
+export interface IPixelSize {
+    width: number;
+    height: number;
+}
+
+/**
+ * Write a photo-like JPEG of exactly `width` by `height` pixels to `filePath`, for a test that
+ * needs a picture of a given size, such as one larger than any size Bloom publishes. The picture
+ * is a colour gradient with soft blobs of colour across it, so that it compresses, and shrinks
+ * when scaled down, the way a photo does. It is drawn by the browser in `page`, because Node has no JPEG
+ * encoder; nothing is added to Bloom or the book.
+ */
+export async function makeJpegFile(
+    page: Page,
+    filePath: string,
+    width: number,
+    height: number,
+): Promise<void> {
+    const base64 = await page.evaluate(
+        async ({ width, height }) => {
+            const canvas = new OffscreenCanvas(width, height);
+            const context = canvas.getContext("2d")!;
+            const gradient = context.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, "#2a6f97");
+            gradient.addColorStop(0.5, "#f4a259");
+            gradient.addColorStop(1, "#5b8e7d");
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, width, height);
+            // Soft blobs, as in a photo, not hard edges. Bloom keeps a picture at its own size when
+            // shrinking it would make the file larger (BL-11441, ImageUtils
+            // .TryResizeImageWithGraphicsMagick), and a picture full of hard edges does grow when
+            // GraphicsMagick scales it down and re-encodes it.
+            const blobSize = Math.max(width, height) / 12;
+            for (let i = 0; i < 160; i++) {
+                const x = (i * 7919) % width;
+                const y = (i * 104729) % height;
+                const blob = context.createRadialGradient(
+                    x,
+                    y,
+                    0,
+                    x,
+                    y,
+                    blobSize,
+                );
+                blob.addColorStop(
+                    0,
+                    `rgba(${(i * 37) % 256},${(i * 91) % 256},${(i * 53) % 256},0.6)`,
+                );
+                blob.addColorStop(1, "rgba(0,0,0,0)");
+                context.fillStyle = blob;
+                context.fillRect(
+                    x - blobSize,
+                    y - blobSize,
+                    2 * blobSize,
+                    2 * blobSize,
+                );
+            }
+            const blob = await canvas.convertToBlob({
+                type: "image/jpeg",
+                quality: 0.92,
+            });
+            const bytes = new Uint8Array(await blob.arrayBuffer());
+            let binary = "";
+            for (let i = 0; i < bytes.length; i += 0x8000)
+                binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+            return btoa(binary);
+        },
+        { width, height },
+    );
+    fs.mkdirSync(Path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, Buffer.from(base64, "base64"));
+    const made = readImageFileSize(filePath);
+    if (made.width !== width || made.height !== height)
+        throw new Error(
+            `The JPEG made for the test is ${made.width}x${made.height}, not ${width}x${height}.`,
+        );
+}
+
+/**
+ * The size in pixels of a JPEG or PNG file on disk, read from the file's own header. Throws,
+ * naming the file, when it is neither.
+ */
+export function readImageFileSize(filePath: string): IPixelSize {
+    const bytes = fs.readFileSync(filePath);
+    if (bytes.subarray(0, 8).toString("hex") === "89504e470d0a1a0a")
+        return {
+            width: bytes.readUInt32BE(16),
+            height: bytes.readUInt32BE(20),
+        };
+    if (bytes[0] !== 0xff || bytes[1] !== 0xd8)
+        throw new Error(`${filePath} is neither a JPEG nor a PNG.`);
+    // Walk the JPEG's segments to its start-of-frame, which holds the height and then the width.
+    // Every segment but the markers without a length (none occur before the frame) is
+    // 0xFF, a marker byte, and a two-byte length that counts itself.
+    let offset = 2;
+    while (offset + 9 < bytes.length) {
+        if (bytes[offset] !== 0xff)
+            throw new Error(
+                `${filePath} has a broken JPEG segment at byte ${offset}.`,
+            );
+        const marker = bytes[offset + 1];
+        const isStartOfFrame =
+            marker >= 0xc0 &&
+            marker <= 0xcf &&
+            marker !== 0xc4 &&
+            marker !== 0xc8 &&
+            marker !== 0xcc;
+        if (isStartOfFrame)
+            return {
+                height: bytes.readUInt16BE(offset + 5),
+                width: bytes.readUInt16BE(offset + 7),
+            };
+        offset += 2 + bytes.readUInt16BE(offset + 2);
+    }
+    throw new Error(`${filePath} is a JPEG with no start-of-frame segment.`);
 }

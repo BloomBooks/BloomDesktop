@@ -14,8 +14,9 @@ using SIL.IO;
 namespace Bloom.web.controllers
 {
     /// <summary>
-    /// The reply to GET collection/settings. The TypeScript interface ICollectionSettingsResponse
-    /// in src/BloomBrowserUI/collection/collectionSettingsTypes.ts must match these classes; they
+    /// The reply to GET collection/settings for a user who may edit the settings (one who may not
+    /// gets only a notAllowedMessage). The TypeScript interface ICollectionSettingsResponse in
+    /// src/BloomBrowserUI/collection/collectionSettingsTypes.ts must match these classes; they
     /// are serialized with camelCase names.
     /// </summary>
     public class CollectionSettingsResponse
@@ -62,12 +63,6 @@ namespace Bloom.web.controllers
         public XmatterPack[] XmatterPacks;
 
         public bool XmatterChosenByBranding;
-
-        /// <summary>
-        /// Set only when the user may not edit the collection settings (a Team Collection member
-        /// who is not an administrator); the other fields are then null.
-        /// </summary>
-        public string NotAllowedMessage;
     }
 
     /// <summary>
@@ -449,16 +444,19 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// AutoUpdate applies only to Windows: see https://silbloom.myjetbrains.com/youtrack/issue/BL-2317.
+        /// Also, we are stranding pre-windows 10 people at 5.4.
+        /// </summary>
+        private static bool AutoUpdateSupportedOnThisPlatform =>
+            SIL.PlatformUtilities.Platform.IsWindows && Environment.OSVersion.Version.Major >= 10;
+
+        /// <summary>
         /// A user-level setting (Settings.Default.AutoUpdate), not part of the collection.
         /// </summary>
         public bool AutoUpdate
         {
-            get =>
-                CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform
-                && Settings.Default.AutoUpdate;
-            set =>
-                Settings.Default.AutoUpdate =
-                    value && CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform;
+            get => AutoUpdateSupportedOnThisPlatform && Settings.Default.AutoUpdate;
+            set => Settings.Default.AutoUpdate = value && AutoUpdateSupportedOnThisPlatform;
         }
 
         /// <summary>

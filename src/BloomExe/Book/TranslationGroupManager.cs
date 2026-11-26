@@ -51,8 +51,27 @@ namespace Bloom.Book
             // for all the languages in use in the book at all. It is somewhat rare even to have
             // L3, and even when we do, the overhead is small (and invisible stuff is removed from
             // publications).
-            foreach (var code in bookData.GetAllBookLanguageCodes(includeMetaData2: true))
+            var bookLanguages = bookData.GetAllBookLanguageCodes(includeMetaData2: true);
+            foreach (var code in bookLanguages)
                 PrepareElementsOnPageOneLanguage(pageOrDocumentNode, code);
+
+            // A group that shows CL1, the collection's first language, needs a box in it even when
+            // the book's languages (the ones the toolbar checks) leave that language out.
+            var collectionLanguage1 = bookData.CollectionSettings.Language1Tag;
+            if (!bookLanguages.Contains(collectionLanguage1))
+            {
+                foreach (
+                    var group in GetTranslationGroups(pageOrDocumentNode)
+                        .Where(g =>
+                            ProcessLanguageList(
+                                    g.GetAttribute("data-default-languages") ?? "",
+                                    bookData
+                                )
+                                .Contains("CL1")
+                        )
+                )
+                    MakeElementWithLanguageForOneGroup(group, collectionLanguage1);
+            }
 
             FixGroupStyleSettings(pageOrDocumentNode);
         }
@@ -359,10 +378,19 @@ namespace Bloom.Book
                     );
                 }
             }
-            return languagesAttributeString.Split(
-                new char[] { ',', ' ' },
-                StringSplitOptions.RemoveEmptyEntries
-            );
+            // CL2 and CL3, the collection's second and third languages, are other names for N1
+            // and N2, so the readers of this list need only know N1 and N2.
+            return languagesAttributeString
+                .Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(role =>
+                {
+                    if (role == "CL2")
+                        return "N1";
+                    if (role == "CL3")
+                        return "N2";
+                    return role;
+                })
+                .ToArray();
         }
 
         public static bool IsPageAffectedByLanguageMenu(SafeXmlElement page, bool legacy)
@@ -502,8 +530,7 @@ namespace Bloom.Book
                 // we prevent that by renaming bloom-editable and bloom-translationGroup.
                 if (IsVisible(editable))
                 {
-                    var group = editable.ParentNode as SafeXmlElement;
-                    switch (group?.GetAttribute("data-default-languages")?.Trim())
+                    switch (dataDefaultLanguages.Length == 1 ? dataDefaultLanguages[0] : null)
                     {
                         case "V":
                             editable.AddClass("bloom-contentFirst");
@@ -520,6 +547,7 @@ namespace Bloom.Book
             var lang = editable.GetAttribute("lang");
 
             //These bloom-content* classes are used by some stylesheet rules, primarily to boost the font-size of some languages.
+            //languageClassesOf (translationGroupLanguages.ts) gives a box added after page load the same ones; keep it in step.
             //Enhance: this is too complex; the semantics of these overlap with each other and with bloom-visibility-code-on, and with data-language-order.
             //It would be better to have non-overlapping things; 1 for order, 1 for visibility, one for the lang's role in this collection.
             string orderClass;
@@ -543,6 +571,16 @@ namespace Bloom.Book
             if (lang == bookData.Language3Tag || lang == bookData.MetadataLanguage2Tag)
             {
                 editable.AddClass("bloom-contentNational2");
+            }
+
+            // The collection's first language, which the role CL1 names, as bloom-contentNational1
+            // and 2 mark its second and third. Among other things it puts the rich-text editor on a
+            // CL1 box whose language the toolbar has not checked (ckeditableSelector).
+            // When the N1 and N2 roles are retired in favor of CL2 and CL3, bloom-contentNational1
+            // and 2 might become bloom-contentCL2 and CL3 to match.
+            if (lang == bookData.CollectionSettings.Language1Tag)
+            {
+                editable.AddClass("bloom-contentCL1");
             }
 
             // At the time of this writing (6.0) this class only affects cover page titles.
@@ -724,6 +762,12 @@ namespace Bloom.Book
                     lang == bookData.MetadataLanguage1Tag
                     && bookData.MetadataLanguage1.IsRightToLeft
                 )
+                // A box for CL1 can be in the collection's first language when the toolbar has not
+                // checked it.
+                || (
+                    lang == bookData.CollectionSettings.Language1Tag
+                    && bookData.CollectionSettings.Language1.IsRightToLeft
+                )
             )
             {
                 HtmlDom.AddRtlDir(e);
@@ -743,9 +787,9 @@ namespace Bloom.Book
         {
             if (string.IsNullOrEmpty(lang))
                 return false; // if by any bizarre chance we have a block with an empty language code, we don't want to show it!
-            // Note: There is code in bloom-player that is modeled after this code.
-            //       If this function changes, you should check in bloom-player's bloom-player-core.tsx file, function shouldNormallyShowEditable().
-            //       It may benefit from being updated too.
+            // Note: bloom-player reads these roles too, in updateDivVisibilityByLangCode (langVisibility.ts),
+            //       to show a "vernacular" box (V, L1 or CL1) in the language a reader chooses.
+            //       If this function changes, check whether that needs updating too.
             if (
                 dataDefaultLanguages == null
                 || dataDefaultLanguages.Length == 0
@@ -766,10 +810,18 @@ namespace Bloom.Book
                 // But, the new model makes L2 and L3 mean the second and third checked languages, while N1 and N2 are the
                 // second and third metadata languages, currently locked to the collection L2 and L3.
                 // V and L1 both mean the first checked language.
+                // CL1 is the collection's first language, whatever the toolbar checks. (CL2 and CL3,
+                // its second and third, arrive here as N1 and N2; see ProcessLanguageList.)
                 // Changes here should result in consistent ones in Book.IsLanguageWanted and BookData.GatherDataItemsFromXElement
-                // and RuntimeInformationInjector.AddUIDictionaryToDom and I18ApiHandleI18nRequest
+                // and RuntimeInformationInjector.AddUIDictionaryToDom and I18ApiHandleI18nRequest,
+                // and in languagesShownBySetting (translationGroupLanguages.ts), which applies these
+                // rules to a box shown after the page has loaded.
                 return (lang == bookData.Language1.Tag && dataDefaultLanguages.Contains("V"))
                     || (lang == bookData.Language1.Tag && dataDefaultLanguages.Contains("L1"))
+                    || (
+                        lang == bookData.CollectionSettings.Language1Tag
+                        && dataDefaultLanguages.Contains("CL1")
+                    )
                     || (
                         lang == bookData.MetadataLanguage1Tag && dataDefaultLanguages.Contains("N1")
                     )

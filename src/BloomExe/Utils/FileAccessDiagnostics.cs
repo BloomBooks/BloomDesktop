@@ -660,6 +660,13 @@ namespace Bloom.Utils
             e is IOException || e is UnauthorizedAccessException || e is SecurityException;
 
         /// <summary>
+        /// The docs page that helps people whose files Bloom can't change, whether antivirus
+        /// (Controlled Folder Access, Avast...) or something else is refusing.
+        /// </summary>
+        public const string kTroubleshootingUrl =
+            "https://docs.bloomlibrary.org/troubleshooting-file-access";
+
+        /// <summary>
         /// A link, as HTML, to the docs page that helps people whose files Bloom can't change.
         /// </summary>
         public static string TroubleshootingLinkHtml()
@@ -668,7 +675,7 @@ namespace Bloom.Utils
                 "Errors.CannotUpdateTroubleshoot",
                 "How to troubleshoot file updating errors"
             );
-            return $"<a href='https://docs.bloomlibrary.org/troubleshooting-file-access' target='_blank'>{howToTroubleshoot}</a>";
+            return $"<a href='{kTroubleshootingUrl}' target='_blank'>{howToTroubleshoot}</a>";
         }
 
         /// <summary>
@@ -689,8 +696,23 @@ namespace Bloom.Utils
         /// </summary>
         public static string Collect(string path, out string likelyCause)
         {
+            return Collect(path, out likelyCause, out _);
+        }
+
+        /// <summary>
+        /// As Collect(path, out likelyCause), also saying whether the evidence points at antivirus
+        /// folder protection (Controlled Folder Access, or Avast with path under Documents) rather
+        /// than, say, a cloud sync program. Never throws.
+        /// </summary>
+        public static string Collect(
+            string path,
+            out string likelyCause,
+            out bool antivirusSuspected
+        )
+        {
             var bldr = new StringBuilder();
             likelyCause = null;
+            antivirusSuspected = false;
             try
             {
                 var exists = FileIsPresent(path, out var existence);
@@ -763,18 +785,21 @@ namespace Bloom.Utils
                 var avastActive = activeAntivirus.Any(name =>
                     name.IndexOf("Avast", StringComparison.OrdinalIgnoreCase) >= 0
                 );
+                var cfaCoversFile = ControlledFolderAccessCoversFile(
+                    cfa,
+                    path,
+                    protectedFolders,
+                    bloomAllowedByCfa
+                );
+                var avastSuspected = avastActive && underDocuments;
+                antivirusSuspected = cfaCoversFile || avastSuspected;
                 likelyCause = GetLikelyCause(
                     fileAttributes,
                     folderAttributes,
                     syncRoot,
-                    ControlledFolderAccessCoversFile(
-                        cfa,
-                        path,
-                        protectedFolders,
-                        bloomAllowedByCfa
-                    ),
+                    cfaCoversFile,
                     placeholderState,
-                    avastActive && underDocuments
+                    avastSuspected
                 );
             }
             catch (Exception e)
