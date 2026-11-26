@@ -52,8 +52,10 @@ test("Report a Problem opens with the registered email and name filled in [Test 
                     "Check that the report names the registered person",
                     async () => {
                         const report = await showReportDiagnosticInfo(dialog);
-                        expect(report).toContain(kReporter.firstName);
-                        expect(report).toContain(kReporter.surname);
+                        // Surname first: YouTrack reads the reporter's name out of this line.
+                        expect(report).toContain(
+                            `${kReporter.surname}, ${kReporter.firstName}`,
+                        );
                     },
                 );
             },

@@ -118,21 +118,27 @@ export async function showReportDiagnosticInfo(dialog: Page): Promise<string> {
         "Common.LearnMore",
         "Learn More",
     );
-    const loadingText = await getUiString(
-        dialog,
-        "Common.Loading",
-        "Loading...",
+    // The screen shows a "Loading..." message in the report's place until Bloom has answered, so
+    // what the screen shows is compared with Bloom's answer and not with that message.
+    const answered = dialog.waitForResponse(
+        (response) => response.url().includes("problemReport/diagnosticInfo"),
+        { timeout: 60000 },
     );
     await dialog
         .locator(kDialogRoot)
         .getByRole("button", { name: learnMoreText, exact: true })
         .click();
+    const diagnosticInfo = await (await answered).text();
+    expect(
+        diagnosticInfo,
+        "Bloom's diagnostic information for the report",
+    ).not.toBe("");
     const report = dialog.locator(`${kDialogRoot} #report`);
-    // The screen shows "Loading..." in the report's place until Bloom has gathered it.
-    await expect(
-        report,
-        "the diagnostic information behind Learn More",
-    ).not.toHaveText(loadingText, { timeout: 60000 });
-    await expect(report).not.toBeEmpty();
-    return report.innerText();
+    await expect
+        .poll(() => report.textContent(), {
+            message:
+                "The screen behind Learn More never showed the diagnostic information.",
+        })
+        .toBe(diagnosticInfo);
+    return diagnosticInfo;
 }
