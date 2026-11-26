@@ -134,7 +134,8 @@ export const ProgressBox = React.forwardRef<
             const line = (
                 <p
                     key={indexForMessageKey++}
-                    // Severity tags let the action log jump directly to the last error line.
+                    // Severity tags let the action log jump directly to the last error line, and
+                    // let the e2e tests tell errors and warnings from other messages.
                     data-progress-severity={severity}
                     css={css`
                         color: ${color};
@@ -175,7 +176,7 @@ export const ProgressBox = React.forwardRef<
                             onGotErrorMessage?.();
                             break;
                         case "Warning":
-                            writeLine(msg, kBloomGold);
+                            writeLine(msg, kBloomGold, undefined, "warning");
                             break;
                     }
                 } else {

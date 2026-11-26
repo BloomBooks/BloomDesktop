@@ -43,6 +43,10 @@ export interface ICollectionSettings {
     subscriptionCode?: string;
     /** The Bloom Library bookshelf, by url key; see ICollectionSpec.bookshelf. Left out, none. */
     bookshelf?: string;
+    /** The sign language, by tag, or "" for none; see ICollectionSpec.signLanguage. */
+    signLanguage?: string;
+    /** The progress bar's goal of books on Bloom Library; see ICollectionXmlExtras.booksOnWebGoal. */
+    booksOnWebGoal?: number;
 }
 
 /**

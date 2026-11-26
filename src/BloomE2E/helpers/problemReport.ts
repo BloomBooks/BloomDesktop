@@ -3,7 +3,7 @@
 // It is the same dialog that Bloom raises for an error (ProblemDialog.tsx), hosted in a WinForms
 // window of its own with its own WebView2, so it is a separate CDP page and not part of the shell
 // document. The fixture's problemDialogWatcher closes every such dialog and fails the test with
-// it, so the one here is opened inside the watcher's ignoreDialogsWhile.
+// it, so the watcher is paused while the one here is open.
 //
 // Nothing here presses Submit, and nothing may: that sends a report, a screenshot and the book to
 // Bloom's servers.
@@ -49,7 +49,8 @@ export async function withReportAProblemDialog<T>(
         "HelpMenu.ReportAProblemToolStripMenuItem",
         "Report a Problem...",
     );
-    return watcher.ignoreDialogsWhile(async () => {
+    const resumeWatcher = await watcher.pause();
+    try {
         await page.locator("#helpMenuButton").click();
         // The Help menu's entries carry no test id, so the entry is found by what it says.
         await page
@@ -74,7 +75,9 @@ export async function withReportAProblemDialog<T>(
         } finally {
             await closeProblemDialog(page);
         }
-    });
+    } finally {
+        resumeWatcher();
+    }
 }
 
 /**

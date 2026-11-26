@@ -912,3 +912,16 @@ nothing it checks depends on the window. Cost: a stray window per run on a devel
 the runner. Fix direction: skip opening the folder when `Program.RunningE2eTests` is true, or route
 it through a hook a test can read, as the file choosers are. (Found 2026-11-25 while automating Test
 Case ID 194.)
+
+## Export to Spreadsheet opens the spreadsheet
+
+When More > Export to Spreadsheet... finishes, Bloom opens the spreadsheet in the program the
+machine opens `.xlsx` files with and brings that program's window to the front
+(`ProcessExtra.SafeStartInFront`, from `SpreadsheetApi.ExportToSpreadsheet`), under `--e2e` and
+`--dont-disturb` too. That takes the keyboard from whoever is at the machine, so
+`spreadsheet-roundtrip.spec.ts` (Test Case ID 626) skips itself under `--dont-disturb` and runs only
+where Bloom may take the foreground: on CI, or with `BLOOM_E2E_DONT_DISTURB=0`. The test reads the
+spreadsheet from disk, so nothing it checks depends on the window. Cost: no unattended local run,
+and a spreadsheet window left open on a machine with a spreadsheet program. Fix direction: skip
+opening the spreadsheet when `Program.RunningE2eTests` is true, or route it through a hook a test
+can read, as the file choosers are. (Found 2026-11-26 while automating Test Case ID 626.)

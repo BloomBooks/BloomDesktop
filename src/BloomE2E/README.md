@@ -123,7 +123,7 @@ button does, and fails the test with that text. It never clicks Submit, which wo
 a screenshot, and the book to Bloom's servers. If the same problem keeps coming back, that is a
 real bug in the code under test; read the message and fix it rather than working around it.
 A test that opens the dialog on purpose, with Help > Report a Problem, does it through
-`withReportAProblemDialog` (`helpers/problemReport.ts`), which has the watcher look away meanwhile.
+`withReportAProblemDialog` (`helpers/problemReport.ts`), which pauses the watcher meanwhile.
 
 ## The UI-vs-API policy
 
@@ -159,7 +159,13 @@ A test that opens the dialog on purpose, with Help > Report a Problem, does it t
 - `helpers/collection.ts` — `selectBook`, `clickBookTile`, `waitForCollectionReady`,
   `listEditableBooks`, and the selected book's menu, opened by a right-click or by the triangle
   on its tile (`openSelectedBookMenu`, `readSelectedBookMenu`, `chooseFromSelectedBookMenu`,
-  `chooseFromSelectedBookMenuByTestId`, `closeBookMenu`, `getBooksShowingMenuTriangle`).
+  `chooseFromSelectedBookMenuByTestId`, `chooseFromSelectedBookMoreMenuByTestId`, `closeBookMenu`,
+  `getBooksShowingMenuTriangle`).
+- `helpers/spreadsheet.ts` — `exportSelectedBookToSpreadsheet` and
+  `importSpreadsheetIntoSelectedBook`, the More submenu's spreadsheet commands, with their choosers
+  answered through Bloom's e2e hook and what the progress box said.
+- `helpers/bloomLibraryDownload.ts` — `downloadBookFromBloomLibrary`: copy a public book's files
+  from bloomlibrary.org as Bloom's own download does, for a test that needs a real book.
 - `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
 - `helpers/addPageDialog.ts` — open, read, scroll and close the real Add Page dialog, and add a
   page through it. Tests that only need a page in their book call `addPage` instead.
@@ -169,9 +175,12 @@ A test that opens the dialog on purpose, with Help > Report a Problem, does it t
 - `helpers/api.ts` — `apiGet`, `apiPost`, `apiGetJson`. These run `fetch` inside the page with a
   relative URL, which is not a style choice: Bloom's server rejects a `127.0.0.1` Host header, and
   the CDP endpoint does not answer on `localhost`. The file explains it.
-- `helpers/realClick.ts` — `realClick`, `realClickAt`. Book tiles, Settings, and PREVIEW ignore a
+- `helpers/realClick.ts` — `realClick`, `realClickAt`, `realRightClick`. Book tiles, Settings, and PREVIEW ignore a
   synthetic `element.click()`. Never hand-roll `Input.dispatchMouseEvent` in a test; add the
   gesture here.
+- `helpers/aiImageEditor.ts` — open the AI image editor from a picture (`openAiImageEditorFromPicture`),
+  its look-around notice, `showAllAiImageTools`, `selectAiImageTool` (returns the tool's Go
+  button) and `cancelAiImageEditor`.
 - `helpers/screenshot.ts` — `captureCurrentBookPage`, `captureElement`, `readPngSize`. Captures an
   element taller than the window. `Page.captureScreenshot` with `captureBeyondViewport` hangs in
   WebView2, so this enlarges the window, clips, clears the override, and times out every CDP

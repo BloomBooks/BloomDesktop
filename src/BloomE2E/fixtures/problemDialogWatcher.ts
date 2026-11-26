@@ -45,12 +45,11 @@ export interface IProblemDialogWatcher {
      */
     scanNow: () => Promise<void>;
     /**
-     * Run `body` with the watcher looking away, and return what it returns. For the one kind of
-     * test that opens the dialog on purpose (Help > Report a Problem), which the watcher would
-     * otherwise close and report as a problem. A scan already under way finishes first. The
-     * dialog must be closed again by the time `body` returns, or the next scan reports it.
+     * Stop scanning until the returned function is called, for a test that raises a problem
+     * dialog on purpose and closes it itself. Resolves once no scan is in progress, so a dialog
+     * raised after that is left alone.
      */
-    ignoreDialogsWhile: <T>(body: () => Promise<T>) => Promise<T>;
+    pause: () => Promise<() => void>;
     /** Stop polling. */
     stop: () => void;
 }
@@ -152,8 +151,7 @@ export function startProblemDialogWatcher(
 ): IProblemDialogWatcher {
     const problems: IBloomProblem[] = [];
     let stopped = false;
-    // How many ignoreDialogsWhile calls are running; scans do nothing while there is one.
-    let ignoring = 0;
+    let pauses = 0;
 
     // Pages whose dialog we recorded but could not close. The dialog is still showing there, so
     // later scans would find and record the same problem again; skip such a page instead.
@@ -162,7 +160,7 @@ export function startProblemDialogWatcher(
     // One scan: find a dialog, record it, close it. Never throws: a failure to gather the
     // detail or to close still gets recorded as a problem, and the watcher keeps running.
     const checkOnce = async (): Promise<boolean> => {
-        if (ignoring > 0) return false;
+        if (pauses > 0) return false;
         const browser = getBrowser();
         if (!browser) return false;
         const found = await findProblemDialog(browser).catch(() => undefined);
@@ -223,16 +221,16 @@ export function startProblemDialogWatcher(
         scanNow: async () => {
             await scanExclusively();
         },
-        ignoreDialogsWhile: async (body) => {
-            ignoring++;
-            try {
-                // Let a scan that started before this call finish, so it cannot close a dialog
-                // that body opens.
-                await chain;
-                return await body();
-            } finally {
-                ignoring--;
-            }
+        pause: async () => {
+            pauses++;
+            await chain;
+            let resumed = false;
+            return () => {
+                if (!resumed) {
+                    resumed = true;
+                    pauses--;
+                }
+            };
         },
         stop: () => {
             stopped = true;

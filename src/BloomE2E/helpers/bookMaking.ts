@@ -132,7 +132,12 @@ async function findSourceBook(
         page,
         `collections/books?collection-id=${encodeURIComponent(source.id)}`,
     );
-    const book = books.find((b) => b.title === bookTitle);
+    // Bloom lists a factory-installed book (a template or a Sample Shell) by its folder name
+    // translated into the UI language (CollectionApi.HandleBooksRequest), so with a Spanish UI
+    // "Basic Book" is listed as "Libro básico". A book is also found by its folder name.
+    const book =
+        books.find((b) => b.title === bookTitle) ??
+        books.find((b) => Path.basename(b.folderPath) === bookTitle);
     if (!book)
         throw new Error(
             `There is no book called "${bookTitle}" in "${sourceCollectionName}". ` +
