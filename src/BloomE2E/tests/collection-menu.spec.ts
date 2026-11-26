@@ -389,19 +389,24 @@ test("The collection menu's commands that save a Bloom Pack or open a log do the
             ]);
             const dialog = page.getByRole("dialog");
             const save = dialog.locator("#saveButton");
-            // The dialog lists the books it will make into templates. Save also waits for that
-            // list, so wait for it first: then only the checkbox can be holding Save back.
+            const checkbox = dialog.getByRole("checkbox");
+            // Save waits both for the dialog's list of the books it will make into templates and
+            // for the checkbox. Tick the box, wait until Save is offered (so the list has loaded),
+            // then untick it: Save must be withdrawn, since only the checkbox holds it back now.
             await expect(
                 dialog.getByText("Pack book", { exact: true }),
                 "The dialog should list the collection's book",
             ).toBeVisible({ timeout: 30000 });
-            // Save is offered only once the person says they understand what a template is.
+            await expect(checkbox).not.toBeChecked();
+            await checkbox.check();
+            await expect(save).toBeEnabled({ timeout: 30000 });
+            await checkbox.uncheck();
             await expect(
                 save,
-                "Save should wait for the checkbox",
+                "Save should be offered only while the checkbox is ticked",
             ).toBeDisabled();
-            await dialog.getByRole("checkbox").check();
-            await expect(save).toBeEnabled({ timeout: 30000 });
+            await checkbox.check();
+            await expect(save).toBeEnabled();
             await runCollectionCommand(
                 page,
                 "collections/makeBloompack",

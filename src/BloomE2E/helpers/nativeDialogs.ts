@@ -57,23 +57,34 @@ function FindDialogs {
   }
   return $found
 }
-# The window that had the foreground before the command that shows the dialog was started, when
-# the caller read it (getForegroundWindow); otherwise whatever has it when the button is pressed.
 function WindowPid($h) { $p = 0; [Fg]::GetWindowThreadProcessId($h, [ref]$p) | Out-Null; $p }
-# Hand the foreground back to $before when Bloom has taken it: a dialog Bloom shows, and the press
-# of its button over UI Automation, let Bloom take the foreground, even under --dont-disturb.
-function GiveBack($before) {
-  if ((WindowPid $before) -ne $bloomPid -and (ForegroundPid) -eq $bloomPid) { [Fg]::SetForegroundWindow($before) | Out-Null }
+# The window to give the foreground back to: the last window not Bloom's that had it. It starts as
+# the one that had it before the command that shows the dialog was started, when the caller read it
+# (getForegroundWindow), and follows the person if they switch to another program meanwhile.
+$script:lastOther = [IntPtr]::Zero
+function TrackForeground {
+  $h = [Fg]::GetForegroundWindow()
+  if ($h -ne [IntPtr]::Zero -and (WindowPid $h) -ne $bloomPid) { $script:lastOther = $h }
+}
+if ($env:BLOOM_E2E_FOREGROUND) {
+  $given = [IntPtr][long]$env:BLOOM_E2E_FOREGROUND
+  if ((WindowPid $given) -ne $bloomPid) { $script:lastOther = $given }
+}
+TrackForeground
+# Hand the foreground back when Bloom has taken it: a dialog Bloom shows, and the press of its
+# button over UI Automation, let Bloom take the foreground, even under --dont-disturb.
+function GiveBack {
+  TrackForeground
+  if ($script:lastOther -ne [IntPtr]::Zero -and (ForegroundPid) -eq $bloomPid) { [Fg]::SetForegroundWindow($script:lastOther) | Out-Null }
 }
 # Press a button, then keep handing the foreground back until the dialog is gone. Bounded, so a
 # dialog that never closes is reported instead of hanging.
 function PressAndWaitForClose($button, $stillOpen) {
-  $before = if ($env:BLOOM_E2E_FOREGROUND) { [IntPtr][long]$env:BLOOM_E2E_FOREGROUND } else { [Fg]::GetForegroundWindow() }
-  GiveBack $before
+  GiveBack
   $button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
   $watch = [Diagnostics.Stopwatch]::StartNew()
-  do { GiveBack $before } while ($watch.ElapsedMilliseconds -lt 30000 -and (& $stillOpen))
-  GiveBack $before
+  do { GiveBack } while ($watch.ElapsedMilliseconds -lt 30000 -and (& $stillOpen))
+  GiveBack
   if (& $stillOpen) { throw 'The dialog was still open 30 seconds after its button was pressed.' }
 }
 $deadline = (Get-Date).AddMilliseconds([int]$env:BLOOM_E2E_TIMEOUT_MS)
@@ -82,6 +93,7 @@ $deadline = (Get-Date).AddMilliseconds([int]$env:BLOOM_E2E_TIMEOUT_MS)
 // The pause between scans of a wait that ends as soon as the dialog appears or the deadline passes.
 // The dialog belongs to another process, so there is no event to wait on instead.
 const kPauseBetweenScans = `
+  GiveBack
   $left = ($deadline - (Get-Date)).TotalMilliseconds
   if ($left -gt 0) { Start-Sleep -Milliseconds ([Math]::Min(250, [int]$left)) }
 `;
