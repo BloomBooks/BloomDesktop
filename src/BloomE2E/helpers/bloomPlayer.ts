@@ -79,6 +79,75 @@ export async function goToPreviewPage(
 }
 
 /**
+ * Wait until Bloom Player's page turn has stopped sliding. A second turn asked for while the
+ * first is still sliding lands on a slide that Bloom Player never fills in (BL-17188), and Bloom
+ * Player finishes a page (a text box gets its scroll bar then) only once it is the one showing.
+ * Swiper keeps its instance on its container element and says there whether it is animating.
+ */
+export async function waitForPreviewTurnToFinish(player: Frame): Promise<void> {
+    await expect
+        .poll(
+            () =>
+                player.evaluate(
+                    () =>
+                        (
+                            document.querySelector(".swiper-container") as
+                                | (Element & {
+                                      swiper?: { animating: boolean };
+                                  })
+                                | null
+                        )?.swiper?.animating === false,
+                ),
+            {
+                timeout: 30000,
+                message:
+                    "The BloomPUB preview's page turn never finished sliding.",
+            },
+        )
+        .toBe(true);
+}
+
+/**
+ * Whether Bloom Player is showing the last page of the book, where Swiper disables its Next arrow.
+ * The preview leaves out pages with nothing on them, such as an empty back cover, so this can be a
+ * page that is not last in Bloom.
+ */
+export async function isPreviewOnLastPage(player: Frame): Promise<boolean> {
+    return player
+        .locator(".swiper-button-next")
+        .first()
+        .evaluate((button) =>
+            button.classList.contains("swiper-button-disabled"),
+        );
+}
+
+/**
+ * Click Bloom Player's Next or Previous arrow once, as a reader does, and return once the page
+ * has turned and stopped sliding. Fails when the click does not turn the page.
+ */
+export async function turnPreviewPage(
+    player: Frame,
+    direction: "next" | "previous",
+): Promise<void> {
+    const before = await getActivePreviewPageId(player);
+    await player
+        .locator(
+            direction === "next"
+                ? ".swiper-button-next"
+                : ".swiper-button-prev",
+        )
+        .first()
+        .click();
+    await expect
+        .poll(() => getActivePreviewPageId(player), {
+            timeout: 30000,
+            message: `Bloom Player's ${direction} arrow did not turn the page.`,
+        })
+        .not.toBe(before);
+    await waitForPreviewTurnToFinish(player);
+}
+
+/**
  * Whether Bloom Player offers its Previous and Next arrows to the reader: an arrow counts as there
  * when the browser lays it out and does not hide it with visibility: hidden (checkVisibility), not
  * merely when it is in the document. A page whose player options say hideNavigation, such as a

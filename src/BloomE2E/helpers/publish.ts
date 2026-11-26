@@ -13,6 +13,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiGetJson, apiPost, getUiString } from "./api";
+import { isPreviewOnLastPage, waitForPreviewTurnToFinish } from "./bloomPlayer";
 import { readImageFileSize, type IPixelSize } from "./images";
 import { waitForLanguageChooser } from "./languageChooser";
 import { switchTab } from "./workspace";
@@ -412,26 +413,10 @@ export async function showPreviewPage(
             .locator(".swiper-slide-active .bloom-page")
             .first()
             .getAttribute("id");
-    // A second turn asked for while the first is still sliding lands on a slide that bloom-player
-    // never fills in (BL-17188), so each turn waits for the slide to stop. Swiper keeps its
-    // instance on its container element and says there whether it is animating.
-    const turnHasFinished = async () =>
-        player.evaluate(
-            () =>
-                (
-                    document.querySelector(".swiper-container") as
-                        | (Element & { swiper?: { animating: boolean } })
-                        | null
-                )?.swiper?.animating === false,
-        );
     // A book has far fewer pages than this; the bound only stops a preview that is not turning.
     for (let turns = 0; turns < 500; turns++) {
         if ((await shown.count()) > 0) return shown;
-        if (
-            await next.evaluate((button) =>
-                button.classList.contains("swiper-button-disabled"),
-            )
-        )
+        if (await isPreviewOnLastPage(player))
             throw new Error(
                 `The BloomPUB preview reached its last page without showing page "${pageId}".`,
             );
@@ -444,13 +429,9 @@ export async function showPreviewPage(
                     "The BloomPUB preview's next-page button did not turn the page.",
             })
             .not.toBe(before);
-        await expect
-            .poll(turnHasFinished, {
-                timeout: 30000,
-                message:
-                    "The BloomPUB preview's page turn never finished sliding.",
-            })
-            .toBe(true);
+        // A second turn asked for while the first is still sliding goes wrong
+        // (waitForPreviewTurnToFinish says how).
+        await waitForPreviewTurnToFinish(player);
     }
     throw new Error(
         `The BloomPUB preview never showed page "${pageId}", after 500 page turns.`,

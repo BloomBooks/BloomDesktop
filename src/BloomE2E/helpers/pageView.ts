@@ -774,6 +774,15 @@ export async function doesPageFrameScrollSideways(
     });
 }
 
+/** Whether the page frame's view is taller than the frame, so that it should scroll down. */
+export async function isPageFrameTallerThanFrame(page: Page): Promise<boolean> {
+    return editablePageFrame(page).evaluate(() => {
+        const view = document.scrollingElement!;
+        // A pixel of rounding is not scrolling.
+        return view.scrollHeight > view.clientHeight + 1;
+    });
+}
+
 /**
  * Where the Change Layout switch is in the page frame's view. It sits in the bar of controls across
  * the top of the frame. Throws when the page being edited offers no such switch.
