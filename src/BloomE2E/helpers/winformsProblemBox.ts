@@ -79,6 +79,9 @@ export async function readAndCloseBloomMessageBox(
 ): Promise<IBloomProblemBox | undefined> {
     const script = `
 $ErrorActionPreference = 'Stop'
+# Node reads stdout as UTF-8; PowerShell otherwise writes it in the console's code page, which
+# garbles the text of a box in any language but English.
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, UIAutomationClientsideProviders
 ${kRegisterWin32Proxies}
 $A = [System.Windows.Automation.AutomationElement]
