@@ -100,13 +100,15 @@ async function expectPlaying(audio: Locator, fileName: string, what: string) {
             paused: false,
             src: expect.stringContaining(fileName),
         });
+    // Any other time counts as moving on: bloom-player loops the music back to the start when it
+    // ends, so a time read just before the end may never be passed.
     const start = (await audioState(audio)).time;
     await expect
         .poll(async () => (await audioState(audio)).time, {
             timeout: 15000,
             message: `${what}: the music's time should move on while it plays.`,
         })
-        .toBeGreaterThan(start);
+        .not.toBe(start);
 }
 
 /** The page attributes the Music tool writes. */
