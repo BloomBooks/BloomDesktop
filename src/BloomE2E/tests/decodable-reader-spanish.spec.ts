@@ -271,16 +271,21 @@ test("a Spanish decodable reader built from scratch marks, sorts and remembers i
             "With the book no longer decodable, no word should be marked.",
         );
 
-        // Three seconds from the click, which setBookIsDecodable makes before it waits for the
-        // panel to redraw.
+        // Timed from just before the click, which setBookIsDecodable makes before it waits for the
+        // panel to redraw, to when the test sees the mark: an upper bound on how long the mark
+        // took to come back.
         const clicked = Date.now();
         await setBookIsDecodable(page, true);
         await expectMarkedNotDecodable(
             page,
             ["pato"],
-            "Turning the book decodable again should put the mark on pato back within three seconds.",
-            Math.max(1, 3000 - (Date.now() - clicked)),
+            "Turning the book decodable again should put the mark on pato back.",
+            3000,
         );
+        expect(
+            Date.now() - clicked,
+            "The mark on pato should be back within three seconds of turning the book decodable.",
+        ).toBeLessThanOrEqual(3000);
     });
 
     await test.step("the marks follow edits inside a word, pastes and replaced words", async () => {
