@@ -206,7 +206,7 @@ async function expectLocalCommunitySlots(
 }
 
 test.describe("what a branding puts on the front and back matter", () => {
-    test("builds a book to brand", async ({ page }) => {
+    test("builds a book to brand [Test Case ID 119]", async ({ page }) => {
         test.setTimeout(300000);
         await makeBookFromTemplate(page, "Basic Book");
         await typeInGroup(page, ".bookTitle", "en", BOOK_TITLE);
