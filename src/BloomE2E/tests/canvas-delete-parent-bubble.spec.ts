@@ -192,15 +192,20 @@ test("Deleting a parent bubble leaves its child with the parent's tail [Test Cas
             "After the parent was deleted",
         );
 
-        await step("Click the remaining bubble", async () => {
+        // Selecting the bubble makes Bloom draw its tail's handles, which it does only for a
+        // tail it can draw.
+        const clickRemainingBubble = async (when: string) => {
             await selectCanvasElement(page, parentIndex);
             await expectMidpointHandle(
                 page,
                 remaining,
                 "open",
-                "The remaining bubble's tail should show its midpoint handle, open, when the " +
-                    "bubble is selected.",
+                `${when}, the remaining bubble's tail should show its midpoint handle, open, ` +
+                    "when the bubble is selected.",
             );
+        };
+        await step("Click the remaining bubble", async () => {
+            await clickRemainingBubble("After the parent was deleted");
         });
 
         await step("Leave the page and come back", async () => {
@@ -220,9 +225,12 @@ test("Deleting a parent bubble leaves its child with the parent's tail [Test Cas
                 "The saved bubble should be the child.",
             ).toBe(kChildWords);
             await expectChildHasParentsTail(
-                canvasElement(page, parentIndex),
+                remaining,
                 parentTail,
                 childPlace,
+                "After the page was saved and shown again",
+            );
+            await clickRemainingBubble(
                 "After the page was saved and shown again",
             );
         });
