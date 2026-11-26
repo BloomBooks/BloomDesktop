@@ -20,9 +20,11 @@ import {
     typeInGroup,
 } from "../helpers/bookMaking";
 import {
+    expectSourceBubbleLanguageReadable,
     getShownBoxes,
     getSourceBubble,
     type ILanguageText,
+    waitForSourceBubbleSetup,
 } from "../helpers/sourceBubbles";
 import {
     setTextBoxLanguage,
@@ -86,6 +88,7 @@ test("a text box set to one language shows it alone and offers the others in its
     for (const [choice, lang] of choices) {
         await step(`Set the text box to ${choice}`, async () => {
             await setTextBoxLanguage(page, choice);
+            await waitForSourceBubbleSetup(page, TEXT_BOX);
         });
         await step(
             `Check the box shows only ${lang}, and the bubble the others`,
@@ -101,12 +104,20 @@ test("a text box set to one language shows it alone and offers the others in its
                     shown: true,
                     texts: textsOf(LANGUAGES.filter((l) => l !== lang)),
                 });
+                for (const other of LANGUAGES.filter((l) => l !== lang))
+                    await expectSourceBubbleLanguageReadable(
+                        page,
+                        TEXT_BOX,
+                        other,
+                        TEXT[other],
+                    );
             },
         );
     }
 
     await step("Set the text box back to Normal", async () => {
         await setTextBoxLanguage(page, "normal");
+        await waitForSourceBubbleSetup(page, TEXT_BOX);
     });
     await step(
         "Check the box shows all three languages and no source bubble",

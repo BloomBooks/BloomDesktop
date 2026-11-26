@@ -111,3 +111,60 @@ export async function getSourceBubble(
         .toBe(true);
     return JSON.parse(last) as ISourceBubble;
 }
+
+/**
+ * Wait until Bloom has finished setting up the source bubbles of a page it has just loaded.
+ *
+ * Bloom makes a page's source bubbles in a timer after the page loads (bloomEditing.ts, where it
+ * calls makeSourceBubblesIntoQtips), and the last thing that timer does is put the insertion point
+ * in the page's first text box. So once a box of the group has the focus without the test having
+ * clicked, the bubbles are there, and a group without one has none still to come. This holds for a
+ * page Bloom rebuilt or opened from the Pages list, whose first text box is a plain text box (not a
+ * canvas element), as on a "Just Text" page; Bloom gives a page opened by a click in the Pages grid
+ * no focus.
+ */
+export async function waitForSourceBubbleSetup(
+    page: Page,
+    groupSelector: string,
+    groupIndex = 0,
+): Promise<void> {
+    await expect(
+        editablePageFrame(page)
+            .locator(groupSelector)
+            .nth(groupIndex)
+            .locator(".bloom-editable:focus"),
+        "Bloom never put the insertion point in the text box, which it does once the page's source bubbles are set up.",
+    ).toHaveCount(1, { timeout: 30000 });
+}
+
+/**
+ * Bring one language of the shown source bubble of a group forward by its tab, the way a person
+ * reads it, and check that the bubble then shows that language's text and hides the others'.
+ * The bubble must be showing (getSourceBubble reports that).
+ */
+export async function expectSourceBubbleLanguageReadable(
+    page: Page,
+    groupSelector: string,
+    language: string,
+    text: string,
+    groupIndex = 0,
+): Promise<void> {
+    const bubbleId = await editablePageFrame(page)
+        .locator(groupSelector)
+        .nth(groupIndex)
+        .getAttribute("aria-describedby");
+    if (!bubbleId) throw new Error("The group has no source bubble.");
+    const bubble = editablePageFrame(page).locator(`[id="${bubbleId}"]`);
+    const shown = bubble.locator(`.source-text[lang="${language}"]`);
+    if (!(await shown.isVisible()))
+        await bubble.locator(`li[id="${language}"] a.sourceTextTab`).click();
+    await expect(
+        shown,
+        `The source bubble's ${language} tab does not show the ${language} text.`,
+    ).toBeVisible({ timeout: 15000 });
+    await expect(shown).toContainText(text);
+    await expect(
+        bubble.locator(`.source-text:not([lang="${language}"]):visible`),
+        `While the source bubble shows ${language}, it also shows another language.`,
+    ).toHaveCount(0);
+}
