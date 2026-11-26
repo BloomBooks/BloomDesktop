@@ -617,3 +617,31 @@ export function readImageFileSize(filePath: string): IPixelSize {
     }
     throw new Error(`${filePath} is a JPEG with no start-of-frame segment.`);
 }
+
+/**
+ * The size of the picture in the file at `path` and a SHA-1 of its pixels, decoded by the
+ * browser: equal for two files that show the same picture even when their metadata differs.
+ * `page` is used only to decode it. The hash is made in the page, so only it comes back.
+ */
+export async function picturePixels(page: Page, path: string): Promise<string> {
+    return page.evaluate(async (base64) => {
+        const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+        const bitmap = await createImageBitmap(new Blob([bytes]));
+        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+        const context = canvas.getContext("2d")!;
+        context.drawImage(bitmap, 0, 0);
+        const data = context.getImageData(
+            0,
+            0,
+            bitmap.width,
+            bitmap.height,
+        ).data;
+        const digest = new Uint8Array(
+            await crypto.subtle.digest("SHA-1", data),
+        );
+        const hash = Array.from(digest, (b) =>
+            b.toString(16).padStart(2, "0"),
+        ).join("");
+        return `${bitmap.width}x${bitmap.height} ${hash}`;
+    }, fs.readFileSync(path).toString("base64"));
+}
