@@ -69,8 +69,9 @@ export async function withRegistration<T>(
     body: () => Promise<T>,
 ): Promise<T> {
     const before = await getRegistration(page);
-    await setRegistration(page, registration);
     try {
+        // Inside the try, because Bloom may have saved the registration even when this fails.
+        await setRegistration(page, registration);
         return await body();
     } finally {
         await setRegistration(page, before);
