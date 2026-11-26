@@ -11,7 +11,13 @@
 // playCorrectOrWrongSound in src/shared/dragActivityRuntime.ts.
 
 import * as Path from "node:path";
-import { expect, type Frame, type Locator, type Page } from "@playwright/test";
+import {
+    expect,
+    type Frame,
+    type FrameLocator,
+    type Locator,
+    type Page,
+} from "@playwright/test";
 import { getPages } from "./bookMaking";
 import type { IRect } from "./geometry";
 
@@ -70,6 +76,53 @@ export async function goToPreviewPage(
     throw new Error(
         `Bloom Player never reached page "${pageId}"; it is showing "${await getActivePreviewPageId(player)}".`,
     );
+}
+
+/**
+ * Whether Bloom Player offers its Previous and Next arrows to the reader: an arrow counts as there
+ * when the browser lays it out and does not hide it with visibility: hidden (checkVisibility), not
+ * merely when it is in the document. A page whose player options say hideNavigation, such as a
+ * Captive Widget Page, has Bloom Player take both away.
+ */
+export async function getPreviewArrowsShown(
+    player: Frame,
+): Promise<{ previous: boolean; next: boolean }> {
+    const shown = async (selector: string) => {
+        const arrows = player.locator(selector);
+        await expect(
+            arrows.first(),
+            `Bloom Player has no "${selector}" arrow in its document at all.`,
+        ).toBeAttached({ timeout: 30000 });
+        // display: none and visibility: hidden both leave the reader nothing to see, tap or reach
+        // with the Tab key. An arrow at opacity 0 still takes taps and focus, so it still lets the
+        // reader leave the page, and counts as there.
+        return arrows.evaluateAll((elements) =>
+            elements.some((e) =>
+                e.checkVisibility({ visibilityProperty: true }),
+            ),
+        );
+    };
+    return {
+        previous: await shown(".swiper-button-prev"),
+        next: await shown(".swiper-button-next"),
+    };
+}
+
+/**
+ * The document of the HTML5 widget on the page Bloom Player is showing, which must hold exactly
+ * one widget.
+ */
+export async function getPreviewWidgetFrame(
+    player: Frame,
+): Promise<FrameLocator> {
+    const frameElement = activePreviewPage(player).locator(
+        ".bloom-widgetContainer iframe",
+    );
+    await expect(
+        frameElement,
+        "The page Bloom Player is showing should hold one widget frame.",
+    ).toHaveCount(1, { timeout: 30000 });
+    return frameElement.contentFrame();
 }
 
 /**
