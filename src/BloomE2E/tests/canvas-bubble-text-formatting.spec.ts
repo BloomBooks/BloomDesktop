@@ -19,7 +19,6 @@ import {
 } from "../helpers/bookHtml";
 import {
     addPage,
-    editablePageFrame,
     getContentPages,
     goToPage,
     makeBookFromTemplate,
@@ -50,6 +49,7 @@ import {
 } from "../helpers/formatDialog";
 import { watchForScriptErrors } from "../helpers/scriptErrors";
 import {
+    clickSelectionToolbarButton,
     getTextRunFormatting,
     selectTextIn,
 } from "../helpers/selectionToolbar";
@@ -143,9 +143,7 @@ async function formatWordInBubble(
     await clearCanvasElementSelection(page);
     await selectCanvasElement(page, index);
     await selectTextIn(page, box, word);
-    await editablePageFrame(page)
-        .locator(`div.cke:not(.cke_panel):visible .cke_button__${button}`)
-        .click();
+    await clickSelectionToolbarButton(page, button);
     await expect
         .poll(async () => (await getTextRunFormatting(box, word))[button], {
             timeout: 15000,
@@ -275,8 +273,22 @@ test("bubble text takes character, paragraph and style formatting [Test Case ID 
             "the second bubble, in the new style",
         ).toMatchObject({ style: SHOUT, fontSizePt: SHOUT_SIZE_PT });
 
-        // All of it is saved: leaving the page writes the book.
+        // All of it is saved: leaving the page writes the book. The page shown again has it too,
+        // which also catches a rule for one language that the saved style rules below would miss.
         await reloadPageBeingEdited(page);
+        const reloaded = await getBubbleFormatting(page);
+        expect(
+            reloaded.first,
+            "the first bubble, after the page is opened again",
+        ).toMatchObject(bubbleSettings);
+        expect(
+            reloaded.second,
+            "the second bubble, after the page is opened again",
+        ).toMatchObject({ style: SHOUT, fontSizePt: SHOUT_SIZE_PT });
+        expect(
+            await getTextRunFormatting(firstBox, FORMATTED_WORD),
+            "the formatted word, after the page is opened again",
+        ).toMatchObject({ bold: true, italic: true, underline: true });
         expect(
             await readSavedCanvasTexts(page, bookFolder, canvasPage.id, L1),
             "the bubbles' text in the saved book",

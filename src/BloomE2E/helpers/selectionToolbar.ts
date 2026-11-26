@@ -160,6 +160,21 @@ async function isSelectionToolbarButtonOn(
 }
 
 /**
+ * Click one of the selection toolbar's formatting buttons (B, I, U or superscript) and return
+ * without waiting for anything. Something must be selected, so that the toolbar is showing. For a
+ * caller that checks what the click did to the text rather than the button's own state: in a
+ * canvas element the click deselects the element and the toolbar goes away (BL-17205).
+ */
+export async function clickSelectionToolbarButton(
+    page: Page,
+    button: SelectionToolbarButton,
+): Promise<void> {
+    await shownToolbar(editablePageFrame(page))
+        .locator(`.cke_button__${button}`)
+        .click();
+}
+
+/**
  * Click one of the selection toolbar's formatting buttons (B, I, U or superscript), which turns
  * that formatting on for the selected text if it was off and off if it was on. Something must be
  * selected, so that the toolbar is showing. Returns the new state.
@@ -170,7 +185,7 @@ export async function toggleSelectionFormatting(
 ): Promise<boolean> {
     const frame = editablePageFrame(page);
     const wasOn = await isSelectionToolbarButtonOn(frame, button);
-    await shownToolbar(frame).locator(`.cke_button__${button}`).click();
+    await clickSelectionToolbarButton(page, button);
     await expect
         .poll(() => isSelectionToolbarButtonOn(frame, button), {
             timeout: 15000,
