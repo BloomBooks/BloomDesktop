@@ -174,6 +174,67 @@ export async function getCurrentAudioHighlightColors(
 }
 
 /**
+ * The text of the segment the Talking Book tool is highlighting as current on the page being
+ * edited: the text its "bloom-audio-current" highlight covers, which is where the next recording
+ * would go. Waits until the tool highlights something; the tool has to be open, and the page has
+ * to have text.
+ */
+export async function getCurrentAudioSegmentText(page: Page): Promise<string> {
+    const read = () =>
+        editablePageFrame(page).evaluate((name) => {
+            const highlight = (
+                CSS as unknown as {
+                    highlights?: Map<string, Iterable<AbstractRange>>;
+                }
+            ).highlights?.get(name);
+            if (!highlight) return undefined;
+            return [...highlight]
+                .map((range) => {
+                    const live = document.createRange();
+                    live.setStart(range.startContainer, range.startOffset);
+                    live.setEnd(range.endContainer, range.endOffset);
+                    return live.toString();
+                })
+                .join("")
+                .trim();
+        }, CURRENT_HIGHLIGHT);
+    let text: string | undefined;
+    await expect
+        .poll(
+            async () => {
+                text = await read();
+                return !!text;
+            },
+            {
+                timeout: 30000,
+                message:
+                    "The Talking Book tool never highlighted a current segment with text in it. " +
+                    "It has to be open, and the page has to have text.",
+            },
+        )
+        .toBe(true);
+    return text ?? "";
+}
+
+/**
+ * The Talking Book tool's recording mode that is chosen, as the English label of its radio (see
+ * setRecordingMode), or undefined when neither radio is checked. Opens the tool's Advanced
+ * section, where the radios are.
+ */
+export async function getRecordingMode(
+    page: Page,
+): Promise<"By Sentence" | "By Whole Text Box" | undefined> {
+    await openAdvancedSection(page);
+    // The radios' values are RecordingModes (recordingMode.ts); their labels are localized.
+    const radio = (value: string) =>
+        toolboxFrame(page).locator(`input[type="radio"][value="${value}"]`);
+    await radio("Sentence").waitFor({ state: "visible", timeout: 30000 });
+    if (await radio("Sentence").isChecked()) return "By Sentence";
+    if (await radio("TextBox").isChecked()) return "By Whole Text Box";
+    return undefined;
+}
+
+/**
  * Give one language's text on the page being shown the narration in `mp3Path` -- the state a
  * person reaches by recording it -- by copying that mp3 to the file Bloom looks for, once per
  * sentence in that language.
