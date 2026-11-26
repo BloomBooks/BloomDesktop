@@ -111,6 +111,18 @@ async function includeImageDescriptionsBox(page: Page): Promise<Locator> {
 }
 
 /**
+ * How the ePUB screen's "Include image descriptions on page" check box shows: ticked or not, and
+ * whether it can be changed. The ePUB screen must be showing (openEpubPublishScreen).
+ */
+export async function getIncludeImageDescriptionsBoxState(
+    page: Page,
+): Promise<{ ticked: boolean; enabled: boolean }> {
+    const box = await includeImageDescriptionsBox(page);
+    await box.waitFor({ state: "attached", timeout: 30000 });
+    return { ticked: await box.isChecked(), enabled: await box.isEnabled() };
+}
+
+/**
  * Whether Bloom will put the pictures' descriptions on the pages of the selected book's ePUB, as
  * the book's publish settings hold it. The ePUB screen's check box can show otherwise: it is
  * unticked and disabled while the mode is "fixed", whatever the setting.
@@ -472,18 +484,235 @@ export async function getBookMetadataValue(
  * Bloom writes beside the ePUB's content folder (PublishEpubApi.SetupEpubControlContent).
  */
 export async function readEpubPreviewPackage(page: Page): Promise<string> {
+    return fetchText(page, epubPreviewPackageUrl(page));
+}
+
+/** Where the package document of the ePUB the preview is showing is served (readEpubPreviewPackage). */
+function epubPreviewPackageUrl(page: Page): string {
     const manifest = new URL(readerFrame(page).url()).searchParams.get("url");
     if (!manifest)
         throw new Error(
             `The ePUB reader's address names no manifest: ${readerFrame(page).url()}`,
         );
-    const packageUrl = new URL("content/content.opf", manifest).toString();
-    return page.evaluate(async (url) => {
-        const response = await fetch(url);
+    return new URL("content/content.opf", manifest).toString();
+}
+
+/** A file of the staged ePUB, as text, fetched the way the reader fetches it. */
+async function fetchText(page: Page, url: string): Promise<string> {
+    return page.evaluate(async (address) => {
+        const response = await fetch(address);
         if (!response.ok)
-            throw new Error(`Fetching ${url} answered ${response.status}.`);
+            throw new Error(`Fetching ${address} answered ${response.status}.`);
         return response.text();
-    }, packageUrl);
+    }, url);
+}
+
+/** One clip of a page's read-aloud: the text a reader highlights, and the audio it plays then. */
+export interface IEpubReadAloudClip {
+    /** The id, in the page's document, of the text the clip reads. */
+    textId: string;
+    /** The audio file the clip plays, as the ePUB's address of it. */
+    audioUrl: string;
+    /** Where in that file the clip starts and ends, in seconds. */
+    clipBegin: number;
+    clipEnd: number;
+}
+
+/**
+ * What a reader app reads aloud on a page of the ePUB preview (a frame showEpubPreviewPage
+ * returned), in the order it reads it: the clips of the page's media overlay, the SMIL file that
+ * the package's manifest names as the page's "media-overlay" (EpubMaker.AddAudioOverlay). Empty
+ * when the page has none, which is when nothing on it has a recording.
+ */
+export async function getEpubPreviewPageReadAloud(
+    page: Page,
+    frame: Frame,
+): Promise<IEpubReadAloudClip[]> {
+    const packageUrl = epubPreviewPackageUrl(page);
+    const packageText = await fetchText(page, packageUrl);
+    const pageUrl = frame.url().split("#")[0];
+    const overlayUrl = await page.evaluate(
+        ({ text, packageAddress, pageAddress }) => {
+            const doc = new DOMParser().parseFromString(
+                text,
+                "application/xml",
+            );
+            const items = [...doc.getElementsByTagNameNS("*", "item")];
+            const pageItem = items.find(
+                (item) =>
+                    new URL(item.getAttribute("href") ?? "", packageAddress)
+                        .href === pageAddress,
+            );
+            if (!pageItem)
+                throw new Error(
+                    `The ePUB package's manifest lists no item for the page at ${pageAddress}.`,
+                );
+            const overlayId = pageItem.getAttribute("media-overlay");
+            if (!overlayId) return undefined;
+            const overlay = items.find(
+                (item) => item.getAttribute("id") === overlayId,
+            );
+            if (!overlay)
+                throw new Error(
+                    `The ePUB package's manifest names "${overlayId}" as the media overlay of ` +
+                        `${pageAddress}, but has no item with that id.`,
+                );
+            return new URL(overlay.getAttribute("href") ?? "", packageAddress)
+                .href;
+        },
+        { text: packageText, packageAddress: packageUrl, pageAddress: pageUrl },
+    );
+    if (!overlayUrl) return [];
+    const smilText = await fetchText(page, overlayUrl);
+    return page.evaluate(
+        ({ text, smilAddress, pageAddress }) => {
+            const seconds = (clock: string | null) => {
+                const parts = (clock ?? "").split(":").map(Number);
+                if (parts.length !== 3 || parts.some(Number.isNaN))
+                    throw new Error(
+                        `A clip of ${smilAddress} has the time "${clock}", not h:mm:ss.fff.`,
+                    );
+                return parts[0] * 3600 + parts[1] * 60 + parts[2];
+            };
+            const doc = new DOMParser().parseFromString(
+                text,
+                "application/xml",
+            );
+            return [...doc.getElementsByTagNameNS("*", "par")].map((par) => {
+                const textSrc =
+                    par
+                        .getElementsByTagNameNS("*", "text")[0]
+                        ?.getAttribute("src") ?? "";
+                const audio = par.getElementsByTagNameNS("*", "audio")[0];
+                const target = new URL(textSrc, smilAddress);
+                if (target.href.split("#")[0] !== pageAddress)
+                    throw new Error(
+                        `A clip of ${smilAddress} reads ${textSrc}, which is not on the page ${pageAddress}.`,
+                    );
+                const audioSrc = audio?.getAttribute("src");
+                if (!audioSrc)
+                    throw new Error(
+                        `The clip of ${smilAddress} that reads ${textSrc} names no audio file.`,
+                    );
+                return {
+                    textId: decodeURIComponent(target.hash.slice(1)),
+                    audioUrl: new URL(audioSrc, smilAddress).href,
+                    clipBegin: seconds(audio.getAttribute("clipBegin")),
+                    clipEnd: seconds(audio.getAttribute("clipEnd")),
+                };
+            });
+        },
+        { text: smilText, smilAddress: overlayUrl, pageAddress: pageUrl },
+    );
+}
+
+/** Whether the staged ePUB has a file at this address (one getEpubPreviewPageReadAloud gave). */
+export async function epubPreviewHasFile(
+    page: Page,
+    url: string,
+): Promise<boolean> {
+    return page.evaluate(async (address) => (await fetch(address)).ok, url);
+}
+
+/**
+ * The layout of the ePUB the preview is showing, as its package declares it to a reader app:
+ * "fixed" when it says rendition:layout is pre-paginated, "flowable" when it says nothing, which
+ * the ePUB standard makes reflowable (EpubMaker writes the property only for a fixed ePUB).
+ */
+export async function getEpubPreviewLayout(page: Page): Promise<EpubMode> {
+    const packageText = await readEpubPreviewPackage(page);
+    const layouts = await page.evaluate((text) => {
+        const doc = new DOMParser().parseFromString(text, "application/xml");
+        return [...doc.getElementsByTagNameNS("*", "meta")]
+            .filter(
+                (meta) => meta.getAttribute("property") === "rendition:layout",
+            )
+            .map((meta) => (meta.textContent ?? "").trim());
+    }, packageText);
+    if (layouts.length === 0) return "flowable";
+    if (layouts.length === 1 && layouts[0] === "pre-paginated") return "fixed";
+    throw new Error(
+        `The ePUB package declares rendition:layout as ${JSON.stringify(layouts)}.`,
+    );
+}
+
+/**
+ * The id that an element of the book (such as a recorded sentence) has in the ePUB: an ePUB
+ * validator objects to an id that starts with a digit, so Bloom puts an "i" before one
+ * (EpubMaker.FixIllegalIds).
+ */
+export function idInEpub(bookId: string): string {
+    return /^\d/.test(bookId) ? `i${bookId}` : bookId;
+}
+
+/** A picture on a page of the ePUB preview, and the alternative text a screen reader gives it. */
+export interface IEpubPicture {
+    /** The picture's file name. */
+    file: string;
+    /** Its alt attribute; undefined when it has none. */
+    alt: string | undefined;
+}
+
+/**
+ * The pictures a page of the ePUB preview (a frame showEpubPreviewPage returned) shows, in
+ * document order, with their alternative text. Bloom gives a described picture its description
+ * as its alt (EpubMaker.HandleImageDescriptions), whether or not the description is on the page.
+ */
+export async function getEpubPreviewPictures(
+    frame: Frame,
+): Promise<IEpubPicture[]> {
+    return frame.locator(".bloom-page img").evaluateAll((images) =>
+        images
+            // A picture that is display:none, or visibility:hidden anywhere up its ancestors, is
+            // not shown, though the latter still takes up room on the page.
+            .filter((image) =>
+                image.checkVisibility({ visibilityProperty: true }),
+            )
+            .map((image) => ({
+                file: decodeURIComponent(
+                    (image.getAttribute("src") ?? "").split("/").pop() ?? "",
+                ),
+                alt: image.getAttribute("alt") ?? undefined,
+            })),
+    );
+}
+
+/**
+ * The picture description that a page of the ePUB preview keeps in its document without putting
+ * it on the page, which is what Bloom does when "Include image descriptions on page" is unticked:
+ * its words, whether any of it is drawn, and whether each of the recordings named by
+ * `recordingIds` (ids in the book) is in it, so that a reader app can still read it aloud. Throws
+ * unless the page has exactly one such description.
+ */
+export async function getEpubPreviewKeptImageDescription(
+    frame: Frame,
+    recordingIds: string[],
+): Promise<{ text: string; showing: boolean; recordingsFound: boolean }> {
+    return frame.evaluate(
+        ({ ids }) => {
+            const groups = [
+                ...document.querySelectorAll(".bloom-imageDescription"),
+            ];
+            if (groups.length !== 1)
+                throw new Error(
+                    `The page keeps ${groups.length} picture descriptions, not one.`,
+                );
+            const group = groups[0];
+            const showing = (element: Element) =>
+                element.getClientRects().length > 0 &&
+                getComputedStyle(element).visibility !== "hidden";
+            return {
+                text: (group.textContent ?? "").trim(),
+                showing:
+                    showing(group) ||
+                    [...group.querySelectorAll("*")].some(showing),
+                recordingsFound: ids.every(
+                    (id) => !!group.querySelector(`[id="${id}"]`),
+                ),
+            };
+        },
+        { ids: recordingIds.map(idInEpub) },
+    );
 }
 
 /**
