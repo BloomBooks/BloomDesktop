@@ -63,10 +63,11 @@ async function makeUntitledBook(
     page: Page,
 ): Promise<{ oldFolder: string; coverId: string; otherPageId: string }> {
     const oldFolder = await makeBookFromTemplate(page, "Basic Book");
+    // Not the placeholder's name itself ("Book" in English), which Bloom localizes.
     expect(
-        Path.basename(oldFolder),
-        "test setup: a book with no title yet has a placeholder folder name",
-    ).toMatch(/^Book/);
+        fs.existsSync(oldFolder),
+        "test setup: the new book has a folder of its own",
+    ).toBe(true);
     const pages = await getPages(page);
     expect(
         pages.length,
@@ -320,6 +321,10 @@ test("a collection name with characters a file name cannot hold gives the collec
     await step(
         "Make a book in the renamed collection and give it a title",
         async () => {
+            expect(
+                Path.basename(newDir),
+                "test setup: the collection's folder keeps characters Windows allows but that can trouble Bloom's server, so the book is made under a path with them",
+            ).toMatch(/[&'{}]/);
             const { oldFolder, otherPageId } = await makeUntitledBook(reopened);
             expect(
                 Path.dirname(oldFolder),
