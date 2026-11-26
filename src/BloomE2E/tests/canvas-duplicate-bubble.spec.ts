@@ -228,11 +228,16 @@ test("A duplicated speech bubble, and the one it was copied from, can each still
             `The copy should be the original's size, ${originalSize.width}x${originalSize.height}; ` +
                 `it is ${copySize.width}x${copySize.height}.`,
         ).toBe(true);
+        // Bloom puts the copy a bubble's width and a little more to the right, and there is room
+        // for it there, so the two do not overlap at all.
         expect(
-            Math.abs(copySize.left - originalSize.left) +
-                Math.abs(copySize.top - originalSize.top),
-            `The copy should not lie on top of the original, at ${originalSize.left},${originalSize.top}.`,
-        ).toBeGreaterThan(kGrid);
+            copySize.left >= originalSize.left + originalSize.width ||
+                originalSize.left >= copySize.left + copySize.width ||
+                copySize.top >= originalSize.top + originalSize.height ||
+                originalSize.top >= copySize.top + copySize.height,
+            `The copy should lie beside the original, not over it: the original is at ` +
+                `${JSON.stringify(originalSize)}, the copy at ${JSON.stringify(copySize)}.`,
+        ).toBe(true);
         expect(
             samePlaceAndSize(await getElementSize(original), originalSize),
             "Duplicating the bubble moved or resized the original.",
@@ -259,6 +264,20 @@ test("A duplicated speech bubble, and the one it was copied from, can each still
                 await readBubbleText(page, originalIndex),
                 "Typing in the copy should leave the original's words alone.",
             ).toBe(kOriginalWords);
+        });
+
+        await step("Type in the original", async () => {
+            await clearCanvasElementSelection(page);
+            await selectCanvasElement(page, originalIndex);
+            await typeInCanvasElement(page, " first");
+            expect(
+                await readBubbleText(page, originalIndex),
+                "The original's words should take what was typed in it.",
+            ).toBe(`${kOriginalWords} first`);
+            expect(
+                await readBubbleText(page, copyIndex),
+                "Typing in the original should leave the copy's words alone.",
+            ).toBe(`${kOriginalWords} again`);
         });
 
         expect(errors.errors(), "Bloom raised a script error.").toEqual([]);
