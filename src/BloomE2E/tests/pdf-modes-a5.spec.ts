@@ -12,10 +12,10 @@
 //
 // Each picture in the book has a size no other picture has, and that is how it is recognized in a
 // PDF, which does not keep a picture's name. So the test can tell which page of the book was drawn
-// on which sheet, and on which face of it. Every page has a picture but the inside front cover (the
-// credits page) and the title page, one in each booklet, so no two pages can trade places unseen.
-// The inside back cover and the back cover take one through their Custom layout, which needs a
-// subscription, so the collection has one.
+// on which sheet, and on which face of it. Every page but the title page has a picture, so no two
+// pages can trade places unseen. The inside back cover and the back cover take one through their
+// Custom layout, which needs a subscription, so the collection has one. The inside front cover (the
+// credits page) is marked by the book's license badge.
 //
 // The UI is set to English, because the PDF & Print screen and its modes are found by their labels.
 //
@@ -24,6 +24,7 @@
 // not checked either: a sheet's pictures are read from the PDF without their positions.
 
 import * as fs from "node:fs";
+import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
 import { bookHtmlPath } from "../helpers/bookHtml";
 import {
@@ -37,6 +38,7 @@ import {
 import {
     chooseImageFile,
     makeJpegFile,
+    readImageFileSize,
     type IPixelSize,
 } from "../helpers/images";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
@@ -110,24 +112,6 @@ const readCoverPageIds = (bookFolder: string): Set<string> => {
 /** The pictures on each sheet of a PDF, in an order that does not depend on how the PDF lists them. */
 const sorted = (pictures: IPixelSize[]): IPixelSize[] =>
     [...pictures].sort((a, b) => a.width - b.width);
-
-/**
- * The test's own pictures on one sheet of a PDF, sorted. Bloom draws pictures of its own on some
- * pages (a license badge, for one), which say nothing about where the book's pages went.
- */
-const ourPictures = (pictures: IPixelSize[]): IPixelSize[] =>
-    sorted(
-        pictures.filter((p) =>
-            [
-                kFrontCoverPicture,
-                kInsideBackCoverPicture,
-                kBackCoverPicture,
-                ...kContentPictures,
-            ].some(
-                (ours) => ours.width === p.width && ours.height === p.height,
-            ),
-        ),
-    );
 
 /** Check that every sheet of the PDF being previewed is `size`, portrait or landscape as given. */
 const expectEverySheetIs = (
@@ -204,6 +188,34 @@ test("an A5 book makes a Simple PDF, a Booklet Cover and Booklet Insides, each w
     );
     if (!book) throw new Error("The book was never made.");
     const { pageIds, contentIds, pictures } = book;
+    // The credits page, the inside front cover, shows the book's license badge, which Bloom keeps
+    // in the book folder.
+    const licenseBadge = readImageFileSize(
+        Path.join(book.folder, "license.png"),
+    );
+    expect(
+        [...pictures.values()].some(
+            (p) =>
+                p.width === licenseBadge.width &&
+                p.height === licenseBadge.height,
+        ),
+        "test setup: the license badge should differ in size from the test's own pictures",
+    ).toBe(false);
+    pictures.set(pageIds[1], licenseBadge);
+    /**
+     * The pictures on one sheet of a PDF that mark a page of the book, sorted. Bloom draws pictures
+     * of its own on some pages (a small one on several of them), which say nothing about where the
+     * book's pages went.
+     */
+    const ourPictures = (drawn: IPixelSize[]): IPixelSize[] =>
+        sorted(
+            drawn.filter((p) =>
+                [...pictures.values()].some(
+                    (ours) =>
+                        ours.width === p.width && ours.height === p.height,
+                ),
+            ),
+        );
     const pictureOfPage = (id: string): IPixelSize[] => {
         const picture = pictures.get(id);
         return picture ? [picture] : [];
@@ -292,7 +304,7 @@ test("an A5 book makes a Simple PDF, a Booklet Cover and Booklet Insides, each w
                 (await getPdfPreviewPicturesByPage(page, true)).map(
                     ourPictures,
                 ),
-                "The Booklet Cover PDF should draw the front and back covers' pictures on the outside of the cover, the inside back cover's on the inside, and no content page's picture.",
+                "The Booklet Cover PDF should draw the front and back covers' pictures on the outside of the cover, the inside covers' on the inside, and no content page's picture.",
             ).toEqual(sheetsOfBooklet(coverIds));
         },
     );
