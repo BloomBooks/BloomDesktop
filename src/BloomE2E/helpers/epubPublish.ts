@@ -487,6 +487,21 @@ export async function readEpubPreviewPackage(page: Page): Promise<string> {
     return fetchText(page, epubPreviewPackageUrl(page));
 }
 
+/**
+ * A file of the ePUB the preview is showing, as text, by its path inside the ePUB's content folder,
+ * the folder that holds content.opf: "css/fonts.css", for example. Click Preview first
+ * (showEpubPreview).
+ */
+export async function readEpubPreviewContentFile(
+    page: Page,
+    pathInContent: string,
+): Promise<string> {
+    return fetchText(
+        page,
+        new URL(pathInContent, epubPreviewPackageUrl(page)).toString(),
+    );
+}
+
 /** Where the package document of the ePUB the preview is showing is served (readEpubPreviewPackage). */
 function epubPreviewPackageUrl(page: Page): string {
     const manifest = new URL(readerFrame(page).url()).searchParams.get("url");

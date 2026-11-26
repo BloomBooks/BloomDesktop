@@ -47,6 +47,8 @@ export interface ICollectionSettings {
     signLanguage?: string;
     /** The progress bar's goal of books on Bloom Library; see ICollectionXmlExtras.booksOnWebGoal. */
     booksOnWebGoal?: number;
+    /** Each language's Default Font; see ICollectionSpec.fonts. Left out, Andika for all. */
+    fonts?: string[];
 }
 
 /**
