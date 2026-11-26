@@ -122,6 +122,8 @@ exception from behind the dialog's own "Learn More" link, closes the dialog the 
 button does, and fails the test with that text. It never clicks Submit, which would send a report,
 a screenshot, and the book to Bloom's servers. If the same problem keeps coming back, that is a
 real bug in the code under test; read the message and fix it rather than working around it.
+A test that opens the dialog on purpose, with Help > Report a Problem, does it through
+`withReportAProblemDialog` (`helpers/problemReport.ts`), which has the watcher look away meanwhile.
 
 ## The UI-vs-API policy
 
@@ -243,6 +245,12 @@ real bug in the code under test; read the message and fix it rather than working
   `getCurrentUiLanguageTag`), change the language through it (`chooseUiLanguage`,
   `chooseUiLanguageInChooser`), toggle unapproved translations (`setShowUnapprovedTranslations`),
   and check one string per localization pathway (`expectUiStrings`, `expectChooserStrings`).
+- `helpers/problemReport.ts` — the Report a Problem dialog as Help > Report a Problem opens it:
+  `withReportAProblemDialog`, `expectReporterEmail`, `showReportDiagnosticInfo`. Nothing there
+  submits a report.
+- `helpers/registration.ts` — `getRegistration`, and `withRegistration`, which registers Bloom
+  for the length of a callback and puts the earlier registration back. The registration is not
+  among the settings each launched Bloom gets a copy of: it is the machine's own.
 
 Two things a test must never do: trigger a native OS dialog (file pickers, the WinForms Image
 Toolbox, video capture), because Playwright cannot dismiss one and the run hangs; and wait on a

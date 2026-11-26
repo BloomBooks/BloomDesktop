@@ -44,6 +44,13 @@ export interface IProblemDialogWatcher {
      * or blamed on the next test.
      */
     scanNow: () => Promise<void>;
+    /**
+     * Run `body` with the watcher looking away, and return what it returns. For the one kind of
+     * test that opens the dialog on purpose (Help > Report a Problem), which the watcher would
+     * otherwise close and report as a problem. A scan already under way finishes first. The
+     * dialog must be closed again by the time `body` returns, or the next scan reports it.
+     */
+    ignoreDialogsWhile: <T>(body: () => Promise<T>) => Promise<T>;
     /** Stop polling. */
     stop: () => void;
 }
@@ -145,6 +152,8 @@ export function startProblemDialogWatcher(
 ): IProblemDialogWatcher {
     const problems: IBloomProblem[] = [];
     let stopped = false;
+    // How many ignoreDialogsWhile calls are running; scans do nothing while there is one.
+    let ignoring = 0;
 
     // Pages whose dialog we recorded but could not close. The dialog is still showing there, so
     // later scans would find and record the same problem again; skip such a page instead.
@@ -153,6 +162,7 @@ export function startProblemDialogWatcher(
     // One scan: find a dialog, record it, close it. Never throws: a failure to gather the
     // detail or to close still gets recorded as a problem, and the watcher keeps running.
     const checkOnce = async (): Promise<boolean> => {
+        if (ignoring > 0) return false;
         const browser = getBrowser();
         if (!browser) return false;
         const found = await findProblemDialog(browser).catch(() => undefined);
@@ -212,6 +222,17 @@ export function startProblemDialogWatcher(
         takeProblems: () => problems.splice(0, problems.length),
         scanNow: async () => {
             await scanExclusively();
+        },
+        ignoreDialogsWhile: async (body) => {
+            ignoring++;
+            try {
+                // Let a scan that started before this call finish, so it cannot close a dialog
+                // that body opens.
+                await chain;
+                return await body();
+            } finally {
+                ignoring--;
+            }
         },
         stop: () => {
             stopped = true;
