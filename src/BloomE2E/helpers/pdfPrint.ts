@@ -13,6 +13,7 @@
 //    See AUTOMATION-DEBT.md, "The browser's print dialog is reachable only over UI Automation".
 
 import { execFileSync } from "node:child_process";
+import { constants as zlibConstants, inflateSync } from "node:zlib";
 import { expect, type Browser, type Page } from "@playwright/test";
 import { apiGet } from "./api";
 import type { IPixelSize } from "./images";
@@ -167,6 +168,51 @@ function readPdfObject(pdf: string, number: string): string {
     return pdf.slice(start.index, Math.min(...ends));
 }
 
+/**
+ * The data of the stream object numbered `number` in a PDF, as text with one character for each
+ * byte, decompressed when it is compressed the usual way (FlateDecode). Throws for any other
+ * compression, which a page's or a form's drawing instructions do not use.
+ */
+function readPdfStream(pdf: string, number: string): string {
+    const start = new RegExp(`(?:^|[\\r\\n])${number}\\s+\\d+\\s+obj`).exec(
+        pdf,
+    );
+    if (!start) throw new Error(`The previewed PDF has no object ${number}.`);
+    const keyword = /stream\r?\n/g;
+    keyword.lastIndex = start.index;
+    const found = keyword.exec(pdf);
+    const end = pdf.indexOf("endobj", start.index);
+    if (!found || (end >= 0 && end < found.index))
+        throw new Error(
+            `Object ${number} of the previewed PDF is not a stream.`,
+        );
+    const dictionary = pdf.slice(start.index, found.index);
+    const dataStart = found.index + found[0].length;
+    // The length is given in the dictionary, or in an object of its own that it refers to.
+    const length = /\/Length\s+(\d+)(\s+\d+\s+R)?/.exec(dictionary);
+    if (!length)
+        throw new Error(
+            `Stream ${number} of the previewed PDF gives no length.`,
+        );
+    const byteCount = length[2]
+        ? Number(/obj\s+(\d+)/.exec(readPdfObject(pdf, length[1]))![1])
+        : Number(length[1]);
+    const data = Buffer.from(
+        pdf.slice(dataStart, dataStart + byteCount),
+        "latin1",
+    );
+    if (!/\/Filter/.test(dictionary)) return data.toString("latin1");
+    if (!/\/Filter\s*\/FlateDecode(?![a-zA-Z])/.test(dictionary))
+        throw new Error(
+            `Stream ${number} of the previewed PDF is compressed in a way this cannot read: ${dictionary}`,
+        );
+    // The PDF maker leaves out the end-of-data check that zlib expects (seen in a booklet's
+    // streams), so take what decompresses without asking for it.
+    return inflateSync(data, {
+        finishFlush: zlibConstants.Z_SYNC_FLUSH,
+    }).toString("latin1");
+}
+
 /** The numbers of the objects that a piece of a PDF refers to, e.g. "21" for "21 0 R", in order. */
 function readPdfReferences(text: string): string[] {
     return [...text.matchAll(/(\d+)\s+\d+\s+R(?![a-zA-Z])/g)].map(
@@ -214,35 +260,87 @@ function getPdfPageObjectsInPageOrder(pdf: string): string[] {
  * size that is listed for a page was found and drawn on that page when the PDF was made, and one
  * that is missing was not. Each picture is listed once: the second image in which a PDF holds a
  * picture's transparency belongs to the picture, not to the page, and is not listed.
+ *
+ * A booklet's sheet (Booklet Cover or Booklet Insides) draws each page of the book as a form (a
+ * Form XObject) of its own, which holds that page's pictures. Pass `booklet` true for those, and
+ * the pictures of the forms each sheet draws are listed for the sheet. Without it a form's
+ * pictures are not listed: a page of a Simple PDF can draw small images of Bloom's own in forms.
  */
 export async function getPdfPreviewPicturesByPage(
     page: Page,
+    booklet = false,
 ): Promise<IPixelSize[][]> {
     const pdf = await readPreviewedPdf(page);
     return getPdfPageObjectsInPageOrder(pdf).map((pageObject) => {
-        // What a page draws with is in its resources, which the page object holds or refers to.
-        const elsewhere = /\/Resources\s+(\d+)\s+\d+\s+R/.exec(pageObject);
-        const resources = elsewhere
-            ? readPdfObject(pdf, elsewhere[1])
-            : pageObject;
-        const drawn = /\/XObject\s*<<([^>]*)>>/.exec(resources);
-        if (!drawn) return [];
-        const sizes: IPixelSize[] = [];
-        for (const number of readPdfReferences(drawn[1])) {
-            // An image is a stream, and a PDF never compresses the dictionary that describes a
-            // stream, so its size can be read from the text of the file.
-            const dictionary = readPdfObject(pdf, number);
-            if (!/\/Subtype\s*\/Image(?![a-zA-Z])/.test(dictionary)) continue;
-            const width = /\/Width\s+(\d+)/.exec(dictionary);
-            const height = /\/Height\s+(\d+)/.exec(dictionary);
-            if (!width || !height)
-                throw new Error(
-                    `A picture in the previewed PDF does not give its size: ${dictionary}`,
-                );
-            sizes.push({ width: Number(width[1]), height: Number(height[1]) });
-        }
-        return sizes;
+        // A page's drawing instructions are in its content streams, which it refers to.
+        const contents = /\/Contents\s*(\[[^\]]*\]|\d+\s+\d+\s+R)/.exec(
+            pageObject,
+        );
+        if (!contents)
+            throw new Error(
+                `A page of the previewed PDF has no content: ${pageObject}`,
+            );
+        return getPicturesDrawnBy(
+            pdf,
+            pageObject,
+            readPdfReferences(contents[1]),
+            booklet,
+        );
     });
+}
+
+/**
+ * The size in pixels of each picture that a page object, or a form, draws: the images among the
+ * things its resources name (XObjects) that its drawing instructions (in the streams numbered
+ * `contentStreams`) paint, and, when `inForms` is true, the images that the forms it paints draw
+ * in the same way. A thing its resources name but its instructions never paint is not listed.
+ */
+function getPicturesDrawnBy(
+    pdf: string,
+    drawer: string,
+    contentStreams: string[],
+    inForms: boolean,
+): IPixelSize[] {
+    // What a page or form draws with is in its resources, which it holds or refers to.
+    const elsewhere = /\/Resources\s+(\d+)\s+\d+\s+R/.exec(drawer);
+    const resources = elsewhere ? readPdfObject(pdf, elsewhere[1]) : drawer;
+    // The list of what it draws is in the resources, or in an object of its own that they refer to.
+    const drawn = /\/XObject\s*(?:<<([^>]*)>>|(\d+)\s+\d+\s+R)/.exec(resources);
+    if (!drawn) return [];
+    const list = drawn[1] ?? readPdfObject(pdf, drawn[2]);
+    // The instructions paint a thing by its name in that list: "/Im0 Do".
+    const painted = new Set<string>();
+    for (const number of contentStreams)
+        for (const match of readPdfStream(pdf, number).matchAll(
+            /\/([^\s/<>[\]()]+)\s+Do(?![a-zA-Z])/g,
+        ))
+            painted.add(match[1]);
+    const sizes: IPixelSize[] = [];
+    for (const [, name, number] of list.matchAll(
+        /\/([^\s/<>[\]()]+)\s+(\d+)\s+\d+\s+R/g,
+    )) {
+        if (!painted.has(name)) continue;
+        // An image or a form is a stream, and a PDF never compresses the dictionary that describes
+        // a stream, so it can be read from the text of the file.
+        const dictionary = readPdfObject(pdf, number);
+        if (/\/Subtype\s*\/Form(?![a-zA-Z])/.test(dictionary)) {
+            // A form's drawing instructions are its own stream.
+            if (inForms)
+                sizes.push(
+                    ...getPicturesDrawnBy(pdf, dictionary, [number], false),
+                );
+            continue;
+        }
+        if (!/\/Subtype\s*\/Image(?![a-zA-Z])/.test(dictionary)) continue;
+        const width = /\/Width\s+(\d+)/.exec(dictionary);
+        const height = /\/Height\s+(\d+)/.exec(dictionary);
+        if (!width || !height)
+            throw new Error(
+                `A picture in the previewed PDF does not give its size: ${dictionary}`,
+            );
+        sizes.push({ width: Number(width[1]), height: Number(height[1]) });
+    }
+    return sizes;
 }
 
 /** A rectangle on a PDF page, in millimetres from the left and bottom edges of the paper. */
