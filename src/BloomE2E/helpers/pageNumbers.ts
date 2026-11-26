@@ -120,14 +120,33 @@ export async function getPageNumberShown(
                 }
                 const pageAt = hits.indexOf(el);
                 // What covers the number is the page's own content above it that paints
-                // something there. The Edit tab's own controls outside the page, and the page's
-                // transparent containers, cover nothing.
+                // something there: a background, a picture, or text whose letters reach the
+                // point. The Edit tab's own controls outside the page, and the page's
+                // transparent containers away from their text, cover nothing.
+                const hasTextAtPoint = (hit: Element) =>
+                    [...hit.childNodes].some((child) => {
+                        if (
+                            child.nodeType !== Node.TEXT_NODE ||
+                            !child.textContent?.trim()
+                        )
+                            return false;
+                        const range = document.createRange();
+                        range.selectNodeContents(child);
+                        return [...range.getClientRects()].some(
+                            (r) =>
+                                x >= r.left &&
+                                x <= r.right &&
+                                y >= r.top &&
+                                y <= r.bottom,
+                        );
+                    });
                 const paints = (hit: Element) => {
                     const style = getComputedStyle(hit);
                     if (style.visibility !== "visible" || style.opacity === "0")
                         return false;
                     if (/^(IMG|CANVAS|VIDEO|SVG|svg)$/.test(hit.tagName))
                         return true;
+                    if (hasTextAtPoint(hit)) return true;
                     const bg = /rgba?\(([^)]*)\)/.exec(style.backgroundColor);
                     const bgParts = bg ? bg[1].split(",") : [];
                     const bgAlpha =
