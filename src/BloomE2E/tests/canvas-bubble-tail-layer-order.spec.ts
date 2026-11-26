@@ -135,6 +135,21 @@ async function reopenCanvasPage(page: Page): Promise<void> {
 }
 
 /**
+ * Check that the element drawn in `rect` (`what` names it) covers both sample points, so that what
+ * shows there is either it or the bubble drawn in front of it.
+ */
+function expectCoversSamplePoints(rect: IRect, what: string): void {
+    expect(
+        isInside(tailPoint, rect),
+        `The ${what} does not cover the tail's sample point.`,
+    ).toBe(true);
+    expect(
+        isInside(bodyPoint, rect),
+        `The ${what} does not cover the bubble's sample point.`,
+    ).toBe(true);
+}
+
+/**
  * Check that the screen shows `expected` at `point`; `what` says what that means, for the message.
  */
 async function expectPaintedAt(
@@ -162,6 +177,11 @@ async function expectBubbleInFrontOfPicture(
 ): Promise<void> {
     await reopenCanvasPage(page);
     const pictureRect = await getRect(picture, "the picture element");
+    expectCoversSamplePoints(pictureRect, "picture");
+    // The reloaded picture shows once the browser has decoded it.
+    await picture
+        .locator("img")
+        .evaluate((img) => (img as HTMLImageElement).decode());
     const clearPoint = {
         x: pictureRect.x + 10,
         y: pictureRect.y + pictureRect.height - 10,
@@ -202,6 +222,7 @@ async function expectVideoInFrontOfBubble(
 ): Promise<void> {
     await reopenCanvasPage(page);
     const videoRect = await getRect(videoBox, "the video box");
+    expectCoversSamplePoints(videoRect, "video");
     const clearPoints = [
         { x: videoRect.x + 10, y: videoRect.y + videoRect.height - 10 },
         {
@@ -214,23 +235,37 @@ async function expectVideoInFrontOfBubble(
             await isDrawingClearAt(page, point),
             "A point chosen to show the video has part of the bubble drawn on it.",
         ).toBe(true);
-    const videoColor = await readPaintedColorAt(page, clearPoints[0]);
-    await expectPaintedAt(
-        page,
-        clearPoints[1],
-        videoColor,
-        `The video should show one flat colour (${order})`,
-    );
+    // The reloaded video shows its first frame once it has decoded it. Until then its box shows
+    // what is behind it, so wait until both clear points show one colour that is neither of the
+    // drawing's: the video's flat colour, and one the check can tell from the drawing.
+    let videoColor: IRgba = { r: 0, g: 0, b: 0, a: 0 };
+    await expect
+        .poll(
+            async () => {
+                const [first, second] = [
+                    await readPaintedColorAt(page, clearPoints[0]),
+                    await readPaintedColorAt(page, clearPoints[1]),
+                ];
+                videoColor = first;
+                return (
+                    isRgbaClose(first, second, kTolerance) &&
+                    [tailPoint, bodyPoint].every(
+                        (p) => !isRgbaClose(first, p.color, kTolerance * 4),
+                    )
+                );
+            },
+            {
+                timeout: 30000,
+                message:
+                    "The video never showed one flat colour, different from the bubble's, at the " +
+                    `points the bubble leaves clear (${order}).`,
+            },
+        )
+        .toBe(true);
     for (const [point, what] of [
         [tailPoint, "tail"],
         [bodyPoint, "bubble"],
     ] as const) {
-        // Sanity: the check can only tell the video from the drawing where they differ.
-        expect(
-            isRgbaClose(videoColor, point.color, kTolerance * 4),
-            `The video's colour ${describeRgba(videoColor)} is too close to the drawing's ` +
-                `${describeRgba(point.color)} at the ${what} point to tell them apart.`,
-        ).toBe(false);
         await expectPaintedAt(
             page,
             point,
@@ -305,15 +340,6 @@ test.describe("bubble and tail layer order [Test Case ID 329]", () => {
         const index = await dragPaletteItemOntoCanvas(page, "image", dropAt);
         const picture = canvasElement(page, index);
         await chooseImageFile(page, kBlueSquare, picture);
-        const pictureRect = await getRect(picture, "the picture element");
-        expect(
-            isInside(tailPoint, pictureRect),
-            "The picture does not cover the tail's sample point.",
-        ).toBe(true);
-        expect(
-            isInside(bodyPoint, pictureRect),
-            "The picture does not cover the bubble's sample point.",
-        ).toBe(true);
         // The picture came last, so it is in front of the bubble in the Layer order.
         expect((await getStackingOrder(page))[0]).toBe(bubble);
         // Sanity: the picture's colour is not the drawing's, so the check can tell them apart.
@@ -364,15 +390,6 @@ test.describe("bubble and tail layer order [Test Case ID 329]", () => {
             "The page should have one video box.",
         ).toHaveCount(1);
         await chooseVideoFileFromCanvasMenu(page, videoBox, SHORT_VIDEO);
-        const videoRect = await getRect(videoBox, "the video box");
-        expect(
-            isInside(tailPoint, videoRect),
-            "The video does not cover the tail's sample point.",
-        ).toBe(true);
-        expect(
-            isInside(bodyPoint, videoRect),
-            "The video does not cover the bubble's sample point.",
-        ).toBe(true);
         // The video came last, so it is in front of the bubble in the Layer order.
         expect((await getStackingOrder(page))[0]).toBe(bubble);
 
