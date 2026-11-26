@@ -89,6 +89,10 @@ async function readContentPages(
     const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
     return page.evaluate((source) => {
         const dom = new DOMParser().parseFromString(source, "text/html");
+        // Runs of the markup's own line breaks and indents become one space; non-breaking spaces,
+        // which the spreadsheet keeps on purpose, are left as they are (\s would match them).
+        const tidy = (text: string | null) =>
+            (text ?? "").replace(/[ \t\r\n\f]+/g, " ").replace(/^ | $/g, "");
         const pages = Array.from(
             dom.querySelectorAll(
                 ".bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter)",
@@ -116,9 +120,7 @@ async function readContentPages(
                               );
                     return {
                         lang: box.lang,
-                        text: (box.textContent ?? "")
-                            .replace(/\s+/g, " ")
-                            .trim(),
+                        text: tidy(box.textContent),
                         recordingMode,
                         sentenceEnds: (
                             box.getAttribute("data-audiorecordingendtimes") ??
@@ -128,11 +130,7 @@ async function readContentPages(
                             .filter((end) => end),
                         highlightSegments: Array.from(
                             box.querySelectorAll(".bloom-highlightSegment"),
-                        ).map((segment) =>
-                            (segment.textContent ?? "")
-                                .replace(/\s+/g, " ")
-                                .trim(),
-                        ),
+                        ).map((segment) => tidy(segment.textContent)),
                         recordingIds: recorded
                             .filter((element) =>
                                 element.classList.contains("audio-sentence"),
