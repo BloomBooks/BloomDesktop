@@ -614,6 +614,183 @@ export async function epubPreviewHasFile(
     return page.evaluate(async (address) => (await fetch(address)).ok, url);
 }
 
+/** The reader's button that starts reading the page aloud (Readium/index.html). */
+const PLAY_BUTTON = "#menu-button-play";
+
+/**
+ * The class the preview's reader puts on the text it is reading aloud: the "active-class" that
+ * Bloom gives it in the Readium manifest it writes beside the ePUB (ReadiumManifest.cs), taken from
+ * the package's media:active-class (EpubMaker). Bloom's style sheets give that class a background
+ * (basePage-sharedRules.less).
+ */
+export async function getEpubPreviewReadAlongClass(
+    page: Page,
+): Promise<string> {
+    const manifestUrl = new URL(readerFrame(page).url()).searchParams.get(
+        "url",
+    );
+    if (!manifestUrl)
+        throw new Error(
+            `The ePUB reader's address names no manifest: ${readerFrame(page).url()}`,
+        );
+    const manifest = JSON.parse(await fetchText(page, manifestUrl)) as {
+        metadata?: { "media-overlay"?: { "active-class"?: string } };
+    };
+    const activeClass = manifest.metadata?.["media-overlay"]?.["active-class"];
+    if (!activeClass)
+        throw new Error(
+            `The ePUB preview's manifest, ${manifestUrl}, gives the reader no class to mark ` +
+                "the text it reads aloud with.",
+        );
+    return activeClass;
+}
+
+/** One thing that happened while the reader read a page of the preview aloud. */
+export type EpubReadAlongEvent =
+    | {
+          /** The reader marked an element as the text it is reading, or unmarked it. */
+          kind: "highlighted" | "unhighlighted";
+          /** The element's id in the page's document. */
+          id: string;
+          /** The element's background color right after it was marked ("" when unmarked). */
+          background: string;
+          /** Whether the reader's audio was playing at that moment, and where in it. */
+          audioPlaying: boolean;
+          audioTime: number;
+      }
+    | {
+          /** The reader's audio started playing, paused (which is also how it stops), or ended. */
+          kind: "playing" | "pause" | "ended";
+          /** The audio file, as the ePUB's address of it. */
+          audioUrl: string;
+          audioTime: number;
+      };
+
+/**
+ * The ids of the elements of a page of the ePUB preview (a frame showEpubPreviewPage returned) that
+ * the reader shows as being read aloud: those with the class getEpubPreviewReadAlongClass gives.
+ */
+export async function getEpubPreviewReadAlongHighlights(
+    page: Page,
+    frame: Frame,
+): Promise<string[]> {
+    const activeClass = await getEpubPreviewReadAlongClass(page);
+    return frame
+        .locator(`[class~="${activeClass}"]`)
+        .evaluateAll((elements) => elements.map((element) => element.id));
+}
+
+/**
+ * Click the reader's Play button over a page of the ePUB preview (a frame showEpubPreviewPage
+ * returned), the way a person does, and return what happened, in order, until the reader has
+ * read the page and stopped: every element it marked or unmarked as being read, and every time its
+ * audio started, paused or ended.
+ *
+ * The reader plays the page's media overlay (getEpubPreviewPageReadAloud) through one audio element
+ * of its own document, and marks each clip's text with its active class
+ * (getEpubPreviewReadAlongClass) while it plays that clip. It takes the class off and puts it back
+ * on every frame; an element counts as unmarked only once it is left without the class. It is told not to turn the page by itself (Readium/index.html), so it stops at the end of
+ * the page.
+ */
+export async function playEpubPreviewReadAlong(
+    page: Page,
+    frame: Frame,
+): Promise<EpubReadAlongEvent[]> {
+    const reader = readerFrame(page);
+    const activeClass = await getEpubPreviewReadAlongClass(page);
+    // The reader replaces its audio element for each new audio file, so the audio events are
+    // caught on its document (media events do not bubble, but they do pass through the capture
+    // phase), and the page's frame finds the element by its id whenever it needs it.
+    await reader.evaluate(() => {
+        const log: unknown[] = [];
+        (window as unknown as { e2eReadAlong: unknown[] }).e2eReadAlong = log;
+        for (const kind of ["playing", "pause", "ended"])
+            document.addEventListener(
+                kind,
+                (event) => {
+                    const audio = event.target as HTMLAudioElement;
+                    log.push({
+                        kind,
+                        audioUrl: audio.currentSrc,
+                        audioTime: audio.currentTime,
+                    });
+                },
+                true,
+            );
+    });
+    await frame.evaluate((activeClass) => {
+        const log = (window.parent as unknown as { e2eReadAlong: unknown[] })
+            .e2eReadAlong;
+        const marked = new Set<Element>();
+        new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                const element = mutation.target as HTMLElement;
+                const isMarked = element.classList.contains(activeClass);
+                if (isMarked === marked.has(element)) continue;
+                if (isMarked) marked.add(element);
+                else marked.delete(element);
+                const audio = window.parent.document.getElementById(
+                    "AUDIO_MO_ID",
+                ) as HTMLAudioElement | null;
+                log.push({
+                    kind: isMarked ? "highlighted" : "unhighlighted",
+                    id: element.id,
+                    background: isMarked
+                        ? getComputedStyle(element).backgroundColor
+                        : "",
+                    audioPlaying: !!audio && !audio.paused && !audio.ended,
+                    audioTime: audio?.currentTime ?? 0,
+                });
+            }
+        }).observe(document.documentElement, {
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["class"],
+        });
+    }, activeClass);
+
+    const readLog = () =>
+        reader.evaluate(
+            () =>
+                (window as unknown as { e2eReadAlong: EpubReadAlongEvent[] })
+                    .e2eReadAlong,
+        );
+    await reader.locator(PLAY_BUTTON).click();
+    let events: EpubReadAlongEvent[] = [];
+    await expect
+        .poll(
+            async () => {
+                events = await readLog();
+                const started = events.findIndex((e) => e.kind === "playing");
+                return (
+                    started >= 0 &&
+                    events
+                        .slice(started)
+                        .some(
+                            (e) => e.kind === "pause" || e.kind === "ended",
+                        ) &&
+                    (await getEpubPreviewReadAlongHighlights(page, frame))
+                        .length === 0
+                );
+            },
+            {
+                timeout: 60000,
+                message:
+                    "After Play, the ePUB preview's reader did not play the page's audio to its end " +
+                    "and stop.",
+            },
+        )
+        .toBe(true);
+    return readLog();
+}
+
+/** Whether the ePUB screen's "ePUB mode" list can be changed. */
+export async function isEpubModeListEnabled(page: Page): Promise<boolean> {
+    const list = page.locator(`${PUBLISH_SCREEN} ${MODE_LIST}`);
+    await list.waitFor({ state: "visible", timeout: 30000 });
+    return (await list.getAttribute("aria-disabled")) !== "true";
+}
+
 /**
  * The layout of the ePUB the preview is showing, as its package declares it to a reader app:
  * "fixed" when it says rendition:layout is pre-paginated, "flowable" when it says nothing, which
