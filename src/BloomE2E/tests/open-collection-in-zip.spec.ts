@@ -11,6 +11,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
+import { getUiString } from "../helpers/api";
 import {
     environmentForBloom,
     findBloomExe,
@@ -37,6 +38,7 @@ test.skip(
 
 test("opening a collection from inside a ZIP file tells the user to unzip it first, and opens nothing [Test Case ID 35]", async ({
     bloomApp,
+    page,
 }) => {
     // What Explorer leaves behind when the collection's folder was zipped and the user opens the
     // .bloomCollection file inside the zip: only that one file, under the temp folder, in a folder
@@ -89,9 +91,13 @@ test("opening a collection from inside a ZIP file tells the user to unzip it fir
                     ? " and is still running"
                     : `; it quit with exit code ${exitCode}`),
         ).toBeDefined();
-        expect(box!.texts.join(" ")).toContain(
+        // In the UI language that the worker's Bloom, also started on default user settings, uses.
+        const unzipFirst = await getUiString(
+            page,
+            "OpenCreateCloneControl.InZipFileMessage",
             "It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.",
         );
+        expect(box!.texts.join(" ")).toContain(unzipFirst);
 
         // Closing the box ends that Bloom without opening the collection.
         const exitAfterBox = await Promise.race([

@@ -96,11 +96,13 @@ do {
       # Read before OK is pressed: the box is gone once it has been.
       $title = $window.Current.Name
       $texts = @()
-      $ok = $null
+      $buttons = @()
       foreach ($el in $window.FindAll($Scope::Descendants, [System.Windows.Automation.Condition]::TrueCondition)) {
         $type = $el.Current.ControlType
         if ($type -eq $CT::Button) {
-          if ($el.Current.Name -eq 'OK') { $ok = $el }
+          # The window's own Close (and Minimize, Maximize) buttons sit in its title bar.
+          $parent = [System.Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($el)
+          if (-not ($parent -and $parent.Current.ControlType -eq $CT::TitleBar)) { $buttons += $el }
           continue
         }
         $value = $null
@@ -108,7 +110,14 @@ do {
         if ($el.TryGetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern, [ref]$pattern)) { $value = $pattern.Current.Value }
         if ($value) { $texts += $value } elseif (($type -eq $CT::Text) -and $el.Current.Name) { $texts += $el.Current.Name }
       }
-      if (-not $ok) { throw "The '$wanted' box of process $($proc.ProcessId) has no OK button." }
+      # Found by what it is, not by its label, which is in Windows' language. A box with one
+      # button has no other to press (a MessageBox with only OK gives it the control id IDCANCEL,
+      # so that Esc closes it). Among several, OK is a MessageBox's button with the control id IDOK
+      # (1), which the Win32 proxies give as its AutomationId, or the "Bloom Problem" form's
+      # _acceptButton, whose control name WinForms gives as its AutomationId.
+      $ok = $null
+      if ($buttons.Count -eq 1) { $ok = $buttons[0] } else { $ok = @($buttons | Where-Object { $_.Current.AutomationId -in @('1', '_acceptButton') })[0] }
+      if (-not $ok) { throw "The '$wanted' box of process $($proc.ProcessId) has no OK button among its $($buttons.Count) buttons: $(($buttons | ForEach-Object { $_.Current.Name + ' (' + $_.Current.AutomationId + ')' }) -join ', ')" }
       $ok.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
       @{ pid = [int]$proc.ProcessId; title = $title; texts = @($texts) } | ConvertTo-Json -Compress
       exit 0
