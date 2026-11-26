@@ -111,6 +111,22 @@ function expectSameSizes(
     });
 }
 
+/**
+ * Which of the page's splits record a different size in `after` than in `before`, by their place
+ * in getSplitLayout's list. Fails when no split does, since a drag must move its own splitter.
+ */
+function splitsThatDiffer(before: string[], after: string[]): number[] {
+    expect(after).toHaveLength(before.length);
+    const differing = after
+        .map((_, index) => index)
+        .filter((index) => after[index] !== before[index]);
+    expect(
+        differing.length,
+        `Dragging a splitter should change the size that the page records for its split. Before: ${JSON.stringify(before)}; after: ${JSON.stringify(after)}`,
+    ).toBeGreaterThan(0);
+    return differing;
+}
+
 test("splitting sections of a Basic Text & Image page, typing them and dragging the splitters [Test Case ID 366]", async ({
     page,
 }) => {
@@ -282,6 +298,15 @@ test("splitting sections of a Basic Text & Image page, typing them and dragging 
                 "Dragging the splitter above the canvas down should make the canvas shorter.",
         })
         .toBeLessThan(canvasBefore.height - 10);
+    const layoutAfterFirstDrag = await getSplitLayout(page);
+    const [firstDragged, ...othersFirstMoved] = splitsThatDiffer(
+        layoutBeforeDragging,
+        layoutAfterFirstDrag,
+    );
+    expect(
+        othersFirstMoved,
+        "Dragging the first splitter should move no other.",
+    ).toEqual([]);
     // Drag the splitter between the video and the picture to the right: the picture gets narrower.
     const imageIndex = await findSection(page, "the picture", holding("image"));
     const imageBefore = (await section(page, imageIndex)).rect;
@@ -297,15 +322,19 @@ test("splitting sections of a Basic Text & Image page, typing them and dragging 
         (await section(page, videoIndex)).rect.width,
         "The video beside the picture should get wider by what the picture lost.",
     ).toBeGreaterThan(videoBefore.width + 10);
-    expect(
-        (await section(page, canvasIndex)).rect.height,
-        "Dragging the second splitter should leave the canvas as short as the first drag made it.",
-    ).toBeLessThan(canvasBefore.height - 10);
     const layoutBeforeLeaving = await getSplitLayout(page);
-    expect(
+    const [secondDragged, ...othersSecondMoved] = splitsThatDiffer(
+        layoutAfterFirstDrag,
         layoutBeforeLeaving,
-        "Dragging the splitters should change the sizes that the page records for its splits.",
-    ).not.toEqual(layoutBeforeDragging);
+    );
+    expect(
+        othersSecondMoved,
+        "Dragging the second splitter should move no other, and so leave the first where it was dragged to.",
+    ).toEqual([]);
+    expect(
+        secondDragged,
+        "The two drags should be of different splitters.",
+    ).not.toBe(firstDragged);
     const sizesBeforeLeaving = await describeSections(page);
 
     await setChangeLayoutMode(page, false);
@@ -420,6 +449,15 @@ test("a new Custom page starts in Change Layout mode and keeps the sections it i
                 "Dragging the splitter above the widget up should make the widget taller.",
         })
         .toBeGreaterThan(bottomBefore.height + 10);
+    const layoutAfterFirstDrag = await getSplitLayout(page);
+    const [firstDragged, ...othersFirstMoved] = splitsThatDiffer(
+        layoutBeforeDragging,
+        layoutAfterFirstDrag,
+    );
+    expect(
+        othersFirstMoved,
+        "Dragging the first splitter should move no other.",
+    ).toEqual([]);
     const leftBefore = (await section(page, 0)).rect;
     await dragSplitterOf(page, sections(page).nth(0), 40, 0);
     await expect
@@ -428,15 +466,19 @@ test("a new Custom page starts in Change Layout mode and keeps the sections it i
                 "Dragging the splitter right of the picture to the right should make it wider.",
         })
         .toBeGreaterThan(leftBefore.width + 10);
-    expect(
-        (await section(page, 2)).rect.height,
-        "Dragging the second splitter should leave the widget as tall as the first drag made it.",
-    ).toBeGreaterThan(bottomBefore.height + 10);
     const layoutBeforeLeaving = await getSplitLayout(page);
-    expect(
+    const [secondDragged, ...othersSecondMoved] = splitsThatDiffer(
+        layoutAfterFirstDrag,
         layoutBeforeLeaving,
-        "Dragging the splitters should change the sizes that the page records for its splits.",
-    ).not.toEqual(layoutBeforeDragging);
+    );
+    expect(
+        othersSecondMoved,
+        "Dragging the second splitter should move no other, and so leave the first where it was dragged to.",
+    ).toEqual([]);
+    expect(
+        secondDragged,
+        "The two drags should be of different splitters.",
+    ).not.toBe(firstDragged);
     const sizesBeforeLeaving = await describeSections(page);
 
     await setChangeLayoutMode(page, false);
