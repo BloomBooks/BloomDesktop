@@ -45,21 +45,68 @@ function comicalDrawing(page: Page): Locator {
  * has no tail.
  */
 export async function readTail(element: Locator): Promise<ITailSpec> {
-    const json = await element.getAttribute("data-bubble");
-    if (!json) throw new Error("The canvas element has no data-bubble spec.");
-    // Bloom stores the spec with backquotes in place of double quotes, to keep it out of the way
-    // of the attribute's own quotes.
-    const spec = JSON.parse(json.replace(/`/g, '"')) as {
-        tails?: ITailSpec[];
-    };
-    const tail = spec.tails?.[0];
-    if (!tail) throw new Error(`The bubble's data-bubble has no tail: ${json}`);
+    const tail = (await readBubbleFamilySpec(element)).tails[0];
+    if (!tail)
+        throw new Error(
+            `The bubble's data-bubble has no tail: ${await element.getAttribute("data-bubble")}`,
+        );
     return {
         tipX: tail.tipX,
         tipY: tail.tipY,
         midpointX: tail.midpointX,
         midpointY: tail.midpointY,
-        autoCurve: !!tail.autoCurve,
+        autoCurve: tail.autoCurve,
+    };
+}
+
+/**
+ * One tail of a bubble, with what says which kind it is. A child bubble's one tail is a joiner:
+ * ComicalJS draws it as the link to the bubble before it in the family, and ends it at that
+ * bubble's middle. Any other tail points at whatever the person aimed it at.
+ */
+export interface IBubbleTail extends ITailSpec {
+    joiner: boolean;
+}
+
+/** What a bubble's data-bubble says about its tails and its place in a family of bubbles. */
+export interface IBubbleFamilySpec {
+    /** Every tail, in the order ComicalJS keeps them. */
+    tails: IBubbleTail[];
+    /**
+     * The bubble's place in its family: 1 for the parent, 2 for its first child, and so on.
+     * Undefined for a bubble that has never had a child or been one.
+     */
+    order: number | undefined;
+}
+
+/**
+ * Every tail of the bubble `element` locates, and the bubble's place in its family (a bubble and
+ * the child bubbles joined to it), as its data-bubble says.
+ */
+export async function readBubbleFamilySpec(
+    element: Locator,
+): Promise<IBubbleFamilySpec> {
+    const json = await element.getAttribute("data-bubble");
+    if (!json) throw new Error("The canvas element has no data-bubble spec.");
+    // Bloom stores the spec with backquotes in place of double quotes, to keep it out of the way
+    // of the attribute's own quotes.
+    const spec = JSON.parse(json.replace(/`/g, '"')) as {
+        tails?: (Omit<ITailSpec, "autoCurve"> & {
+            autoCurve?: boolean;
+            joiner?: boolean;
+        })[];
+        order?: number;
+    };
+    return {
+        tails: (spec.tails ?? []).map((tail) => ({
+            tipX: tail.tipX,
+            tipY: tail.tipY,
+            midpointX: tail.midpointX,
+            midpointY: tail.midpointY,
+            autoCurve: !!tail.autoCurve,
+            joiner: !!tail.joiner,
+        })),
+        order: spec.order,
     };
 }
 
