@@ -1,7 +1,9 @@
-// The two spreadsheet commands in the More submenu of a book's menu on the Collections tab: in a
-// collection without the Enterprise tier both are offered but marked as needing a subscription
-// (they look disabled, and a click opens the Subscription page instead), and once the collection
-// has an Enterprise code both are offered as ordinary commands.
+// The two spreadsheet commands in the More submenu of a book's menu on the Collections tab. Below
+// the Local Community tier both are offered but marked as needing a subscription (they look
+// disabled, and a click opens the Subscription page instead); from Local Community up both are
+// offered as ordinary commands. The test walks the tiers up from Basic: Pro, the tier just below
+// the boundary, and Local Community, the tier at it, come from the e2e/setBranding hook (a test
+// may not use a real code for them); Enterprise comes from a real code, as a person would enter it.
 //
 // Automates the manual test "Spreadsheet Menu Availability" (Test Case ID 624). The manual case
 // also turns on a "Spreadsheet" experimental feature; Bloom no longer has one (the commands are
@@ -15,6 +17,7 @@ import {
     getFeatureStatus,
     kEnterpriseSubscriptionCode,
     restartWithCollectionSettings,
+    setBranding,
 } from "../helpers/collectionSettings";
 import { switchTab } from "../helpers/workspace";
 import type { Page } from "@playwright/test";
@@ -29,10 +32,15 @@ const kExportToSpreadsheet = "CollectionTab.BookMenu.ExportToSpreadsheet";
 const kImportFromSpreadsheet =
     "CollectionTab.BookMenu.ImportContentFromSpreadsheet";
 
+type SpreadsheetCommands = Record<
+    string,
+    Omit<IBookMenuEntry, "label"> | undefined
+>;
+
 /** What the selected book's More submenu says of each spreadsheet command. */
 async function readSpreadsheetCommands(
     page: Page,
-): Promise<Record<string, Omit<IBookMenuEntry, "label"> | undefined>> {
+): Promise<SpreadsheetCommands> {
     const { more } = await readSelectedBookMenu(page, "right-click");
     const pick = (testId: string) => {
         const entry = more.find((e) => e.testId === testId);
@@ -46,7 +54,49 @@ async function readSpreadsheetCommands(
     };
 }
 
-test("the spreadsheet commands are offered, but gated, until the collection is Enterprise [Test Case ID 624]", async ({
+/** Both commands shown and clickable; `gated` says whether each is marked as needing a subscription. */
+function bothCommandsShown(gated: boolean): SpreadsheetCommands {
+    return {
+        [kExportToSpreadsheet]: {
+            testId: kExportToSpreadsheet,
+            enabled: true,
+            needsSubscription: gated,
+        },
+        [kImportFromSpreadsheet]: {
+            testId: kImportFromSpreadsheet,
+            enabled: true,
+            needsSubscription: gated,
+        },
+    };
+}
+
+/**
+ * Check what Bloom says of the spreadsheet feature, then what the book menu shows. The feature
+ * status is checked first so that a menu read too early (with the previous tier's answer) cannot
+ * pass by accident: the menu asks for the status afresh each time it opens.
+ */
+async function expectSpreadsheetCommands(
+    page: Page,
+    tierName: string,
+    available: boolean,
+): Promise<void> {
+    await expect
+        .poll(
+            async () => (await getFeatureStatus(page, "Spreadsheet")).enabled,
+            {
+                message: `Sanity check: at ${tierName}, Bloom should say the spreadsheet feature is ${available ? "available" : "unavailable"}`,
+            },
+        )
+        .toBe(available);
+    expect(
+        await readSpreadsheetCommands(page),
+        available
+            ? `at ${tierName}, both commands should show as ordinary commands`
+            : `at ${tierName}, both commands should show, greyed and sending a click to the Subscription page`,
+    ).toEqual(bothCommandsShown(!available));
+}
+
+test("the spreadsheet commands are offered, but gated, below the Local Community tier [Test Case ID 624]", async ({
     page,
     bloomApp,
     step,
@@ -56,65 +106,39 @@ test("the spreadsheet commands are offered, but gated, until the collection is E
         async () => {
             await makeBookFromTemplate(page, "Basic Book");
             await switchTab(page, "collection");
-            expect(
-                (await getFeatureStatus(page, "Spreadsheet")).enabled,
-                "Sanity check: without a subscription, the spreadsheet feature should be unavailable",
-            ).toBe(false);
         },
     );
 
     await step(
-        "See both spreadsheet commands in More, marked as needing a subscription",
+        "Basic: both commands show, marked as needing a subscription",
         async () => {
-            expect(
-                await readSpreadsheetCommands(page),
-                "without Enterprise, both commands should show, greyed and sending a click to the Subscription page",
-            ).toEqual({
-                [kExportToSpreadsheet]: {
-                    testId: kExportToSpreadsheet,
-                    enabled: true,
-                    needsSubscription: true,
-                },
-                [kImportFromSpreadsheet]: {
-                    testId: kImportFromSpreadsheet,
-                    enabled: true,
-                    needsSubscription: true,
-                },
-            });
+            await expectSpreadsheetCommands(page, "Basic", false);
+        },
+    );
+
+    await step("Pro: both commands still need a subscription", async () => {
+        await setBranding(page, "Sample-Pro");
+        await expectSpreadsheetCommands(page, "Pro", false);
+    });
+
+    await step(
+        "Local Community: both commands are ordinary commands",
+        async () => {
+            await setBranding(page, "Local-Community");
+            await expectSpreadsheetCommands(page, "Local Community", true);
         },
     );
 
     let enterprisePage = page;
-    await step("Reopen the collection with an Enterprise code", async () => {
-        enterprisePage = await restartWithCollectionSettings(bloomApp, {
-            languages: kLanguages,
-            subscriptionCode: kEnterpriseSubscriptionCode,
-        });
-        await switchTab(enterprisePage, "collection");
-        expect(
-            (await getFeatureStatus(enterprisePage, "Spreadsheet")).enabled,
-            "Sanity check: with an Enterprise code, the spreadsheet feature should be available",
-        ).toBe(true);
-    });
-
     await step(
-        "See both spreadsheet commands in More as ordinary commands",
+        "Enterprise, from a real code: both commands are ordinary commands",
         async () => {
-            expect(
-                await readSpreadsheetCommands(enterprisePage),
-                "with Enterprise, both commands should show, available",
-            ).toEqual({
-                [kExportToSpreadsheet]: {
-                    testId: kExportToSpreadsheet,
-                    enabled: true,
-                    needsSubscription: false,
-                },
-                [kImportFromSpreadsheet]: {
-                    testId: kImportFromSpreadsheet,
-                    enabled: true,
-                    needsSubscription: false,
-                },
+            enterprisePage = await restartWithCollectionSettings(bloomApp, {
+                languages: kLanguages,
+                subscriptionCode: kEnterpriseSubscriptionCode,
             });
+            await switchTab(enterprisePage, "collection");
+            await expectSpreadsheetCommands(enterprisePage, "Enterprise", true);
         },
     );
 });
