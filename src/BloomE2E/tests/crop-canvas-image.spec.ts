@@ -262,18 +262,20 @@ test("crop a picture from each side, move it inside its box, resize it and reset
             const pictureBefore = await getBox(picture, "the picture");
             // Still cropped on the west, north and south, so the picture can move right and down.
             await dragBy(page, moveCropHandle(page), 8, 8);
-            await expect
-                .poll(
-                    async () =>
-                        (await getBox(picture, "the picture")).left -
-                        pictureBefore.left,
-                    {
-                        timeout: 15000,
-                        message:
-                            "Dragging the move handle should move the picture",
-                    },
-                )
-                .toBeGreaterThan(2);
+            for (const edge of ["left", "top"] as const) {
+                const direction = edge === "left" ? "right" : "down";
+                await expect
+                    .poll(
+                        async () =>
+                            (await getBox(picture, "the picture"))[edge] -
+                            pictureBefore[edge],
+                        {
+                            timeout: 15000,
+                            message: `Dragging the move handle ${direction} should move the picture ${direction}`,
+                        },
+                    )
+                    .toBeGreaterThan(2);
+            }
             const boxAfter = await getBox(element, "the picture's box");
             for (const edge of ["left", "top", "right", "bottom"] as const)
                 expectNear(
@@ -286,14 +288,29 @@ test("crop a picture from each side, move it inside its box, resize it and reset
 
     await step("Try to move the picture past its edges", async () => {
         // Each drag is three times the 20-pixel crop, well past where the picture's edge would
-        // show, and stays on the canvas (see BL-17170).
-        for (const [dx, dy] of [
-            [60, 60],
-            [-60, -60],
-        ]) {
+        // show, and stays on the canvas (see BL-17170). So the picture should go as far as it can:
+        // right and down until its left and top edges reach the box's, then left and up until its
+        // right and bottom edges do.
+        const drags: [number, number, (keyof IBox)[]][] = [
+            [60, 60, ["left", "top"]],
+            [-60, -60, ["right", "bottom"]],
+        ];
+        for (const [dx, dy, edgesAtLimit] of drags) {
+            const pictureBefore = await getBox(picture, "the picture");
             await dragBy(page, moveCropHandle(page), dx, dy);
             const box = await getBox(element, "the picture's box");
             const pictureBox = await getBox(picture, "the picture");
+            for (const edge of edgesAtLimit) {
+                expect(
+                    Math.abs(pictureBox[edge] - pictureBefore[edge]),
+                    `Sanity check: the drag should have moved the picture's ${edge} edge`,
+                ).toBeGreaterThan(2);
+                expectNear(
+                    pictureBox[edge],
+                    box[edge],
+                    `Dragged past its limit, the picture's ${edge} edge should stop at the box's ${edge} edge`,
+                );
+            }
             expect(
                 pictureBox.left,
                 "The picture should still cover the box's left side",
@@ -336,6 +353,23 @@ test("crop a picture from each side, move it inside its box, resize it and reset
                 ),
                 "Resizing should keep how much of the picture is cropped away",
             ).toBeLessThan(0.02);
+            // The same part of the picture should show: what is cropped off the left and the top
+            // grows by as much as the picture does.
+            const growth =
+                (pictureAfter.right - pictureAfter.left) /
+                (pictureBefore.right - pictureBefore.left);
+            for (const edge of ["left", "top"] as const) {
+                const croppedBefore = boxBefore[edge] - pictureBefore[edge];
+                expect(
+                    croppedBefore,
+                    `Sanity check: the picture should be cropped on the ${edge} before resizing`,
+                ).toBeGreaterThan(10);
+                expectNear(
+                    boxAfter[edge] - pictureAfter[edge],
+                    croppedBefore * growth,
+                    `Resizing should keep the same part of the picture showing (${edge} crop)`,
+                );
+            }
             expect(
                 (await getImagePlacement(page, element)).cropped,
                 "The picture should still be cropped after resizing",
