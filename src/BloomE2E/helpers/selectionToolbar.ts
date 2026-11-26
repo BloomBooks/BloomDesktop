@@ -97,8 +97,10 @@ export async function selectTextIn(
  * 200 ms of the last key is closed again before its swatch can be clicked. No person is that
  * fast; a test is.
  *
- * This asks CKEditor for one more look, as an event would, and returns after the next look it
- * takes, which is then the last one it owes.
+ * This asks CKEditor for a look, as an event would, and waits for the next look it takes; then it
+ * does both once more. One round is not enough: the look that comes first may be one that was on
+ * its way before the asking, with the look asked for still owed when the 200 ms are over. By the
+ * second asking nothing is on its way, so the look after it answers it, and CKEditor owes none.
  */
 async function waitForCkEditorToHaveSelection(box: Locator): Promise<void> {
     await box.evaluate(
@@ -131,13 +133,18 @@ async function waitForCkEditorToHaveSelection(box: Locator): Promise<void> {
                         ),
                     15000,
                 );
-                editor.once("selectionCheck", () => {
-                    clearTimeout(deadline);
-                    // CKEditor starts each look from a timer of its own. Returning from a timer
-                    // started now lets a look that was already on its way go first.
-                    setTimeout(resolve, 0);
-                });
-                editor.selectionChange();
+                // CKEditor starts each look from a timer of its own. Going on from a timer
+                // started in the look lets every look that was already on its way go first.
+                const afterNextLook = (then: () => void) => {
+                    editor.once("selectionCheck", () => setTimeout(then, 0));
+                    editor.selectionChange();
+                };
+                afterNextLook(() =>
+                    afterNextLook(() => {
+                        clearTimeout(deadline);
+                        resolve();
+                    }),
+                );
             }),
     );
 }

@@ -23,6 +23,7 @@ import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
     chooseEpubMode,
     getEpubPreviewImageDescriptions,
+    isEpubPreviewImageDescriptionAfterItsPicture,
     openEpubPublishScreen,
     setIncludeImageDescriptionsOnPage,
     showEpubPreview,
@@ -66,6 +67,8 @@ const ITALIC_WORD = "bird";
 const COLORED_WORD = "roof";
 const PLAIN_WORD = "sits";
 const DESCRIPTION = `A ${BOLD_WORD} ${ITALIC_WORD} ${PLAIN_WORD} on the ${COLORED_WORD}.`;
+/** The page's own text, under the picture, so that the ePUB has text the description must come before. */
+const PAGE_TEXT = "The bird sang all morning.";
 /** A color from the text palette. */
 const RED = "#ff1616";
 
@@ -89,7 +92,7 @@ test("words of an image description keep their bold, italic and color in a flowa
     test.setTimeout(420000);
 
     const picturePage = await step(
-        "Make a book with a page that has a picture",
+        "Make a book with a page that has a picture and some text",
         async () => {
             const bookFolder = await makeBookFromTemplate(page, "Basic Book");
             await addPage(page, "Basic Text & Image");
@@ -97,6 +100,7 @@ test("words of an image description keep their bold, italic and color in a flowa
             const [contentPage] = await getContentPages(page);
             await goToPage(page, contentPage.id);
             await chooseImageFile(page, PICTURE);
+            await typeInGroup(page, ".bloom-translationGroup", L1, PAGE_TEXT);
             return contentPage;
         },
     );
@@ -163,6 +167,12 @@ test("words of an image description keep their bold, italic and color in a flowa
                 "the page of the ePUB should show the picture's one description",
             ).toHaveCount(1);
             await expect(descriptions).toBeVisible();
+            expect(
+                await isEpubPreviewImageDescriptionAfterItsPicture(
+                    descriptions,
+                ),
+                "the description should come straight after the picture it describes, before the page's text",
+            ).toBe(true);
             await expect(descriptions).toHaveText(DESCRIPTION, {
                 useInnerText: true,
             });

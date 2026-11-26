@@ -9,7 +9,7 @@
 // test can answer (see AUTOMATION-DEBT.md).
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
-import { apiGet } from "./api";
+import { apiGet, getUiString } from "./api";
 import { selectPublishDestination } from "./publish";
 
 /** How an ePUB lays its pages out: as Bloom shows them, or however the reader likes. */
@@ -94,10 +94,18 @@ export async function chooseEpubMode(
         .toBe(mode);
 }
 
-/** The ePUB screen's "Include image descriptions on page" check box. */
-function includeImageDescriptionsBox(page: Page): Locator {
+/**
+ * The ePUB screen's "Include image descriptions on page" check box, found by its label in Bloom's
+ * UI language, which is the Windows UI language and so not always English.
+ */
+async function includeImageDescriptionsBox(page: Page): Promise<Locator> {
     return page.locator(PUBLISH_SCREEN).getByRole("checkbox", {
-        name: "Include image descriptions on page",
+        name: await getUiString(
+            page,
+            "PublishTab.Epub.IncludeOnPage",
+            "Include image descriptions on page",
+        ),
+        exact: true,
     });
 }
 
@@ -127,7 +135,7 @@ export async function setIncludeImageDescriptionsOnPage(
     page: Page,
     include: boolean,
 ): Promise<void> {
-    const box = includeImageDescriptionsBox(page);
+    const box = await includeImageDescriptionsBox(page);
     await box.waitFor({ state: "attached", timeout: 30000 });
     if (!(await box.isEnabled()))
         throw new Error(
@@ -152,6 +160,43 @@ export async function setIncludeImageDescriptionsOnPage(
  */
 export function getEpubPreviewImageDescriptions(frame: Frame): Locator {
     return frame.locator("aside.imageDescription");
+}
+
+/**
+ * Whether a picture description on a page of the ePUB preview (one of
+ * getEpubPreviewImageDescriptions) comes after a picture of its page and before any text box of
+ * the page that follows that picture: the place a reader that lays the page out itself gives it,
+ * straight after the picture it describes. Throws when the page has no picture.
+ */
+export async function isEpubPreviewImageDescriptionAfterItsPicture(
+    description: Locator,
+): Promise<boolean> {
+    return description.evaluate((aside) => {
+        const page = aside.closest(".bloom-page");
+        if (!page)
+            throw new Error("The description is not on a page of the book.");
+        const pictures = [...page.querySelectorAll("img")];
+        if (pictures.length === 0)
+            throw new Error(
+                "The page of the ePUB has no picture: " + page.outerHTML,
+            );
+        const follows = (later: Element, earlier: Element) =>
+            (earlier.compareDocumentPosition(later) &
+                Node.DOCUMENT_POSITION_FOLLOWING) !==
+            0;
+        // The last picture before the description is the one it describes.
+        const picture = pictures.filter((p) => follows(aside, p)).pop();
+        if (!picture) return false;
+        const textBetween = [...page.querySelectorAll(".bloom-editable")].some(
+            (box) =>
+                !aside.contains(box) &&
+                !box.contains(aside) &&
+                follows(box, picture) &&
+                follows(aside, box) &&
+                (box.textContent ?? "").trim() !== "",
+        );
+        return !textBetween;
+    });
 }
 
 /**
