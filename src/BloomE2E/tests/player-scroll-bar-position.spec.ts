@@ -20,6 +20,8 @@ import { expect, test } from "../fixtures/bloomTest";
 import {
     activePreviewPage,
     getActivePreviewPageId,
+    isPreviewOnLastPage,
+    turnPreviewPage,
 } from "../helpers/bloomPlayer";
 import {
     addPage,
@@ -41,11 +43,23 @@ import {
     showPreviewPage,
 } from "../helpers/publish";
 import {
+    getLastLineOf,
     getScrollBarPlacementOf,
     waitForScrollBarOf,
     type IScrollBarPlacement,
 } from "../helpers/textBoxScrollBars";
-import { clickZoomButton, getZoom, setZoom } from "../helpers/workspace";
+import {
+    getWindowSize,
+    resizeWindow,
+    restoreWindowSize,
+} from "../helpers/windowSize";
+import {
+    clickZoomButton,
+    expectPageDrawnAtZoom,
+    getSizeOfPageBeingEdited,
+    getZoom,
+    setZoom,
+} from "../helpers/workspace";
 
 test.use({
     collectionSpec: { name: "player-scroll-bar-position", languages: ["en"] },
@@ -80,10 +94,7 @@ function textBox(page: Page): Locator {
 }
 
 async function pageWidth(page: Page): Promise<number> {
-    return editablePageFrame(page)
-        .locator(".bloom-page")
-        .first()
-        .evaluate((e) => e.getBoundingClientRect().width);
+    return (await getSizeOfPageBeingEdited(page)).width;
 }
 
 /**
@@ -151,13 +162,25 @@ async function expectRailScaledWithPage(
 }
 
 /**
- * Scroll the Edit tab's page down from its top, as a person does, and return how far it moved:
- * 0 when the whole page fits in the window, as it can at 120% on a large screen.
+ * Scroll the Edit tab's page down from its top, as a person does. On a screen tall enough to show
+ * the whole zoomed page there is nothing to scroll, so the window is first made shorter than the
+ * page, as a person with a smaller screen has it; restoreWindowSize puts it back.
  */
-async function scrollEditTabDown(page: Page): Promise<number> {
+async function scrollEditTabDown(page: Page): Promise<void> {
     // From the top, since an earlier scroll at a larger zoom can leave the page at its bottom.
     await scrollPageFrameBy(page, -100000);
-    return scrollPageFrameBy(page, 400);
+    if ((await scrollPageFrameBy(page, 400)) > 0) return;
+    const window = await getWindowSize(page);
+    const pageHeight = (await getSizeOfPageBeingEdited(page)).height;
+    await resizeWindow(page, {
+        width: window.width,
+        height: Math.round(pageHeight / 2),
+    });
+    await scrollPageFrameBy(page, -100000);
+    expect(
+        await scrollPageFrameBy(page, 400),
+        "test setup: with the window half as tall as the page, the page should scroll",
+    ).toBeGreaterThan(0);
 }
 
 /** Wait until the zoom changes the box's rail with it: niceScroll resizes it a moment later. */
@@ -171,50 +194,6 @@ async function expectRailFollowsZoom(page: Page, when: string): Promise<void> {
     }, `${when}: the scroll bar did not follow the zoom`).toPass({
         timeout: 15000,
     });
-}
-
-/**
- * Click the preview's Next or Previous button once, and return once the page has turned and
- * stopped sliding (a scroll bar is set up for a page only once it is the one showing).
- */
-async function turnPreviewPage(
-    player: Frame,
-    direction: "next" | "previous",
-): Promise<void> {
-    const before = await getActivePreviewPageId(player);
-    await player
-        .locator(
-            direction === "next"
-                ? ".swiper-button-next"
-                : ".swiper-button-prev",
-        )
-        .first()
-        .click();
-    await expect
-        .poll(() => getActivePreviewPageId(player), {
-            timeout: 30000,
-            message: `The preview's ${direction} button did not turn the page.`,
-        })
-        .not.toBe(before);
-    await expect
-        .poll(
-            () =>
-                player.evaluate(
-                    () =>
-                        (
-                            document.querySelector(".swiper-container") as
-                                | (Element & {
-                                      swiper?: { animating: boolean };
-                                  })
-                                | null
-                        )?.swiper?.animating === false,
-                ),
-            {
-                timeout: 30000,
-                message: "The preview's page turn never finished sliding.",
-            },
-        )
-        .toBe(true);
 }
 
 /** The page of the BloomPUB preview that is showing the text page. */
@@ -266,12 +245,10 @@ test.describe("Player Scroll Bar Position", () => {
     }) => {
         for (let i = 0; i < 4; i++) await clickZoomButton(page, "in");
         expect((await getZoom(page)).zoom).toBe(140);
+        await expectPageDrawnAtZoom(page, 140);
         await expectRailFollowsZoom(page, "Zoomed in to 140%");
 
-        expect(
-            await scrollEditTabDown(page),
-            "test setup: at 140% the page should be taller than the window, so that it scrolls",
-        ).toBeGreaterThan(0);
+        await scrollEditTabDown(page);
         await expectScrollBarAtRightOfBox(
             textBox(page),
             "Zoomed in to 140%, with the page scrolled down",
@@ -283,14 +260,15 @@ test.describe("Player Scroll Bar Position", () => {
     }) => {
         for (let i = 0; i < 2; i++) await clickZoomButton(page, "out");
         expect((await getZoom(page)).zoom).toBe(120);
+        await expectPageDrawnAtZoom(page, 120);
         await expectRailFollowsZoom(page, "Zoomed out to 120%");
 
-        // At 120% the page may fit the window, and then there is nothing to scroll.
         await scrollEditTabDown(page);
         await expectScrollBarAtRightOfBox(
             textBox(page),
             "Zoomed out to 120%, with the page scrolled down",
         );
+        await restoreWindowSize(page);
         // Bloom keeps the zoom as a user setting.
         await setZoom(page, zoomBefore);
     });
@@ -303,7 +281,7 @@ test.describe("Player Scroll Bar Position", () => {
         await openPublishDestination(page, "BloomPUB");
         player = await showBloomPubPreview(page);
         await expect(
-            player.locator(".bloom-page").first(),
+            activePreviewPage(player),
             "The book should appear in the preview.",
         ).toBeVisible({ timeout: 30000 });
 
@@ -319,12 +297,7 @@ test.describe("Player Scroll Bar Position", () => {
         // The case turns to the next page and back. The preview leaves out a back cover with
         // nothing on it, which can make the text page the last one; then the way away and back
         // is through the page before it.
-        const awayAndBack = (await player
-            .locator(".swiper-button-next")
-            .first()
-            .evaluate((button) =>
-                button.classList.contains("swiper-button-disabled"),
-            ))
+        const awayAndBack = (await isPreviewOnLastPage(player))
             ? (["previous", "next"] as const)
             : (["next", "previous"] as const);
         for (const direction of awayAndBack)
@@ -349,20 +322,9 @@ test.describe("Player Scroll Bar Position", () => {
         page,
     }) => {
         const box = previewBox(player);
-        const lastLine = () =>
-            box.evaluate((element) => {
-                const paragraphs = element.querySelectorAll("p");
-                const range = element.ownerDocument.createRange();
-                range.selectNodeContents(paragraphs[paragraphs.length - 1]);
-                const rects = range.getClientRects();
-                return {
-                    bottom: rects[rects.length - 1].bottom,
-                    boxBottom: element.getBoundingClientRect().bottom,
-                };
-            });
-        const before = await lastLine();
+        const before = await getLastLineOf(box);
         expect(
-            before.bottom,
+            before.lineBottom,
             "test setup: before scrolling, the last line should be below the bottom of the text box",
         ).toBeGreaterThan(before.boxBottom);
 
@@ -375,9 +337,9 @@ test.describe("Player Scroll Bar Position", () => {
             (await getTextBoxView(box)).scrollableFurther,
             "The text box should be scrolled to its end",
         ).toBeLessThan(2);
-        const after = await lastLine();
+        const after = await getLastLineOf(box);
         expect(
-            after.bottom,
+            after.lineBottom,
             "Scrolled to the end, the last line of the text should show whole",
         ).toBeLessThanOrEqual(after.boxBottom + 1);
     });

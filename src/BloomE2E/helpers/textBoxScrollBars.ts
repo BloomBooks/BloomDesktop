@@ -291,6 +291,33 @@ export async function waitForShorterScrollBarHandle(
     return scrollBar;
 }
 
+/** Where the last line of a text box's text is drawn, and where the box ends. */
+export interface ILastLine {
+    /** The bottom of the last line of the box's last paragraph, on screen. */
+    lineBottom: number;
+    /** The bottom of the box, on screen. Text below it is out of sight. */
+    boxBottom: number;
+}
+
+/**
+ * Where the last line of the text box `box` locates is drawn, so that a test can tell whether a
+ * reader who scrolled the box to its end sees that line whole.
+ */
+export async function getLastLineOf(box: Locator): Promise<ILastLine> {
+    return box.evaluate((element) => {
+        const paragraphs = element.querySelectorAll("p");
+        if (paragraphs.length === 0)
+            throw new Error("The text box has no paragraph.");
+        const range = element.ownerDocument.createRange();
+        range.selectNodeContents(paragraphs[paragraphs.length - 1]);
+        const lines = range.getClientRects();
+        return {
+            lineBottom: lines[lines.length - 1].bottom,
+            boxBottom: element.getBoundingClientRect().bottom,
+        };
+    });
+}
+
 /** How much of a text box's text is out of sight above and below what the box shows. */
 export interface ITextBoxScrollPosition {
     /** Pixels of text scrolled out of sight above; 0 when the start of the text shows. */
