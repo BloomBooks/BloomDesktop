@@ -158,7 +158,8 @@ real bug in the code under test; read the message and fix it rather than working
   `listEditableBooks`, and the selected book's menu, opened by a right-click or by the triangle
   on its tile (`openSelectedBookMenu`, `readSelectedBookMenu`, `chooseFromSelectedBookMenu`,
   `chooseFromSelectedBookMenuByTestId`, `chooseFromSelectedBookMoreMenuByTestId`, `closeBookMenu`,
-  `getBooksShowingMenuTriangle`).
+  `getBooksShowingMenuTriangle`), and `readBookId`/`findBookFolderById` to find a book again after
+  Bloom renames its folder.
 - `helpers/spreadsheet.ts` — `exportSelectedBookToSpreadsheet` and
   `importSpreadsheetIntoSelectedBook`, the More submenu's spreadsheet commands, with their choosers
   answered through Bloom's e2e hook and what the progress box said.

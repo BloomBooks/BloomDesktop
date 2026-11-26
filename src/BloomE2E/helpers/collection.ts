@@ -549,6 +549,36 @@ export async function getSelectedBookId(
     return info.id ?? undefined;
 }
 
+/** The bookInstanceId in the meta.json of the book in `bookFolder`. */
+export function readBookId(bookFolder: string): string {
+    return JSON.parse(
+        fs.readFileSync(Path.join(bookFolder, "meta.json"), "utf8"),
+    ).bookInstanceId;
+}
+
+/**
+ * The folder of the book whose meta.json has this bookInstanceId, among the books in
+ * `collectionDir`. For a book whose folder Bloom may have renamed since, as it does when the
+ * book's title changes.
+ */
+export function findBookFolderById(
+    collectionDir: string,
+    bookId: string,
+): string {
+    const folders = fs
+        .readdirSync(collectionDir, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => Path.join(collectionDir, entry.name))
+        .filter((folder) => fs.existsSync(Path.join(folder, "meta.json")));
+    const match = folders.find((folder) => readBookId(folder) === bookId);
+    if (!match)
+        throw new Error(
+            `No book in ${collectionDir} has the id ${bookId}. Folders: ` +
+                folders.map((f) => Path.basename(f)).join(", "),
+        );
+    return match;
+}
+
 /** The pane on the right of the Collections tab, which previews the selected book. */
 const kBookPane = "collections-tab-book-pane";
 
