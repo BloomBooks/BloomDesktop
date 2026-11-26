@@ -42,6 +42,7 @@ import {
     getOfferedScriptCodes,
     getScriptCardText,
     kEnglishLanguageChooserLabels,
+    okCustomizeDialog,
     okLanguageChooser,
     openCustomizeDialog,
     openLanguageChooser,
@@ -131,17 +132,25 @@ test("finds a language by name, by code and by country, the X clears the search,
     await openLanguageChooser(page, kLanguage3, "set");
     expect(await getHorizontallyScrollingParts(page)).toEqual([]);
 
-    await searchForLanguage(page, "tok pisin");
-    expect((await getListedLanguageCodes(page))[0]).toBe("tpi");
-    expect(await getHorizontallyScrollingParts(page)).toEqual([]);
+    // The results of a search replace the earlier ones a moment after the typing, so each check of
+    // the first result waits for it.
+    const firstListedLanguage = async () =>
+        (await getListedLanguageCodes(page))[0];
 
-    await searchForLanguage(page, "tpi");
-    expect((await getListedLanguageCodes(page))[0]).toBe("tpi");
+    await searchForLanguage(page, "tok pisin");
+    await expect.poll(firstListedLanguage).toBe("tpi");
     expect(await getHorizontallyScrollingParts(page)).toEqual([]);
 
     // Icelandic is the language of Iceland, so a search for the country lists it.
     await searchForLanguage(page, "Iceland");
     await scrollToLanguage(page, "isl");
+    expect(await getHorizontallyScrollingParts(page)).toEqual([]);
+
+    // The search by code comes after a search that does not list Tok Pisin first, so that the
+    // name search's results cannot pass for its own.
+    await expect.poll(firstListedLanguage).not.toBe("tpi");
+    await searchForLanguage(page, "tpi");
+    await expect.poll(firstListedLanguage).toBe("tpi");
     expect(await getHorizontallyScrollingParts(page)).toEqual([]);
 
     await clearLanguageSearch(page);
@@ -228,9 +237,15 @@ test("builds the full tag from the script, country and dialect chosen in Customi
     await typeCustomizeDialect(page, "foo");
     // Latin script and Papua New Guinea are what Tok Pisin has anyway, so the tag leaves them out.
     await expect.poll(() => getCustomizeTag(page)).toBe("tpi-x-foo");
-    await cancelCustomizeDialog(page);
 
-    await cancelLanguageChooser(page);
+    // OK in Customize gives the tag to the chooser, and OK there gives it to the collection.
+    await okCustomizeDialog(page);
+    await expect.poll(() => getChosenLanguageTag(page)).toBe("tpi-x-foo");
+    await okLanguageChooser(page);
+    expect(await getCollectionSettingsLanguage(page, kLanguage3)).toBe(
+        "Tok Pisin (tpi-x-foo)",
+    );
+
     await cancelCollectionSettings(page);
 });
 
@@ -282,16 +297,10 @@ test("turns right to left on for a right-to-left script and off for the others, 
         "French",
     ).toBe(false);
 
-    // Albanian offers several scripts, none of them right to left. Right after Hebrew, each must
-    // turn the setting off, and keep it off as the script changes.
-    await chooseAndReadRightToLeft(
-        page,
-        kLanguage1,
-        "change",
-        "hebrew",
-        "heb",
-        "Hebr",
-    );
+    // Albanian offers several scripts, none of them right to left. Each must turn the setting off
+    // right after Hebrew turned it on: the Languages page keeps the setting a language had when the
+    // chooser does not say which way a script runs, so a script chosen after another Albanian one
+    // would show it off whatever the chooser said.
     await openLanguageChooser(page, kLanguage1, "change");
     await searchForLanguage(page, "albanian");
     // "als": the language the chooser calls Albanian, not "sq", the macrolanguage, which offers
@@ -304,6 +313,17 @@ test("turns right to left on for a right-to-left script and off for the others, 
     ).toBeGreaterThan(1);
     await cancelLanguageChooser(page);
     for (const script of albanianScripts) {
+        expect(
+            await chooseAndReadRightToLeft(
+                page,
+                kLanguage1,
+                "change",
+                "hebrew",
+                "heb",
+                "Hebr",
+            ),
+            `Hebrew, before Albanian in script ${script}`,
+        ).toBe(true);
         expect(
             await chooseAndReadRightToLeft(
                 page,
@@ -409,7 +429,8 @@ test("shows the language chooser in the UI language, and it still finds language
     await openLanguageChooser(page, french.language2, "change", french);
 
     // Bloom's own title over the chooser, and EthnoLib's own strings inside it.
-    expect(await getLanguageChooserTitle(page)).toBe(french.title);
+    // The title arrives in French a moment after the chooser shows, so wait for it.
+    await expect.poll(() => getLanguageChooserTitle(page)).toBe(french.title);
     await searchForLanguage(page, "tok pisin");
     await chooseLanguage(page, "tpi");
     await expect(customizeButton(page)).toContainText("Personnaliser");

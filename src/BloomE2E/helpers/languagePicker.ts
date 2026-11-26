@@ -3,6 +3,9 @@
 // Collection Settings dialog opens it: a button beside each language, "Change..." when the slot has
 // a language and "Set..." when it has none.
 //
+// These are for tests of the chooser itself. A test that only needs a language picked uses
+// helpers/languageChooser.ts.
+//
 // The chooser's own parts carry EthnoLib's test ids (search-bar, language-card-<code>,
 // script-card-<code>, customization-button, ...), which are the same in every UI language, so only
 // Bloom's own wording around it does. Every function that finds something by its wording takes
@@ -415,6 +418,17 @@ export async function getCustomizeTag(page: Page): Promise<string> {
     // The preview reads "BCP 47 Tag: es-Arab-AD-x-foo", its label in the UI language; a tag has
     // no spaces, so it is the last word.
     return /\S+$/.exec(shown)?.[0] ?? "";
+}
+
+/**
+ * Click OK in the Customize dialog and return once it has closed. The chooser then shows the tag
+ * that the dialog built.
+ */
+export async function okCustomizeDialog(page: Page): Promise<void> {
+    await realClick(
+        customizeDialog(page).getByTestId("customization-dialog-ok-button"),
+    );
+    await expect(customizeDialog(page)).toHaveCount(0);
 }
 
 /** Click Cancel in the Customize dialog and return once it has closed. */
