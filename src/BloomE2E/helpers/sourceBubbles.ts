@@ -509,23 +509,45 @@ export async function expectMouseMovesLeaveSourceBubbles(
     const origin = await pageFrameOrigin(page);
     const frame = editablePageFrame(page);
     const before = await getSourceBubbleStates(page);
-    const targets = await frame.evaluate((selector) => {
+    const { targets, unreachable } = await frame.evaluate((selector) => {
         const width = document.documentElement.clientWidth;
         const height = document.documentElement.clientHeight;
-        return Array.from(document.querySelectorAll(selector)).flatMap(
+        const reached: {
+            x: number;
+            y: number;
+            index: number;
+            over: string;
+        }[] = [];
+        const missed: string[] = [];
+        Array.from(document.querySelectorAll(selector)).forEach(
             (element, index) => {
                 const rect = element.getBoundingClientRect();
-                if (rect.width === 0 || rect.height === 0) return [];
+                if (rect.width === 0 || rect.height === 0) return;
+                const over = `${element.className.toString().split(" ")[0]} ${index + 1}`;
+                // The picture's own spots are the ones where no text, canvas element holding
+                // text, or source bubble lies over it, which the picture contains as well.
+                const isPicture = element.matches(".bloom-canvas");
+                const hits = (hit: Element | null) =>
+                    !!hit &&
+                    element.contains(hit) &&
+                    (!isPicture ||
+                        (!hit.closest(".bloom-translationGroup") &&
+                            !hit.closest(".qtip") &&
+                            !hit.closest(
+                                ".bloom-canvas-element:not(.bloom-backgroundImage)",
+                            )));
                 const middle = {
                     x: rect.left + rect.width / 2,
                     y: rect.top + rect.height / 2,
                 };
+                // A fine grid reaching close to the edges, nearest the middle first, so that an
+                // element of which only an edge shows is still found.
                 const points: { x: number; y: number }[] = [];
-                for (let i = 1; i < 10; i++)
-                    for (let j = 1; j < 10; j++)
+                for (let i = 1; i < 40; i++)
+                    for (let j = 1; j < 40; j++)
                         points.push({
-                            x: rect.left + (rect.width * i) / 10,
-                            y: rect.top + (rect.height * j) / 10,
+                            x: rect.left + (rect.width * i) / 40,
+                            y: rect.top + (rect.height * j) / 40,
                         });
                 points.sort(
                     (a, b) =>
@@ -538,29 +560,18 @@ export async function expectMouseMovesLeaveSourceBubbles(
                         point.y >= 0 &&
                         point.x < width &&
                         point.y < height &&
-                        element.contains(
-                            document.elementFromPoint(point.x, point.y),
-                        ),
+                        hits(document.elementFromPoint(point.x, point.y)),
                 );
-                return spot
-                    ? [
-                          {
-                              ...spot,
-                              index,
-                              over: `${element.className.toString().split(" ")[0]} ${index + 1}`,
-                          },
-                      ]
-                    : [];
+                if (spot) reached.push({ ...spot, index, over });
+                else missed.push(over);
             },
         );
+        return { targets: reached, unreachable: missed };
     }, kTargets);
-    if (
-        !targets.some((target) =>
-            target.over.startsWith("bloom-translationGroup"),
-        )
-    )
+    if (unreachable.length)
         throw new Error(
-            `${message} The pointer can reach no text box of the page, so moving it over them proves nothing.`,
+            `${message} The pointer cannot reach ${unreachable.join(", ")} of the page, so the ` +
+                `test cannot show that moving over them changes nothing.`,
         );
     const corners = await frame.evaluate(() => [
         { x: 5, y: 5 },
