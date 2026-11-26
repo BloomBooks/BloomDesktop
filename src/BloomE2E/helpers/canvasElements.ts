@@ -1606,6 +1606,19 @@ export function canvasElementTextBox(page: Page, index: number): Locator {
 }
 
 /**
+ * The words in the box that canvas element `index` is showing. A space typed at the end of a box's
+ * text goes in as a non-breaking one, so every run of white space, that one too, reads as one
+ * space.
+ */
+export async function getCanvasElementText(
+    page: Page,
+    index: number,
+): Promise<string> {
+    const text = await canvasElementTextBox(page, index).innerText();
+    return text.replace(/\s+/g, " ").trim();
+}
+
+/**
  * Whether the selected canvas element has Auto Height on: Bloom then makes the element as tall as
  * its text needs, as far as the canvas has room. It is on for a new speech bubble or text block.
  */

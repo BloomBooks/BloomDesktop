@@ -16,11 +16,11 @@ import {
 } from "../helpers/bookMaking";
 import {
     canvasElement,
-    canvasElementTextBox,
     clearCanvasElementSelection,
     dragCanvasElementSide,
     dragPaletteItemOntoCanvas,
     duplicateCanvasElement,
+    getCanvasElementText,
     selectCanvasElement,
     typeInCanvasElement,
 } from "../helpers/canvasElements";
@@ -53,15 +53,6 @@ async function readBubbleStyle(bubble: Locator): Promise<string> {
     const json = await bubble.getAttribute("data-bubble");
     if (!json) throw new Error("The canvas element has no data-bubble spec.");
     return (JSON.parse(json.replace(/`/g, '"')) as { style: string }).style;
-}
-
-/**
- * The text of the box a bubble shows. A space typed at the end of a box's text goes in as a
- * non-breaking one, so every run of white space, that one too, reads as one space.
- */
-async function readBubbleText(page: Page, index: number): Promise<string> {
-    const text = await canvasElementTextBox(page, index).innerText();
-    return text.replace(/\s+/g, " ").trim();
 }
 
 /** Whether two sizes and places are the same, to the pixel. */
@@ -214,7 +205,7 @@ test("A duplicated speech bubble, and the one it was copied from, can each still
             "Bloom should select the copy it has just made.",
         ).toHaveAttribute("data-bloom-active", "true", { timeout: 15000 });
         expect(
-            await readBubbleText(page, copyIndex),
+            await getCanvasElementText(page, copyIndex),
             "The copy should have the original's words.",
         ).toBe(kOriginalWords);
         expect(
@@ -257,11 +248,11 @@ test("A duplicated speech bubble, and the one it was copied from, can each still
             await selectCanvasElement(page, copyIndex);
             await typeInCanvasElement(page, " again");
             expect(
-                await readBubbleText(page, copyIndex),
+                await getCanvasElementText(page, copyIndex),
                 "The copy's words should take what was typed in it.",
             ).toBe(`${kOriginalWords} again`);
             expect(
-                await readBubbleText(page, originalIndex),
+                await getCanvasElementText(page, originalIndex),
                 "Typing in the copy should leave the original's words alone.",
             ).toBe(kOriginalWords);
         });
@@ -271,11 +262,11 @@ test("A duplicated speech bubble, and the one it was copied from, can each still
             await selectCanvasElement(page, originalIndex);
             await typeInCanvasElement(page, " first");
             expect(
-                await readBubbleText(page, originalIndex),
+                await getCanvasElementText(page, originalIndex),
                 "The original's words should take what was typed in it.",
             ).toBe(`${kOriginalWords} first`);
             expect(
-                await readBubbleText(page, copyIndex),
+                await getCanvasElementText(page, copyIndex),
                 "Typing in the original should leave the copy's words alone.",
             ).toBe(`${kOriginalWords} again`);
         });
