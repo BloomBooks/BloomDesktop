@@ -8,7 +8,7 @@
 // is fetched after the screen mounts and re-fetched whenever the copyright is saved.
 
 import { expect, type Locator, type Page } from "@playwright/test";
-import { apiPost } from "./api";
+import { apiGetJson, apiPost } from "./api";
 import { selectPublishDestination } from "./publish";
 
 /** The two things a book must have before Bloom will let it be uploaded. */
@@ -282,5 +282,28 @@ async function postLoginState(page: Page, email: string | null): Promise<void> {
         "e2e/loginState",
         JSON.stringify({ email }),
         "application/json",
+    );
+}
+
+/**
+ * The Web screen's Summary box, the summary a book has on BloomLibrary.org. Found by its id, which
+ * is not localized. See LibraryPublishSteps.tsx.
+ */
+export function librarySummaryBox(page: Page): Locator {
+    return page.locator('textarea[id="book summary"]');
+}
+
+/**
+ * The book's summary as Bloom holds it: the summary that the Web screen shows and uploads, which
+ * is also the one the ePUB's Book Metadata dialog edits.
+ */
+export async function getBookSummary(page: Page): Promise<string> {
+    return (
+        (
+            await apiGetJson<{ summary: string | null }>(
+                page,
+                "libraryPublish/getBookInfo",
+            )
+        ).summary ?? ""
     );
 }

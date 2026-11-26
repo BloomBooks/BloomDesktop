@@ -102,6 +102,9 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         return (
                                             <TextField
                                                 defaultValue={f.value}
+                                                inputProps={{
+                                                    "data-testid": `book-metadata-${f.key}`,
+                                                }}
                                                 margin="dense"
                                                 variant="outlined"
                                                 fullWidth={
