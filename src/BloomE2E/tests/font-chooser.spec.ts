@@ -6,10 +6,9 @@
 // that shows the raw metadata. The chosen font's mark shows in the closed chooser too, in colour.
 // Automates the manual test "New Font Chooser" (Test Case ID 358).
 //
-// The chooser is the same component in the Format dialog and in the collection Settings dialog's
-// Book Making tab. This file drives it in the Format dialog; the Settings dialog is a WinForms
-// surface CDP cannot reach (AUTOMATION-DEBT.md), so the card's Settings route is on its manual
-// portion.
+// The chooser is the same component in the Format dialog and on the Languages page of the
+// Collection Settings dialog. This file drives it in the Format dialog;
+// collection-settings-font-chooser.spec.ts checks that it behaves the same in the Settings dialog.
 //
 // Which fonts a machine has varies, so the file asks Bloom for a font of each kind at run time,
 // preferring the ones the manual test names, and fails plainly when a kind is missing.

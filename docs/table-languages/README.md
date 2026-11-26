@@ -16,10 +16,9 @@ Languages
   [ ] L3 - Spanish
 ```
 
-- One check box per role the book has: L1, then L2 and L3 when the collection has them. L1 is
-  the first language ticked in the toolbar, which is usually the collection's first language but
-  need not be; L2 and L3 are the collection's second and third. If L2 or L3 is the same language
-  as L1, only one entry is shown (the canvas element's Language submenu already drops duplicates
+- One check box per collection language: L1, then L2 and L3 when the collection has them. They
+  are the collection's first, second and third languages, whatever the toolbar ticks. If two of
+  them are the same language, only one entry is shown (the canvas element's Language submenu already drops duplicates
   this way, in `canvasControlTextMenuItems.ts`).
 - Each entry's tooltip is the Collection Settings label for that language.
 - At least one box stays ticked: a box is disabled when unticking it would leave some cell with
@@ -34,26 +33,41 @@ Languages
 
 ## What is stored
 
-The ticked roles go into `data-default-languages` on the cell's `bloom-translationGroup`, as the
-roles Bloom already uses: `V` for L1, `N1` for L2, `N2` for L3, or a list such as `V,N1`. They
-mean here what they mean in every translation group (`ShouldNormallyShowEditable` in
-`TranslationGroupManager.cs`): `V` is the first language ticked in the toolbar, and `N1` and `N2`
-are the collection's second and third languages, whether or not the toolbar ticks them.
+The ticked roles go into `data-default-languages` on the cell's `bloom-translationGroup`: `CL1`
+for L1, `N1` for L2, `N2` for L3, or a list such as `CL1,N1`. They mean here what they mean in
+every translation group (`ShouldNormallyShowEditable` in `TranslationGroupManager.cs`): the
+collection's first, second and third languages, whether or not the toolbar ticks them.
 Storing roles rather than language tags means a cell keeps its role when the book is translated in
 another collection: a word-list column set to L1 shows the new collection's L1.
 
-Bloom's C# already reads a comma list in this attribute and shows the languages it names, so the
-feature needs no change to the C#.
+`CL1` is new with this feature, and so are `CL2` and `CL3`, other names for `N1` and `N2` that
+anticipate retiring `N1` and `N2` once 6.6 is released (the menu reads them but does not yet
+write them). Unlike `V`, the toolbar's first language, `CL1` does not change when the toolbar
+does. Supporting it took these changes outside the menu:
+
+- C# shows a box for `CL1` in any translation group (`ShouldNormallyShowEditable`,
+  `Book.IsLanguageWantedInContent`), makes the box when the book's languages leave the
+  collection's first language out, and sets its direction (`TranslationGroupManager`).
+- A book that uses `CL1`, `CL2` or `CL3` requires Bloom 6.6 (the `collectionLanguageRoles`
+  feature in `BookStorage`), since older Blooms show such a box in no language.
+- Bloom Player shows a `CL1` box, like a `V` one, in the language the reader chooses
+  (`updateDivVisibilityByLangCode` in its `langVisibility.ts`).
 
 ## Defaults and the toolbar
 
-- A new text cell shows L1 only.
-- A table text cell with no `data-default-languages` (every cell of a table made before this
-  feature) shows the languages ticked in the toolbar, as any translation group with no setting
-  does, and its menu ticks those.
-- Turning a language on or off in the toolbar changes what a cell set to `V` shows only when it
-  changes which language is ticked first. It does not change what a cell set to `N1` or `N2`
-  shows.
+- A new text cell shows L1 only (`CL1`).
+- Turning a language on or off in the toolbar does not change what a cell shows.
+- Tables have not been released, so only a few test books have cells with no setting or `V`.
+  Such a cell shows what any translation group with that setting shows, its menu ticks none of
+  its boxes, and the first change gives it a setting the menu reads. A setting copied from such a
+  cell (Paste properties, Paint format, a new row beside it) shows at once what page load will
+  show for it.
+- A box added or shown after the page has loaded gets the visibility and classes page load would
+  give it (`languagesShownBySetting` and `languageClassesOf` in `translationGroupLanguages.ts`,
+  which follow `TranslationGroupManager`). The collection's first language is marked
+  `bloom-contentCL1`, as its second and third are marked `bloom-contentNational1` and `2`; among
+  other things that gives such a box the rich-text editor at page load. The order boxes read down
+  a group still follows the toolbar (`bloom-content1/2/3`), as for every text box.
 
 ## Setting a value at a higher level
 
@@ -73,8 +87,11 @@ item goes with them, and there is no other way to reach it.
 
 ## Not changed
 
-- The canvas element's Language submenu and the Text Box Properties Language tab keep their
-  current labels.
+- The Text Box Properties Language tab keeps its current labels.
+- The canvas element's Language submenu still stores `V`, `N1` and `N2`, but each entry is now named
+  for the language its setting shows (`V` is the toolbar's first language), and choosing it shows
+  that language at once, as page load will. When the toolbar's first language is the collection's
+  first, as usual, nothing changes for the user.
 - Text Box Properties still offers one language or "Normal".
 - Collection Settings keeps "Local Language", "Language 2" and "Language 3".
 
@@ -97,8 +114,9 @@ let Bloom add what the library knows nothing about:
   a change is recorded as a table operation, which the table library undoes.
 - `src/BloomBrowserUI/bookEdit/js/TableCellLanguagesSection.tsx`: the menu item and its submenu.
 - `src/BloomBrowserUI/bookEdit/js/tableEditing.ts`: installs both hooks; new text cells start
-  with `data-default-languages="V"`.
+  with `data-default-languages="CL1"`, in the language `GetSettings().collectionLanguage1`.
 - `src/BloomBrowserUI/bookEdit/js/translationGroupLanguages.ts` (from BL-17105-1of3-box-setup,
   which the canvas text box's Language submenu also uses): shows the chosen languages in a cell's
   translation group, adds a box for a language the cell has none for, and gives that box what page
-  load gives every box.
+  load gives every box, its language classes included. It also holds the front end's copy of C#'s
+  rules for which languages a setting shows, which must change when those rules do.

@@ -52,6 +52,8 @@ export function resetAbovePageControls(): void {
     // Off-screen (e.g. process-book) there is no workspace frame, so this is a no-op there.
     // (Reached via pageUnloading() in bloomEditing.ts.)
     tryGetWorkspaceBundleExports()?.setToolboxEnabled(true);
+    // A game page that was in Play is going away; the next page sets this again if it is one.
+    tryGetWorkspaceBundleExports()?.setEditingDisabled(false);
 
     const container = document.getElementsByClassName(
         "above-page-control-container",
@@ -153,10 +155,12 @@ function makeControlsBar(container: HTMLElement): void {
         "--bloom-controls-bar-background",
         getComputedStyle(document.body).backgroundColor,
     );
-    document.body.style.setProperty(
-        "--bloom-controls-bar-height",
-        `${document.getElementById("labelAndLayoutPane")!.offsetHeight}px`,
-    );
+    const barHeight = `${document.getElementById("labelAndLayoutPane")!.offsetHeight}px`;
+    document.body.style.setProperty("--bloom-controls-bar-height", barHeight);
+    // The page scrolls under the bar, so whatever is scrolled into view (the caret's line, an
+    // element given the focus, anything shown with scrollIntoView) has to stop below it, not under
+    // it.
+    document.documentElement.style.scrollPaddingTop = barHeight;
     document.body.appendChild(container);
 }
 

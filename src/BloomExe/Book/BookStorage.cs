@@ -1184,6 +1184,20 @@ namespace Bloom.Book
                 XPath =
                     $"//div[contains(concat(' ', normalize-space(@class), ' '), ' {HtmlDom.kBloomCanvasClass} ') ]",
             },
+            new Feature()
+            {
+                FeatureId = "collectionLanguageRoles",
+                FeaturePhrase = "Text boxes set to show a collection language (CL1, CL2 or CL3)",
+                // An older Bloom does not know these roles in data-default-languages, so it would show
+                // such a box in no language at all. An older Bloom Player shows a published book as
+                // Bloom marked it, and only reads the roles when the reader chooses another language,
+                // so it can still try the book.
+                BloomDesktopMinVersion = "6.6",
+                BloomPlayerMinVersion = "1.0",
+                // No setting that an older Bloom understands contains "CL", so any that does needs
+                // this version.
+                XPath = "//div[contains(@data-default-languages, 'CL')]",
+            },
         };
 
         // We should keep somewhat aware of how long this takes to run.
@@ -2864,7 +2878,10 @@ namespace Bloom.Book
             return String.Join("<br />", unencodedStrings.Select(WebUtility.HtmlEncode));
         }
 
-        private static string GetEncodedSeeWebPageString(string webPageUrl)
+        /// <summary>
+        /// "See {0}." (localized) as HTML, with {0} a link to webPageUrl showing the URL itself.
+        /// </summary>
+        internal static string GetEncodedSeeWebPageString(string webPageUrl)
         {
             var seeAlsoFormatStr = LocalizationManager.GetString("Common.SeeWebPage", "See {0}.");
             // FYI: The braces in the format string are not encoded by HtmlEncode.

@@ -22,6 +22,10 @@ import {
     type Page,
 } from "@playwright/test";
 import { apiGet } from "./api";
+import {
+    waitForBloomToHavePageAsItIs,
+    waitForEditTabSettled,
+} from "./bookMaking";
 
 /** A command in a page thumbnail's context menu, named as the menu shows it in English. */
 export type PageMenuCommand =
@@ -85,14 +89,12 @@ export async function waitForPageCount(
 ): Promise<void> {
     await expect
         .poll(
-            async () => {
-                try {
-                    return (await getPageIds(page, timeoutMs)).length;
-                } catch (error) {
-                    if (isPaneReloadError(error)) return undefined;
-                    throw error;
-                }
-            },
+            async () =>
+                (
+                    await readUnlessDocumentReplaced(() =>
+                        getPageIds(page, timeoutMs),
+                    )
+                )?.length,
             {
                 timeout: timeoutMs,
                 message: `The page thumbnail list never showed ${count} pages.`,
@@ -101,24 +103,46 @@ export async function waitForPageCount(
         .toBe(count);
 }
 
-/** True when an error came from the thumbnail pane's document being replaced mid-read. */
-function isPaneReloadError(error: unknown): boolean {
-    return (
-        error instanceof Error &&
-        /Execution context was destroyed|Frame was detached/.test(error.message)
-    );
+/**
+ * Run `read`, and return undefined instead if a frame's document is replaced while it reads, as
+ * happens when Bloom reloads the thumbnail pane or the page being edited. For a poll's callback:
+ * such a read is not an answer yet, and expect.poll fails at once on a callback that throws, so
+ * the error has to be caught there. Any other error is thrown.
+ */
+export async function readUnlessDocumentReplaced<T>(
+    read: () => Promise<T>,
+): Promise<T | undefined> {
+    try {
+        return await read();
+    } catch (error) {
+        if (
+            error instanceof Error &&
+            /Execution context was destroyed|Frame was detached/.test(
+                error.message,
+            )
+        )
+            return undefined;
+        throw error;
+    }
 }
 
 /**
  * Click a page's thumbnail and wait for Bloom to report it selected. The click target is the
  * transparent cover over the thumbnail, which is what a person hits; the thumbnail's own
  * content ignores clicks.
+ *
+ * It first waits until Bloom has the page being left as it is now (waitForBloomToHavePageAsItIs),
+ * and for the Edit tab to settle: Bloom refuses a page change asked for while it is still loading a
+ * page, and a test can get here just after opening a book or the Edit tab, or just after Bloom
+ * reloaded the page, all faster than a person.
  */
 export async function selectPage(
     page: Page,
     pageId: string,
     timeoutMs = 60000,
 ): Promise<void> {
+    await waitForBloomToHavePageAsItIs(page);
+    await waitForEditTabSettled(page);
     // An attribute selector, not `#id`: Bloom's page ids are GUIDs that may start with a
     // digit, which a bare id selector cannot express.
     const thumbnail = pageListFrame(page).locator(

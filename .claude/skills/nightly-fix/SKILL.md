@@ -48,7 +48,8 @@ because each is fixed and proved differently:
 - **Bloom changed on purpose** (new wording, a moved control, a new step) and the test still
   expects the old behaviour. The fix is in the test. Proof: the updated tests pass once.
 - **A race or other flakiness**, in Bloom or in the test. Proof: the test fails on master within
-  10 runs, and passes 10 runs out of 10 on the fix.
+  10 runs, and passes 10 runs out of 10 on the fix. Give each run its own `--output` folder, or
+  the next run deletes the trace of the one that failed ("Running" in `src/BloomE2E/README.md`).
 - **A real Bloom bug** that the test caught. The fix is in Bloom. Proof as for a race when the bug
   only sometimes shows, otherwise one passing run.
 

@@ -49,7 +49,7 @@ import {
     scrollToLanguage,
     searchForLanguage,
     typeCustomizeDialect,
-} from "../helpers/languageChooser";
+} from "../helpers/languagePicker";
 import { chooseUiLanguage } from "../helpers/uiLanguage";
 import type { Page } from "@playwright/test";
 

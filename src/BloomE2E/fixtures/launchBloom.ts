@@ -132,6 +132,12 @@ export interface ICollectionSpec {
      * Bloom lays books out to be read from the other side.
      */
     rightToLeftLanguages?: string[];
+    /**
+     * The collection's sign language, by tag, or "" for none. Left out, the file says nothing
+     * about a sign language, and Bloom then reads it as English (BL-16983, closed as something a
+     * user cannot reach); a test whose subject is the sign language says which it wants.
+     */
+    signLanguage?: string;
 }
 
 /** Options for launchBloom. Give exactly one of collectionName and collectionSpec. */
@@ -147,11 +153,11 @@ export interface ILaunchBloomOptions {
     collectionSpec?: ICollectionSpec;
     /**
      * Experimental features this Bloom should have on, by the tokens ExperimentalFeatures.cs uses:
-     * "tables", "team-collections", "experimental-source-books". A person turns these on in the Advanced tab
-     * of the collection Settings dialog, which is WinForms and so unreachable, and the saved
-     * setting is shared with the developer's own Bloom, so the launch hands them to this instance
-     * on its command line instead (--experimental-features, which Bloom accepts only beside
-     * --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
+     * "tables", "team-collections", "experimental-source-books". A person turns these on in the
+     * Experimental page of the Collection Settings dialog (collection-settings-experimental.spec.ts
+     * drives that); a test that only needs one on from the start names it here, and the launch
+     * hands them to this instance on its command line (--experimental-features, which Bloom accepts only beside
+     * --e2e). See ExperimentalFeatures.TokensOfEnabledFeatures.
      */
     experimentalFeatures?: string[];
     /**
@@ -699,6 +705,8 @@ export interface ICollectionXmlExtras {
     bookshelf?: string;
     /** See ICollectionSpec.rightToLeftLanguages. */
     rightToLeftLanguages?: string[];
+    /** See ICollectionSpec.signLanguage. */
+    signLanguage?: string;
 }
 
 /**
@@ -716,6 +724,8 @@ export interface ICollectionXmlExtras {
  * kEnterpriseSubscriptionCode in helpers/collectionSettings.ts. `extras.bookshelf`, also written
  * only when given, becomes a "bookshelf:" tag in DefaultBookTags, which is how Bloom keeps it.
  * `extras.rightToLeftLanguages` marks those of `languages` as written right to left.
+ * `extras.signLanguage` is written only when given; "" writes the empty sign language Bloom saves
+ * for a collection that has none.
  */
 export function makeCollectionXml(
     languages: string[],
@@ -749,6 +759,11 @@ export function makeCollectionXml(
             : "") +
         (extras.bookshelf
             ? `  <DefaultBookTags>bookshelf:${extras.bookshelf}</DefaultBookTags>\n`
+            : "") +
+        (extras.signLanguage !== undefined
+            ? `  <SignLanguageName>${nameForTag(extras.signLanguage)}</SignLanguageName>\n` +
+              `  <SignLanguageIsCustomName>false</SignLanguageIsCustomName>\n` +
+              `  <SignLanguageIso639Code>${extras.signLanguage}</SignLanguageIso639Code>\n`
             : "") +
         `  <AllowNewBooks>True</AllowNewBooks>\n` +
         `  <PageNumberStyle>Decimal</PageNumberStyle>\n` +
@@ -983,8 +998,8 @@ async function startBloomOn(
     if (vitePort) args.push("--vite-port", vitePort);
     // --user-settings-folder: keep this Bloom's user settings to itself (point 4 at the top).
     args.push("--user-settings-folder", userSettingsDir);
-    // --experimental-features: turn these on for this Bloom alone, without touching the saved
-    // setting the developer's own Bloom shares (see ILaunchBloomOptions.experimentalFeatures).
+    // --experimental-features: turn these on for the whole run (see
+    // ILaunchBloomOptions.experimentalFeatures).
     if (experimentalFeatures?.length)
         args.push("--experimental-features", experimentalFeatures.join(","));
     // BLOOM_E2E_FAKE_CAMERA: a camera and microphone made up by Chromium, which Bloom reads only
