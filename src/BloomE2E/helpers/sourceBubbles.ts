@@ -493,68 +493,133 @@ export async function clickOutsidePage(page: Page): Promise<void> {
 
 /**
  * Move the mouse over the Edit tab without pressing a button, and check that the source bubbles
- * stay as they were all the while: the pointer goes across the page frame from corner to corner,
- * stopping in the middle of each translation group, picture and source bubble, then out over the
- * page list and the toolbox. At every stop, once the page has drawn whatever the move caused, the
- * bubbles must be in the states they were in before the first move; otherwise this fails with
+ * stay as they were all the while. The pointer stops on each translation group, picture and
+ * source bubble of the page, at a spot of it that nothing else covers, and checks that the
+ * element is then under the pointer (`:hover`); an element covered all over cannot be hovered and
+ * is passed by. Then it goes to the frame's corners and out to the left and right sides of the
+ * window, beyond the page frame. At every stop, once the page has drawn whatever the move caused,
+ * the bubbles must be in the states they were in before the first move; otherwise this fails with
  * `message`, the stop, and the states there.
  */
 export async function expectMouseMovesLeaveSourceBubbles(
     page: Page,
     message: string,
 ): Promise<void> {
+    const kTargets = ".bloom-translationGroup, .bloom-canvas, .qtip";
     const origin = await pageFrameOrigin(page);
     const frame = editablePageFrame(page);
     const before = await getSourceBubbleStates(page);
-    const points = await frame.evaluate(() => {
-        const middles = Array.from(
-            document.querySelectorAll(
-                ".bloom-translationGroup, .bloom-canvas, .qtip",
-            ),
-        )
-            .filter((element) => element.getClientRects().length > 0)
-            .map((element) => {
-                const rect = element.getBoundingClientRect();
-                return {
-                    x: rect.left + rect.width / 2,
-                    y: rect.top + rect.height / 2,
-                    over: element.className.toString().split(" ")[0],
-                };
-            })
-            .filter((point) => point.x > 0 && point.y > 0);
+    const targets = await frame.evaluate((selector) => {
         const width = document.documentElement.clientWidth;
         const height = document.documentElement.clientHeight;
-        return [
-            { x: 5, y: 5, over: "the frame's top left corner" },
-            ...middles,
-            {
-                x: width - 5,
-                y: height - 5,
-                over: "the frame's bottom right corner",
+        return Array.from(document.querySelectorAll(selector)).flatMap(
+            (element, index) => {
+                const rect = element.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0) return [];
+                const middle = {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2,
+                };
+                const points: { x: number; y: number }[] = [];
+                for (let i = 1; i < 10; i++)
+                    for (let j = 1; j < 10; j++)
+                        points.push({
+                            x: rect.left + (rect.width * i) / 10,
+                            y: rect.top + (rect.height * j) / 10,
+                        });
+                points.sort(
+                    (a, b) =>
+                        Math.hypot(a.x - middle.x, a.y - middle.y) -
+                        Math.hypot(b.x - middle.x, b.y - middle.y),
+                );
+                const spot = points.find(
+                    (point) =>
+                        point.x >= 0 &&
+                        point.y >= 0 &&
+                        point.x < width &&
+                        point.y < height &&
+                        element.contains(
+                            document.elementFromPoint(point.x, point.y),
+                        ),
+                );
+                return spot
+                    ? [
+                          {
+                              ...spot,
+                              index,
+                              over: `${element.className.toString().split(" ")[0]} ${index + 1}`,
+                          },
+                      ]
+                    : [];
             },
-        ];
-    });
+        );
+    }, kTargets);
+    if (
+        !targets.some((target) =>
+            target.over.startsWith("bloom-translationGroup"),
+        )
+    )
+        throw new Error(
+            `${message} The pointer can reach no text box of the page, so moving it over them proves nothing.`,
+        );
+    const corners = await frame.evaluate(() => [
+        { x: 5, y: 5 },
+        {
+            x: document.documentElement.clientWidth - 5,
+            y: document.documentElement.clientHeight - 5,
+        },
+    ]);
+    const frameBox = await (await frame.frameElement()).boundingBox();
+    if (!frameBox) throw new Error("The page frame has no on-screen box.");
     const viewport = await page.evaluate(() => ({
         width: window.innerWidth,
         height: window.innerHeight,
     }));
-    const stops = [
-        ...points.map((point) => ({
-            x: origin.x + point.x,
-            y: origin.y + point.y,
-            over: point.over,
-        })),
-        { x: 20, y: viewport.height / 2, over: "the page list" },
-        { x: viewport.width - 20, y: viewport.height / 2, over: "the toolbox" },
+    const outside = [
+        { x: frameBox.x / 2, over: "the left side of the window" },
+        {
+            x: (frameBox.x + frameBox.width + viewport.width) / 2,
+            over: "the right side of the window",
+        },
     ];
-    for (const stop of stops) {
-        await page.mouse.move(stop.x, stop.y, { steps: 5 });
+    if (frameBox.x < 10 || frameBox.x + frameBox.width > viewport.width - 10)
+        throw new Error(
+            "The page frame reaches the side of the window, so the pointer cannot go beyond it there.",
+        );
+
+    const check = async (over: string) => {
         await waitForClickToSettle(frame);
         const now = await getSourceBubbleStates(page);
         expect(
             now,
-            `${message} With the pointer over ${stop.over}, the groups' bubbles went from ` +
+            `${message} With the pointer over ${over}, the groups' bubbles went from ` +
                 `[${before.join(", ")}] to [${now.join(", ")}].`,
         ).toEqual(before);
+    };
+    for (const target of targets) {
+        await page.mouse.move(origin.x + target.x, origin.y + target.y, {
+            steps: 5,
+        });
+        expect(
+            await frame.evaluate(
+                ({ selector, index }) =>
+                    document
+                        .querySelectorAll(selector)
+                        [index].matches(":hover"),
+                { selector: kTargets, index: target.index },
+            ),
+            `The pointer did not reach ${target.over}.`,
+        ).toBe(true);
+        await check(target.over);
+    }
+    for (const corner of corners) {
+        await page.mouse.move(origin.x + corner.x, origin.y + corner.y, {
+            steps: 5,
+        });
+        await check("a corner of the page frame");
+    }
+    for (const stop of outside) {
+        await page.mouse.move(stop.x, viewport.height / 2, { steps: 10 });
+        await check(stop.over);
     }
 }
