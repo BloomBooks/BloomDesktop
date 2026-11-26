@@ -275,6 +275,14 @@ test("front matter from a Paper Saver book lands on a Traditional book's own pag
     );
     if (!originalCopyright) throw new Error("The copyright was not read.");
 
+    // The original's picture as it is before the spreadsheet commands run, so that a change they
+    // made to it could not pass for a match.
+    const [originalPage] = await readContentPages(page, originalFolder());
+    const originalPicture = await picturePixels(
+        page,
+        Path.join(originalFolder(), originalPage.pictures[0]),
+    );
+
     const exportFolder = testInfo.outputPath("spreadsheets");
     fs.mkdirSync(exportFolder, { recursive: true });
     const spreadsheet = await step("Export it to a spreadsheet", async () => {
@@ -283,7 +291,6 @@ test("front matter from a Paper Saver book lands on a Traditional book's own pag
         return exportSelectedBookToSpreadsheet(page, exportFolder);
     });
     if (!spreadsheet) throw new Error("The book was not exported.");
-    const originalPages = await readContentPages(page, originalFolder());
 
     await step("Check Bloom reported no problem before the restart", () => {
         // A restart starts the record of problems afresh.
@@ -390,12 +397,7 @@ test("front matter from a Paper Saver book lands on a Traditional book's own pag
             expect(
                 await picturePixels(page, picture),
                 "the new book's picture should show the original's picture",
-            ).toBe(
-                await picturePixels(
-                    page,
-                    Path.join(originalFolder(), originalPages[0].pictures[0]),
-                ),
-            );
+            ).toBe(originalPicture);
         },
     );
 });
