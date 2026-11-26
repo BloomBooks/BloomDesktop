@@ -12,6 +12,7 @@ import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet, apiGetJson, apiPost } from "./api";
+import { copyToClipboard, pasteFromClipboard } from "./clipboard";
 import {
     chooseFromSelectedBookMenuByTestId,
     listEditableBooks,
@@ -1022,6 +1023,45 @@ export async function typeInGroup(
     // as one change, so a save straight after it would lose all of it. A test whose subject is an
     // action taken straight after typing passes false.
     if (thenWaitForBloomToHaveIt) await waitForSnapshotStreamIdle(page);
+}
+
+/**
+ * Empty one language's box of one translation group and paste plain text into it, the way a person
+ * does who copied the text in another program, clicked in the box, deleted what was there and
+ * pressed Ctrl+V. `groupSelector` and `groupIndex` pick the group as for typeInGroup.
+ *
+ * The box is emptied with the keyboard before the paste, as typeInGroup empties it, so this says
+ * nothing about a paste that replaces selected text; a test of that selects and pastes itself.
+ *
+ * The text goes through Bloom's clipboard and the page's paste handling (see pasteFromClipboard in
+ * helpers/clipboard.ts), not through typing. Nothing reaches the file until the book leaves this
+ * page -- see goToPage.
+ *
+ * Returns the box, once it shows the text and Bloom has the page with the text in it.
+ */
+export async function pasteTextInGroup(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    text: string,
+    groupIndex = 0,
+): Promise<Locator> {
+    const box = await clickInGroup(
+        page,
+        groupSelector,
+        languageTag,
+        groupIndex,
+    );
+    await box.press("Control+a");
+    await box.press("Delete");
+    await copyToClipboard(page, { text });
+    await pasteFromClipboard(page);
+    await expect(
+        box,
+        `Pasting into the "${languageTag}" box of "${groupSelector}" did not put the text there.`,
+    ).toHaveText(text, { timeout: 15000, useInnerText: true });
+    await waitForSnapshotStreamIdle(page);
+    return box;
 }
 
 /**
