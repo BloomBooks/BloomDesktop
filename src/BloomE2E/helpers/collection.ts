@@ -635,3 +635,149 @@ export async function expectNoBookInPreview(page: Page): Promise<void> {
         "the Collections tab's preview should be empty",
     ).toHaveCount(0);
 }
+
+// The thumbnail a book's tile shows. The tile's <img> asks collections/book/thumbnail, which
+// answers with the book's thumbnail.png, or with an icon from Bloom's resources while that file is
+// missing, so readBookTileThumbnailEdges checks that the tile loaded thumbnail.png byte for byte
+// before it reads the picture's pixels in the page, where the browser decodes the PNG.
+
+/** What the outermost row and column of a thumbnail hold. */
+export interface IThumbnailEdges {
+    width: number;
+    height: number;
+    /**
+     * For the top row (left to right) and the left column (top to bottom): the lengths of the
+     * runs of black and of other pixels, alternating, starting with black (so a first run of 0
+     * means the edge starts with a pixel that is not black).
+     */
+    topRuns: number[];
+    leftRuns: number[];
+}
+
+/** The tile's picture of the book with this id, among the tiles of every collection shown. */
+function tileImage(page: Page, bookId: string) {
+    return page
+        .locator(
+            `.book-button[data-book-id="${bookId}"] .thumbnail-wrapper img`,
+        )
+        .first();
+}
+
+/**
+ * Wait until the tile of the book in `bookFolder` shows that book's thumbnail.png, and return what
+ * the outermost row and column of that picture hold. The Collections tab must be showing.
+ */
+export async function readBookTileThumbnailEdges(
+    page: Page,
+    bookFolder: string,
+    bookId: string,
+): Promise<IThumbnailEdges> {
+    const thumbnailFile = Path.join(bookFolder, "thumbnail.png");
+    const image = tileImage(page, bookId);
+    await expect(
+        image,
+        `the Collections tab shows no tile picture for the book in ${bookFolder}`,
+    ).toBeVisible({ timeout: 30000 });
+
+    let edges: IThumbnailEdges | string = "not read yet";
+    try {
+        await expect
+            .poll(
+                async () => {
+                    if (!fs.existsSync(thumbnailFile)) {
+                        edges = `Bloom has not made ${thumbnailFile}`;
+                        return false;
+                    }
+                    let fileBytes: string;
+                    try {
+                        fileBytes = fs
+                            .readFileSync(thumbnailFile)
+                            .toString("base64");
+                    } catch (error) {
+                        // Bloom may be writing it.
+                        edges = `could not read ${thumbnailFile}: ${error}`;
+                        return false;
+                    }
+                    edges = await image.evaluate(
+                        async (img, expectedBase64) => {
+                            const tileImg = img as HTMLImageElement;
+                            if (!tileImg.complete || tileImg.naturalWidth === 0)
+                                return "the tile's picture has not loaded";
+                            // The bytes the tile loaded come from the browser's cache.
+                            const response = await fetch(tileImg.currentSrc, {
+                                cache: "force-cache",
+                            });
+                            const bytes = new Uint8Array(
+                                await response.arrayBuffer(),
+                            );
+                            let binary = "";
+                            for (const b of bytes)
+                                binary += String.fromCharCode(b);
+                            if (btoa(binary) !== expectedBase64)
+                                return "the tile is not showing the book's thumbnail.png";
+                            const canvas = document.createElement("canvas");
+                            canvas.width = tileImg.naturalWidth;
+                            canvas.height = tileImg.naturalHeight;
+                            const context = canvas.getContext("2d")!;
+                            context.drawImage(tileImg, 0, 0);
+                            const data = context.getImageData(
+                                0,
+                                0,
+                                canvas.width,
+                                canvas.height,
+                            ).data;
+                            const isBlack = (x: number, y: number) => {
+                                const i = (y * canvas.width + x) * 4;
+                                return (
+                                    data[i + 3] > 200 &&
+                                    data[i] < 40 &&
+                                    data[i + 1] < 40 &&
+                                    data[i + 2] < 40
+                                );
+                            };
+                            const runs = (
+                                count: number,
+                                black: (n: number) => boolean,
+                            ) => {
+                                const result = [0];
+                                let inBlack = true;
+                                for (let n = 0; n < count; n++) {
+                                    if (black(n) !== inBlack) {
+                                        inBlack = !inBlack;
+                                        result.push(0);
+                                    }
+                                    result[result.length - 1]++;
+                                }
+                                return result;
+                            };
+                            return {
+                                width: canvas.width,
+                                height: canvas.height,
+                                topRuns: runs(canvas.width, (x) =>
+                                    isBlack(x, 0),
+                                ),
+                                leftRuns: runs(canvas.height, (y) =>
+                                    isBlack(0, y),
+                                ),
+                            };
+                        },
+                        fileBytes,
+                    );
+                    return typeof edges !== "string";
+                },
+                { timeout: 60000 },
+            )
+            .toBe(true);
+    } catch {
+        throw new Error(
+            `The tile of the book in ${bookFolder} never showed its thumbnail.png: ${String(edges)}`,
+        );
+    }
+    if (typeof edges === "string") throw new Error(edges);
+    return edges;
+}
+
+/** The number of black dashes in a run list from readBookTileThumbnailEdges. */
+export function countDashes(runs: number[]): number {
+    return runs.filter((length, i) => i % 2 === 0 && length > 0).length;
+}
