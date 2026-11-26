@@ -324,6 +324,46 @@ export async function chooseFromSelectedBookMenuByTestId(
 }
 
 /**
+ * Choose a command from the More submenu of the selected book's menu on the Collections tab, which
+ * must be showing, as a person does: open the menu with a right-click, click More, then the
+ * command. `testId` is the command's localization id, e.g.
+ * "CollectionTab.BookMenu.ExportToSpreadsheet". Waits until the command knows whether the
+ * subscription allows it, since until then it looks like any other. Fails naming what the menu
+ * offered when the command is not there.
+ */
+export async function chooseFromSelectedBookMoreMenuByTestId(
+    page: Page,
+    testId: string,
+): Promise<void> {
+    await openSelectedBookMenu(page);
+    await realClick(
+        page.locator(
+            `${kShowingBookMenuEntries}[data-testid="CollectionTab.ContextMenu.More"]`,
+        ),
+    );
+    const item = page.locator(
+        `${kShowingBookMenuEntries}[data-testid="${testId}"]`,
+    );
+    try {
+        await item.waitFor({ state: "visible", timeout: 15000 });
+    } catch {
+        const offered = await page
+            .locator(kShowingBookMenuEntries)
+            .evaluateAll((items) =>
+                items.map((i) => i.getAttribute("data-testid") ?? "(no id)"),
+            );
+        throw new Error(
+            `The book menu's More submenu has no "${testId}"; the menu offers: ${offered.join(", ")}.`,
+        );
+    }
+    await expect(
+        item.and(page.locator("[data-feature-status-pending]")),
+        `"${testId}" should know whether the subscription allows it`,
+    ).toHaveCount(0, { timeout: 15000 });
+    await realClick(item);
+}
+
+/**
  * Close the selected book's menu with Escape, as a person does, and wait until it has gone. A
  * command the subscription tier lacks opens the Settings dialog but leaves this menu open behind
  * it, and the menu's backdrop then takes every click aimed at the Collections tab.
