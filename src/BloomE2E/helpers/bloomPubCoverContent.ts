@@ -114,25 +114,37 @@ export async function expectBlankTextOnlyPageLeftOut(
     page: Page,
     coverCase: ICoverContentCase,
 ): Promise<void> {
-    await openPublishDestination(page, "BloomPUB");
-    const stagedPages = await readStagedPages(page);
-    const describePages = () =>
-        JSON.stringify(stagedPages.map((p) => [p.xmatterPage, p.texts]));
-    expect(
-        stagedPages.some((p) =>
-            p.texts.some(
-                (t) => t.lang === coverCase.l1 && t.text === CONTENT_L1,
-            ),
-        ),
-        `test setup: the content page's Language 1 text should be in the BloomPUB; it has ${describePages()}`,
-    ).toBe(true);
+    const l2Name = await openBloomPubScreenWithOptionalL2(page, coverCase);
     const textOnlyCoverPage = coverCase.coverPages.find(
         (p) => p.xmatterPage === coverCase.textOnlyPage,
     )!;
-    expect(
-        stagedPages.some((p) => p.xmatterPage === coverCase.textOnlyPage),
-        `test setup: a BloomPUB should leave out the ${textOnlyCoverPage.caption} page while it is blank; it has ${describePages()}`,
-    ).toBe(false);
+    // The filled page is checked with Language 2 ticked and not ticked, so the blank one is too.
+    for (const l2Ticked of [true, false]) {
+        const when = l2Ticked
+            ? "with Language 2 ticked"
+            : "with Language 2 not ticked";
+        await setL2Published(page, coverCase, l2Name, l2Ticked);
+        const stagedPages = await readStagedPages(page);
+        const describePages = () =>
+            JSON.stringify(stagedPages.map((p) => [p.xmatterPage, p.texts]));
+        const contentTexts = stagedPages
+            .filter((p) => p.xmatterPage === null)
+            .flatMap((p) => p.texts);
+        expect(
+            contentTexts,
+            `test setup: the content page's Language 1 text should be in the BloomPUB ${when}; it has ${describePages()}`,
+        ).toContainEqual({ lang: coverCase.l1, text: CONTENT_L1 });
+        expect(
+            contentTexts.some(
+                (t) => t.lang === coverCase.l2 && t.text === CONTENT_L2,
+            ),
+            `test setup: the content page's Language 2 text should be in the BloomPUB only when Language 2 is ticked (${when}); it has ${describePages()}`,
+        ).toBe(l2Ticked);
+        expect(
+            stagedPages.some((p) => p.xmatterPage === coverCase.textOnlyPage),
+            `test setup: a BloomPUB ${when} should leave out the ${textOnlyCoverPage.caption} page while it is blank; it has ${describePages()}`,
+        ).toBe(false);
+    }
     await switchTab(page, "edit");
 }
 
