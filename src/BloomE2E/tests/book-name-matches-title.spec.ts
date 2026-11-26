@@ -69,10 +69,12 @@ test("the book's name on the Collections tab, its folder and its file follow its
     await step("Make a new book and see its placeholder name", async () => {
         placeholderFolder = await makeBookFromTemplate(page, "Basic Book");
         bookId = readBookId(placeholderFolder);
+        // The placeholder's words follow Bloom's UI language, so only its difference from the
+        // title is checked.
         expect(
             Path.basename(placeholderFolder),
-            "Sanity check: a book with no title yet has a placeholder folder name",
-        ).toMatch(/^Book/);
+            "Sanity check: a book with no title yet is not in a folder named for the title to come",
+        ).not.toBe(kFirstTitle);
         await switchTab(page, "collection");
         await expect(
             tileLabel(page, bookId),
