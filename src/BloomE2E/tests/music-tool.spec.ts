@@ -10,7 +10,7 @@ import * as os from "node:os";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Frame, Locator, Page } from "@playwright/test";
-import { expect, test } from "../fixtures/bloomTest";
+import { expect, test, type IBloomApp } from "../fixtures/bloomTest";
 import {
     addPage,
     editBook,
@@ -48,14 +48,17 @@ const sample = Path.resolve(
     "sample.mp3",
 );
 
-/** Two copies of the suite's sample, under different names, so the two pieces of music differ. */
-function makeMusicFiles(): { first: string; second: string } {
+/**
+ * Two copies of the suite's sample, under different names, so the two pieces of music differ.
+ * The caller deletes `folder`.
+ */
+function makeMusicFiles(): { folder: string; first: string; second: string } {
     const folder = fs.mkdtempSync(Path.join(os.tmpdir(), "bloom-e2e-music-"));
     const first = Path.join(folder, "first-tune.mp3");
     const second = Path.join(folder, "second-tune.mp3");
     fs.copyFileSync(sample, first);
     fs.copyFileSync(sample, second);
-    return { first, second };
+    return { folder, first, second };
 }
 
 /** Open the Music tool for the page being shown and return the toolbox frame. */
@@ -145,7 +148,20 @@ test("music set on pages plays in the tool and in the BloomPUB preview, and surv
     bloomApp,
 }) => {
     test.setTimeout(420000);
-    const { first, second } = makeMusicFiles();
+    const { folder, first, second } = makeMusicFiles();
+    try {
+        await runMusicTest(page, bloomApp, first, second);
+    } finally {
+        fs.rmSync(folder, { recursive: true, force: true, maxRetries: 3 });
+    }
+});
+
+async function runMusicTest(
+    page: Page,
+    bloomApp: IBloomApp,
+    first: string,
+    second: string,
+) {
     const bookFolder = await makeBookFromTemplate(page, "Basic Book");
     await addPage(page, "Just Text", 4);
     await enableToolForBook(page, bookFolder, "music");
@@ -173,17 +189,12 @@ test("music set on pages plays in the tool and in the BloomPUB preview, and surv
         "After Play on page 1",
     );
     await frame.locator("#musicPreview").click();
+    // A paused audio element's time does not move on, so `paused` is the whole check.
     await expect
         .poll(async () => (await audioState(player(frame))).paused, {
             message: "Pause should stop the music.",
         })
         .toBe(true);
-    const pausedAt = (await audioState(player(frame))).time;
-    await page.waitForTimeout(1000);
-    expect(
-        (await audioState(player(frame))).time,
-        "The music's time should not move on while it is paused.",
-    ).toBe(pausedAt);
     await frame.locator("#musicPreview").click();
     await expectPlaying(
         player(frame),
@@ -249,27 +260,55 @@ test("music set on pages plays in the tool and in the BloomPUB preview, and surv
     const preview = await showBloomPubPreview(page);
     const previewMusic = preview.locator("#music-player");
     // bloom-player renders only the pages beside the one it shows, so walk the whole preview with
-    // its Next Page button and note, for each page, what the music is doing once the turn settles.
+    // its Next Page button and check, on each page of the book, what its music does. bloom-player
+    // pauses `#music-player` on a page with no music.
     const shownPageId = () =>
         preview.evaluate(
             () =>
                 document.querySelector(".swiper-slide-active .bloom-page")
                     ?.id ?? "",
         );
-    const seen: { id: string; paused: boolean; src: string }[] = [];
+    const musicOnPage: { id: string; fileName: string; what: string }[] = [
+        {
+            id: pages[0].id,
+            fileName: "first-tune.mp3",
+            what: "Music should start on page 1 of the preview",
+        },
+        {
+            id: pages[1].id,
+            fileName: "first-tune.mp3",
+            what: "The music should continue on page 2 of the preview",
+        },
+        {
+            id: pages[2].id,
+            fileName: "second-tune.mp3",
+            what: "Different music should start on page 3 of the preview",
+        },
+    ];
+    // For a moment after it shows a book, bloom-player lets its page swiper settle and starts no
+    // page's music, even on a page turned to meanwhile (startingUpSwiper in
+    // bloom-player-core.tsx). That moment ends when it gives the Next Page button its tab order.
+    await expect(
+        preview.locator('.swiper-button-next[tabindex="5"]'),
+        "bloom-player never finished starting up",
+    ).toHaveCount(1, { timeout: 30000 });
+    const seen: string[] = [];
+    let reachedPage4 = false;
     for (let step = 0; step < 30; step++) {
         await expect.poll(shownPageId, { timeout: 15000 }).not.toBe("");
         const id = await shownPageId();
-        // Let the music for this page start, or stop.
-        await page.waitForTimeout(1500);
-        const state = await audioState(previewMusic);
-        await page.waitForTimeout(500);
-        const later = await audioState(previewMusic);
-        seen.push({
-            id,
-            paused: state.paused || later.time === state.time,
-            src: state.src,
-        });
+        seen.push(id);
+        reachedPage4 ||= id === pages[3].id;
+        const music = musicOnPage.find((m) => m.id === id);
+        if (music)
+            await expectPlaying(previewMusic, music.fileName, music.what);
+        else if (reachedPage4)
+            await expect
+                .poll(async () => (await audioState(previewMusic)).paused, {
+                    timeout: 15000,
+                    message: `No music should play on page 4 or after (page ${id}).`,
+                })
+                .toBe(true);
         const next = preview.getByRole("button", {
             name: "Next Page",
             exact: true,
@@ -278,33 +317,11 @@ test("music set on pages plays in the tool and in the BloomPUB preview, and surv
         await next.click();
         await expect.poll(shownPageId, { timeout: 15000 }).not.toBe(id);
     }
-    const onPage = (n: number) => {
-        const found = seen.find((s) => s.id === pages[n].id);
-        if (!found)
-            throw new Error(
-                `The preview has no page ${n + 1} of the book. It showed: ${JSON.stringify(seen)}`,
-            );
-        return found;
-    };
-    expect(onPage(0), "Music should start on page 1.").toMatchObject({
-        paused: false,
-        src: expect.stringContaining("first-tune.mp3"),
-    });
-    expect(onPage(1), "The music should continue on page 2.").toMatchObject({
-        paused: false,
-        src: expect.stringContaining("first-tune.mp3"),
-    });
-    expect(onPage(2), "Different music should start on page 3.").toMatchObject({
-        paused: false,
-        src: expect.stringContaining("second-tune.mp3"),
-    });
-    const fourth = seen.findIndex((s) => s.id === pages[3].id);
-    expect(fourth, "The preview should show page 4.").toBeGreaterThan(-1);
-    for (const after of seen.slice(fourth))
+    for (const [n, p] of pages.slice(0, 4).entries())
         expect(
-            after.paused,
-            `No music should play on page 4 or after (page ${after.id}).`,
-        ).toBe(true);
+            seen,
+            `The preview should show page ${n + 1} of the book.`,
+        ).toContain(p.id);
 
     // Select another book and this one again: page 1 plays its music.
     await switchTab(page, "collection");
@@ -333,4 +350,4 @@ test("music set on pages plays in the tool and in the BloomPUB preview, and surv
         "second-tune.mp3",
         "Page 3 after restarting Bloom",
     );
-});
+}
