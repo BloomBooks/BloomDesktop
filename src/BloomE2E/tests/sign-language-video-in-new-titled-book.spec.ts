@@ -177,6 +177,12 @@ test("a video imported into a new Sign Language book after it got its title land
                         return {
                             error: v.error?.code ?? 0,
                             hasSize: box.width > 0 && box.height > 0,
+                            // Unlike toBeVisible, this also counts a video that is hidden by
+                            // opacity, its own or a container's, as not shown.
+                            shown: v.checkVisibility({
+                                opacityProperty: true,
+                                visibilityProperty: true,
+                            }),
                             hasFrame: opaquePixels > 0,
                         };
                     }),
@@ -186,7 +192,7 @@ test("a video imported into a new Sign Language book after it got its title land
                         "The video box never showed a frame of the imported video from the book.",
                 },
             )
-            .toEqual({ error: 0, hasSize: true, hasFrame: true });
+            .toEqual({ error: 0, hasSize: true, shown: true, hasFrame: true });
         const duration = await video.evaluate(
             (v: HTMLVideoElement) => v.duration,
         );
