@@ -553,10 +553,9 @@ test("Adjust Timings plays to its boundaries, and its timings file round-trips i
             // test edits the file itself, so it answers that request instead of letting Bloom
             // start an editor.
             await page.route(/\/fileIO\/openFileInDefaultEditor/, (route) => {
+                // The dialog sends the path as it is, not URL-encoded.
                 opened.push(
-                    decodeURIComponent(
-                        JSON.parse(route.request().postData() ?? "{}").path,
-                    ),
+                    JSON.parse(route.request().postData() ?? "{}").path,
                 );
                 return route.fulfill({ status: 200, body: "" });
             });
