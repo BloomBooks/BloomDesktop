@@ -15,6 +15,7 @@ import {
     dragCanvasElementSide,
     dragPaletteItemOntoCanvas,
     getCanvasElementAutoHeight,
+    getCanvasElementTextBoxes,
     getCanvasElementTextFit,
     selectCanvasElement,
     typeInCanvasElement,
@@ -88,6 +89,18 @@ async function waitForHeightToFitText(
         .toEqual({ height: expected, allTextShows: true });
 }
 
+/** The text that canvas element `index` is showing. */
+async function textShownIn(page: Page, index: number): Promise<string> {
+    const shown = (await getCanvasElementTextBoxes(page, index)).filter(
+        (box) => box.shown,
+    );
+    expect(
+        shown.length,
+        "The bubble should be showing its text in one language.",
+    ).toBe(1);
+    return shown[0].text;
+}
+
 test("a text bubble's side handles change its width, and its height follows the text [Test Case ID 304]", async ({
     page,
     step,
@@ -119,6 +132,11 @@ test("a text bubble's side handles change its width, and its height follows the 
                 empty.elementHeight,
                 "After typing",
             );
+            // Sanity check what the drags are compared with.
+            expect(
+                await textShownIn(page, bubble),
+                "The bubble should hold exactly what was typed into it.",
+            ).toBe(kSentences);
         });
 
         for (const drag of kDrags) {
@@ -165,6 +183,10 @@ test("a text bubble's side handles change its width, and its height follows the 
                         what,
                     );
                     await waitForCanvasElementScrollBar(page, false);
+                    expect(
+                        await textShownIn(page, bubble),
+                        `${what} should leave the bubble's text as it was typed.`,
+                    ).toBe(kSentences);
                 },
             );
         }
