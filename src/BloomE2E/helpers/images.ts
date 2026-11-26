@@ -30,7 +30,7 @@ import { chooseFileInImageChooser } from "./imageChooser";
 import { realClick } from "./realClick";
 
 /** The first image on the page: the background picture of the page's first image slot. */
-const FIRST_IMAGE =
+export const FIRST_IMAGE =
     ".bloom-canvas .bloom-backgroundImage .bloom-imageContainer img";
 
 /** What the first image slot shows while it holds no picture. */
