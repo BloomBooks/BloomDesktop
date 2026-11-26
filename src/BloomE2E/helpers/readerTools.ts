@@ -349,6 +349,9 @@ export async function generateDecodableReport(page: Page): Promise<void> {
             response.url().includes("readers/ui/makeLetterAndWordList"),
         { timeout: 30000 },
     );
+    // If the click fails, nothing awaits this wait, and its timeout must not surface later as an
+    // error of its own.
+    written.catch(() => undefined);
     await button.click();
     const response = await written;
     expect(

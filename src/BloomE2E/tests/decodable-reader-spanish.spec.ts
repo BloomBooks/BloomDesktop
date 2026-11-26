@@ -271,12 +271,15 @@ test("a Spanish decodable reader built from scratch marks, sorts and remembers i
             "With the book no longer decodable, no word should be marked.",
         );
 
+        // Three seconds from the click, which setBookIsDecodable makes before it waits for the
+        // panel to redraw.
+        const clicked = Date.now();
         await setBookIsDecodable(page, true);
         await expectMarkedNotDecodable(
             page,
             ["pato"],
-            "Turning the book decodable again should put the mark on pato back straight away.",
-            3000,
+            "Turning the book decodable again should put the mark on pato back within three seconds.",
+            Math.max(1, 3000 - (Date.now() - clicked)),
         );
     });
 
