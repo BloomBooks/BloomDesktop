@@ -244,10 +244,13 @@ async function meanDifferenceFromPicture(
     thumbnail: ITileThumbnail,
     picturePath: string | undefined,
 ): Promise<number> {
-    const pictureUrl = picturePath
-        ? `data:image/${picturePath.endsWith(".png") ? "png" : "jpeg"};base64,` +
-          fs.readFileSync(picturePath).toString("base64")
-        : undefined;
+    let pictureUrl: string | undefined;
+    if (picturePath) {
+        const format = picturePath.endsWith(".png") ? "png" : "jpeg";
+        pictureUrl =
+            `data:image/${format};base64,` +
+            fs.readFileSync(picturePath).toString("base64");
+    }
     return page.evaluate(
         async ({ width, height, pixels, pictureUrl }) => {
             const canvas = document.createElement("canvas");
