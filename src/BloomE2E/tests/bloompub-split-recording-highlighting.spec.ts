@@ -64,30 +64,67 @@ const kSentences = [
  */
 const kCopiesOfSample = 6;
 
-/** One moment at which Bloom Player changed which part of the page it highlights. */
+/**
+ * One moment at which Bloom Player changed which part of the page it highlights, or, with `ended`,
+ * the moment the narration finished playing.
+ */
 interface IHighlightChange {
+    /** True for the entry that says the narration reached its end. */
+    ended: boolean;
     /** The text of each element Bloom Player marked ui-audioCurrent, trimmed. */
     highlighted: string[];
     /** Whether each highlighted element is a segment of the split box (bloom-highlightSegment). */
     segments: boolean[];
     /**
      * Whether each highlighted element is painted with a background different from that of every
-     * other segment of its box, which is what makes the highlight visible.
+     * other segment of its box, which is what makes the highlight visible. A transparent element
+     * shows whatever is behind it, so each is compared by the first background that is not
+     * transparent, from it outwards.
      */
     paintedApart: boolean[];
-    /** How far the box's recording had played, in seconds. */
+    /** How far Bloom Player's narration player had played, in seconds. */
     time: number;
+    /** The file name of the recording the narration player holds. */
+    recording: string;
 }
 
 /**
- * Start noting, in the preview, every change in what Bloom Player highlights, with how far the
- * recording had played (see IHighlightChange). The record lives in the player's document.
+ * Start noting, in the preview, every change in what Bloom Player highlights, with how far its
+ * narration player had played (see IHighlightChange), and the moment that player reaches the end
+ * of a recording. The record lives in the player's document.
  */
 async function startRecordingHighlights(player: Frame): Promise<void> {
     await player.evaluate(() => {
         const w = window as unknown as { e2eHighlights?: unknown[] };
         const changes: unknown[] = [];
         w.e2eHighlights = changes;
+        // Bloom Player plays narration through one audio element, which it makes when it first
+        // shows a page with narration (bloom-player's narration.ts).
+        const playing = () => {
+            const narration = document.getElementById(
+                "bloom-audio-player",
+            ) as HTMLAudioElement | null;
+            return {
+                time: narration?.currentTime ?? -1,
+                recording: decodeURIComponent(
+                    (narration?.currentSrc || narration?.src || "")
+                        .split("?")[0]
+                        .split("/")
+                        .pop() ?? "",
+                ),
+            };
+        };
+        const shownBackground = (element: Element): string => {
+            for (let e: Element | null = element; e; e = e.parentElement) {
+                const color = getComputedStyle(e).backgroundColor;
+                if (
+                    color !== "transparent" &&
+                    !/^rgba\([^)]*,\s*0\)$/.test(color)
+                )
+                    return color;
+            }
+            return "none";
+        };
         let last = "";
         const note = () => {
             const current = Array.from(
@@ -95,15 +132,7 @@ async function startRecordingHighlights(player: Frame): Promise<void> {
                     ".swiper-slide-active .ui-audioCurrent",
                 ),
             );
-            const key = current
-                .map((element) => element.textContent)
-                .join("\u0001");
-            if (key === last) return;
-            last = key;
-            const audio = Array.from(document.querySelectorAll("audio")).find(
-                (element) => !element.paused,
-            );
-            changes.push({
+            const shown = {
                 highlighted: current.map((element) =>
                     (element.textContent ?? "").trim(),
                 ),
@@ -113,8 +142,7 @@ async function startRecordingHighlights(player: Frame): Promise<void> {
                 paintedApart: current.map((element) => {
                     const box = element.closest(".bloom-editable");
                     if (!box) return false;
-                    const background =
-                        getComputedStyle(element).backgroundColor;
+                    const background = shownBackground(element);
                     const others = Array.from(
                         box.querySelectorAll<HTMLElement>(
                             ".bloom-highlightSegment",
@@ -123,20 +151,38 @@ async function startRecordingHighlights(player: Frame): Promise<void> {
                     return (
                         others.length > 0 &&
                         others.every(
-                            (other) =>
-                                getComputedStyle(other).backgroundColor !==
-                                background,
+                            (other) => shownBackground(other) !== background,
                         )
                     );
                 }),
-                time: audio?.currentTime ?? -1,
-            });
+            };
+            // A change in how the highlight is painted is noted too, not only a move.
+            const key = JSON.stringify(shown);
+            if (key === last) return;
+            last = key;
+            changes.push({ ended: false, ...shown, ...playing() });
         };
         new MutationObserver(note).observe(document.body, {
             attributes: true,
             attributeFilter: ["class"],
             subtree: true,
         });
+        // A media element's events do not bubble, so this one is caught on its way down.
+        document.addEventListener(
+            "ended",
+            (e) => {
+                if ((e.target as Element | null)?.id !== "bloom-audio-player")
+                    return;
+                changes.push({
+                    ended: true,
+                    highlighted: [],
+                    segments: [],
+                    paintedApart: [],
+                    ...playing(),
+                });
+            },
+            true,
+        );
     });
 }
 
@@ -153,6 +199,8 @@ async function readSavedBox(
     player: Frame,
     bookFolder: string,
 ): Promise<{
+    /** The box's id, which names its recording in audio/. */
+    id: string;
     split: boolean;
     recordingMode: string;
     segments: string[];
@@ -165,6 +213,7 @@ async function readSavedBox(
             '.bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) .bloom-translationGroup .bloom-editable[lang="en"]',
         )!;
         return {
+            id: box.id,
             split: box.classList.contains("bloom-postAudioSplit"),
             recordingMode: box.getAttribute("data-audiorecordingmode") ?? "",
             segments: Array.from(
@@ -272,57 +321,94 @@ test("a recording split into sentences is highlighted sentence by sentence in th
             // Bloom Player plays a page's narration by itself once it shows the page, as it does
             // for a reader.
             //
-            // Playback ends with the highlight on the last sentence or on nothing; wait until the
-            // last sentence has been highlighted and then let go.
             await expect
                 .poll(
                     async () =>
-                        (await getHighlightChanges(preview)).some((change) =>
-                            change.highlighted.includes(kSentences.at(-1)!),
+                        (await getHighlightChanges(preview)).some(
+                            (change) => change.ended,
                         ),
                     {
                         timeout: 60000,
                         message:
-                            "Bloom Player never highlighted the last sentence while playing the page.",
+                            "Bloom Player never played the page's narration to its end.",
                     },
                 )
                 .toBe(true);
-            const changes = (await getHighlightChanges(preview)).filter(
+            const all = await getHighlightChanges(preview);
+            const end = all.findIndex((change) => change.ended);
+            const start = all.findIndex(
                 (change) => change.highlighted.length > 0,
             );
+            expect(
+                all[end].recording,
+                "the narration that played should be the box's recording",
+            ).toBe(`${saved.id}.mp3`);
+            expect(
+                start >= 0 && start < end,
+                "Bloom Player should have highlighted something before the narration ended",
+            ).toBe(true);
+            // From the first highlight to the end of the recording, the highlight never leaves
+            // the text: every move takes it to the next sentence. Bloom Player first marks a
+            // sentence and then, as the recording starts playing, stops holding its paint back
+            // (ui-suppressHighlight), so one sentence can have several entries in a row; they
+            // are taken together as one turn.
+            const between = all.slice(start, end);
+            const turns: IHighlightChange[][] = [];
+            for (const change of between) {
+                const previous = turns.at(-1);
+                if (
+                    previous &&
+                    JSON.stringify(previous[0].highlighted) ===
+                        JSON.stringify(change.highlighted)
+                )
+                    previous.push(change);
+                else turns.push([change]);
+            }
 
             expect(
-                changes.map((change) => change.highlighted),
-                "Bloom Player should highlight the sentences one at a time, in order, and nothing else",
+                turns.map((turn) => turn[0].highlighted),
+                "Bloom Player should highlight the sentences one at a time, in order, with no gap and nothing else, until the recording ends",
             ).toEqual(kSentences.map((sentence) => [sentence]));
-            changes.forEach((change, index) => {
+            turns.forEach((turn, index) => {
+                turn.forEach((change) =>
+                    expect(
+                        change.recording,
+                        `"${kSentences[index]}" should be highlighted while the box's recording plays`,
+                    ).toBe(`${saved.id}.mp3`),
+                );
                 expect(
-                    change.segments,
+                    turn[0].segments,
                     `"${kSentences[index]}" should be highlighted as a segment of the split box`,
                 ).toEqual([true]);
+                // What a reader sees for the rest of the sentence is its last state.
                 expect(
-                    change.paintedApart,
-                    `"${kSentences[index]}" should be painted differently from the other sentences while it is highlighted`,
+                    turn.at(-1)!.paintedApart,
+                    `"${kSentences[index]}" should be painted differently from the other sentences while it plays`,
                 ).toEqual([true]);
             });
+            expect(
+                turns[0][0].time,
+                "the first sentence should be highlighted before the recording has played",
+            ).toBe(0);
             // Each sentence after the first is highlighted when the recording reaches the end of
             // the one before it. Bloom Player moves the highlight on a timer it sets from the
             // recording's position, so it may be a little late, never early.
-            for (let index = 1; index < changes.length; index++) {
+            for (let index = 1; index < turns.length; index++) {
                 const previousEnd = saved.endTimes[index - 1];
                 expect(
-                    changes[index].time,
+                    turns[index][0].time,
                     `"${kSentences[index]}" should be highlighted once the recording reaches ${previousEnd} s, where the sentence before it ends`,
                 ).toBeGreaterThanOrEqual(previousEnd - 0.05);
                 expect(
-                    changes[index].time,
+                    turns[index][0].time,
                     `"${kSentences[index]}" should be highlighted soon after the recording reaches ${previousEnd} s`,
                 ).toBeLessThan(previousEnd + 0.5);
             }
+            // The last sentence is still highlighted when the recording ends, at its saved end.
             expect(
-                changes[0].time,
-                "the first sentence should be highlighted as the recording starts",
-            ).toBeLessThan(saved.endTimes[0]);
+                all[end].time,
+                `the recording should end where the last sentence does, ${saved.endTimes.at(-1)} s`,
+            ).toBeGreaterThanOrEqual(saved.endTimes.at(-1)! - 0.25);
         },
     );
 });
