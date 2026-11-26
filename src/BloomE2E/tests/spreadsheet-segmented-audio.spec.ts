@@ -107,8 +107,20 @@ interface IBoxOnDisk {
     split: boolean;
     /** The text of each segment the reader highlights in turn, markers shown as "|". */
     segments: string[];
-    /** When each segment ends in the recording, in seconds (data-audiorecordingendtimes). */
-    segmentEnds: number[];
+    /**
+     * When each segment ends in the recording, in seconds: data-audiorecordingendtimes as written,
+     * or null when the box has none. Playback reads it field by field (audioRecording.ts
+     * setupTimings), so it is kept as it is, an empty field and all.
+     */
+    endTimes: string | null;
+}
+
+/**
+ * The fields of an end-times attribute, as playback splits it: an empty field (a doubled space)
+ * stays an empty field, which playback would take for 0.
+ */
+function endTimeFields(endTimes: string | null): string[] {
+    return endTimes === null ? [] : endTimes.split(" ");
 }
 
 /**
@@ -155,12 +167,7 @@ async function readSavedBox(
             segments: Array.from(
                 element.querySelectorAll(".bloom-highlightSegment"),
             ).map(shown),
-            segmentEnds: (
-                element.getAttribute("data-audiorecordingendtimes") ?? ""
-            )
-                .split(" ")
-                .filter((end) => end)
-                .map(Number),
+            endTimes: element.getAttribute("data-audiorecordingendtimes"),
         };
     }, html);
     if (typeof box === "string")
@@ -236,17 +243,20 @@ test("a recording aligned to segment markers stays aligned through a spreadsheet
                 split: true,
                 segments: kSegments,
             });
+            const fields = endTimeFields(originalBox.endTimes);
             expect(
-                originalBox.segmentEnds.length,
-                `each segment should have an end time: ${originalBox.segmentEnds.join(" ")}`,
+                fields.length,
+                `each segment should have an end time: "${originalBox.endTimes}"`,
             ).toBe(kSegments.length);
-            originalBox.segmentEnds.forEach((end, index) => {
+            fields.forEach((field, index) => {
                 expect(
-                    end,
-                    `segment ${index} should end after the one before it: ${originalBox.segmentEnds.join(" ")}`,
-                ).toBeGreaterThan(
-                    index === 0 ? 0 : originalBox.segmentEnds[index - 1],
-                );
+                    field !== "" && Number.isFinite(Number(field)),
+                    `end time ${index} should be a number: "${originalBox.endTimes}"`,
+                ).toBe(true);
+                expect(
+                    Number(field),
+                    `segment ${index} should end after the one before it: "${originalBox.endTimes}"`,
+                ).toBeGreaterThan(index === 0 ? 0 : Number(fields[index - 1]));
             });
             expect(
                 fs.existsSync(narrationFilePath(original, originalBox.id)),
@@ -304,20 +314,25 @@ test("a recording aligned to segment markers stays aligned through a spreadsheet
             // The import keeps every end time the spreadsheet gives but the last, which it sets to
             // the length it measures of the recording (SpreadsheetImporter.cs, "Set the end
             // times"). That can differ a little from the time Adjust Timings saved, so the last is
-            // compared to within a quarter of a second, and the rest exactly.
+            // compared to within a quarter of a second, and the rest exactly, as written.
             const withoutLastEnd = (box: IBoxOnDisk) => ({
                 text: box.text,
                 markers: box.markers,
                 recordingMode: box.recordingMode,
                 split: box.split,
                 segments: box.segments,
-                segmentEnds: box.segmentEnds.slice(0, -1),
+                endTimeCount: endTimeFields(box.endTimes).length,
+                endTimesButLast: endTimeFields(box.endTimes).slice(0, -1),
             });
             expect(withoutLastEnd(importedBox)).toEqual(
                 withoutLastEnd(originalBox),
             );
-            const importedLast = importedBox.segmentEnds.at(-1) ?? 0;
-            const originalLast = originalBox.segmentEnds.at(-1) ?? 0;
+            const importedLast = Number(
+                endTimeFields(importedBox.endTimes).at(-1),
+            );
+            const originalLast = Number(
+                endTimeFields(originalBox.endTimes).at(-1),
+            );
             expect(
                 Math.abs(importedLast - originalLast),
                 `the last segment should end where the original's does, ${originalLast} s, not ${importedLast} s`,
@@ -342,6 +357,7 @@ test("a recording aligned to segment markers stays aligned through a spreadsheet
                 bloomApp.collectionDir,
                 newBookId,
             );
+            const savedEndTimes = (await readSavedBox(page, imported)).endTimes;
             await editBook(page, imported);
             const [contentPage] = await getContentPages(page);
             await goToPage(page, contentPage.id);
@@ -360,6 +376,12 @@ test("a recording aligned to segment markers stays aligned through a spreadsheet
                 box,
                 "With the Talking Book tool open, the new book's box should still be split into timed segments.",
             ).toHaveClass(/\bbloom-postAudioSplit\b/, { timeout: 30000 });
+            // Playback times the highlighting from the box's live end times, so they must be the
+            // ones the import saved.
+            expect(
+                await box.getAttribute("data-audiorecordingendtimes"),
+                "the open box should keep the end times the import saved",
+            ).toBe(savedEndTimes);
             expect(
                 await box.locator(".bloom-highlightSegment").count(),
                 "the open box should still have one highlight segment per segment",
