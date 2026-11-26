@@ -54,6 +54,24 @@ export async function apiGetJson<T>(page: Page, endpoint: string): Promise<T> {
     return JSON.parse(response.body) as T;
 }
 
+/**
+ * The string with localization id `key` in Bloom's current UI language, as the UI shows it, or
+ * `englishText` when that language has no translation of it. For finding or checking what the UI
+ * says without assuming that it is in English: a test Bloom starts in the Windows UI language.
+ */
+export async function getUiString(
+    page: Page,
+    key: string,
+    englishText: string,
+): Promise<string> {
+    const query = new URLSearchParams({ key, englishText, langId: "UI" });
+    const answer = await apiGetJson<{ text: string }>(
+        page,
+        `i18n/translate?${query}`,
+    );
+    return answer.text;
+}
+
 // The pages whose Bloom has been seen to answer app/runningE2eTests with "true".
 const pagesOnE2eBlooms = new WeakSet<Page>();
 

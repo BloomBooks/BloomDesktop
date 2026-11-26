@@ -9,12 +9,7 @@
 // the Publish tab: the chooser reopens on the sign language, and a name typed there stays.
 
 import { expect, test } from "../fixtures/bloomTest";
-import {
-    addPage,
-    getContentPages,
-    goToPage,
-    makeBookFromTemplate,
-} from "../helpers/bookMaking";
+import { makeBookFromTemplate } from "../helpers/bookMaking";
 import {
     cancelCollectionSettings,
     getCollectionSettingsLanguage,
@@ -35,7 +30,7 @@ import {
     openSignLanguageChooserFromPublish,
     selectPublishDestination,
 } from "../helpers/publish";
-import { chooseVideoFile, SHORT_VIDEO, videoBoxes } from "../helpers/videos";
+import { addPageWithVideo, SHORT_VIDEO } from "../helpers/videos";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
@@ -55,13 +50,7 @@ test("builds a book with a video, and shows it on the BloomPUB screen", async ({
     page,
 }) => {
     await makeBookFromTemplate(page, "Basic Book");
-    const before = (await getContentPages(page)).map((p) => p.id);
-    await addPage(page, "Video Over Text");
-    const videoPage = (await getContentPages(page)).find(
-        (p) => !before.includes(p.id),
-    )!;
-    await goToPage(page, videoPage.id);
-    await chooseVideoFile(page, videoBoxes(page).first(), SHORT_VIDEO);
+    await addPageWithVideo(page, SHORT_VIDEO);
     await selectPublishDestination(page, "BloomPUB");
 });
 

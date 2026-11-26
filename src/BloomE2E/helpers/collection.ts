@@ -5,8 +5,15 @@
 // subject IS the collection grid clicks the book tile instead, with helpers/realClick.ts, because
 // the tiles ignore a synthetic click.
 
-import { expect, type Page } from "@playwright/test";
-import { apiGet, apiPost } from "./api";
+import * as fs from "fs";
+import * as Path from "path";
+import { expect, type FrameLocator, type Page } from "@playwright/test";
+import type { IBloomApp } from "../fixtures/bloomTest";
+import {
+    writeNewCollection,
+    type ICollectionSpec,
+} from "../fixtures/launchBloom";
+import { apiGet, apiGetJson, apiPost, getUiString } from "./api";
 import { realClick } from "./realClick";
 
 /**
@@ -144,4 +151,221 @@ export async function closeBookMenu(page: Page): Promise<void> {
         await page.keyboard.press("Escape");
         await expect(showingEntries).toHaveCount(0, { timeout: 1000 });
     }, "the book menu did not close").toPass({ timeout: 10000 });
+}
+
+/**
+ * Make a new, empty collection beside the one Bloom has open, and return its folder. It is in the
+ * launch's temp folder, so it is deleted with the rest of the run. For a test that changes
+ * collections with openOtherCollection.
+ */
+export function makeAnotherCollection(
+    bloomApp: IBloomApp,
+    spec: ICollectionSpec,
+): string {
+    return writeNewCollection(Path.dirname(bloomApp.collectionDir), spec);
+}
+
+/**
+ * Leave the collection Bloom has open for the one in `collectionDir`, without the dialog a person
+ * uses: this makes the call that a click on the collection's card makes. For setup; a test whose
+ * subject is the change of collection calls chooseOtherCollection.
+ *
+ * Bloom closes the whole workspace and builds it again on the other collection, in the same
+ * process. This waits that out, finds the new shell page (bloomApp.page from here on, with
+ * bloomApp.collectionDir the new collection), and returns it once Bloom reports that collection
+ * as the open one and ready.
+ */
+export async function openOtherCollection(
+    bloomApp: IBloomApp,
+    collectionDir: string,
+): Promise<Page> {
+    const collectionFile = findCollectionFile(collectionDir);
+    await waitForCollectionReady(bloomApp.page);
+    return followToOtherCollection(bloomApp, collectionFile, (page) =>
+        apiPost(page, "workspace/openCollection", collectionFile),
+    );
+}
+
+/**
+ * Leave the collection Bloom has open for the one in `collectionDir` the way a person does: click
+ * Other Collection on the Collections tab's top bar, which must be showing, and then that
+ * collection's card in the dialog. The dialog offers the collections Bloom opened recently, so
+ * the collection must be one this Bloom has had open (openOtherCollection does that for a test).
+ * Fails naming the collections the dialog offers when it is not among them.
+ *
+ * Returns the new shell page, as openOtherCollection does.
+ */
+export async function chooseOtherCollection(
+    bloomApp: IBloomApp,
+    collectionDir: string,
+): Promise<Page> {
+    const collectionFile = findCollectionFile(collectionDir);
+    const collectionName = Path.basename(collectionFile, ".bloomCollection");
+    const page = bloomApp.page;
+    await waitForCollectionReady(page);
+    // The button is found by what it says, in whatever language Bloom's UI is in.
+    const buttonLabel = await getUiString(
+        page,
+        "CollectionTab.Open/CreateCollectionButton",
+        "Other Collection",
+    );
+    await realClick(
+        page.getByRole("button", { name: buttonLabel, exact: true }),
+    );
+    // A card is one button that holds the collection's name, in a paragraph of its own, and how
+    // many books it has.
+    const cards = page
+        .getByRole("dialog")
+        .getByRole("button")
+        .filter({ has: page.locator("p") });
+    const card = cards.filter({
+        has: page.getByText(collectionName, { exact: true }),
+    });
+    try {
+        await card.waitFor({ state: "visible", timeout: 30000 });
+    } catch {
+        const offered = (await cards.locator("p").allInnerTexts()).map((t) =>
+            t.trim(),
+        );
+        throw new Error(
+            `The Other Collection dialog has no card for "${collectionName}"; it offers: ` +
+                `${offered.join(", ")}.`,
+        );
+    }
+    return followToOtherCollection(bloomApp, collectionFile, async () => {
+        // The click makes Bloom tear the page down, sometimes before Playwright has finished
+        // with the click; a "closed" error then means the click landed. (If it never landed,
+        // the wait for the page to close times out.)
+        await realClick(card).catch((error) => {
+            if (!/closed/i.test(String(error))) throw error;
+        });
+    });
+}
+
+/** The .bloomCollection file of the collection in `collectionDir`. */
+function findCollectionFile(collectionDir: string): string {
+    const collectionFile = fs
+        .readdirSync(collectionDir)
+        .find((f) => f.endsWith(".bloomCollection"));
+    if (!collectionFile)
+        throw new Error(
+            `${collectionDir} has no .bloomCollection file, so Bloom cannot open it.`,
+        );
+    return Path.join(collectionDir, collectionFile);
+}
+
+/**
+ * Run `askForCollection`, which asks Bloom to open the collection of `collectionFile`, and follow
+ * Bloom there: wait for the old shell page to close, find the new one (bloomApp.page from here
+ * on, with bloomApp.collectionDir the new collection), and return it once Bloom reports that
+ * collection as the open one and ready.
+ */
+async function followToOtherCollection(
+    bloomApp: IBloomApp,
+    collectionFile: string,
+    askForCollection: (page: Page) => Promise<unknown>,
+): Promise<Page> {
+    const page = bloomApp.page;
+    const pageClosed = page.waitForEvent("close", { timeout: 60000 });
+    // If asking fails, we rethrow and never await pageClosed; handling its rejection here keeps
+    // that from surfacing as an unrelated unhandled-rejection error.
+    pageClosed.catch(() => undefined);
+    await askForCollection(page);
+    await pageClosed;
+
+    const newPage = await bloomApp.reattachToShell();
+    const collectionName = Path.basename(collectionFile, ".bloomCollection");
+    await expect
+        .poll(() => getOpenCollectionName(newPage), {
+            timeout: 60000,
+            message: `Bloom never reported "${collectionName}" as the open collection.`,
+        })
+        .toBe(collectionName);
+    await waitForCollectionReady(newPage);
+    bloomApp.collectionDir = Path.dirname(collectionFile);
+    return newPage;
+}
+
+/**
+ * The name of the collection Bloom has open, or undefined while Bloom is between collections (its
+ * project-scoped endpoints answer 404 then).
+ */
+async function getOpenCollectionName(page: Page): Promise<string | undefined> {
+    try {
+        return (await apiGet(page, "collections/name")).body;
+    } catch (error) {
+        if (/returned 404/.test(String(error))) return undefined;
+        throw error;
+    }
+}
+
+/**
+ * The id of the book Bloom has selected, or undefined when no book is selected. This is the
+ * answer the Collections tab's book pane asks Bloom for before it shows a preview.
+ */
+export async function getSelectedBookId(
+    page: Page,
+): Promise<string | undefined> {
+    const info = await apiGetJson<{ id?: string | null }>(
+        page,
+        "app/selectedBookInfo",
+    );
+    return info.id ?? undefined;
+}
+
+/** The pane on the right of the Collections tab, which previews the selected book. */
+const kBookPane = "collections-tab-book-pane";
+
+const kBookPreviewFrame = 'iframe[src*="book-preview/index.htm"]';
+
+/**
+ * The preview of the selected book, on the right of the Collections tab. The pane has no such
+ * frame while no book is selected.
+ */
+export function collectionBookPreview(page: Page): FrameLocator {
+    return page.getByTestId(kBookPane).frameLocator(kBookPreviewFrame);
+}
+
+/**
+ * Check that the Collections tab, which must be showing, previews the book whose cover carries
+ * `coverTitle`: the preview on the right shows a cover with that title on it.
+ */
+export async function expectBookInPreview(
+    page: Page,
+    coverTitle: string,
+): Promise<void> {
+    await expect(
+        collectionBookPreview(page)
+            .locator(".bloom-page .bookTitle")
+            .getByText(coverTitle, { exact: true })
+            .first(),
+        `the Collections tab's preview should show the book titled "${coverTitle}"`,
+    ).toBeVisible({ timeout: 60000 });
+}
+
+/**
+ * Check that the Collections tab, which must be showing, previews no book: Bloom has none
+ * selected, and the pane on the right has no preview in it.
+ *
+ * The pane is drawn empty, and asks Bloom which book is selected as it is drawn; a preview comes
+ * only with the answer. So an empty pane proves nothing until that answer has come. This waits for
+ * the pane, then asks Bloom the same question from the same page: Bloom answers both in the order
+ * they were asked, so once this one is answered the pane has had its own answer and drawn it.
+ */
+export async function expectNoBookInPreview(page: Page): Promise<void> {
+    const pane = page.getByTestId(kBookPane);
+    await expect(
+        pane,
+        "the Collections tab should be showing its book pane",
+    ).toBeVisible({ timeout: 60000 });
+    await expect
+        .poll(() => getSelectedBookId(page), {
+            timeout: 30000,
+            message: "Bloom still has a book selected.",
+        })
+        .toBeUndefined();
+    await expect(
+        pane.locator(kBookPreviewFrame),
+        "the Collections tab's preview should be empty",
+    ).toHaveCount(0);
 }

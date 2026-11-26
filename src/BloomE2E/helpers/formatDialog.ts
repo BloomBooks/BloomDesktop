@@ -911,6 +911,35 @@ export async function applyStyle(page: Page, styleName: string): Promise<void> {
 }
 
 /**
+ * The id of the style the Style Name tab's menu shows as the current one, as Bloom names it in the
+ * markup ("normal", "BigWords", or a style a test created). Unlike getStyleShown, this does not
+ * depend on the UI language.
+ */
+export async function getStyleIdShown(page: Page): Promise<string> {
+    const frame = editablePageFrame(page);
+    // The menu gets its entries, the current one marked, only once the style names have been
+    // localized; until then it has no value to read.
+    await getSelectOptions(frame, "styleSelect");
+    return frame.locator("#styleSelect").inputValue();
+}
+
+/**
+ * On the Style Name tab, apply an existing style to the box, by choosing it in the menu by its id
+ * ("BigWords"), so that the choice does not depend on the UI language.
+ */
+export async function applyStyleById(
+    page: Page,
+    styleId: string,
+): Promise<void> {
+    await chooseSelect2Option(
+        editablePageFrame(page),
+        "styleSelect",
+        (o) => o.value === styleId,
+        `style with the id "${styleId}"`,
+    );
+}
+
+/**
  * On the Style Name tab, create a new style called `styleName` and apply it to the box: click
  * "Create a new style", type the name, click Create. The new style starts with the box's current
  * settings. Returns when the menu shows the new style as the current one.

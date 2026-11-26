@@ -17,7 +17,11 @@ import {
     selectBook,
     waitForCollectionReady,
 } from "./collection";
-import { markEditablePage, waitForEditablePageReload } from "./pageThumbnails";
+import {
+    markEditablePage,
+    readUnlessDocumentReplaced,
+    waitForEditablePageReload,
+} from "./pageThumbnails";
 import { switchTab } from "./workspace";
 
 /** One book as collections/books reports it. Only the fields used here. */
@@ -358,6 +362,20 @@ async function listEditableBooks(page: Page): Promise<IBookInfo[]> {
         page,
         `collections/books?collection-id=${encodeURIComponent(editable.id)}`,
     );
+}
+
+/**
+ * Which of the collection's languages the book shows, by tag, as the Edit tab's
+ * Monolingual/Bilingual/Trilingual dropdown has them. The reading side of setContentLanguages.
+ */
+export async function getContentLanguages(page: Page): Promise<string[]> {
+    const usage = await apiGetJson<IContentLanguageUsage>(
+        page,
+        "editView/topBar/contentLanguageUsage",
+    );
+    return usage.languages
+        .filter((language) => language.isUsedForContent)
+        .map((language) => language.id);
 }
 
 /**
@@ -754,8 +772,11 @@ export async function reloadPageBeingEdited(page: Page): Promise<void> {
 /**
  * Show a page in the Edit tab. This is also how a test SAVES what it typed: Bloom writes the page
  * it is leaving, so text typed into a box reaches the file only once the book moves off that page.
+ * It first waits until Bloom has that page as it is now (waitForBloomToHavePageAsItIs), so a test
+ * of leaving a page the moment it changes needs a way of leaving that does not wait.
  */
 export async function goToPage(page: Page, pageId: string): Promise<void> {
+    await waitForBloomToHavePageAsItIs(page);
     // Wait for the Edit tab first. A jump asked for while it is still loading a page is refused
     // (see waitForEditTabSettled), so ask at a moment when the tab acts on the jump at once.
     // Then ask, and ask again if the tab was busy after all. The tab answers with an error when
@@ -878,16 +899,17 @@ export async function waitForPageToSettle(page: Page): Promise<void> {
 export async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
     await expect
         .poll(
-            () =>
-                editablePageFrame(page).evaluate(() =>
-                    (
-                        window as unknown as {
-                            editablePageBundle: {
-                                isSnapshotStreamIdle: () => boolean;
-                            };
-                        }
-                    ).editablePageBundle.isSnapshotStreamIdle(),
-                ),
+            async () => {
+                const idle = await readSnapshotStreamIdle(
+                    editablePageFrame(page),
+                );
+                if (idle === undefined)
+                    throw new Error(
+                        "The page being edited has no snapshot stream: it is not an editable page, " +
+                            "or it has not finished loading.",
+                    );
+                return idle;
+            },
             {
                 timeout: 15000,
                 message:
@@ -895,6 +917,53 @@ export async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
             },
         )
         .toBe(true);
+}
+
+/**
+ * Wait until Bloom has the page being edited as it is now, before a test leaves it (goToPage,
+ * selectPage, switchTab). Bloom saves the page it is leaving from the last snapshot that page sent,
+ * which comes a moment after each change (kQuietMs in pageSnapshot.ts), and no person leaves a page
+ * that fast; a test can, after typing, an Undo or a drag. Unlike waitForSnapshotStreamIdle this
+ * works at any moment: with no page frame, a page whose stream is not set up yet, or a page that a
+ * reload replaces while this asks, there is no unsent change, so it returns.
+ */
+export async function waitForBloomToHavePageAsItIs(page: Page): Promise<void> {
+    await expect
+        .poll(
+            async () => {
+                const frame = page.frame({ name: "page" });
+                if (!frame) return true;
+                return (
+                    (await readUnlessDocumentReplaced(() =>
+                        readSnapshotStreamIdle(frame),
+                    )) ?? true
+                );
+            },
+            {
+                // The page waits only kQuietMs (25 ms) before it sends a snapshot.
+                intervals: [50],
+                timeout: 15000,
+                message:
+                    "The page being left never finished sending itself to Bloom.",
+            },
+        )
+        .toBe(true);
+}
+
+/**
+ * Whether the page in `frame` has nothing left to send Bloom (isSnapshotStreamIdle in
+ * pageSnapshot.ts); undefined when its snapshot stream is not set up: not an editable page, or one
+ * whose script has not run yet.
+ */
+function readSnapshotStreamIdle(frame: Frame): Promise<boolean | undefined> {
+    return frame.evaluate(() => {
+        const isIdle = (
+            window as unknown as {
+                editablePageBundle?: { isSnapshotStreamIdle?: () => boolean };
+            }
+        ).editablePageBundle?.isSnapshotStreamIdle;
+        return typeof isIdle === "function" ? isIdle() : undefined;
+    });
 }
 
 /**
@@ -978,6 +1047,47 @@ export async function typeInGroup(
     // as one change, so a save straight after it would lose all of it. A test whose subject is an
     // action taken straight after typing passes false.
     if (thenWaitForBloomToHaveIt) await waitForSnapshotStreamIdle(page);
+}
+
+/**
+ * The languages whose box is showing in the translation groups that `groupSelector` picks on the
+ * page being edited, in document order. A box that Bloom hides (display: none) is left out, and so
+ * is the "z" box, which is only a pattern Bloom copies to make the others.
+ */
+export async function getLanguagesShownInGroup(
+    page: Page,
+    groupSelector: string,
+): Promise<string[]> {
+    return editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang]`)
+        .evaluateAll((boxes) =>
+            boxes
+                .filter(
+                    (box) =>
+                        box.getAttribute("lang") !== "z" &&
+                        getComputedStyle(box).display !== "none",
+                )
+                .map((box) => box.getAttribute("lang") ?? ""),
+        );
+}
+
+/**
+ * Wait until the translation groups that `groupSelector` picks show exactly the boxes of these
+ * languages, in any order. Fails with `message` when they do not within 30 seconds.
+ */
+export async function expectLanguagesShownInGroup(
+    page: Page,
+    groupSelector: string,
+    languages: string[],
+    message: string,
+): Promise<void> {
+    await expect
+        .poll(
+            async () =>
+                (await getLanguagesShownInGroup(page, groupSelector)).sort(),
+            { timeout: 30000, message },
+        )
+        .toEqual([...languages].sort());
 }
 
 /**

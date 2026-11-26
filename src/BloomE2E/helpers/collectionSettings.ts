@@ -18,6 +18,7 @@ import {
 } from "../fixtures/launchBloom";
 import { apiGetJson, apiPost } from "./api";
 import { waitForCollectionReady } from "./collection";
+import type { IFontChooserPlace } from "./fontChooser";
 import {
     confirmLanguageChooser,
     pickLanguageInChooser,
@@ -575,9 +576,10 @@ export async function chooseCollectionSettingsListChoice(
 
 /**
  * Open a drop-down list in the dialog, click `choice` in it, and return once the list shows it.
- * `label` names the list in failure messages.
+ * `label` names the list in failure messages. Book and Page Settings is a Config-R dialog too,
+ * with the same lists, so bookSettings.ts chooses in its lists with this.
  */
-async function chooseInList(
+export async function chooseInList(
     page: Page,
     list: Locator,
     label: string,
@@ -887,6 +889,18 @@ export async function chooseCollectionSettingsLanguageFont(
         `${heading}: Default Font`,
         font,
     );
+}
+
+/**
+ * The Default Font picker of one language on the Languages page, as the font chooser's helpers
+ * (fontChooser.ts) take it, for a test of the chooser itself: its marks and information pane.
+ */
+export async function collectionSettingsFontChooser(
+    page: Page,
+    heading: string,
+): Promise<IFontChooserPlace> {
+    await expectLanguageGroup(page, heading);
+    return { scope: page, chooser: languageFontList(page, heading) };
 }
 
 /** The "More" row at the bottom of one language's group, which opens its page of more settings. */

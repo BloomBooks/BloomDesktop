@@ -30,7 +30,9 @@ export type PaletteItem =
     | "speech"
     | "caption"
     | "sound"
-    | "none";
+    | "none"
+    // A picture button, in the Navigation section; see openCanvasToolNavigationSection.
+    | "navigation-image-button";
 
 /** The controls the Canvas tool shows once it is open. */
 const CANVAS_TOOL_CONTROLS = "#canvasToolControls";
@@ -314,6 +316,34 @@ export async function dragPaletteItemOntoCanvas(
         })
         .toBe(countBefore + 1);
     return countBefore;
+}
+
+/**
+ * Open the Canvas tool, and its Navigation section, which holds the buttons that take a reader to
+ * another page or book (the picture button among them). The section starts shut, and a shut
+ * section keeps its items in the document but hidden, so dragPaletteItemOntoCanvas cannot drag
+ * them until it is open.
+ */
+export async function openCanvasToolNavigationSection(
+    page: Page,
+): Promise<void> {
+    const toolbox = await openCanvasTool(page);
+    const item = toolbox
+        .locator(
+            `${CANVAS_TOOL_CONTROLS} [data-testid="palette-navigation-image-button"]`,
+        )
+        .first();
+    if (await item.isVisible()) return;
+    // The section's toggle is the button above the collapsing part that holds the item. It is
+    // found by that place rather than by its label, which is in the UI language.
+    await toolbox
+        .locator(
+            `${CANVAS_TOOL_CONTROLS} div:has(> .MuiCollapse-root ` +
+                `[data-testid="palette-navigation-image-button"]) > div > button`,
+        )
+        .first()
+        .click();
+    await item.waitFor({ state: "visible", timeout: 15000 });
 }
 
 /**
@@ -1081,6 +1111,41 @@ export async function dragCanvasElementSide(
                 message:
                     `Dragging the ${side} handle by ${distance} did not change the canvas ` +
                     `element's size.`,
+            },
+        )
+        .toBeGreaterThan(2);
+    return { before, after: await getActiveCanvasElementRect(page) };
+}
+
+/**
+ * Move the selected canvas element by pressing on it and dragging it `dx`, `dy` page pixels, the
+ * way a person does, and wait until it has moved. Returns the element's rect before and after.
+ *
+ * The press lands a quarter of the way in from the element's top-left corner, not at its middle:
+ * a video element has its play button in the middle, and a press there that does not move would
+ * play the video instead.
+ */
+export async function dragCanvasElementBy(
+    page: Page,
+    dx: number,
+    dy: number,
+): Promise<{ before: IRect; after: IRect }> {
+    const before = await getActiveCanvasElementRect(page);
+    const x = before.x + before.width / 4;
+    const y = before.y + before.height / 4;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + dx, y + dy, { steps: 12 });
+    await page.mouse.up();
+    await expect
+        .poll(
+            async () => {
+                const now = await getActiveCanvasElementRect(page);
+                return Math.abs(now.x - before.x) + Math.abs(now.y - before.y);
+            },
+            {
+                timeout: 30000,
+                message: `Dragging the selected canvas element by ${dx},${dy} did not move it.`,
             },
         )
         .toBeGreaterThan(2);
