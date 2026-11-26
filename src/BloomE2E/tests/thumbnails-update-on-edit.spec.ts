@@ -6,9 +6,9 @@
 // with a new book and with an existing one: here the same book, first just made, then after Bloom
 // has been closed and started again.
 //
-// Each round puts a picture of a different shape on the cover (a wide house, then a tall bird), so
-// the tile's thumbnail, which keeps the cover picture's proportions, shows which cover it was made
-// from.
+// Each round puts an opaque picture of a different shape on the cover (a wide house, then a tall
+// photo-like picture the test makes), so the tile's thumbnail, which keeps the cover picture's
+// proportions and colours, shows which cover it was made from.
 
 import * as fs from "node:fs";
 import * as Path from "node:path";
@@ -31,6 +31,7 @@ import {
 import {
     chooseImageFile,
     getImagePlacement,
+    makeJpegFile,
     readImageFileSize,
 } from "../helpers/images";
 import {
@@ -54,31 +55,31 @@ const fixtureImage = (name: string) =>
         name,
     );
 
-/** One round of edits: the text and picture for the content page, and the cover picture. */
+/**
+ * One round of edits: the text and picture for the content page, and the cover picture, each
+ * picture by the path of its file.
+ */
 interface IEdits {
     text: string;
     contentPicture: string;
+    /** An opaque picture, so that its thumbnail cannot be mistaken for a blank one. */
     coverPicture: string;
     /**
-     * Another picture, which the tile's new thumbnail must look less like than the cover picture:
-     * the content picture in the first round, the cover picture it replaces in the second.
+     * Another opaque picture, which the tile's new thumbnail must look less like than the cover
+     * picture: the cover picture it replaces, or another one in the first round.
      */
     otherPicture: string;
 }
 
 const NEW_BOOK_EDITS: IEdits = {
     text: "TC387 first text",
-    contentPicture: "bird.png",
-    coverPicture: "house-landscape.png",
-    otherPicture: "bird.png",
+    contentPicture: fixtureImage("bird.png"),
+    coverPicture: fixtureImage("house-landscape.png"),
+    otherPicture: fixtureImage("blue-square.png"),
 };
 
-const EXISTING_BOOK_EDITS: IEdits = {
-    text: "TC387 second text",
-    contentPicture: "house-landscape.png",
-    coverPicture: "bird.png",
-    otherPicture: "house-landscape.png",
-};
+/** The size of the tall picture the test makes for the cover in the second round. */
+const TALL_COVER = { width: 300, height: 450 };
 
 /** A page's thumbnail in the Edit tab's page list. */
 function pageThumbnail(page: Page, pageId: string) {
@@ -118,7 +119,7 @@ async function expectThumbnailShowsPicture(
 }
 
 /**
- * Put the fixture picture `fixtureName` into the first picture slot of the page being edited, and
+ * Put the picture at `picturePath` into the first picture slot of the page being edited, and
  * return the name of the file it has in the book. Bloom gives a picture chosen a second time a new
  * name (house-landscape1.png), so that is the name the thumbnail must come to show. Checks first
  * that the page list's thumbnail of the page does not already show a picture of that name.
@@ -126,7 +127,7 @@ async function expectThumbnailShowsPicture(
 async function choosePictureNotInThumbnail(
     page: Page,
     pageId: string,
-    fixtureName: string,
+    picturePath: string,
     where: string,
 ): Promise<string> {
     const shownBefore = await pageThumbnail(page, pageId)
@@ -137,7 +138,7 @@ async function choosePictureNotInThumbnail(
                 return decodeURIComponent(src.split("/").pop() ?? src);
             }),
         );
-    await chooseImageFile(page, fixtureImage(fixtureName));
+    await chooseImageFile(page, picturePath);
     const fileName = (await getImagePlacement(page)).fileName;
     expect(
         shownBefore,
@@ -183,7 +184,7 @@ async function editAndCheckPageThumbnails(
     );
 
     await step(
-        `Put ${edits.contentPicture} on the content page, go to the cover, and check the content page's thumbnail shows it`,
+        `Put ${Path.basename(edits.contentPicture)} on the content page, go to the cover, and check the content page's thumbnail shows it`,
         async () => {
             await selectPage(page, contentPageId);
             const fileName = await choosePictureNotInThumbnail(
@@ -210,7 +211,7 @@ async function editAndCheckPageThumbnails(
     );
 
     await step(
-        `Put ${edits.coverPicture} on the cover, go to the content page, and check the cover's thumbnail shows it`,
+        `Put ${Path.basename(edits.coverPicture)} on the cover, go to the content page, and check the cover's thumbnail shows it`,
         async () => {
             const fileName = await choosePictureNotInThumbnail(
                 page,
@@ -234,29 +235,33 @@ function differ(before: ITileThumbnail, after: ITileThumbnail): boolean {
 }
 
 /**
- * The mean difference, per colour channel (0 to 255), between a tile's thumbnail and the fixture
- * picture `fixtureName` drawn at the thumbnail's size, both over white.
+ * The mean difference, per colour channel (0 to 255), between a tile's thumbnail and the picture at
+ * `picturePath` drawn at the thumbnail's size, both over white. With no picture, the difference
+ * from a blank white thumbnail.
  */
 async function meanDifferenceFromPicture(
     page: Page,
     thumbnail: ITileThumbnail,
-    fixtureName: string,
+    picturePath: string | undefined,
 ): Promise<number> {
-    const pictureBase64 = fs
-        .readFileSync(fixtureImage(fixtureName))
-        .toString("base64");
+    const pictureUrl = picturePath
+        ? `data:image/${picturePath.endsWith(".png") ? "png" : "jpeg"};base64,` +
+          fs.readFileSync(picturePath).toString("base64")
+        : undefined;
     return page.evaluate(
-        async ({ width, height, pixels, pictureBase64 }) => {
-            const picture = new Image();
-            picture.src = `data:image/png;base64,${pictureBase64}`;
-            await picture.decode();
+        async ({ width, height, pixels, pictureUrl }) => {
             const canvas = document.createElement("canvas");
             canvas.width = width;
             canvas.height = height;
             const context = canvas.getContext("2d")!;
             context.fillStyle = "white";
             context.fillRect(0, 0, width, height);
-            context.drawImage(picture, 0, 0, width, height);
+            if (pictureUrl) {
+                const picture = new Image();
+                picture.src = pictureUrl;
+                await picture.decode();
+                context.drawImage(picture, 0, 0, width, height);
+            }
             const drawn = context.getImageData(0, 0, width, height).data;
             let total = 0;
             for (let i = 0; i < pixels.length; i += 4) {
@@ -272,7 +277,7 @@ async function meanDifferenceFromPicture(
             width: thumbnail.width,
             height: thumbnail.height,
             pixels: thumbnail.pixels,
-            pictureBase64,
+            pictureUrl,
         },
     );
 }
@@ -288,6 +293,8 @@ async function expectTileThumbnailOfNewCover(
     before: ITileThumbnail,
     edits: IEdits,
 ): Promise<ITileThumbnail> {
+    const coverName = Path.basename(edits.coverPicture);
+    const otherName = Path.basename(edits.otherPicture);
     let after: ITileThumbnail = before;
     await expect
         .poll(
@@ -301,18 +308,18 @@ async function expectTileThumbnailOfNewCover(
             },
             {
                 timeout: 60000,
-                message: `The book's tile kept the thumbnail it had before ${edits.coverPicture} went on the cover (${before.width}x${before.height}).`,
+                message: `The book's tile kept the thumbnail it had before ${coverName} went on the cover (${before.width}x${before.height}).`,
             },
         )
         .toBe(true);
     // Bloom keeps the cover picture's proportions when it makes the thumbnail.
-    const cover = readImageFileSize(fixtureImage(edits.coverPicture));
+    const cover = readImageFileSize(edits.coverPicture);
     expect(
         Math.abs(after.width - (after.height * cover.width) / cover.height),
-        `the tile's thumbnail (${after.width}x${after.height}) does not have the proportions of ${edits.coverPicture} (${cover.width}x${cover.height}), the new cover picture`,
+        `the tile's thumbnail (${after.width}x${after.height}) does not have the proportions of ${coverName} (${cover.width}x${cover.height}), the new cover picture`,
     ).toBeLessThanOrEqual(1);
     // And it is that picture: drawn at the thumbnail's size, the new cover picture is closer to it
-    // than another picture is.
+    // than another picture is, and than a blank thumbnail is.
     const fromNew = await meanDifferenceFromPicture(
         page,
         after,
@@ -323,10 +330,16 @@ async function expectTileThumbnailOfNewCover(
         after,
         edits.otherPicture,
     );
+    const fromBlank = await meanDifferenceFromPicture(page, after, undefined);
+    const differences = `mean difference per channel from ${coverName} ${fromNew.toFixed(1)}, from ${otherName} ${fromOther.toFixed(1)}, from blank white ${fromBlank.toFixed(1)}`;
     expect(
         fromNew,
-        `the tile's thumbnail looks more like ${edits.otherPicture}, another picture (mean difference ${fromOther.toFixed(1)}), than ${edits.coverPicture}, the new one (${fromNew.toFixed(1)})`,
+        `the tile's thumbnail looks more like ${otherName} than like ${coverName}, the new cover picture (${differences})`,
     ).toBeLessThan(fromOther);
+    expect(
+        fromNew,
+        `the tile's thumbnail looks more like a blank thumbnail than like ${coverName}, the new cover picture (${differences})`,
+    ).toBeLessThan(fromBlank);
     return after;
 }
 
@@ -334,8 +347,17 @@ test("page thumbnails follow edits and the collection thumbnail follows the cove
     page,
     bloomApp,
     step,
-}) => {
+}, testInfo) => {
     test.setTimeout(600000);
+
+    const tallCover = testInfo.outputPath("tall-cover.jpg");
+    await makeJpegFile(page, tallCover, TALL_COVER.width, TALL_COVER.height);
+    const existingBookEdits: IEdits = {
+        text: "TC387 second text",
+        contentPicture: fixtureImage("house-landscape.png"),
+        coverPicture: tallCover,
+        otherPicture: fixtureImage("house-landscape.png"),
+    };
 
     const made = await step(
         "Make a Basic Book with a content page, and read its tile's thumbnail",
@@ -400,7 +422,7 @@ test("page thumbnails follow edits and the collection thumbnail follows the cove
         restarted,
         made.coverId,
         made.contentPageId,
-        EXISTING_BOOK_EDITS,
+        existingBookEdits,
         step,
     );
 
@@ -412,7 +434,7 @@ test("page thumbnails follow edits and the collection thumbnail follows the cove
                 restarted,
                 made.bookFolder,
                 newBookTile,
-                EXISTING_BOOK_EDITS,
+                existingBookEdits,
             );
         },
     );
