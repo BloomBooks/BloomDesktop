@@ -5,14 +5,16 @@
 // a switch before the next click. After each burst it waits for Bloom to settle and checks that:
 //
 // - Bloom ends up on the last tab it was asked for, and the top bar shows that same tab;
-// - no tab stays greyed out (the case allows them to be greyed for a moment during the switches);
+// - no tab stays greyed out, in Bloom or in the top bar (the case allows them to be greyed for a
+//   moment during the switches);
 // - that tab shows what it should: the page being edited, the publish destinations, or the
-//   selected book's preview;
+//   preview of this book;
 // - no script error and no "Bloom had a problem" dialog came up (the fixture fails a test on the
 //   dialog by itself).
 //
-// The first burst starts in the Edit tab straight after typing, so leaving Edit mid-burst has to
-// save the page; the test then checks that the typing is in the book file.
+// The first burst starts in the Edit tab straight after typing and never goes back to it, so
+// the one time it leaves Edit, mid-burst, has to save the page. The test checks the book file
+// right after that burst, before any later burst leaves Edit again.
 
 import * as fs from "node:fs";
 import type { Page, Request } from "@playwright/test";
@@ -43,24 +45,30 @@ test.use({
 const kAllTabs: WorkspaceTabId[] = ["collection", "edit", "publish"];
 
 // Each burst is clicked from whatever tab the previous one left Bloom on. Between them they go
-// from every tab to every other, double back, and click the same tab twice running.
+// from every tab to every other, double back, and click the same tab twice running. The first
+// leaves Edit once and does not come back (see above).
 const kBursts: WorkspaceTabId[][] = [
-    ["collection", "publish", "edit", "collection", "edit", "publish"],
+    ["collection", "publish", "collection", "publish", "publish", "collection"],
     ["edit", "collection", "publish", "publish", "edit", "collection"],
     ["publish", "edit", "publish", "collection", "edit", "edit"],
     ["collection", "edit", "collection", "publish", "collection", "publish"],
 ];
 
-/** Keeps the workspace/selectTab requests the top bar sends, and which of them are still open. */
+/**
+ * Keeps the workspace/selectTab requests the top bar sends, which of them are still open, and the
+ * most that were open at once since the last resetPeak().
+ */
 function watchTabRequests(page: Page) {
     const asked: WorkspaceTabId[] = [];
     const open = new Set<Request>();
+    let peakOpen = 0;
     const isSelectTab = (request: Request) =>
         new URL(request.url()).pathname.endsWith("/workspace/selectTab");
     const onRequest = (request: Request) => {
         if (!isSelectTab(request)) return;
         asked.push(JSON.parse(request.postData() ?? "{}").tab);
         open.add(request);
+        peakOpen = Math.max(peakOpen, open.size);
     };
     const onDone = (request: Request) => {
         open.delete(request);
@@ -71,12 +79,26 @@ function watchTabRequests(page: Page) {
     return {
         asked: () => [...asked],
         openCount: () => open.size,
+        peakOpen: () => peakOpen,
+        resetPeak: () => {
+            peakOpen = open.size;
+        },
         stop: () => {
             page.off("request", onRequest);
             page.off("requestfinished", onDone);
             page.off("requestfailed", onDone);
         },
     };
+}
+
+/** The tabs the top bar draws greyed out, by their API names. */
+async function tabsShownGreyed(page: Page): Promise<string[]> {
+    const ids = await page
+        .locator('[data-testid^="workspace-tab-"][aria-disabled="true"]')
+        .evaluateAll((tabs) =>
+            tabs.map((t) => t.getAttribute("data-testid") ?? ""),
+        );
+    return ids.map((id) => id.replace("workspace-tab-", ""));
 }
 
 /** The tab the top bar draws as the selected one, by its API name, or "" when none. */
@@ -139,6 +161,7 @@ async function expectSettledOn(
                     ),
                     navigationLocked,
                     shownSelected: await tabShownSelected(page),
+                    shownGreyed: await tabsShownGreyed(page),
                 };
             },
             {
@@ -152,6 +175,7 @@ async function expectSettledOn(
             ),
             navigationLocked: false,
             shownSelected: tab,
+            shownGreyed: [],
         });
 }
 
@@ -188,12 +212,29 @@ async function expectTabShowsItsContent(
                 await getSelectedBookId(page),
                 "the Collections tab should still have the book selected",
             ).toBe(bookId);
+            // The book has no title, so it is told apart by the text typed on its page.
             await expect(
-                collectionBookPreview(page).locator(".bloom-page").first(),
-                "the Collections tab should preview the selected book",
+                collectionBookPreview(page)
+                    .locator(".bloom-page")
+                    .getByText(typed)
+                    .first(),
+                "the Collections tab should preview this book, with the text typed on its page",
             ).toBeVisible({ timeout: 60000 });
             break;
     }
+}
+
+/** Check that the typing is in the book file, which Bloom writes as the Edit tab is left. */
+async function expectTypingSaved(
+    page: Page,
+    bookFolder: string,
+    typed: string,
+) {
+    const saved = await readBook(page, bookFolder);
+    expect(
+        saved.pages.map((p) => p.text).join("\n"),
+        "the book file should hold what was typed just before the tabs flipped",
+    ).toContain(typed);
 }
 
 test("flipping fast between the Collections, Edit and Publish tabs [Test Case ID 102]", async ({
@@ -231,40 +272,37 @@ test("flipping fast between the Collections, Edit and Publish tabs [Test Case ID
                 `Flip the tabs fast: ${burst.join(", ")} (burst ${index + 1} of ${kBursts.length})`,
                 async () => {
                     const askedBefore = requests.asked().length;
+                    requests.resetPeak();
                     await clickTabsInABurst(page, burst);
                     // The top bar ignores a click on the tab already showing or on a greyed one,
                     // so which clicks became requests depends on timing. Bloom should end on the
-                    // last tab it was asked for, whichever that was. Sanity check: at least two
-                    // switches were asked for, so they overlapped rather than ran one by one.
+                    // last tab it was asked for, whichever that was.
                     await expect
                         .poll(() => requests.asked().length, {
                             timeout: 10000,
                             message:
-                                "The burst of clicks sent Bloom fewer than two requests to change tabs.",
+                                "The burst of clicks sent Bloom no request to change tabs.",
                         })
-                        .toBeGreaterThanOrEqual(askedBefore + 2);
+                        .toBeGreaterThan(askedBefore);
                     const settledOn = requests.asked().at(-1)!;
                     await expectSettledOn(page, requests, settledOn);
+                    // Sanity check: Bloom had a switch still to answer when the next came, so
+                    // the switches overlapped rather than ran one by one.
+                    expect(
+                        requests.peakOpen(),
+                        "the most requests to change tabs that Bloom had open at once",
+                    ).toBeGreaterThanOrEqual(2);
                     await expectTabShowsItsContent(
                         page,
                         settledOn,
                         bookId,
                         typed,
                     );
+                    if (index === 0)
+                        await expectTypingSaved(page, bookFolder, typed);
                 },
             );
         }
-
-        await step(
-            "Check the typing was saved when Edit was left",
-            async () => {
-                const saved = await readBook(page, bookFolder);
-                expect(
-                    saved.pages.map((p) => p.text).join("\n"),
-                    "the book file should hold what was typed just before the tabs flipped",
-                ).toContain(typed);
-            },
-        );
 
         await step("Go to each tab once more, the ordinary way", async () => {
             const current = (requests.asked().at(-1) ??
