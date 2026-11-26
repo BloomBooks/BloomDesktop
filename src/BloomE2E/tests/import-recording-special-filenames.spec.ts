@@ -20,7 +20,6 @@
 
 import * as fs from "node:fs";
 import * as Path from "node:path";
-import type { Frame, Locator, Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
@@ -35,10 +34,12 @@ import {
     expectNarrationToBe,
     getNarrationSentences,
     importNarration,
+    measureMp3Duration,
+    narrationFilePath,
     openToolboxWithTalkingBook,
+    playCurrentNarration,
     sampleNarrationFile,
 } from "../helpers/talkingBook";
-import { toolboxFrame } from "../helpers/toolbox";
 
 test.use({
     collectionSpec: {
@@ -63,103 +64,6 @@ const kFileNames = [
     // Accented, non-Latin and combining characters.
     "naïve café ünï 日本語 नमस्ते.mp3",
 ];
-
-/** One narration the toolbox's player played to its end. */
-interface IPlay {
-    /** The base name of the file it played, which is the id of the text box it narrates. */
-    file: string;
-    /** The length of the audio, in seconds. */
-    duration: number;
-}
-
-/**
- * Have the toolbox's player note every narration it plays to its end, so that getPlays can read
- * them back. Starts the notes afresh.
- */
-async function recordPlays(page: Page): Promise<void> {
-    for (const frame of page.frames()) await recordPlaysIn(frame);
-}
-
-async function recordPlaysIn(frame: Frame): Promise<void> {
-    await frame.evaluate(() => {
-        interface IWindowWithPlays {
-            e2eEndedPlays?: { url: string; duration: number }[];
-            e2eListeningForPlays?: boolean;
-        }
-        const w = window as unknown as IWindowWithPlays;
-        w.e2eEndedPlays = [];
-        if (w.e2eListeningForPlays) return;
-        w.e2eListeningForPlays = true;
-        // "ended" does not bubble, so listen while it is on its way down to the player.
-        document.addEventListener(
-            "ended",
-            (event) => {
-                const media = event.target as HTMLMediaElement;
-                w.e2eEndedPlays?.push({
-                    url: media.currentSrc || media.src,
-                    duration: media.duration,
-                });
-            },
-            true,
-        );
-    });
-}
-
-/** The narrations that recordPlays noted as played to their end. */
-async function getPlays(page: Page): Promise<IPlay[]> {
-    const plays: IPlay[] = [];
-    for (const frame of page.frames()) {
-        const inFrame = await frame.evaluate(
-            () =>
-                (
-                    window as unknown as {
-                        e2eEndedPlays?: { url: string; duration: number }[];
-                    }
-                ).e2eEndedPlays ?? [],
-        );
-        for (const { url, duration } of inFrame) {
-            // The tool plays a narration through Bloom's audio/wavFile API, which names the file
-            // in its `id` parameter.
-            const parsed = new URL(url);
-            const path = decodeURIComponent(
-                parsed.searchParams.get("id") ?? parsed.pathname,
-            );
-            const file = path.split(/[\\/]/).pop() ?? path;
-            plays.push({ file: file.replace(/\.[^.]*$/, ""), duration });
-        }
-    }
-    return plays;
-}
-
-/**
- * The tool's Check button, which plays the current text box's narration. It is found by its
- * picture: the buttons have no id, their labels are localized, and the button itself ignores the
- * pointer, so its picture takes the click.
- */
-function checkButton(page: Page): Locator {
-    return toolboxFrame(page)
-        .locator(
-            ["play_enabled.svg", "play_expected.svg", "pause_yellow.svg"]
-                .map((p) => `button:has(img[src$="/${p}"])`)
-                .join(", "),
-        )
-        .locator("img");
-}
-
-/** The length of an mp3, in seconds, as the browser decodes it. */
-async function measureDuration(page: Page, mp3Path: string): Promise<number> {
-    const base64 = fs.readFileSync(mp3Path).toString("base64");
-    return await toolboxFrame(page).evaluate(async (data) => {
-        const audio = new Audio(`data:audio/mpeg;base64,${data}`);
-        await new Promise<void>((resolve, reject) => {
-            audio.addEventListener("loadedmetadata", () => resolve());
-            audio.addEventListener("error", () =>
-                reject(new Error("The browser could not read the mp3.")),
-            );
-        });
-        return audio.duration;
-    }, base64);
-}
 
 test("imports and plays recordings whose file names hold special characters [Test Case ID 493]", async ({
     page,
@@ -192,6 +96,15 @@ test("imports and plays recordings whose file names hold special characters [Tes
         "The book should have one content page per file to import.",
     ).toBe(kFileNames.length);
 
+    // Sanity check: the files differ in length, so a play's length says which file it was.
+    const durations: number[] = [];
+    for (const source of sources)
+        durations.push(await measureMp3Duration(page, source));
+    expect(
+        new Set(durations.map((d) => d.toFixed(1))).size,
+        `The files to import should differ in length: ${durations}`,
+    ).toBe(kFileNames.length);
+
     for (let i = 0; i < kFileNames.length; i++) {
         await test.step(`imports and plays "${kFileNames[i]}"`, async () => {
             await goToPage(page, contentPages[i].id);
@@ -217,7 +130,7 @@ test("imports and plays recordings whose file names hold special characters [Tes
                         ).filter((s) => s.languageTag === "en");
                         boxId = sentences.length === 1 ? sentences[0].id : "";
                         return fs.existsSync(
-                            Path.join(bookFolder, "audio", `${boxId}.mp3`),
+                            narrationFilePath(bookFolder, boxId),
                         );
                     },
                     {
@@ -235,25 +148,10 @@ test("imports and plays recordings whose file names hold special characters [Tes
 
             // And it plays: Check plays the box's narration to its end, and what it played is
             // that file's audio, by its length.
-            const expectedDuration = await measureDuration(page, sources[i]);
-            await recordPlays(page);
-            await checkButton(page).click();
-            let plays: IPlay[] = [];
-            await expect
-                .poll(
-                    async () => {
-                        plays = await getPlays(page);
-                        return plays.length;
-                    },
-                    {
-                        timeout: 60000,
-                        message: `Check never played the narration imported from "${kFileNames[i]}" to its end.`,
-                    },
-                )
-                .toBeGreaterThanOrEqual(1);
+            const plays = await playCurrentNarration(page);
             expect(
                 plays.length,
-                `Check played more than one narration: ${JSON.stringify(plays)}`,
+                `Check should play exactly one narration: ${JSON.stringify(plays)}`,
             ).toBe(1);
             expect(
                 plays[0].file,
@@ -261,18 +159,8 @@ test("imports and plays recordings whose file names hold special characters [Tes
             ).toBe(boxId);
             expect(
                 plays[0].duration,
-                `Check should play the audio of "${kFileNames[i]}" (${expectedDuration} s).`,
-            ).toBeCloseTo(expectedDuration, 1);
+                `Check should play the audio of "${kFileNames[i]}" (${durations[i]} s).`,
+            ).toBeCloseTo(durations[i], 1);
         });
     }
-
-    // Sanity check: each page got a different file's audio, so the plays above could tell them
-    // apart.
-    const durations = await Promise.all(
-        sources.map((s) => measureDuration(page, s)),
-    );
-    expect(
-        new Set(durations.map((d) => d.toFixed(1))).size,
-        `The files to import should differ in length: ${durations}`,
-    ).toBe(kFileNames.length);
 });
