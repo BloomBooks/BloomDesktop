@@ -70,6 +70,187 @@ export async function selectBook(
     );
 }
 
+/** One book as collections/books reports it. Only the fields used here. */
+export interface IBookInfo {
+    id: string;
+    title: string;
+    folderPath: string;
+}
+
+/** One collection as collections/list reports it. Only the fields used here. */
+export interface ICollectionInfo {
+    id: string;
+    name: string;
+}
+
+/** The books in the collection Bloom has open. */
+export async function listEditableBooks(page: Page): Promise<IBookInfo[]> {
+    const name = (
+        await apiGet(page, "collections/getCurrentEditableCollectionName")
+    ).body;
+    const collections = await apiGetJson<ICollectionInfo[]>(
+        page,
+        "collections/list",
+    );
+    const editable = collections.find((c) => c.name === name) ?? collections[0];
+    return apiGetJson<IBookInfo[]>(
+        page,
+        `collections/books?collection-id=${encodeURIComponent(editable.id)}`,
+    );
+}
+
+/** The two ways a person opens the selected book's menu on the Collections tab. */
+export type BookMenuOpener = "right-click" | "triangle";
+
+/** The triangle at the bottom right of the selected book's tile, which opens the book's menu. */
+const kBookMenuTriangle = "book-menu-triangle";
+
+/** The entries of the selected book's menu that are showing; the menu stays mounted when closed. */
+const kShowingBookMenuEntries = '[role="menuitem"]:visible';
+
+/** The tile of every book on the Collections tab, in any of its collections. */
+const kBookTiles = ".book-button[data-book-id]";
+
+/**
+ * Select a book the way a person does, by clicking its tile on the Collections tab, which must be
+ * showing. Returns once Bloom reports the book selected and its tile is drawn as the selected one.
+ * selectBook does the same through the API, for a test whose subject is not the tile.
+ */
+export async function clickBookTile(page: Page, bookId: string): Promise<void> {
+    await waitForCollectionReady(page);
+    const tile = page
+        .locator(`${kBookTiles}[data-book-id="${bookId}"]`)
+        .locator(".bookButton");
+    await realClick(tile);
+    await expect
+        .poll(() => getSelectedBookId(page), {
+            timeout: 30000,
+            message: `Bloom never reported book ${bookId} selected after a click on its tile.`,
+        })
+        .toBe(bookId);
+    await expect(
+        tile,
+        `the tile of book ${bookId} should be drawn as the selected one`,
+    ).toHaveClass(/\bselected\b/, { timeout: 15000 });
+}
+
+/**
+ * The ids of the books whose tiles on the Collections tab, which must be showing, show the
+ * triangle that opens the book's menu.
+ */
+export async function getBooksShowingMenuTriangle(
+    page: Page,
+): Promise<string[]> {
+    return page
+        .locator(kBookTiles)
+        .filter({ has: page.getByTestId(kBookMenuTriangle) })
+        .evaluateAll((tiles) =>
+            tiles.map((tile) => tile.getAttribute("data-book-id")!),
+        );
+}
+
+/**
+ * Open the selected book's menu on the Collections tab, which must be showing, by right-clicking
+ * the book's tile or by clicking the triangle at the tile's bottom right corner. Returns once the
+ * menu shows its entries.
+ */
+export async function openSelectedBookMenu(
+    page: Page,
+    openWith: BookMenuOpener = "right-click",
+): Promise<void> {
+    const selectedTile = page.locator(".bookButton.selected");
+    if (openWith === "right-click") {
+        await selectedTile.click({ button: "right", timeout: 15000 });
+    } else {
+        // The triangle is a sibling of the tile's button, inside the same book tile.
+        await realClick(
+            selectedTile.locator("xpath=..").getByTestId(kBookMenuTriangle),
+        );
+    }
+    await expect(
+        page.locator(kShowingBookMenuEntries).first(),
+        `the selected book's menu should open on a ${openWith}`,
+    ).toBeVisible({ timeout: 15000 });
+}
+
+/** One entry of the selected book's menu. */
+export interface IBookMenuEntry {
+    /** The entry's `data-testid`, which is its localization id. */
+    testId: string;
+    /** The words the entry shows, in whatever language Bloom's UI is in. */
+    label: string;
+    /** False for an entry that is greyed out, such as one the book's checkout forbids. */
+    enabled: boolean;
+}
+
+/** What the selected book's menu offers: its own entries, and those of its More submenu. */
+export interface IBookMenu {
+    entries: IBookMenuEntry[];
+    more: IBookMenuEntry[];
+}
+
+/**
+ * Read what the selected book's menu offers when opened with `openWith`, on the Collections tab,
+ * which must be showing: every entry of the menu and of its More submenu, in the order shown. Opens
+ * the menu and closes it again.
+ */
+export async function readSelectedBookMenu(
+    page: Page,
+    openWith: BookMenuOpener,
+): Promise<IBookMenu> {
+    await openSelectedBookMenu(page, openWith);
+    const entries = await readShowingBookMenuEntries(page);
+    await realClick(
+        page.locator(
+            `${kShowingBookMenuEntries}[data-testid="CollectionTab.ContextMenu.More"]`,
+        ),
+    );
+    // The submenu opens in answer to the click, so wait until more entries are showing.
+    await expect
+        .poll(() => page.locator(kShowingBookMenuEntries).count(), {
+            timeout: 15000,
+            message: "the book menu's More submenu never opened",
+        })
+        .toBeGreaterThan(entries.length);
+    const withSubmenu = await readShowingBookMenuEntries(page);
+    // While the pointer rests on More its submenu stays open, and the menu then ignores Escape:
+    // the key goes to the menu, which has the focus, and only the topmost menu, the submenu,
+    // answers it. So move the pointer to another entry, which shuts the submenu, before closing.
+    await page.locator(kShowingBookMenuEntries).first().hover();
+    await expect(
+        page.locator(kShowingBookMenuEntries),
+        "the More submenu should shut when the pointer leaves More",
+    ).toHaveCount(entries.length, { timeout: 15000 });
+    await closeBookMenu(page);
+    return {
+        entries,
+        more: withSubmenu.filter(
+            (entry) => !entries.some((e) => e.testId === entry.testId),
+        ),
+    };
+}
+
+/**
+ * Every entry the open book menu shows, in the order shown. Waits first until each entry that
+ * depends on the subscription tier has its answer, since until then it looks like any other.
+ */
+async function readShowingBookMenuEntries(
+    page: Page,
+): Promise<IBookMenuEntry[]> {
+    const showing = page.locator(kShowingBookMenuEntries);
+    await expect(
+        showing.and(page.locator("[data-feature-status-pending]")),
+        "every entry of the book menu should know whether the subscription allows it",
+    ).toHaveCount(0, { timeout: 15000 });
+    return showing.evaluateAll((items) =>
+        items.map((item) => ({
+            testId: item.getAttribute("data-testid") ?? "(no id)",
+            label: (item as HTMLElement).innerText.trim(),
+            enabled: item.getAttribute("aria-disabled") !== "true",
+        })),
+    );
+}
+
 /**
  * Choose a command from the menu a person gets by right-clicking the selected book's tile on the
  * Collections tab, which must be showing. `menuPath` is the menu's own words, one entry per level,
@@ -81,9 +262,7 @@ export async function chooseFromSelectedBookMenu(
     page: Page,
     menuPath: string[],
 ): Promise<void> {
-    await page
-        .locator(".bookButton.selected")
-        .click({ button: "right", timeout: 15000 });
+    await openSelectedBookMenu(page);
     for (const entry of menuPath) {
         const items = page.getByRole("menuitem");
         // Each level opens in answer to the click before, so wait for it to appear.
@@ -101,8 +280,9 @@ export async function chooseFromSelectedBookMenu(
 }
 
 /**
- * Choose a top-level command from the menu a person gets by right-clicking the selected book's
- * tile on the Collections tab, which must be showing. `testId` is the command's `data-testid`, which
+ * Choose a top-level command from the selected book's menu on the Collections tab, which must be
+ * showing. The menu is opened with `openWith`: a right-click on the book's tile, or a click on the
+ * triangle at the tile's bottom right corner. `testId` is the command's `data-testid`, which
  * is its localization id (LocalizableMenuItem), e.g. "CollectionTab.MakeBookUsingThisTemplate", so
  * this works whatever language Bloom's UI is in. Fails naming what the menu offered when the
  * command is not there.
@@ -110,20 +290,19 @@ export async function chooseFromSelectedBookMenu(
 export async function chooseFromSelectedBookMenuByTestId(
     page: Page,
     testId: string,
+    openWith: BookMenuOpener = "right-click",
 ): Promise<void> {
-    await page
-        .locator(".bookButton.selected")
-        .click({ button: "right", timeout: 15000 });
+    await openSelectedBookMenu(page, openWith);
     // The menu stays mounted when closed, so only a showing entry counts. Only a menu item counts:
     // the book pane beside the grid can show a button with the same test id.
     const item = page.locator(
-        `[role="menuitem"][data-testid="${testId}"]:visible`,
+        `${kShowingBookMenuEntries}[data-testid="${testId}"]`,
     );
     try {
         await item.waitFor({ state: "visible", timeout: 15000 });
     } catch {
         const offered = await page
-            .locator('[role="menuitem"]:visible')
+            .locator(kShowingBookMenuEntries)
             .evaluateAll((items) =>
                 items.map((i) => i.getAttribute("data-testid") ?? "(no id)"),
             );
@@ -142,7 +321,7 @@ export async function chooseFromSelectedBookMenuByTestId(
 export async function closeBookMenu(page: Page): Promise<void> {
     // The menu stays mounted when closed, so only showing entries count. Each Escape closes one
     // level (the More submenu, then the menu).
-    const showingEntries = page.locator('[role="menuitem"]:visible');
+    const showingEntries = page.locator(kShowingBookMenuEntries);
     await expect(
         showingEntries.first(),
         "there is no book menu open to close",
