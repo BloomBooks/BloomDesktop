@@ -297,6 +297,10 @@ test("splitting sections of a Basic Text & Image page, typing them and dragging 
         (await section(page, videoIndex)).rect.width,
         "The video beside the picture should get wider by what the picture lost.",
     ).toBeGreaterThan(videoBefore.width + 10);
+    expect(
+        (await section(page, canvasIndex)).rect.height,
+        "Dragging the second splitter should leave the canvas as short as the first drag made it.",
+    ).toBeLessThan(canvasBefore.height - 10);
     const layoutBeforeLeaving = await getSplitLayout(page);
     expect(
         layoutBeforeLeaving,
@@ -424,6 +428,10 @@ test("a new Custom page starts in Change Layout mode and keeps the sections it i
                 "Dragging the splitter right of the picture to the right should make it wider.",
         })
         .toBeGreaterThan(leftBefore.width + 10);
+    expect(
+        (await section(page, 2)).rect.height,
+        "Dragging the second splitter should leave the widget as tall as the first drag made it.",
+    ).toBeGreaterThan(bottomBefore.height + 10);
     const layoutBeforeLeaving = await getSplitLayout(page);
     expect(
         layoutBeforeLeaving,
