@@ -157,7 +157,13 @@ real bug in the code under test; read the message and fix it rather than working
 - `helpers/collection.ts` — `selectBook`, `clickBookTile`, `waitForCollectionReady`,
   `listEditableBooks`, and the selected book's menu, opened by a right-click or by the triangle
   on its tile (`openSelectedBookMenu`, `readSelectedBookMenu`, `chooseFromSelectedBookMenu`,
-  `chooseFromSelectedBookMenuByTestId`, `closeBookMenu`, `getBooksShowingMenuTriangle`).
+  `chooseFromSelectedBookMenuByTestId`, `chooseFromSelectedBookMoreMenuByTestId`, `closeBookMenu`,
+  `getBooksShowingMenuTriangle`).
+- `helpers/spreadsheet.ts` — `exportSelectedBookToSpreadsheet` and
+  `importSpreadsheetIntoSelectedBook`, the More submenu's spreadsheet commands, with their choosers
+  answered through Bloom's e2e hook and what the progress box said.
+- `helpers/bloomLibraryDownload.ts` — `downloadBookFromBloomLibrary`: copy a public book's files
+  from bloomlibrary.org as Bloom's own download does, for a test that needs a real book.
 - `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
 - `helpers/addPageDialog.ts` — open, read, scroll and close the real Add Page dialog, and add a
   page through it. Tests that only need a page in their book call `addPage` instead.

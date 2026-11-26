@@ -19,10 +19,10 @@ paid down now, in small pull requests, one per improvement, each branching off t
 it (the first stack is BL-16799). Before you start on a marked entry, read its pull request
 and ask its author.
 
-| Pull request | Branch | What it pays down |
-| --- | --- | --- |
-| #8300 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
-| #8306 | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off `e2e-private-user-settings`, which gave every Bloom a test launches a settings folder of its own and removed its entry from this file. |
+| Pull request | Branch                          | What it pays down                                                                                                                                                                                                                                                                                        |
+| ------------ | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #8300        | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML.                                                                                                                                                                                                                       |
+| #8306        | `e2e-real-library-login`        | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off `e2e-private-user-settings`, which gave every Bloom a test launches a settings folder of its own and removed its entry from this file. |
 
 Three of these also add entries of their own, for the debt that is left after the fix. The
 stack replaces PR #8276, which did all of this at once.
@@ -87,13 +87,13 @@ investigated 2026-09-16, which splits this entry in two:
   `WebView2Browser.SetupEventHandling`, which then calls `Environment.Exit(1)`. Cause, measured
   in a parallel session on the same day: `WorkspaceView.OpenLegacySettingsDialog` created the
   dialog inside `LegacyDpiDialogLauncher.EnterLegacyDpiScope()` (thread set to
-  System-DPI-aware), and a WebView2 browser process takes the DPI awareness of its *host
-  window*, not of the process, so the dialog's WebView2 came up System-aware while the shell's
+  System-DPI-aware), and a WebView2 browser process takes the DPI awareness of its _host
+  window_, not of the process, so the dialog's WebView2 came up System-aware while the shell's
   is PerMonitorV2. WebView2 refuses a
   controller whose awareness differs from the browser process already using the same user data
   folder (`ERROR_INVALID_STATE`, 0x8007139F, "mismatch in DPI awareness"). Outside `--e2e` each
   ReactControl gets its own environment and process, so there is nothing to conflict with; under
-  `--e2e` the shared environment from 64e91dc8c6 (2026-09-03) *is* the conflict. Four call
+  `--e2e` the shared environment from 64e91dc8c6 (2026-09-03) _is_ the conflict. Four call
   sites enter that DPI scope now (the Settings dialog and `ScriptSettingsDialog` were two more,
   until they were removed), and only the two whose dialog hosts a browser can hit this:
   `ConfigurationDialog` (Configurator) and `LicenseDialog` (Program). The other two open a plain
@@ -179,7 +179,7 @@ right after that file gained an import, is a real problem in that file. One that
 different file each time, on files the branch never touched, is this entry.
 
 seen again 2026-10-06 (`collection-settings-advanced.spec.ts`, BL-16737): once in about twenty runs
-of that file, and this time *after* its first test had passed, so a worker can also die between
+of that file, and this time _after_ its first test had passed, so a worker can also die between
 tests, not only at startup. The next five runs of the same file were green.
 
 seen again 2026-10-20 (`collection-settings-subscription.spec.ts`, BL-16734), and this time it
@@ -363,7 +363,7 @@ dropped.
 
 seen again 2026-09-11 (Test Case ID 348, `copy-page.spec.ts`): the same drop hits
 `selectPage`, which the 2026-09-02 mitigation does not cover. `helpers/pageThumbnails.ts`
-waits only for the thumbnail to *exist* and then clicks it; its `waitForEditablePage` comes
+waits only for the thumbnail to _exist_ and then clicks it; its `waitForEditablePage` comes
 after the click, not before, so the click can land while the Edit tab is still settling. The
 kept Bloom log says the click went nowhere at all: the last line is `Entered Edit Tab` for
 the destination book, and for the next 60 seconds there is no `Select Page` and no `changing
@@ -374,7 +374,7 @@ What makes this one worth chasing rather than filing as flake: it fails **every*
 developer machine (twice in full-suite runs and again running the spec alone) and **passed**
 on the 2026-09-11 nightly, so the runner and that machine differ in something that decides
 it. Nobody has found what. Until they do, the cheap fix is the same as the entry's: have
-`selectPage` wait for the Edit tab to be ready *before* it clicks, the way the other
+`selectPage` wait for the Edit tab to be ready _before_ it clicks, the way the other
 page-changing helpers now do.
 (Seen while preflighting #8351, which cannot reach any of this — its whole diff is one
 font-chooser helper.)
@@ -450,7 +450,7 @@ Fix direction, cheapest first, none of it tried yet:
   the most likely to run in CI, but nobody has tried driving the suite inside one.
 - **A virtual display driver.** Windows has an indirect-display driver model (IddCx), and
   several drivers built on it create a monitor with no hardware behind it, at a resolution the
-  driver is told to offer. Setting that monitor's *scale factor* is the harder half: Windows
+  driver is told to offer. Setting that monitor's _scale factor_ is the harder half: Windows
   exposes per-monitor scale only through display-config calls Microsoft does not document.
   Worth an afternoon of investigation before committing to it.
 - **A virtual machine or Windows Sandbox** at a chosen resolution and scale. Heaviest, and the
@@ -464,7 +464,7 @@ One piece of this is a known limit in the code already, and it is what the fix d
 would settle. `AutomationWindowPlacement.GetBoundsOffEveryMonitor` puts an off-screen window
 directly below the primary monitor, because the nearest monitor is the one whose scale factor
 Windows applies, and on the layouts we have that keeps the primary nearest. It stops being true
-when a monitor sits *below* the primary in the same band of x: that lower monitor is then nearest,
+when a monitor sits _below_ the primary in the same band of x: that lower monitor is then nearest,
 and if its scale factor differs the window comes out the wrong size, which is the same bug in a
 new layout. Fixing it properly means asking Windows for the nearest monitor's scale factor and
 scaling the requested size by the ratio, which needs the per-monitor DPI calls this entry is
@@ -485,7 +485,7 @@ screen once a task bar of the usual height is taken off, wherever the window goe
 `BLOOM_AUTOMATION_WINDOW_SIZE=1600x900` asks for a different size, for chasing a bug that only
 shows on a big screen. The floor is 400x300, which is `Shell.MinimumSize`; anything Bloom cannot
 use, a typo included, gives the default rather than a broken run. The size must be the same for
-all three values of `BLOOM_AUTOMATION_MONITOR`, so that variable decides only *where* a window
+all three values of `BLOOM_AUTOMATION_MONITOR`, so that variable decides only _where_ a window
 goes: a suite whose size changed with its placement would let one test pass in one mode and fail
 in another, a trap that caught this code twice on BL-16804.
 
@@ -577,7 +577,7 @@ toolbox toggle in this document, so Bloom is not showing the Edit tab", and a
 It is not a product bug, and it is not the save being slow. Measured in a running Bloom
 immediately after `acceptReaderSetup` and again 2, 5, 10 and 20 seconds later, the edit view is
 perfectly healthy every time: `frames=[(main),toolbox,pageList,page]`, one `.bloom-page`, and
-`e2e/isEditingPage` true. The same save-then-reopen sequence inside a *single* test passes. Only
+`e2e/isEditingPage` true. The same save-then-reopen sequence inside a _single_ test passes. Only
 crossing a test boundary after a save breaks it, and the failing test's page snapshot shows the
 Edit tab selected with the book and the toolbox both present -- in the document the test cannot
 see.
@@ -741,7 +741,7 @@ calls**: `checkForAnyRecording?ids=i40279cf0…` repeatedly before the import, `
 naming `i69cdb056…`, and then `checkForAnyRecording?ids=i69cdb056…` — an id that appears in no
 page query anywhere in the trace. That sequence is what proved a real product bug (BL-16873,
 Import Recording naming the mp3 after an element that is not the one owning the audio) rather
-than a flaky test, and it is what told us *which* of two possible mechanisms had fired.
+than a flaky test, and it is what told us _which_ of two possible mechanisms had fired.
 
 Getting at it meant downloading the artifact, unzipping `trace.zip`, and writing a throwaway
 Node script: `0-trace.network` is newline-delimited JSON with a `startedDateTime` on every
@@ -763,7 +763,7 @@ one "try it locally" was the first thing tried and the least informative. For BL
 attempts were worse than uninformative: of about a dozen runs, only six actually completed an
 import (all correct), because the two more interesting setups never got that far — after a page
 change the Import button was not clickable within 5s, and under CDP `Emulation.setCPUThrottlingRate`
-at 20x the *By Whole Text Box* radio stayed disabled, so the run died before the step under test.
+at 20x the _By Whole Text Box_ radio stayed disabled, so the run died before the step under test.
 Throttling the renderer hard enough to widen the race also disables the controls the test needs,
 which is why six attempts at the lost cover title with the WebView renderer throttled 6x found
 nothing either.
@@ -771,7 +771,7 @@ nothing either.
 So the suite has no honest way to ask "does this fail when the machine is busy?", and a negative
 local result gets reported with more confidence than it earns.
 
-Fix direction: a suite-level slow mode that reproduces runner *contention* rather than clamping
+Fix direction: a suite-level slow mode that reproduces runner _contention_ rather than clamping
 the renderer — background CPU load while the test runs at normal speed, plus an env var
 (`BLOOM_E2E_SLOW=1`) that the fixtures honour by raising the action timeouts to match, so the UI
 stays drivable while the app's own async work gets pushed around. Worth pairing with a way to
@@ -807,12 +807,11 @@ collected is a wasted one.
 
 The second occurrence (2026-10-27, `bookgridsetup-extended.uitest.ts:365`) left a trace. It
 failed about 15 ms into the navigation, which is too fast to be a refused connect on Windows.
-Chromium uses ERR_CONNECTION_FAILED for a socket error it has no specific name for, and the trace
+Chromium uses ERR*CONNECTION_FAILED for a socket error it has no specific name for, and the trace
 doesn't record which. Ten local runs of the suite (1,460 tests) did not reproduce it. So
-`setTestComponent` now catches a failed `net::ERR_` navigation and adds to its message what
-`describeConnectionFailure.ts` finds: a raw TCP connect and an HTTP GET to the dev server from
+`setTestComponent` now catches a failed `net::ERR*`navigation and adds to its message what`describeConnectionFailure.ts`finds: a raw TCP connect and an HTTP GET to the dev server from
 Node, and netstat's count of TCP connections by state. If Node gets through, look inside Chromium
-next: run it with `--log-net-log` (about 425 MB for a full suite, before compression). If Node
+next: run it with`--log-net-log` (about 425 MB for a full suite, before compression). If Node
 fails too, or TIME_WAIT is huge, look at the runner: trace Windows' TCPIP provider into a ring
 buffer.
 (Found 2026-09-21.)
@@ -827,7 +826,7 @@ finding shipped files (`BloomFileLocator`), deciding which collections are Bloom
 copyright and image checks. A mistake in any of those shows up only in the layout it affects.
 
 The cost cuts both ways. A mistake that affects only the source-tree layout fails the suites
-while no user ever sees it. A mistake that affects only the *installed* layout is the mirror
+while no user ever sees it. A mistake that affects only the _installed_ layout is the mirror
 image: every nightly green, only users hit it. Nothing covers install-only behaviour at all: the
 installed app's own layout and Velopack updates, what the installer actually ships, or
 channel-dependent behaviour (for example the release channel's 25% threshold for listing a UI
@@ -912,3 +911,16 @@ nothing it checks depends on the window. Cost: a stray window per run on a devel
 the runner. Fix direction: skip opening the folder when `Program.RunningE2eTests` is true, or route
 it through a hook a test can read, as the file choosers are. (Found 2026-11-25 while automating Test
 Case ID 194.)
+
+## Export to Spreadsheet opens the spreadsheet
+
+When More > Export to Spreadsheet... finishes, Bloom opens the spreadsheet in the program the
+machine opens `.xlsx` files with and brings that program's window to the front
+(`ProcessExtra.SafeStartInFront`, from `SpreadsheetApi.ExportToSpreadsheet`), under `--e2e` and
+`--dont-disturb` too. That takes the keyboard from whoever is at the machine, so
+`spreadsheet-roundtrip.spec.ts` (Test Case ID 626) skips itself under `--dont-disturb` and runs only
+where Bloom may take the foreground: on CI, or with `BLOOM_E2E_DONT_DISTURB=0`. The test reads the
+spreadsheet from disk, so nothing it checks depends on the window. Cost: no unattended local run,
+and a spreadsheet window left open on a machine with a spreadsheet program. Fix direction: skip
+opening the spreadsheet when `Program.RunningE2eTests` is true, or route it through a hook a test
+can read, as the file choosers are. (Found 2026-11-26 while automating Test Case ID 626.)
