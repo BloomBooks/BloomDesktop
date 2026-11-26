@@ -952,8 +952,11 @@ interface IRunningBloom {
 const NON_FATAL_PROBLEM_MARKER = "Nonfatal problem (e2e): ";
 
 /**
- * Collect the messages of the problems that Bloom reports with NonFatalProblem from what it
- * writes to stderr, which arrives in chunks that need not end at a line's end.
+ * Collect the problems that Bloom reports with NonFatalProblem from what it writes to stderr,
+ * which arrives in chunks that need not end at a line's end. Each problem is kept as the line
+ * that carries the marker: the short message that Bloom would show the person. Any details that
+ * Bloom writes on the lines after it are left out, because nothing marks where they end among
+ * the rest of Bloom's output. A problem whose short message is empty is still kept, as "".
  */
 function makeNonFatalProblemCollector(): {
     addStderr: (chunk: string) => void;

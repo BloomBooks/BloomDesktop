@@ -91,13 +91,28 @@ test("repairs duplicate audio ids once, and the book then publishes [Test Case I
         fs.rmSync(narrationFilePath(bookFolder, secondId));
     });
     // Bloom opens the book that it had selected when it stopped, which repairs it, and says so.
+    // Every problem reported since the restart is kept, so one that came before the repair
+    // message still fails the check below.
+    const problemsAfterRestart: string[] = [];
     await expect
-        .poll(() => bloomApp.takeNonFatalProblems(), {
-            message:
-                "Bloom did not say that it repaired the book's recordings.",
-            timeout: 60000,
-        })
-        .toEqual([expect.stringContaining(REPAIR_MESSAGE)]);
+        .poll(
+            () => {
+                problemsAfterRestart.push(...bloomApp.takeNonFatalProblems());
+                return problemsAfterRestart.some((p) =>
+                    p.includes(REPAIR_MESSAGE),
+                );
+            },
+            {
+                message:
+                    "Bloom did not say that it repaired the book's recordings.",
+                timeout: 60000,
+            },
+        )
+        .toBe(true);
+    expect(
+        problemsAfterRestart,
+        "Bloom reported something besides the repair, or reported the repair more than once.",
+    ).toEqual([expect.stringContaining(REPAIR_MESSAGE)]);
 
     bookFolder = await findBookFolder(page, BOOK_TITLE);
     await editBook(page, bookFolder);
@@ -136,6 +151,20 @@ test("repairs duplicate audio ids once, and the book then publishes [Test Case I
     expect(
         bloomApp.takeNonFatalProblems(),
         "Bloom reported a problem again when the book was opened again.",
+    ).toEqual([]);
+
+    // Leaving the book saved the repair: a Bloom that loads the book afresh from its file finds
+    // the repaired ids and nothing to repair.
+    page = await bloomApp.restart();
+    await editBook(page, bookFolder);
+    await goToPage(page, contentPageId);
+    expect(
+        (await getNarrationSentences(page)).map((s) => s.id),
+        "The repaired ids were not saved in the book's file.",
+    ).toEqual([firstId, newId]);
+    expect(
+        bloomApp.takeNonFatalProblems(),
+        "Bloom reported a problem when it loaded the repaired book from its file.",
     ).toEqual([]);
 
     // Publishing it as a BloomPUB carries both recordings. A crash or an error here shows as a
