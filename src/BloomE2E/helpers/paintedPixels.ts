@@ -91,8 +91,9 @@ export async function readImageFileColors(
  *
  * Each point is scrolled to the middle of the <img>'s frame and its pixel is taken from a
  * screenshot of the window, so a point below the window, or under the suite's step caption at the
- * bottom of a small window, is still read. The points are fractions of the picture as drawn: an
- * <img> scales its picture to fit its box and keeps its shape, unless its object-fit is "fill".
+ * bottom of a small window, is still read. The points are fractions of the picture as drawn: the
+ * <img> must stretch its picture over its box (object-fit "fill") or fit it inside, centred and
+ * keeping its shape (object-fit "contain"); this throws for any other fit.
  */
 export async function readPaintedPictureColors(
     page: Page,
@@ -112,8 +113,16 @@ export async function readPaintedPictureColors(
     );
     const content = await picture.evaluate((element) => {
         const img = element as HTMLImageElement;
-        if (getComputedStyle(img).objectFit === "fill")
+        const style = getComputedStyle(img);
+        if (style.objectFit === "fill")
             return { left: 0, top: 0, width: 1, height: 1 };
+        // Only a centred "contain" is mapped below; any other fit or position would put the
+        // points somewhere else in the picture.
+        if (style.objectFit !== "contain" || style.objectPosition !== "50% 50%")
+            throw new Error(
+                `readPaintedPictureColors handles object-fit "fill" and a centred "contain", ` +
+                    `not object-fit "${style.objectFit}" at "${style.objectPosition}".`,
+            );
         const scale = Math.min(
             img.clientWidth / img.naturalWidth,
             img.clientHeight / img.naturalHeight,
