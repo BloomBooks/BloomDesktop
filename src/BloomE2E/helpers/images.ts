@@ -491,6 +491,102 @@ export async function getPicturesShownIn(
     });
 }
 
+/** Whether an image element got its picture, as the browser drawing it has it. */
+export interface IPictureLoad {
+    /** The file name the image element asks for, without any query string. */
+    fileName: string;
+    /** True when the browser has the picture: it loaded rather than failed. */
+    loaded: boolean;
+    /** True when Bloom marked the image as one that failed to load (bloom-imageLoadError). */
+    markedLoadError: boolean;
+    /** The image's alternative text, which the browser draws beside its broken-image icon. */
+    alt: string;
+    /** The size of the box the browser draws the image in, in CSS pixels. */
+    width: number;
+    height: number;
+    /** How wide the alternative text is in the image's font, in CSS pixels. */
+    altTextWidth: number;
+    /**
+     * The part of the image's box that is not hidden by an enclosing element whose overflow is not
+     * visible, measured from the box's own top left corner, in CSS pixels. All zero when none of
+     * it shows.
+     */
+    shown: { x: number; y: number; width: number; height: number };
+}
+
+/**
+ * Wait until the browser has either loaded the picture of the image element `image` locates or
+ * given up on it, and say which, with what Bloom has written on the element. A picture the browser
+ * gave up on is drawn as the browser's broken-image icon with the alternative text beside it.
+ */
+export async function getPictureLoad(image: Locator): Promise<IPictureLoad> {
+    await image.waitFor({ state: "attached", timeout: 30000 });
+    return image.evaluate(
+        (img) =>
+            new Promise<IPictureLoad>((resolve) => {
+                const image = img as HTMLImageElement;
+                const report = () => {
+                    const box = image.getBoundingClientRect();
+                    const src = image.getAttribute("src") ?? "";
+                    const view = image.ownerDocument.defaultView!;
+                    const measurer = image.ownerDocument
+                        .createElement("canvas")
+                        .getContext("2d")!;
+                    measurer.font = view.getComputedStyle(image).font;
+                    const altText = image.getAttribute("alt") ?? "";
+                    let left = box.left;
+                    let top = box.top;
+                    let right = box.right;
+                    let bottom = box.bottom;
+                    for (
+                        let outer = image.parentElement;
+                        outer;
+                        outer = outer.parentElement
+                    ) {
+                        const style = view.getComputedStyle(outer);
+                        const r = outer.getBoundingClientRect();
+                        if (style.overflowX !== "visible") {
+                            left = Math.max(left, r.left);
+                            right = Math.min(right, r.right);
+                        }
+                        if (style.overflowY !== "visible") {
+                            top = Math.max(top, r.top);
+                            bottom = Math.min(bottom, r.bottom);
+                        }
+                    }
+                    const shows = right > left && bottom > top;
+                    resolve({
+                        fileName: decodeURIComponent(
+                            src.split("?")[0].split("/").pop() ?? "",
+                        ),
+                        loaded: image.naturalWidth > 0,
+                        markedLoadError: image.classList.contains(
+                            "bloom-imageLoadError",
+                        ),
+                        alt: altText,
+                        width: box.width,
+                        height: box.height,
+                        altTextWidth: measurer.measureText(altText).width,
+                        shown: shows
+                            ? {
+                                  x: left - box.left,
+                                  y: top - box.top,
+                                  width: right - left,
+                                  height: bottom - top,
+                              }
+                            : { x: 0, y: 0, width: 0, height: 0 },
+                    });
+                };
+                if (image.complete) {
+                    report();
+                    return;
+                }
+                image.addEventListener("load", report, { once: true });
+                image.addEventListener("error", report, { once: true });
+            }),
+    );
+}
+
 /**
  * The picture to act on: the one inside `within` when a scope is given, otherwise the page's first
  * image slot.
