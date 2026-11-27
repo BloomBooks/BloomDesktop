@@ -6,7 +6,7 @@
 //
 // Test Case ID 802, "Language Chooser". Not here: its steps in the New Collection wizard, a
 // WinForms dialog that the suite cannot open (AUTOMATION-DEBT.md, "WinForms surfaces are invisible
-// to CDP"). Its repeats at 125% and 150% Windows display scaling are emulated in the page (a run
+// to CDP"). Its checks at 100%, 125% and 150% Windows display scaling are emulated in the page (a run
 // cannot change the display's own setting), so the WinForms window around the page is not checked
 // at those scales.
 
@@ -51,10 +51,12 @@ test.beforeEach(async ({ bloomApp }) => {
     await setUiStateViaApi(bloomApp, "en", false);
 });
 
-// The display scalings the card names, emulated for a maximized Bloom on a 1920x1080 screen: Bloom's
-// page area there is about 1920x1000 screen pixels (the taskbar and the window's title bar take the
-// rest), which is that size divided by the scale in CSS pixels.
+// The display scalings the card names, each emulated for a maximized Bloom on a 1920x1080 screen,
+// whatever the scaling of the monitor the run is on: Bloom's page area there is about 1920x1000
+// screen pixels (the taskbar and the window's title bar take the rest), which is that size divided
+// by the scale in CSS pixels.
 const kScaledScreens = [
+    { scale: 1, size: { width: 1920, height: 1000 } },
     { scale: 1.25, size: { width: 1536, height: 800 } },
     { scale: 1.5, size: { width: 1280, height: 667 } },
 ];
@@ -65,11 +67,6 @@ test("the language chooser opens inside Bloom's window, with no control cut off 
 }) => {
     await step("Open the Languages page of Collection Settings", () =>
         openLanguagesPage(page),
-    );
-
-    await step(
-        "At the window's own size, open the chooser and check it fits",
-        () => expectLanguageChooserFits(page),
     );
 
     try {
@@ -123,7 +120,7 @@ async function expectLanguageChooserFits(page: Page): Promise<void> {
         [],
     );
     // The search results hold every language, so their list scrolls; nothing else should.
-    expect(fit.scrollingParts).toEqual(["language-card-list"]);
+    expect(fit.scrollingParts).toEqual(["language-card-list (up and down)"]);
     await cancelLanguageChooser(page);
 }
 

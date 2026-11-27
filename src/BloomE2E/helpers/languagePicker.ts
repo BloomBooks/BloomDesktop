@@ -529,7 +529,9 @@ export interface ILanguageChooserFit {
     controlsCutOff: string[];
     /**
      * The parts of the chooser that hold more than they show, so that a scroll bar shows: every
-     * element that may scroll (overflow auto or scroll) on either axis, named as above.
+     * element that may scroll (overflow auto or scroll) and does, named as above followed by the
+     * way it scrolls, "(sideways)" or "(up and down)"; an element that scrolls both ways is listed
+     * twice.
      */
     scrollingParts: string[];
 }
@@ -575,17 +577,17 @@ export async function getLanguageChooserFit(
         const scrollingParts = [
             dialog,
             ...Array.from(dialog.querySelectorAll("*")),
-        ]
-            .filter((element) => {
-                const style = getComputedStyle(element);
-                return (
-                    (scrolls(style.overflowX) &&
-                        element.scrollWidth > element.clientWidth + 1) ||
-                    (scrolls(style.overflowY) &&
-                        element.scrollHeight > element.clientHeight + 1)
-                );
-            })
-            .map(name);
+        ].flatMap((element) => {
+            const style = getComputedStyle(element);
+            return [
+                scrolls(style.overflowX) &&
+                    element.scrollWidth > element.clientWidth + 1 &&
+                    `${name(element)} (sideways)`,
+                scrolls(style.overflowY) &&
+                    element.scrollHeight > element.clientHeight + 1 &&
+                    `${name(element)} (up and down)`,
+            ].filter((part): part is string => !!part);
+        });
         return {
             window: { width: window.innerWidth, height: window.innerHeight },
             dialog: {
