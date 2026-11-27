@@ -20,7 +20,12 @@ import {
     getSelectedBookId,
     listEditableBooks,
 } from "../helpers/collection";
-import { enableToolForBook, showToolbox } from "../helpers/toolbox";
+import {
+    enableToolForBook,
+    getShownTools,
+    isToolboxShowing,
+    showToolbox,
+} from "../helpers/toolbox";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
@@ -262,6 +267,21 @@ test("Duplicate Book right after making a book copies its meta.json exactly and 
         await expectCopyMetaLikeOriginal(
             "once the copy is open in the Edit tab, its meta.json should still say what the original's says, apart from its id: Bloom should have read everything that was copied",
         );
+        // And the Edit tab shows the copy the way its meta.json says: toolbox open, tool offered.
+        await expect
+            .poll(() => isToolboxShowing(page), {
+                timeout: 30000,
+                message:
+                    "the copy should open with its toolbox open, as the original was left",
+            })
+            .toBe(true);
+        await expect
+            .poll(() => getShownTools(page), {
+                timeout: 30000,
+                message:
+                    "the copy's toolbox should offer the tool turned on in the original",
+            })
+            .toContain("impairmentVisualizer");
         expect(
             bloomApp.takeNonFatalProblems(),
             "Bloom should report no problem while opening the copy",
