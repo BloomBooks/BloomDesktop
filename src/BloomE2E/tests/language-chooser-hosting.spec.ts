@@ -69,6 +69,13 @@ test("the language chooser opens inside Bloom's window, with no control cut off 
         openLanguagesPage(page),
     );
 
+    // The run's own size too: the window's, or the one BLOOM_E2E_VIEWPORT asks for (the nightly's
+    // 1008x681 is narrower than any screen below).
+    await step(
+        "At the run's own window size, open the chooser and check it fits",
+        () => expectLanguageChooserFits(page),
+    );
+
     try {
         for (const { scale, size } of kScaledScreens) {
             await step(
