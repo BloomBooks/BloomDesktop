@@ -7,13 +7,19 @@
 
 import * as fs from "fs";
 import * as Path from "path";
-import { expect, type FrameLocator, type Page } from "@playwright/test";
+import {
+    expect,
+    type FrameLocator,
+    type Locator,
+    type Page,
+} from "@playwright/test";
 import type { IBloomApp } from "../fixtures/bloomTest";
 import {
     writeNewCollection,
     type ICollectionSpec,
 } from "../fixtures/launchBloom";
 import { apiGet, apiGetJson, apiPost, getUiString } from "./api";
+import { FIRST_IMAGE } from "./images";
 import { realClick } from "./realClick";
 
 /**
@@ -224,7 +230,14 @@ export async function readSelectedBookMenu(
     // While the pointer rests on More its submenu stays open, and the menu then ignores Escape:
     // the key goes to the menu, which has the focus, and only the topmost menu, the submenu,
     // answers it. So move the pointer to another entry, which shuts the submenu, before closing.
-    await page.locator(kShowingBookMenuEntries).first().hover();
+    // A greyed-out entry sits under the tooltip that explains it, which takes the pointer, so the
+    // entry must be one that is not greyed out.
+    await page
+        .locator(
+            `${kShowingBookMenuEntries}:not([aria-disabled="true"]):not([data-testid="CollectionTab.ContextMenu.More"])`,
+        )
+        .first()
+        .hover();
     await expect(
         page.locator(kShowingBookMenuEntries),
         "the More submenu should shut when the pointer leaves More",
@@ -380,6 +393,112 @@ export async function closeBookMenu(page: Page): Promise<void> {
         await page.keyboard.press("Escape");
         await expect(showingEntries).toHaveCount(0, { timeout: 1000 });
     }, "the book menu did not close").toPass({ timeout: 10000 });
+}
+
+/**
+ * Open the collection's own menu on the Collections tab, which must be showing, as a person does:
+ * click the triangle beside the collection's name above its books. Returns once its entries show.
+ */
+export async function openCollectionMenu(page: Page): Promise<void> {
+    await waitForCollectionReady(page);
+    const name = (
+        await apiGet(page, "collections/getCurrentEditableCollectionName")
+    ).body;
+    // The name heading holds the triangle, the one button in it.
+    await realClick(
+        page
+            .locator("h1")
+            .filter({ has: page.getByText(name, { exact: true }) })
+            .getByRole("button"),
+    );
+    await page
+        .locator(kShowingBookMenuEntries)
+        .first()
+        .waitFor({ state: "visible", timeout: 15000 });
+}
+
+/**
+ * The test ids (their localization ids) of the entries the open collection menu shows, at the top
+ * level, or in the submenu of the entry whose test id is `submenuTestId`, which this opens by
+ * hovering it, as a person does.
+ */
+export async function readCollectionMenu(
+    page: Page,
+    submenuTestId?: string,
+): Promise<string[]> {
+    const showing = page.locator(kShowingBookMenuEntries);
+    const ids = () =>
+        showing.evaluateAll((items) =>
+            items.map((i) => i.getAttribute("data-testid") ?? "(no id)"),
+        );
+    if (!submenuTestId) return ids();
+    const before = await ids();
+    await page
+        .locator(`${kShowingBookMenuEntries}[data-testid="${submenuTestId}"]`)
+        .hover();
+    // The submenu adds its entries to the ones showing.
+    await expect
+        .poll(async () => (await ids()).length, {
+            timeout: 15000,
+            message: `The collection menu's "${submenuTestId}" did not open its submenu.`,
+        })
+        .toBeGreaterThan(before.length);
+    const after = await ids();
+    return after.filter((id) => !before.includes(id));
+}
+
+/**
+ * Close the open collection menu with Escape, as a person does, and wait until it has gone. A
+ * submenu that was opened by hovering stays open, and keeps the menu open, while the pointer is on
+ * it (BL-17198), so the pointer moves off the menu first.
+ */
+export async function closeCollectionMenu(page: Page): Promise<void> {
+    const showingEntries = page.locator(kShowingBookMenuEntries);
+    await expect(
+        showingEntries.first(),
+        "there is no collection menu open to close",
+    ).toBeVisible();
+    // The top left corner of the page, the Collections tab's button, which no menu covers.
+    await page.mouse.move(1, 1);
+    await expect(async () => {
+        await page.keyboard.press("Escape");
+        await expect(showingEntries).toHaveCount(0, { timeout: 1000 });
+    }, "the collection menu did not close").toPass({ timeout: 10000 });
+}
+
+/**
+ * Choose a command from the collection's own menu on the Collections tab, which must be showing:
+ * open the menu, hover each submenu entry of `testIds` but the last, and click the last. Each is
+ * an entry's test id, its localization id, e.g. ["CollectionTab.ContextMenu.Troubleshooting",
+ * "CollectionTab.CollectionMenu.doChecksOfAllBooks"]. Fails naming what the menu offered when an
+ * entry is not there.
+ */
+export async function chooseFromCollectionMenu(
+    page: Page,
+    testIds: string[],
+): Promise<void> {
+    await openCollectionMenu(page);
+    for (const [index, testId] of testIds.entries()) {
+        const item = page.locator(
+            `${kShowingBookMenuEntries}[data-testid="${testId}"]`,
+        );
+        try {
+            await item.waitFor({ state: "visible", timeout: 15000 });
+        } catch {
+            const offered = await page
+                .locator(kShowingBookMenuEntries)
+                .evaluateAll((items) =>
+                    items.map(
+                        (i) => i.getAttribute("data-testid") ?? "(no id)",
+                    ),
+                );
+            throw new Error(
+                `The collection menu has no "${testId}"; it offers: ${offered.join(", ")}.`,
+            );
+        }
+        if (index < testIds.length - 1) await item.hover();
+        else await realClick(item);
+    }
 }
 
 /**
@@ -542,6 +661,36 @@ export async function getSelectedBookId(
     return info.id ?? undefined;
 }
 
+/** The bookInstanceId in the meta.json of the book in `bookFolder`. */
+export function readBookId(bookFolder: string): string {
+    return JSON.parse(
+        fs.readFileSync(Path.join(bookFolder, "meta.json"), "utf8"),
+    ).bookInstanceId;
+}
+
+/**
+ * The folder of the book whose meta.json has this bookInstanceId, among the books in
+ * `collectionDir`. For a book whose folder Bloom may have renamed since, as it does when the
+ * book's title changes.
+ */
+export function findBookFolderById(
+    collectionDir: string,
+    bookId: string,
+): string {
+    const folders = fs
+        .readdirSync(collectionDir, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => Path.join(collectionDir, entry.name))
+        .filter((folder) => fs.existsSync(Path.join(folder, "meta.json")));
+    const match = folders.find((folder) => readBookId(folder) === bookId);
+    if (!match)
+        throw new Error(
+            `No book in ${collectionDir} has the id ${bookId}. Folders: ` +
+                folders.map((f) => Path.basename(f)).join(", "),
+        );
+    return match;
+}
+
 /** The pane on the right of the Collections tab, which previews the selected book. */
 const kBookPane = "collections-tab-book-pane";
 
@@ -553,6 +702,18 @@ const kBookPreviewFrame = 'iframe[src*="book-preview/index.htm"]';
  */
 export function collectionBookPreview(page: Page): FrameLocator {
     return page.getByTestId(kBookPane).frameLocator(kBookPreviewFrame);
+}
+
+/** The front cover in the Collections tab's preview of the selected book. */
+export function collectionPreviewCover(page: Page): Locator {
+    return collectionBookPreview(page)
+        .locator(".bloom-page.coverColor")
+        .first();
+}
+
+/** The picture in the front cover's picture slot, in the Collections tab's preview. */
+export function collectionPreviewCoverPicture(page: Page): Locator {
+    return collectionPreviewCover(page).locator(FIRST_IMAGE).first();
 }
 
 /**
@@ -597,4 +758,182 @@ export async function expectNoBookInPreview(page: Page): Promise<void> {
         pane.locator(kBookPreviewFrame),
         "the Collections tab's preview should be empty",
     ).toHaveCount(0);
+}
+
+// The thumbnail a book's tile shows. The tile's <img> asks collections/book/thumbnail, which
+// answers with the book's thumbnail.png, or with an icon from Bloom's resources while that file is
+// missing. Bloom serves a book's files with no caching, so the picture the tile loaded cannot be
+// fetched again; instead readBookTileThumbnail draws the tile's own <img> and the thumbnail.png
+// read from disk, and waits until they are the same picture, pixel for pixel.
+
+/** The thumbnail a book's tile shows. */
+export interface ITileThumbnail {
+    width: number;
+    height: number;
+    /** Its pixels, RGBA, row by row. */
+    pixels: number[];
+    /**
+     * For the top row (left to right) and the left column (top to bottom): the lengths of the
+     * runs of black and of other pixels, alternating, starting with black (so a first run of 0
+     * means the edge starts with a pixel that is not black).
+     */
+    topRuns: number[];
+    leftRuns: number[];
+}
+
+/** The tile's picture of the book with this id, among the tiles of every collection shown. */
+function tileImage(page: Page, bookId: string) {
+    return page
+        .locator(
+            `.book-button[data-book-id="${bookId}"] .thumbnail-wrapper img`,
+        )
+        .first();
+}
+
+/**
+ * Wait until the tile of the book in `bookFolder` shows that book's thumbnail.png, and return that
+ * picture. The Collections tab must be showing.
+ */
+export async function readBookTileThumbnail(
+    page: Page,
+    bookFolder: string,
+    bookId: string,
+): Promise<ITileThumbnail> {
+    const thumbnailFile = Path.join(bookFolder, "thumbnail.png");
+    const image = tileImage(page, bookId);
+    await expect(
+        image,
+        `the Collections tab shows no tile picture for the book in ${bookFolder}`,
+    ).toBeVisible({ timeout: 30000 });
+
+    let result: ITileThumbnail | string = "not read yet";
+    try {
+        await expect
+            .poll(
+                async () => {
+                    if (!fs.existsSync(thumbnailFile)) {
+                        result = `Bloom has not made ${thumbnailFile}`;
+                        return false;
+                    }
+                    let fileBase64: string;
+                    try {
+                        fileBase64 = fs
+                            .readFileSync(thumbnailFile)
+                            .toString("base64");
+                    } catch (error) {
+                        // Bloom may be writing it.
+                        result = `could not read ${thumbnailFile}: ${error}`;
+                        return false;
+                    }
+                    result = await image.evaluate(async (img, fileBase64) => {
+                        const tileImg = img as HTMLImageElement;
+                        if (!tileImg.complete || tileImg.naturalWidth === 0)
+                            return "the tile's picture has not loaded";
+                        const fileImg = new Image();
+                        fileImg.src = `data:image/png;base64,${fileBase64}`;
+                        try {
+                            await fileImg.decode();
+                        } catch {
+                            return "thumbnail.png on disk is not a picture yet";
+                        }
+                        const draw = (source: HTMLImageElement) => {
+                            const canvas = document.createElement("canvas");
+                            canvas.width = source.naturalWidth;
+                            canvas.height = source.naturalHeight;
+                            const context = canvas.getContext("2d")!;
+                            context.drawImage(source, 0, 0);
+                            return context.getImageData(
+                                0,
+                                0,
+                                canvas.width,
+                                canvas.height,
+                            );
+                        };
+                        const shown = draw(tileImg);
+                        const onDisk = draw(fileImg);
+                        if (
+                            shown.width !== onDisk.width ||
+                            shown.height !== onDisk.height ||
+                            shown.data.some((v, i) => v !== onDisk.data[i])
+                        )
+                            return (
+                                `the tile shows a ${shown.width}x${shown.height} picture ` +
+                                `that is not thumbnail.png (${onDisk.width}x${onDisk.height})`
+                            );
+                        const data = shown.data;
+                        const isBlack = (x: number, y: number) => {
+                            const i = (y * shown.width + x) * 4;
+                            return (
+                                data[i + 3] > 200 &&
+                                data[i] < 40 &&
+                                data[i + 1] < 40 &&
+                                data[i + 2] < 40
+                            );
+                        };
+                        const runs = (
+                            count: number,
+                            black: (n: number) => boolean,
+                        ) => {
+                            const result = [0];
+                            let inBlack = true;
+                            for (let n = 0; n < count; n++) {
+                                if (black(n) !== inBlack) {
+                                    inBlack = !inBlack;
+                                    result.push(0);
+                                }
+                                result[result.length - 1]++;
+                            }
+                            return result;
+                        };
+                        return {
+                            width: shown.width,
+                            height: shown.height,
+                            pixels: Array.from(data),
+                            topRuns: runs(shown.width, (x) => isBlack(x, 0)),
+                            leftRuns: runs(shown.height, (y) => isBlack(0, y)),
+                        };
+                    }, fileBase64);
+                    return typeof result !== "string";
+                },
+                { timeout: 60000 },
+            )
+            .toBe(true);
+    } catch (error) {
+        // The poll fails either on its timeout, when `result` says what the last try saw, or
+        // because reading the tile threw, which `error` says.
+        throw new Error(
+            `The tile of the book in ${bookFolder} never showed its thumbnail.png. ` +
+                `Last try: ${String(result)}. ${error}`,
+        );
+    }
+    if (typeof result === "string") throw new Error(result);
+    return result;
+}
+
+/** The number of black dashes in a run list from readBookTileThumbnail. */
+export function countDashes(runs: number[]): number {
+    return runs.filter((length, i) => i % 2 === 0 && length > 0).length;
+}
+
+/**
+ * How many pixels differ between two thumbnails of the same size, leaving out a band `margin`
+ * pixels wide around the edge (where a template's border is drawn).
+ */
+export function countThumbnailPixelsDifferingInside(
+    a: ITileThumbnail,
+    b: ITileThumbnail,
+    margin: number,
+): number {
+    if (a.width !== b.width || a.height !== b.height)
+        throw new Error(
+            `the thumbnails differ in size: ${a.width}x${a.height} and ${b.width}x${b.height}`,
+        );
+    let count = 0;
+    for (let y = margin; y < a.height - margin; y++)
+        for (let x = margin; x < a.width - margin; x++) {
+            const i = (y * a.width + x) * 4;
+            if ([0, 1, 2, 3].some((c) => a.pixels[i + c] !== b.pixels[i + c]))
+                count++;
+        }
+    return count;
 }

@@ -29,8 +29,13 @@ import {
     makeBookFromBookInCollection,
     makeBookFromTemplate,
 } from "../helpers/bookMaking";
-import { selectBook } from "../helpers/collection";
+import {
+    findBookFolderById,
+    readBookId,
+    selectBook,
+} from "../helpers/collection";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
+import { picturePixels } from "../helpers/images";
 import {
     exportSelectedBookToSpreadsheet,
     importSpreadsheetIntoSelectedBook,
@@ -148,67 +153,12 @@ async function readContentPages(
     }, html);
 }
 
-/** The folder of the book whose meta.json has this bookInstanceId, among the collection's. */
-function findBookFolderById(collectionDir: string, bookId: string): string {
-    const folders = fs
-        .readdirSync(collectionDir, { withFileTypes: true })
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => Path.join(collectionDir, entry.name))
-        .filter((folder) => fs.existsSync(Path.join(folder, "meta.json")));
-    const match = folders.find(
-        (folder) =>
-            JSON.parse(fs.readFileSync(Path.join(folder, "meta.json"), "utf8"))
-                .bookInstanceId === bookId,
-    );
-    if (!match)
-        throw new Error(
-            `No book in ${collectionDir} has the id ${bookId}. Folders: ` +
-                folders.map((f) => Path.basename(f)).join(", "),
-        );
-    return match;
-}
-
-/**
- * The size of the picture in the file at `path` and a SHA-1 of its pixels, decoded by the
- * browser: equal for two files that show the same picture even when their metadata differs.
- * `page` is used only to decode it. The hash is made in the page, so only it comes back.
- */
-async function picturePixels(page: Page, path: string): Promise<string> {
-    return page.evaluate(async (base64) => {
-        const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-        const bitmap = await createImageBitmap(new Blob([bytes]));
-        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-        const context = canvas.getContext("2d")!;
-        context.drawImage(bitmap, 0, 0);
-        const data = context.getImageData(
-            0,
-            0,
-            bitmap.width,
-            bitmap.height,
-        ).data;
-        const digest = new Uint8Array(
-            await crypto.subtle.digest("SHA-1", data),
-        );
-        const hash = Array.from(digest, (b) =>
-            b.toString(16).padStart(2, "0"),
-        ).join("");
-        return `${bitmap.width}x${bitmap.height} ${hash}`;
-    }, fs.readFileSync(path).toString("base64"));
-}
-
 /** A SHA-1 of the file's bytes. */
 function fileHash(path: string): string {
     return crypto
         .createHash("sha1")
         .update(fs.readFileSync(path))
         .digest("hex");
-}
-
-/** The bookInstanceId in the meta.json of the book in `bookFolder`. */
-function readBookId(bookFolder: string): string {
-    return JSON.parse(
-        fs.readFileSync(Path.join(bookFolder, "meta.json"), "utf8"),
-    ).bookInstanceId;
 }
 
 test.skip(

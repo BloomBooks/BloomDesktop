@@ -138,6 +138,123 @@ export async function readSavedParagraphIndents(
 }
 
 /**
+ * The declarations that the book saved in `bookFolder` gives one style in the rules the Format
+ * dialog writes into its head (the `userModifiedStyles` element), by CSS property, e.g.
+ * {"font-size": "24pt", "text-align": "right"}. Only rules for the style itself are read: those
+ * whose selector is `.<id>-style` or `.<id>-style p`/`.<id>-style > p`, not the rules for one
+ * language (`.<id>-style[lang="fr"]`). A later rule wins, as it does in the browser. `page` is used
+ * only as a parser. Throws if the file has no `userModifiedStyles` element.
+ */
+export async function readSavedStyleDeclarations(
+    page: Page,
+    bookFolder: string,
+    styleId: string,
+): Promise<Record<string, string>> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate(
+        ({ source, id }) => {
+            const document = new DOMParser().parseFromString(
+                source,
+                "text/html",
+            );
+            const styleElement = document.querySelector(
+                'style[title="userModifiedStyles"]',
+            );
+            if (!styleElement)
+                throw new Error(
+                    "The saved book has no userModifiedStyles element.",
+                );
+            const sheet = new CSSStyleSheet();
+            sheet.replaceSync(styleElement.textContent ?? "");
+            const ownSelectors = [
+                `.${id}-style`,
+                `.${id}-style p`,
+                `.${id}-style > p`,
+            ];
+            const declarations: Record<string, string> = {};
+            for (const rule of Array.from(sheet.cssRules)) {
+                if (!(rule instanceof CSSStyleRule)) continue;
+                const forTheStyle = rule.selectorText
+                    .split(",")
+                    .map((s) => s.trim().replace(/\s+/g, " "))
+                    .some((s) => ownSelectors.includes(s));
+                if (!forTheStyle) continue;
+                for (let i = 0; i < rule.style.length; i++) {
+                    const property = rule.style.item(i);
+                    declarations[property] =
+                        rule.style.getPropertyValue(property);
+                }
+            }
+            return declarations;
+        },
+        { source: html, id: styleId },
+    );
+}
+
+/** One canvas element's text, as the saved file has it. */
+export interface ISavedCanvasText {
+    /** The style of its text box, from the box's `<name>-style` class, e.g. "Bubble". */
+    style: string;
+    /** The text of the box, every run of white space read as one space. */
+    text: string;
+    /** The text of each <strong>, <em> and <u> in the box, by tag. */
+    strong: string[];
+    em: string[];
+    u: string[];
+}
+
+/**
+ * The text of each canvas element on one page of the book saved in `bookFolder`, in document
+ * order, from the box of `lang` in each: its style, and which of its words are bold, italic or
+ * underlined as the selection toolbar marks them. Canvas elements with no such box (pictures) are
+ * left out. `page` is used only as a DOM parser. Throws if the file has no page with that id.
+ */
+export async function readSavedCanvasTexts(
+    page: Page,
+    bookFolder: string,
+    pageId: string,
+    lang: string,
+): Promise<ISavedCanvasText[]> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate(
+        ({ source, id, language }) => {
+            const document = new DOMParser().parseFromString(
+                source,
+                "text/html",
+            );
+            const pageDiv = document.getElementById(id);
+            if (!pageDiv)
+                throw new Error(`The saved book has no page with id ${id}.`);
+            const textsOf = (box: Element, tag: string) =>
+                Array.from(box.querySelectorAll(tag)).map(
+                    (e) => e.textContent ?? "",
+                );
+            const result: ISavedCanvasText[] = [];
+            for (const element of Array.from(
+                pageDiv.querySelectorAll(".bloom-canvas-element"),
+            )) {
+                const box = element.querySelector(
+                    `.bloom-translationGroup .bloom-editable[lang="${language}"]`,
+                );
+                if (!box) continue;
+                result.push({
+                    style:
+                        Array.from(box.classList)
+                            .find((c) => c.endsWith("-style"))
+                            ?.replace(/-style$/, "") ?? "",
+                    text: (box.textContent ?? "").replace(/\s+/g, " ").trim(),
+                    strong: textsOf(box, "strong"),
+                    em: textsOf(box, "em"),
+                    u: textsOf(box, "u"),
+                });
+            }
+            return result;
+        },
+        { source: html, id: pageId, language: lang },
+    );
+}
+
+/**
  * One table as the saved file describes it. Everything here is read from the markup rather than
  * measured, because the file is what a later load, a publish, or a spreadsheet export will read.
  */
@@ -185,6 +302,8 @@ export interface IPageOnDisk {
      * (data-initial-page-orientation), and "" for a page offered to both.
      */
     onlyForOrientation: string;
+    /** How many video boxes (.bloom-videoContainer) the page has. */
+    videoBoxCount: number;
 }
 
 /**
@@ -224,6 +343,7 @@ export async function readPagesOnDisk(
             isTemplatePage: p.getAttribute("data-page") === "extra",
             onlyForOrientation:
                 p.getAttribute("data-initial-page-orientation") ?? "",
+            videoBoxCount: p.querySelectorAll(".bloom-videoContainer").length,
         }));
     }, html);
 }

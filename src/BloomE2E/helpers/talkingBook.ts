@@ -23,7 +23,7 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Locator, type Page } from "@playwright/test";
-import { apiPost } from "./api";
+import { apiPost, getUiString } from "./api";
 import { clickInGroup, editablePageFrame } from "./bookMaking";
 import { cssColorToHex } from "./cssValues";
 
@@ -80,6 +80,35 @@ export async function openToolboxWithTalkingBook(page: Page): Promise<void> {
                 "Opening the toolbox never got the Talking Book tool to mark any sentence on this page as recordable. A page with no text has none to mark.",
         })
         .toBeGreaterThan(0);
+}
+
+/**
+ * Wait until the Talking Book tool has marked each of `sentences`, in order, as a sentence to
+ * record in the `languageTag` box of the first translation group `groupSelector` picks (such as
+ * ".bloom-imageDescription" or ".bookTitle"), and return their ids, which name their recordings.
+ * The tool must be open on the page being edited.
+ */
+export async function waitForSentencesMarked(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    sentences: string[],
+): Promise<string[]> {
+    const marked = editablePageFrame(page)
+        .locator(groupSelector)
+        .first()
+        .locator(`.bloom-editable[lang="${languageTag}"] .audio-sentence[id]`);
+    await expect
+        .poll(
+            async () =>
+                (await marked.allTextContents()).map((text) => text.trim()),
+            {
+                timeout: 30000,
+                message: `The Talking Book tool did not mark each sentence of "${groupSelector}" for recording.`,
+            },
+        )
+        .toEqual(sentences);
+    return marked.evaluateAll((elements) => elements.map((e) => e.id));
 }
 
 /**
@@ -142,6 +171,67 @@ export async function getCurrentAudioHighlightColors(
         background: cssColorToHex(background),
         text: cssColorToHex(text),
     };
+}
+
+/**
+ * The text of the segment the Talking Book tool is highlighting as current on the page being
+ * edited: the text its "bloom-audio-current" highlight covers, which is where the next recording
+ * would go. Waits until the tool highlights something; the tool has to be open, and the page has
+ * to have text.
+ */
+export async function getCurrentAudioSegmentText(page: Page): Promise<string> {
+    const read = () =>
+        editablePageFrame(page).evaluate((name) => {
+            const highlight = (
+                CSS as unknown as {
+                    highlights?: Map<string, Iterable<AbstractRange>>;
+                }
+            ).highlights?.get(name);
+            if (!highlight) return undefined;
+            return [...highlight]
+                .map((range) => {
+                    const live = document.createRange();
+                    live.setStart(range.startContainer, range.startOffset);
+                    live.setEnd(range.endContainer, range.endOffset);
+                    return live.toString();
+                })
+                .join("")
+                .trim();
+        }, CURRENT_HIGHLIGHT);
+    let text: string | undefined;
+    await expect
+        .poll(
+            async () => {
+                text = await read();
+                return !!text;
+            },
+            {
+                timeout: 30000,
+                message:
+                    "The Talking Book tool never highlighted a current segment with text in it. " +
+                    "It has to be open, and the page has to have text.",
+            },
+        )
+        .toBe(true);
+    return text ?? "";
+}
+
+/**
+ * The Talking Book tool's recording mode that is chosen, as the English label of its radio (see
+ * setRecordingMode), or undefined when neither radio is checked. Opens the tool's Advanced
+ * section, where the radios are.
+ */
+export async function getRecordingMode(
+    page: Page,
+): Promise<"By Sentence" | "By Whole Text Box" | undefined> {
+    await openAdvancedSection(page);
+    // The radios' values are RecordingModes (recordingMode.ts); their labels are localized.
+    const radio = (value: string) =>
+        toolboxFrame(page).locator(`input[type="radio"][value="${value}"]`);
+    await radio("Sentence").waitFor({ state: "visible", timeout: 30000 });
+    if (await radio("Sentence").isChecked()) return "By Sentence";
+    if (await radio("TextBox").isChecked()) return "By Whole Text Box";
+    return undefined;
 }
 
 /**
@@ -209,6 +299,7 @@ export function getNarratedLanguages(
  * it through Bloom's e2e hook before clicking (see E2eTestingApi's nextFileToChoose).
  *
  * `bookFolder` is needed to wait for the import to finish -- see the comment on the wait below.
+ * `groupIndex` picks the box when `groupSelector` matches more than one group on the page.
  */
 export async function importNarration(
     page: Page,
@@ -216,11 +307,18 @@ export async function importNarration(
     groupSelector: string,
     languageTag: string,
     mp3Path: string = sampleNarrationFile,
+    groupIndex = 0,
 ): Promise<void> {
     const audioFolder = Path.join(bookFolder, "audio");
     const before = narrationFilesIn(audioFolder).length;
 
-    await clickImportRecording(page, groupSelector, languageTag, mp3Path);
+    await clickImportRecording(
+        page,
+        groupSelector,
+        languageTag,
+        mp3Path,
+        groupIndex,
+    );
 
     // The import is several round trips -- choose the file, find the book's audio folder, copy,
     // then write the markup -- so wait for its RESULT: one more narration file on disk than
@@ -306,8 +404,9 @@ async function clickImportRecording(
     groupSelector: string,
     languageTag: string,
     mp3Path: string,
+    groupIndex = 0,
 ): Promise<void> {
-    await clickInGroup(page, groupSelector, languageTag);
+    await clickInGroup(page, groupSelector, languageTag, groupIndex);
     await setRecordingMode(page, "By Whole Text Box");
     await openAdvancedSection(page);
 
@@ -382,6 +481,20 @@ export function writeSecondSampleNarration(filePath: string): void {
     fs.writeFileSync(filePath, Buffer.concat([sample, sample]));
 }
 
+/**
+ * About `seconds` of silence as mp3 frames in the format of sampleNarrationFile (MPEG-1 Layer III,
+ * 64 kbps, 44.1 kHz, mono), so that it can be joined to that sample's bytes to make a recording
+ * whose sound and silence fall at known times. Each frame is a header and nothing else: it holds
+ * no sound, and lasts 1152 samples.
+ */
+export function silentMp3Frames(seconds: number): Buffer {
+    const frameCount = Math.round((seconds * 44100) / 1152);
+    // 144 * bitrate / sample rate, with no padding byte.
+    const frame = Buffer.alloc(Math.floor((144 * 64000) / 44100));
+    Buffer.from([0xff, 0xfb, 0x50, 0xc0]).copy(frame);
+    return Buffer.concat(Array(frameCount).fill(frame));
+}
+
 /** The narration files in a book's audio folder; empty when the folder does not exist yet. */
 function narrationFilesIn(audioFolder: string): string[] {
     if (!fs.existsSync(audioFolder)) return [];
@@ -423,11 +536,7 @@ export async function setRecordingMode(
     mode: "By Sentence" | "By Whole Text Box",
 ): Promise<void> {
     await openAdvancedSection(page);
-    // The radio's value is a RecordingMode (recordingMode.ts).
-    const value = mode === "By Sentence" ? "Sentence" : "TextBox";
-    const radio = toolboxFrame(page).locator(
-        `input[type="radio"][value="${value}"]`,
-    );
+    const radio = recordingModeRadio(page, mode);
     await radio.waitFor({ state: "visible", timeout: 30000 });
     await expect(
         radio,
@@ -435,6 +544,109 @@ export async function setRecordingMode(
     ).toBeEnabled({ timeout: 30000 });
     await radio.click();
     await expect(radio).toBeChecked({ timeout: 30000 });
+}
+
+/**
+ * Whether the Talking Book tool lets a person choose one of its recording modes now, i.e. whether
+ * that radio in the Advanced section is enabled. Opens the Advanced section. `mode` is the English
+ * label of the radio; it is found by its value, since the label is localized.
+ */
+export async function isRecordingModeEnabled(
+    page: Page,
+    mode: "By Sentence" | "By Whole Text Box",
+): Promise<boolean> {
+    await openAdvancedSection(page);
+    const radio = recordingModeRadio(page, mode);
+    await radio.waitFor({ state: "visible", timeout: 30000 });
+    return radio.isEnabled();
+}
+
+/**
+ * Assert that resting the pointer on one of the Talking Book tool's recording-mode radios shows a
+ * tooltip reading `expected`. Moves the pointer onto the radio's label and waits for the tooltip
+ * to appear with that text (Bloom's tooltips open after a short hover delay, and fetch their
+ * localized text after they appear), then moves the pointer away again so the tooltip does not
+ * cover later clicks. Opens the Advanced section.
+ */
+export async function expectRecordingModeTooltip(
+    page: Page,
+    mode: "By Sentence" | "By Whole Text Box",
+    expected: string,
+    message: string,
+): Promise<void> {
+    await openAdvancedSection(page);
+    const frame = toolboxFrame(page);
+    // The radio sits in a label; the tooltip is wrapped around that label (BloomTooltip adds a
+    // span so it shows even over a disabled control), so hovering the label shows it.
+    const label = frame.locator("label").filter({
+        has: recordingModeRadio(page, mode),
+    });
+    await label.hover();
+    const tooltip = frame.getByRole("tooltip");
+    await expect(
+        tooltip,
+        `Resting the pointer on the "${mode}" radio showed no tooltip.`,
+    ).toBeVisible({ timeout: 30000 });
+    await expect(tooltip, message).toHaveText(expected, { timeout: 30000 });
+    // Move the pointer off the toolbox and let the tooltip go.
+    await page.mouse.move(0, 0);
+    await expect(tooltip).toBeHidden({ timeout: 30000 });
+}
+
+/**
+ * The recording mode Bloom has stored on one language's text box of the first translation group
+ * that `groupSelector` picks: its data-audiorecordingmode attribute ("Sentence" or "TextBox"), which
+ * the tool sets when a person chooses a mode with the cursor in that box. Undefined when the box
+ * has none.
+ */
+export async function getTextBoxRecordingMode(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<string | undefined> {
+    const mode = await editablePageFrame(page)
+        .locator(groupSelector)
+        .first()
+        .locator(`.bloom-editable[lang="${languageTag}"]`)
+        .getAttribute("data-audiorecordingmode");
+    return mode ?? undefined;
+}
+
+/**
+ * Whether the tool's Check button (play the current segment's recording) is enabled: the tool
+ * enables it only when the segment it is on has a recording. This is how a test sees that the
+ * tool itself knows about a recording, rather than only that the file is on disk.
+ */
+export async function isCheckEnabled(page: Page): Promise<boolean> {
+    return toolboxFrame(page)
+        .locator('button:has(img[src*="/play_"])')
+        .isEnabled();
+}
+
+/**
+ * Press the tool's Clear button, which deletes the recording of the segment the tool is on (or, in
+ * whole-text-box mode, of the whole text box). The button has no id and a localized label, so it
+ * is found by its picture; the button itself ignores the pointer, and its picture takes the click.
+ * Returns without waiting for the deletion; the caller waits for the result it expects.
+ */
+export async function clickClearRecording(page: Page): Promise<void> {
+    const button = toolboxFrame(page).locator(
+        'button:has(img[src*="clear_enabled.svg"])',
+    );
+    await expect(
+        button,
+        "Clear is disabled; the tool enables it only when the current segment has a recording.",
+    ).toBeEnabled({ timeout: 30000 });
+    await button.locator("img").click();
+}
+
+/** One of the recording-mode radios, found by its value (a RecordingMode, recordingMode.ts). */
+function recordingModeRadio(
+    page: Page,
+    mode: "By Sentence" | "By Whole Text Box",
+): Locator {
+    const value = mode === "By Sentence" ? "Sentence" : "TextBox";
+    return toolboxFrame(page).locator(`input[type="radio"][value="${value}"]`);
 }
 
 /**
@@ -448,6 +660,49 @@ export async function isImportRecordingEnabled(page: Page): Promise<boolean> {
 }
 
 /**
+ * Align the whole-text-box recording of the text box the tool is on with that box's segments, as a
+ * person does by pressing Adjust Timings... and then OK without moving a boundary. The dialog
+ * splits the box into segments at its sentence ends and its segment markers ("|"), proposes an
+ * end time for each, and OK saves those times on the box (data-audiorecordingendtimes) and shows
+ * the box as split (bloom-postAudioSplit). Returns once the box shows as split.
+ *
+ * The box must hold a whole-text-box recording (see importNarration) and not be split yet. The
+ * button is found by its picture, since it has no id and its label is localized.
+ */
+export async function acceptProposedTimings(page: Page): Promise<void> {
+    const splitBoxes = editablePageFrame(page).locator(
+        ".bloom-editable.bloom-postAudioSplit",
+    );
+    const splitBefore = await splitBoxes.count();
+    const button = toolboxFrame(page).locator(
+        'button:has(img[src*="adjustTimings.svg"])',
+    );
+    await expect(
+        button,
+        "Adjust Timings... is disabled; it needs a text box recorded as a whole.",
+    ).toBeEnabled({ timeout: 30000 });
+    // The button itself ignores the pointer (pointer-events: none); its picture takes the click.
+    await button.locator("img").click();
+
+    // The dialog is drawn in the shell page. It shows one region over the recording's waveform
+    // for each segment once it has loaded the recording, and only then are the times it would
+    // save its own rather than a first guess from the lengths of the segments' text.
+    const dialog = page
+        .getByRole("dialog")
+        .filter({ has: page.locator("#waveform") });
+    await expect(
+        dialog.locator("#waveform .playButton").first(),
+        "The Adjust Timings dialog never showed the recording's segments.",
+    ).toBeVisible({ timeout: 60000 });
+    await dialog.getByTestId("dialog-ok").click();
+    await expect(dialog).toBeHidden({ timeout: 30000 });
+    await expect(
+        splitBoxes,
+        "OK in Adjust Timings did not mark the text box as split into timed segments.",
+    ).toHaveCount(splitBefore + 1, { timeout: 30000 });
+}
+
+/**
  * Expand the Talking Book tool's Advanced section, which holds the recording modes and Import
  * Recording. It starts collapsed, and its contents are in the DOM but not visible until then.
  * Does nothing if it is already open.
@@ -456,10 +711,10 @@ export async function openAdvancedSection(page: Page): Promise<void> {
     const importButton = toolboxFrame(page).locator("#import-recording-button");
     if (await importButton.isVisible()) return;
     // The section is a TriangleCollapse, whose control is a button carrying the word "Advanced"
-    // and nothing else to find it by -- no id, no test id. Matching on the English label is what
-    // the suite already does for the top bar and the page menu; see AUTOMATION-DEBT.md.
+    // (Common.Advanced, in the UI language) and nothing else to find it by -- no id, no test id.
+    const advanced = await getUiString(page, "Common.Advanced", "Advanced");
     await toolboxFrame(page)
-        .getByRole("button", { name: "Advanced" })
+        .getByRole("button", { name: advanced, exact: true })
         .first()
         .click();
     await importButton.waitFor({ state: "visible", timeout: 30000 });

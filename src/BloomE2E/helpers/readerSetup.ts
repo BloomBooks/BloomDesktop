@@ -19,7 +19,7 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Page } from "@playwright/test";
-import { apiGetJson, apiPost } from "./api";
+import { apiGetJson, apiPost, getUiString } from "./api";
 import { waitForEditablePage } from "./bookMaking";
 import { expandTool, toolboxFrame } from "./toolbox";
 import { switchTab } from "./workspace";
@@ -685,4 +685,51 @@ async function clickDialogButton(
     const dialog = page.locator(SETUP_DIALOG);
     await dialog.locator(`[data-testid="${button}"]`).first().click();
     await dialog.waitFor({ state: "detached", timeout: 60000 });
+}
+
+/**
+ * Press the Decodable Reader setup dialog's Help button. It is found by its label, in whatever
+ * language the UI is in (Common.Help), since it carries no id of its own. The dialog stays open.
+ */
+export async function clickDecodableSetupHelp(page: Page): Promise<void> {
+    const label = await getUiString(page, "Common.Help", "Help");
+    await page
+        .locator(SETUP_DIALOG)
+        .getByRole("button", { name: label, exact: true })
+        .click();
+}
+
+/** The two tabs the legacy Leveled Reader setup dialog shows, as its tab list links them. */
+export type LeveledReaderSetupTab = "punctuation" | "readerLevels";
+
+const LEVELED_TAB_LINK: Record<LeveledReaderSetupTab, string> = {
+    punctuation: 'a[href="#dlstabs-3"]',
+    readerLevels: 'a[href="#dlstabs-4"]',
+};
+
+/**
+ * Show one tab of the legacy Leveled Reader setup dialog (which must be open), and wait until it
+ * is the selected one. The tabs are jQuery UI tabs inside the dialog's frame; the selected one's
+ * list item has aria-selected="true".
+ */
+export async function openLeveledReaderSetupTab(
+    page: Page,
+    tab: LeveledReaderSetupTab,
+): Promise<void> {
+    const frame = page.frameLocator(LEGACY_SETUP_DIALOG);
+    const link = frame.locator(LEVELED_TAB_LINK[tab]);
+    await link.click();
+    await expect(
+        frame.locator("li", { has: link }),
+        `Clicking the "${tab}" tab of the Leveled Reader setup did not select it.`,
+    ).toHaveAttribute("aria-selected", "true", { timeout: 30000 });
+}
+
+/**
+ * Press the legacy Leveled Reader setup dialog's Help button. jQuery UI puts the dialog's buttons
+ * in a pane outside its frame; Help is the one Bloom gives the class "left-button". The dialog
+ * stays open.
+ */
+export async function clickLeveledSetupHelp(page: Page): Promise<void> {
+    await page.locator(".ui-dialog-buttonpane button.left-button").click();
 }

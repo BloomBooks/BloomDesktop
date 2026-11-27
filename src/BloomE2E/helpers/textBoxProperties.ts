@@ -31,14 +31,18 @@ export function textBoxPropertiesDialog(page: Page): Locator {
 }
 
 /**
- * Open the Text Box Properties dialog of the first text box on the page, by clicking the gear
- * beside its "Text Box" label, and wait until it shows. Requires Change Layout mode, which is the
- * only time Bloom draws that label. The dialog opens on its Language tab.
+ * Open the Text Box Properties dialog of a text box on the page, by clicking the gear beside its
+ * "Text Box" label, and wait until it shows. `textBoxIndex` counts the page's text boxes in
+ * document order, from 0. Requires Change Layout mode, which is the only time Bloom draws that
+ * label. The dialog opens on its Language tab.
  */
-export async function openTextBoxProperties(page: Page): Promise<Locator> {
+export async function openTextBoxProperties(
+    page: Page,
+    textBoxIndex = 0,
+): Promise<Locator> {
     await editablePageFrame(page)
         .locator(".textBox-identifier .formatButton")
-        .first()
+        .nth(textBoxIndex)
         .click();
     const dialog = textBoxPropertiesDialog(page);
     await dialog.waitFor({ state: "visible", timeout: 15000 });
@@ -93,7 +97,22 @@ export async function setTextBoxLanguage(
     language: TextBoxLanguage,
 ): Promise<void> {
     await setChangeLayoutMode(page, true);
-    const dialog = await openTextBoxProperties(page);
+    await chooseTextBoxLanguage(page, language);
+    await setChangeLayoutMode(page, false);
+}
+
+/**
+ * In Change Layout mode, open one text box's Text Box Properties, choose `language` on the
+ * Language tab, and click outside the dialog to close it. `textBoxIndex` counts the page's text
+ * boxes in document order, from 0. The page shows what the choice does only once Change Layout is
+ * turned off, so a test can set several boxes before it turns it off.
+ */
+export async function chooseTextBoxLanguage(
+    page: Page,
+    language: TextBoxLanguage,
+    textBoxIndex = 0,
+): Promise<void> {
+    const dialog = await openTextBoxProperties(page, textBoxIndex);
     const radio = dialog.locator(
         `input[name="languageRadioGroup"][value="${LANGUAGE_VALUE[language]}"]`,
     );
@@ -103,7 +122,6 @@ export async function setTextBoxLanguage(
         `The "${language}" choice in Text Box Properties did not become selected.`,
     ).toBeChecked();
     await closeTextBoxProperties(page);
-    await setChangeLayoutMode(page, false);
 }
 
 /**

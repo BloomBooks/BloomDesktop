@@ -7,6 +7,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiPost, getUiString } from "./api";
+import { readZip } from "./bulkBloomPub";
 import { chooseFromSelectedBookMoreMenuByTestId } from "./collection";
 import { realClick } from "./realClick";
 
@@ -211,4 +212,77 @@ export async function importSpreadsheetIntoSelectedBook(
     );
     await expect(dialog, "the progress box should close").toBeHidden();
     return progress;
+}
+
+/**
+ * The cells of the first worksheet of the .xlsx file at `spreadsheetPath`, as text, one array per
+ * row of the sheet and one string per column, "" where a cell is empty. An export's first
+ * worksheet is the book's content, and its first row holds the column labels that the import
+ * reads (InternalSpreadsheet.cs). `page` is used only as an XML parser.
+ */
+export async function readSpreadsheetRows(
+    page: Page,
+    spreadsheetPath: string,
+): Promise<string[][]> {
+    const entries = readZip(fs.readFileSync(spreadsheetPath));
+    const read = (name: string) =>
+        entries.find((entry) => entry.name === name)?.content.toString("utf8");
+    const sheet = read("xl/worksheets/sheet1.xml");
+    if (sheet === undefined)
+        throw new Error(
+            `${spreadsheetPath} has no first worksheet (xl/worksheets/sheet1.xml).`,
+        );
+    const sharedStrings = read("xl/sharedStrings.xml") ?? "";
+    return page.evaluate(
+        ({ sheet, sharedStrings }) => {
+            const parse = (xml: string) =>
+                new DOMParser().parseFromString(xml, "application/xml");
+            const children = (parent: Element | Document, name: string) =>
+                Array.from(parent.getElementsByTagNameNS("*", name));
+            // A shared string's text is in its <t> elements, apart from a phonetic reading (rPh).
+            const shared = sharedStrings
+                ? children(parse(sharedStrings), "si").map((si) =>
+                      children(si, "t")
+                          .filter((t) => t.parentElement?.localName !== "rPh")
+                          .map((t) => t.textContent ?? "")
+                          .join(""),
+                  )
+                : [];
+            // "AB12" is the 28th column (index 27).
+            const columnIndex = (reference: string) =>
+                (reference.match(/^[A-Z]+/)?.[0] ?? "")
+                    .split("")
+                    .reduce(
+                        (index, letter) =>
+                            index * 26 + letter.charCodeAt(0) - 64,
+                        0,
+                    ) - 1;
+            const rows: string[][] = [];
+            for (const row of children(parse(sheet), "row")) {
+                const rowIndex = Number(row.getAttribute("r")) - 1;
+                const cells: string[] = [];
+                for (const cell of children(row, "c")) {
+                    const value =
+                        children(cell, "v")[0]?.textContent ?? undefined;
+                    let text: string;
+                    switch (cell.getAttribute("t")) {
+                        case "s":
+                            text = shared[Number(value)];
+                            break;
+                        case "inlineStr":
+                            text = children(cell, "t")
+                                .map((t) => t.textContent ?? "")
+                                .join("");
+                            break;
+                        default:
+                            text = value ?? "";
+                    }
+                    cells[columnIndex(cell.getAttribute("r") ?? "")] = text;
+                }
+                rows[rowIndex] = Array.from(cells, (text) => text ?? "");
+            }
+            return Array.from(rows, (row) => row ?? []);
+        },
+        { sheet, sharedStrings },
+    );
 }

@@ -1,0 +1,336 @@
+// An ePUB made with "Include image descriptions on page" unticked keeps the pictures' descriptions
+// off its pages, yet still reads them aloud: a sighted reader is not shown them, while a listener
+// still hears them (EpubMaker.HandleImageDescriptions leaves them in the page, hidden, BL-7237).
+// BL-7839 once took the description's audio out of the read-aloud, and was reverted as wrong.
+//
+// Automates the manual test "ePUB Without Descriptions On Page" (Test Case ID 573).
+//
+// The ePUB is read from the ePUB screen's preview, which shows the very files that Save... zips.
+// Save... itself opens the operating system's save dialog, which no test can answer, and the
+// manual case's reader app (eKitabu) is not something a test can drive; what that app reads aloud
+// is the page's media overlay, which this test reads instead.
+
+import * as Path from "node:path";
+import { fileURLToPath } from "node:url";
+import type { Page } from "@playwright/test";
+import { expect, test } from "../fixtures/bloomTest";
+import {
+    addPage,
+    findBookFolder,
+    getContentPages,
+    getPages,
+    goToPage,
+    makeBookFromTemplate,
+    typeInGroup,
+} from "../helpers/bookMaking";
+import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
+import {
+    chooseEpubMode,
+    epubPreviewHasFile,
+    getEpubPreviewImageDescriptions,
+    getEpubPreviewKeptImageDescription,
+    getEpubPreviewLayout,
+    getEpubPreviewPageItems,
+    getEpubPreviewPageReadAloud,
+    getEpubPreviewPictures,
+    getIncludeImageDescriptionsBoxState,
+    idInEpub,
+    openEpubPublishScreen,
+    setIncludeImageDescriptionsOnPage,
+    showEpubPreview,
+    showEpubPreviewPage,
+    type EpubMode,
+} from "../helpers/epubPublish";
+import {
+    kImageDescriptionGroup,
+    openImageDescriptionTool,
+} from "../helpers/imageDescription";
+import { chooseImageFile } from "../helpers/images";
+import { addNarration, waitForSentencesMarked } from "../helpers/talkingBook";
+import { enableToolForBook, expandToolByHeader } from "../helpers/toolbox";
+
+test.use({
+    collectionSpec: {
+        name: "epub-without-descriptions-on-page",
+        languages: ["en"],
+        // Publishing an ePUB needs a subscription.
+        subscriptionCode: kEnterpriseSubscriptionCode,
+    },
+});
+
+const L1 = "en";
+const PICTURE = Path.resolve(
+    Path.dirname(fileURLToPath(import.meta.url)),
+    "..",
+    "fixtures",
+    "images",
+    "bird.png",
+);
+
+const TITLE = "The Golden Touch";
+const COVER_DESCRIPTION = "A small bird sits on a branch.";
+const PAGE_DESCRIPTION = "The bird looks at the sky.";
+const PAGE_TEXT = "This is a text page.";
+const PAGE_TEXT_GROUP = `.bloom-translationGroup:not(${kImageDescriptionGroup})`;
+
+/** One described page of the book, and the ids Bloom gave the recordings on it. */
+interface IDescribedPage {
+    name: string;
+    pageId: string;
+    description: string;
+    /** The page's own words that are not the description: the title, or the page's text. */
+    otherText: string;
+    descriptionIds: string[];
+    otherTextIds: string[];
+}
+
+test("an ePUB without image descriptions on the page hides them but still reads them aloud [Test Case ID 573]", async ({
+    page,
+    step,
+}) => {
+    test.setTimeout(600000);
+
+    const pages = await step(
+        "Make a book whose cover and one content page each have a picture with a description, and the title and page text",
+        async () => {
+            const bookFolder = await makeBookFromTemplate(page, "Basic Book");
+            await addPage(page, "Basic Text & Image");
+            await enableToolForBook(page, bookFolder, "imageDescription");
+            const cover = (await getPages(page))[0];
+            const [contentPage] = await getContentPages(page);
+            expect(
+                cover.isContentPage,
+                "test setup: the first page is the cover",
+            ).toBe(false);
+
+            await goToPage(page, cover.id);
+            await chooseImageFile(page, PICTURE);
+            await typeInGroup(page, ".bookTitle", L1, TITLE);
+            await openImageDescriptionTool(page);
+            await typeInGroup(
+                page,
+                kImageDescriptionGroup,
+                L1,
+                COVER_DESCRIPTION,
+            );
+
+            await goToPage(page, contentPage.id);
+            await chooseImageFile(page, PICTURE);
+            await typeInGroup(page, PAGE_TEXT_GROUP, L1, PAGE_TEXT);
+            await openImageDescriptionTool(page);
+            await typeInGroup(
+                page,
+                kImageDescriptionGroup,
+                L1,
+                PAGE_DESCRIPTION,
+            );
+            // Leaving the cover saved the title, and Bloom renamed the book's folder to match it.
+            return {
+                bookFolder: await findBookFolder(page, TITLE),
+                cover,
+                contentPage,
+            };
+        },
+    );
+    if (!pages) throw new Error("The book was not made.");
+
+    const described = await step(
+        "Record the title, the page text and both descriptions with the Talking Book tool",
+        async () => {
+            // Recording needs a microphone, which a test has not got: addNarration puts a recording
+            // under each id the tool gave a sentence, where Bloom's own recording would go.
+            await expandToolByHeader(page, "talkingBook");
+            const recorded: IDescribedPage[] = [];
+            for (const { name, pageId, description, otherGroup, otherText } of [
+                {
+                    name: "the cover",
+                    pageId: pages.cover.id,
+                    description: COVER_DESCRIPTION,
+                    otherGroup: ".bookTitle",
+                    otherText: TITLE,
+                },
+                {
+                    name: "the content page",
+                    pageId: pages.contentPage.id,
+                    description: PAGE_DESCRIPTION,
+                    otherGroup: PAGE_TEXT_GROUP,
+                    otherText: PAGE_TEXT,
+                },
+            ]) {
+                await goToPage(page, pageId);
+                const descriptionIds = await waitForSentencesMarked(
+                    page,
+                    kImageDescriptionGroup,
+                    L1,
+                    [description],
+                );
+                const otherTextIds = await waitForSentencesMarked(
+                    page,
+                    otherGroup,
+                    L1,
+                    [otherText],
+                );
+                const narrated = await addNarration(page, pages.bookFolder, L1);
+                expect(
+                    [...narrated].sort(),
+                    `test setup: every recording on ${name} is the description's or the ${name === "the cover" ? "title's" : "page text's"}`,
+                ).toEqual([...descriptionIds, ...otherTextIds].sort());
+                recorded.push({
+                    name,
+                    pageId,
+                    description,
+                    otherText,
+                    descriptionIds,
+                    otherTextIds,
+                });
+            }
+            return recorded;
+        },
+    );
+    if (!described) throw new Error("The recordings were not made.");
+
+    await step(
+        'Publish as an ePUB in its first mode, fixed, where "Include image descriptions on page" is not ticked',
+        async () => {
+            await openEpubPublishScreen(page);
+            await chooseEpubMode(page, "fixed");
+            expect(
+                await getIncludeImageDescriptionsBoxState(page),
+                'in fixed mode the "Include image descriptions on page" box should be unticked, and cannot be ticked',
+            ).toEqual({ ticked: false, enabled: false });
+            await showEpubPreview(page);
+        },
+    );
+    await step(
+        "Check that the fixed ePUB shows no description but reads each one aloud with the page's text",
+        async () => {
+            for (const describedPage of described)
+                await expectDescriptionHiddenButReadAloud(
+                    page,
+                    "fixed",
+                    describedPage,
+                );
+        },
+    );
+
+    await step(
+        'Publish as a flowable ePUB with "Include image descriptions on page" unticked',
+        async () => {
+            await chooseEpubMode(page, "flowable");
+            await setIncludeImageDescriptionsOnPage(page, false);
+            await showEpubPreview(page);
+        },
+    );
+    await step(
+        "Check that the flowable ePUB shows no description but reads each one aloud with the page's text",
+        async () => {
+            for (const describedPage of described)
+                await expectDescriptionHiddenButReadAloud(
+                    page,
+                    "flowable",
+                    describedPage,
+                );
+        },
+    );
+
+    await step(
+        'Control: tick "Include image descriptions on page", and check that the same ePUB now shows each description on its page',
+        async () => {
+            await setIncludeImageDescriptionsOnPage(page, true);
+            await showEpubPreview(page);
+            for (const { name, pageId, description } of described) {
+                const { frame } = await showEpubPreviewPage(page, pageId);
+                const descriptions = getEpubPreviewImageDescriptions(frame);
+                await expect(
+                    descriptions,
+                    `with the box ticked, ${name} of the ePUB should show its picture's description`,
+                ).toHaveCount(1);
+                await expect(descriptions).toBeVisible();
+                await expect(descriptions).toHaveText(description, {
+                    useInnerText: true,
+                });
+            }
+        },
+    );
+});
+
+/**
+ * Check one page of the ePUB the preview is showing, made without the descriptions on its pages:
+ * the ePUB has the layout of `mode`; the picture is there, with its description as its
+ * alternative text; the description is in the page's document but not shown; and the page's
+ * read-aloud plays a clip of its own for each sentence of the description and of the page's other
+ * text, and for nothing else.
+ */
+async function expectDescriptionHiddenButReadAloud(
+    page: Page,
+    mode: EpubMode,
+    described: IDescribedPage,
+): Promise<void> {
+    const { name, pageId, description, otherText } = described;
+    const where = `${name} of the ${mode} ePUB`;
+    expect(
+        await getEpubPreviewLayout(page),
+        `the ePUB should be laid out as ${mode}`,
+    ).toBe(mode);
+    const { frame } = await showEpubPreviewPage(page, pageId);
+
+    await expect(
+        getEpubPreviewImageDescriptions(frame),
+        `${where} should have no description put on the page`,
+    ).toHaveCount(0);
+    expect(
+        (await getEpubPreviewPageItems(frame))
+            .filter((item) => item.kind === "text")
+            .map((item) => item.content),
+        `${where} should show its own text, and not the description`,
+    ).toEqual([otherText]);
+    expect(
+        await getEpubPreviewPictures(frame),
+        `${where} should show its picture, with its description as its alternative text`,
+    ).toContainEqual({
+        file: expect.stringMatching(/^bird\d*\.png$/),
+        alt: description,
+    });
+
+    expect(
+        await getEpubPreviewKeptImageDescription(
+            frame,
+            described.descriptionIds,
+        ),
+        `${where} should keep the description in the page, with its recording, but not show it`,
+    ).toEqual({ text: description, showing: false, recordingsFound: true });
+
+    const clips = await getEpubPreviewPageReadAloud(page, frame);
+    expect(
+        clips.map((clip) => clip.textId).sort(),
+        `${where} should read aloud the description and the page's text, each once`,
+    ).toEqual(
+        [...described.descriptionIds, ...described.otherTextIds]
+            .map(idInEpub)
+            .sort(),
+    );
+    for (const clip of clips) {
+        expect(
+            clip.clipEnd,
+            `the clip of ${where} that reads ${clip.textId} should have some audio`,
+        ).toBeGreaterThan(clip.clipBegin);
+        expect(
+            await epubPreviewHasFile(page, clip.audioUrl),
+            `the ePUB should have the audio file ${clip.audioUrl} that ${where} plays`,
+        ).toBe(true);
+    }
+    // Bloom joins a page's recordings into one file, so each clip must be a stretch of its own:
+    // two clips that overlap would play one recording, or part of it, for two sentences.
+    const byStart = [...clips].sort(
+        (a, b) =>
+            a.audioUrl.localeCompare(b.audioUrl) || a.clipBegin - b.clipBegin,
+    );
+    for (let i = 1; i < byStart.length; i++) {
+        const [earlier, later] = [byStart[i - 1], byStart[i]];
+        if (earlier.audioUrl !== later.audioUrl) continue;
+        expect(
+            later.clipBegin,
+            `on ${where}, the clip that reads ${later.textId} should start after the clip that reads ${earlier.textId} ends`,
+        ).toBeGreaterThanOrEqual(earlier.clipEnd);
+    }
+}

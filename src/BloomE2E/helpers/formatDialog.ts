@@ -214,6 +214,26 @@ export async function openFormatDialog(page: Page): Promise<void> {
     ).toBeVisible({ timeout: 30000 });
 }
 
+/**
+ * Open the Format dialog for the text of the selected canvas element (a speech bubble or a text
+ * block) from the gear on the element's own toolbar, which is where a canvas element offers it,
+ * and wait for the dialog to open.
+ */
+export async function openFormatDialogFromCanvasElementToolbar(
+    page: Page,
+): Promise<void> {
+    const frame = editablePageFrame(page);
+    await frame
+        .locator(
+            '#canvas-element-context-controls [data-testid="toolbar-format"]',
+        )
+        .click({ timeout: 30000 });
+    await expect(
+        frame.locator(DIALOG),
+        "Clicking the canvas element's format gear did not open the Format dialog.",
+    ).toBeVisible({ timeout: 30000 });
+}
+
 /** True while the Format dialog is open. */
 export async function isFormatDialogOpen(page: Page): Promise<boolean> {
     return editablePageFrame(page).locator(DIALOG).isVisible();

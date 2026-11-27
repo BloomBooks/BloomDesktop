@@ -13,6 +13,7 @@
 //    See AUTOMATION-DEBT.md, "The browser's print dialog is reachable only over UI Automation".
 
 import { execFileSync } from "node:child_process";
+import { constants as zlibConstants, inflateSync } from "node:zlib";
 import { expect, type Browser, type Page } from "@playwright/test";
 import { apiGet } from "./api";
 import type { IPixelSize } from "./images";
@@ -167,6 +168,51 @@ function readPdfObject(pdf: string, number: string): string {
     return pdf.slice(start.index, Math.min(...ends));
 }
 
+/**
+ * The data of the stream object numbered `number` in a PDF, as text with one character for each
+ * byte, decompressed when it is compressed the usual way (FlateDecode). Throws for any other
+ * compression, which a page's or a form's drawing instructions do not use.
+ */
+function readPdfStream(pdf: string, number: string): string {
+    const start = new RegExp(`(?:^|[\\r\\n])${number}\\s+\\d+\\s+obj`).exec(
+        pdf,
+    );
+    if (!start) throw new Error(`The previewed PDF has no object ${number}.`);
+    const keyword = /stream\r?\n/g;
+    keyword.lastIndex = start.index;
+    const found = keyword.exec(pdf);
+    const end = pdf.indexOf("endobj", start.index);
+    if (!found || (end >= 0 && end < found.index))
+        throw new Error(
+            `Object ${number} of the previewed PDF is not a stream.`,
+        );
+    const dictionary = pdf.slice(start.index, found.index);
+    const dataStart = found.index + found[0].length;
+    // The length is given in the dictionary, or in an object of its own that it refers to.
+    const length = /\/Length\s+(\d+)(\s+\d+\s+R)?/.exec(dictionary);
+    if (!length)
+        throw new Error(
+            `Stream ${number} of the previewed PDF gives no length.`,
+        );
+    const byteCount = length[2]
+        ? Number(/obj\s+(\d+)/.exec(readPdfObject(pdf, length[1]))![1])
+        : Number(length[1]);
+    const data = Buffer.from(
+        pdf.slice(dataStart, dataStart + byteCount),
+        "latin1",
+    );
+    if (!/\/Filter/.test(dictionary)) return data.toString("latin1");
+    if (!/\/Filter\s*\/FlateDecode(?![a-zA-Z])/.test(dictionary))
+        throw new Error(
+            `Stream ${number} of the previewed PDF is compressed in a way this cannot read: ${dictionary}`,
+        );
+    // The PDF maker leaves out the end-of-data check that zlib expects (seen in a booklet's
+    // streams), so take what decompresses without asking for it.
+    return inflateSync(data, {
+        finishFlush: zlibConstants.Z_SYNC_FLUSH,
+    }).toString("latin1");
+}
+
 /** The numbers of the objects that a piece of a PDF refers to, e.g. "21" for "21 0 R", in order. */
 function readPdfReferences(text: string): string[] {
     return [...text.matchAll(/(\d+)\s+\d+\s+R(?![a-zA-Z])/g)].map(
@@ -214,35 +260,87 @@ function getPdfPageObjectsInPageOrder(pdf: string): string[] {
  * size that is listed for a page was found and drawn on that page when the PDF was made, and one
  * that is missing was not. Each picture is listed once: the second image in which a PDF holds a
  * picture's transparency belongs to the picture, not to the page, and is not listed.
+ *
+ * A booklet's sheet (Booklet Cover or Booklet Insides) draws each page of the book as a form (a
+ * Form XObject) of its own, which holds that page's pictures. Pass `booklet` true for those, and
+ * the pictures of the forms each sheet draws are listed for the sheet. Without it a form's
+ * pictures are not listed: a page of a Simple PDF can draw small images of Bloom's own in forms.
  */
 export async function getPdfPreviewPicturesByPage(
     page: Page,
+    booklet = false,
 ): Promise<IPixelSize[][]> {
     const pdf = await readPreviewedPdf(page);
     return getPdfPageObjectsInPageOrder(pdf).map((pageObject) => {
-        // What a page draws with is in its resources, which the page object holds or refers to.
-        const elsewhere = /\/Resources\s+(\d+)\s+\d+\s+R/.exec(pageObject);
-        const resources = elsewhere
-            ? readPdfObject(pdf, elsewhere[1])
-            : pageObject;
-        const drawn = /\/XObject\s*<<([^>]*)>>/.exec(resources);
-        if (!drawn) return [];
-        const sizes: IPixelSize[] = [];
-        for (const number of readPdfReferences(drawn[1])) {
-            // An image is a stream, and a PDF never compresses the dictionary that describes a
-            // stream, so its size can be read from the text of the file.
-            const dictionary = readPdfObject(pdf, number);
-            if (!/\/Subtype\s*\/Image(?![a-zA-Z])/.test(dictionary)) continue;
-            const width = /\/Width\s+(\d+)/.exec(dictionary);
-            const height = /\/Height\s+(\d+)/.exec(dictionary);
-            if (!width || !height)
-                throw new Error(
-                    `A picture in the previewed PDF does not give its size: ${dictionary}`,
-                );
-            sizes.push({ width: Number(width[1]), height: Number(height[1]) });
-        }
-        return sizes;
+        // A page's drawing instructions are in its content streams, which it refers to.
+        const contents = /\/Contents\s*(\[[^\]]*\]|\d+\s+\d+\s+R)/.exec(
+            pageObject,
+        );
+        if (!contents)
+            throw new Error(
+                `A page of the previewed PDF has no content: ${pageObject}`,
+            );
+        return getPicturesDrawnBy(
+            pdf,
+            pageObject,
+            readPdfReferences(contents[1]),
+            booklet,
+        );
     });
+}
+
+/**
+ * The size in pixels of each picture that a page object, or a form, draws: the images among the
+ * things its resources name (XObjects) that its drawing instructions (in the streams numbered
+ * `contentStreams`) paint, and, when `inForms` is true, the images that the forms it paints draw
+ * in the same way. A thing its resources name but its instructions never paint is not listed.
+ */
+function getPicturesDrawnBy(
+    pdf: string,
+    drawer: string,
+    contentStreams: string[],
+    inForms: boolean,
+): IPixelSize[] {
+    // What a page or form draws with is in its resources, which it holds or refers to.
+    const elsewhere = /\/Resources\s+(\d+)\s+\d+\s+R/.exec(drawer);
+    const resources = elsewhere ? readPdfObject(pdf, elsewhere[1]) : drawer;
+    // The list of what it draws is in the resources, or in an object of its own that they refer to.
+    const drawn = /\/XObject\s*(?:<<([^>]*)>>|(\d+)\s+\d+\s+R)/.exec(resources);
+    if (!drawn) return [];
+    const list = drawn[1] ?? readPdfObject(pdf, drawn[2]);
+    // The instructions paint a thing by its name in that list: "/Im0 Do".
+    const painted = new Set<string>();
+    for (const number of contentStreams)
+        for (const match of readPdfStream(pdf, number).matchAll(
+            /\/([^\s/<>[\]()]+)\s+Do(?![a-zA-Z])/g,
+        ))
+            painted.add(match[1]);
+    const sizes: IPixelSize[] = [];
+    for (const [, name, number] of list.matchAll(
+        /\/([^\s/<>[\]()]+)\s+(\d+)\s+\d+\s+R/g,
+    )) {
+        if (!painted.has(name)) continue;
+        // An image or a form is a stream, and a PDF never compresses the dictionary that describes
+        // a stream, so it can be read from the text of the file.
+        const dictionary = readPdfObject(pdf, number);
+        if (/\/Subtype\s*\/Form(?![a-zA-Z])/.test(dictionary)) {
+            // A form's drawing instructions are its own stream.
+            if (inForms)
+                sizes.push(
+                    ...getPicturesDrawnBy(pdf, dictionary, [number], false),
+                );
+            continue;
+        }
+        if (!/\/Subtype\s*\/Image(?![a-zA-Z])/.test(dictionary)) continue;
+        const width = /\/Width\s+(\d+)/.exec(dictionary);
+        const height = /\/Height\s+(\d+)/.exec(dictionary);
+        if (!width || !height)
+            throw new Error(
+                `A picture in the previewed PDF does not give its size: ${dictionary}`,
+            );
+        sizes.push({ width: Number(width[1]), height: Number(height[1]) });
+    }
+    return sizes;
 }
 
 /** A rectangle on a PDF page, in millimetres from the left and bottom edges of the paper. */
@@ -505,4 +603,407 @@ export async function isPrintInstructionsWindowOpen(
         (await findPrintInstructionsPage(page.context().browser()!)) !==
         undefined
     );
+}
+
+/** A picture a PDF page draws: the size of its file, and where it lands on the page. */
+export interface IPdfPicture extends IPixelSize {
+    /** Where the whole picture lands. */
+    box: IPdfBox;
+    /**
+     * The part of `box` that shows: what is left of it inside the clipping region the page sets
+     * when it paints the picture. Undefined when none of it shows.
+     */
+    shownBox?: IPdfBox;
+    /** True when the page draws it inside a form (a Form XObject) rather than directly. */
+    inForm: boolean;
+}
+
+/** One piece of text a PDF page draws, usually a line: its words, and where its baseline starts. */
+export interface IPdfTextRun {
+    text: string;
+    /** Millimetres from the left edge of the paper. */
+    x: number;
+    /** Millimetres from the bottom edge of the paper. */
+    y: number;
+    /** True when the page draws it inside a form (a Form XObject) rather than directly. */
+    inForm: boolean;
+}
+
+/**
+ * What one page of the PDF that the PDF & Print screen is previewing draws, read from the PDF file
+ * itself: each picture with where it lands, and each piece of text with where it starts and its
+ * words. `pageIndex` counts the PDF's pages from 0, in their order. Call it after choosePdfMode().
+ *
+ * This follows the page's drawing instructions the way a PDF reader does, as far as Bloom's PDF
+ * maker (Chromium's) uses them: the q/Q/cm operators that place things, the path and W/W*
+ * operators that clip (each clipping path is taken as its bounding box, and a form's BBox clips
+ * too), the Do operator that paints a picture, and the BT/Tf/Tm/Td/Tj/TJ operators that draw text. The words come from each
+ * font's ToUnicode map, which is how a PDF reader copies text. A form the page paints is followed
+ * into, so what it draws is listed too, marked as drawn in a form. Instructions that draw in a way
+ * this does not follow throw, rather than report a page as drawing less than it does.
+ */
+export async function getPdfPreviewPageDrawing(
+    page: Page,
+    pageIndex: number,
+): Promise<{ pictures: IPdfPicture[]; texts: IPdfTextRun[] }> {
+    const pdf = await readPreviewedPdf(page);
+    const pageObject = getPdfPageObjectsInPageOrder(pdf)[pageIndex];
+    if (!pageObject)
+        throw new Error(`The previewed PDF has no page ${pageIndex + 1}.`);
+    const contents = /\/Contents\s*(\[[^\]]*\]|\d+\s+\d+\s+R)/.exec(pageObject);
+    if (!contents)
+        throw new Error(
+            `A page of the previewed PDF has no content: ${pageObject}`,
+        );
+    const pictures: IPdfPicture[] = [];
+    const texts: IPdfTextRun[] = [];
+    followPdfInstructions(
+        pdf,
+        readPdfReferences(contents[1])
+            .map((number) => readPdfStream(pdf, number))
+            .join("\n"),
+        pageObject,
+        [1, 0, 0, 1, 0, 0],
+        undefined,
+        false,
+        pictures,
+        texts,
+    );
+    return { pictures, texts };
+}
+
+type PdfMatrix = [number, number, number, number, number, number];
+
+/** The matrix product m × n, as PDF combines its transformation matrices. */
+function multiplyPdfMatrices(m: PdfMatrix, n: PdfMatrix): PdfMatrix {
+    return [
+        m[0] * n[0] + m[1] * n[2],
+        m[0] * n[1] + m[1] * n[3],
+        m[2] * n[0] + m[3] * n[2],
+        m[2] * n[1] + m[3] * n[3],
+        m[4] * n[0] + m[5] * n[2] + n[4],
+        m[4] * n[1] + m[5] * n[3] + n[5],
+    ];
+}
+
+/**
+ * Follow one stream of drawing instructions of a page or a form (getPdfPreviewPageDrawing), adding
+ * what it draws to `pictures` and `texts`. `drawer` is the text of the page or form object, which
+ * holds or refers to the resources the instructions name, `startMatrix` places what they draw on
+ * the page, and `startClip` is the region, in millimetres, outside which nothing they draw shows
+ * (undefined for none). A form painted from here is followed in turn, and what it draws is marked
+ * `inForm`.
+ */
+function followPdfInstructions(
+    pdf: string,
+    instructions: string,
+    drawer: string,
+    startMatrix: PdfMatrix,
+    startClip: IPdfBox | undefined,
+    inForm: boolean,
+    pictures: IPdfPicture[],
+    texts: IPdfTextRun[],
+): void {
+    const elsewhere = /\/Resources\s+(\d+)\s+\d+\s+R/.exec(drawer);
+    const resources = elsewhere ? readPdfObject(pdf, elsewhere[1]) : drawer;
+    const namedIn = (kind: string): Map<string, string> => {
+        const list = new RegExp(
+            `/${kind}\\s*(?:<<([^>]*)>>|(\\d+)\\s+\\d+\\s+R)`,
+        ).exec(resources);
+        const names = new Map<string, string>();
+        if (!list) return names;
+        const text = list[1] ?? readPdfObject(pdf, list[2]);
+        for (const [, name, number] of text.matchAll(
+            /\/([^\s/<>[\]()]+)\s+(\d+)\s+\d+\s+R/g,
+        ))
+            names.set(name, number);
+        return names;
+    };
+    const xObjects = namedIn("XObject");
+    const fonts = namedIn("Font");
+    const toUnicode = new Map<string, Map<string, string>>();
+    const fontMap = (name: string) => {
+        if (!toUnicode.has(name)) {
+            const number = fonts.get(name);
+            if (!number)
+                throw new Error(
+                    `The PDF page uses a font it does not name: /${name}.`,
+                );
+            const cmap = /\/ToUnicode\s+(\d+)\s+\d+\s+R/.exec(
+                readPdfObject(pdf, number),
+            );
+            if (!cmap)
+                throw new Error(
+                    `Font /${name} of the PDF page has no ToUnicode map, so its words cannot be read.`,
+                );
+            toUnicode.set(name, readToUnicodeMap(readPdfStream(pdf, cmap[1])));
+        }
+        return toUnicode.get(name)!;
+    };
+    const toMillimetres = (m: PdfMatrix, x: number, y: number) => ({
+        x: (m[0] * x + m[2] * y + m[4]) * kMillimetresPerPoint,
+        y: (m[1] * x + m[3] * y + m[5]) * kMillimetresPerPoint,
+    });
+
+    // The part of two boxes they share; an empty one when they do not meet.
+    const intersect = (a: IPdfBox | undefined, b: IPdfBox): IPdfBox =>
+        a
+            ? {
+                  left: Math.max(a.left, b.left),
+                  right: Math.min(a.right, b.right),
+                  bottom: Math.max(a.bottom, b.bottom),
+                  top: Math.min(a.top, b.top),
+              }
+            : b;
+    const isEmpty = (box: IPdfBox) =>
+        box.right <= box.left || box.top <= box.bottom;
+    const boundingBox = (points: { x: number; y: number }[]): IPdfBox => ({
+        left: Math.min(...points.map((p) => p.x)),
+        right: Math.max(...points.map((p) => p.x)),
+        bottom: Math.min(...points.map((p) => p.y)),
+        top: Math.max(...points.map((p) => p.y)),
+    });
+
+    let ctm = startMatrix;
+    let clip = startClip;
+    const saved: { ctm: PdfMatrix; clip: IPdfBox | undefined }[] = [];
+    // The points of the path being built, and whether W or W* asked for it to become the clip.
+    let path: { x: number; y: number }[] = [];
+    let clipToPath = false;
+    let textLine: PdfMatrix = [1, 0, 0, 1, 0, 0];
+    let font = "";
+    const operands: string[] = [];
+    for (const [token] of instructions.matchAll(
+        /<[0-9A-Fa-f\s]*>|\[[^\]]*\]|\([^)]*\)|\/[^\s/<>[\]()]+|[^\s/<>[\]()]+/g,
+    )) {
+        if (
+            !/^[A-Za-z'"*]+$/.test(token) ||
+            token === "true" ||
+            token === "false"
+        ) {
+            operands.push(token);
+            continue;
+        }
+        const numbers = operands.map(Number);
+        const last = operands[operands.length - 1];
+        switch (token) {
+            case "q":
+                saved.push({ ctm, clip });
+                break;
+            case "Q": {
+                const state = saved.pop();
+                ctm = state?.ctm ?? startMatrix;
+                clip = state ? state.clip : startClip;
+                break;
+            }
+            case "re": {
+                const [x, y, w, h] = numbers.slice(-4);
+                path.push(
+                    toMillimetres(ctm, x, y),
+                    toMillimetres(ctm, x + w, y),
+                    toMillimetres(ctm, x, y + h),
+                    toMillimetres(ctm, x + w, y + h),
+                );
+                break;
+            }
+            case "m":
+            case "l":
+            case "c":
+            case "v":
+            case "y":
+                for (let i = 0; i + 1 < numbers.length; i += 2)
+                    path.push(toMillimetres(ctm, numbers[i], numbers[i + 1]));
+                break;
+            case "h":
+                break;
+            case "W":
+            case "W*":
+                clipToPath = true;
+                break;
+            case "n":
+            case "f":
+            case "F":
+            case "f*":
+            case "S":
+            case "s":
+            case "B":
+            case "B*":
+            case "b":
+            case "b*":
+                // A path ends with the operator that paints it (n paints nothing), and it is
+                // only then that a W or W* before it takes effect.
+                if (clipToPath && path.length > 0)
+                    clip = intersect(clip, boundingBox(path));
+                path = [];
+                clipToPath = false;
+                break;
+            case "cm":
+                ctm = multiplyPdfMatrices(numbers.slice(-6) as PdfMatrix, ctm);
+                break;
+            case "BT":
+                textLine = [1, 0, 0, 1, 0, 0];
+                break;
+            case "Tf":
+                font = operands[operands.length - 2].slice(1);
+                break;
+            case "Tm":
+                textLine = numbers.slice(-6) as PdfMatrix;
+                break;
+            case "Td":
+            case "TD":
+                textLine = multiplyPdfMatrices(
+                    [
+                        1,
+                        0,
+                        0,
+                        1,
+                        numbers[numbers.length - 2],
+                        numbers[numbers.length - 1],
+                    ],
+                    textLine,
+                );
+                break;
+            case "Tj":
+            case "TJ": {
+                if (/\(/.test(last))
+                    throw new Error(
+                        "The PDF page draws text as a literal string, which this cannot read.",
+                    );
+                const map = fontMap(font);
+                let text = "";
+                for (const [, hex] of last.matchAll(/<([0-9A-Fa-f\s]*)>/g)) {
+                    const digits = hex.replace(/\s/g, "");
+                    for (let i = 0; i + 4 <= digits.length; i += 4)
+                        text +=
+                            map.get(digits.slice(i, i + 4).toUpperCase()) ??
+                            "\uFFFD";
+                }
+                texts.push({
+                    text,
+                    ...toMillimetres(multiplyPdfMatrices(textLine, ctm), 0, 0),
+                    inForm,
+                });
+                break;
+            }
+            case "'":
+            case '"':
+            case "T*":
+                throw new Error(
+                    `The PDF page uses the text operator ${token}, which this does not follow.`,
+                );
+            case "Do": {
+                const name = last.slice(1);
+                const number = xObjects.get(name);
+                if (!number)
+                    throw new Error(
+                        `The PDF page paints /${name}, which it does not name.`,
+                    );
+                const dictionary = readPdfObject(pdf, number);
+                if (/\/Subtype\s*\/Form(?![a-zA-Z])/.test(dictionary)) {
+                    const matrix = /\/Matrix\s*\[([^\]]*)\]/.exec(dictionary);
+                    const formMatrix: PdfMatrix = matrix
+                        ? (matrix[1]
+                              .trim()
+                              .split(/\s+/)
+                              .map(Number) as PdfMatrix)
+                        : [1, 0, 0, 1, 0, 0];
+                    const formToPage = multiplyPdfMatrices(formMatrix, ctm);
+                    // A form draws nothing outside its BBox.
+                    const bbox = /\/BBox\s*\[([^\]]*)\]/.exec(dictionary);
+                    let formClip = clip;
+                    if (bbox) {
+                        const [x1, y1, x2, y2] = bbox[1]
+                            .trim()
+                            .split(/\s+/)
+                            .map(Number);
+                        formClip = intersect(
+                            clip,
+                            boundingBox([
+                                toMillimetres(formToPage, x1, y1),
+                                toMillimetres(formToPage, x2, y1),
+                                toMillimetres(formToPage, x1, y2),
+                                toMillimetres(formToPage, x2, y2),
+                            ]),
+                        );
+                    }
+                    followPdfInstructions(
+                        pdf,
+                        readPdfStream(pdf, number),
+                        dictionary,
+                        formToPage,
+                        formClip,
+                        true,
+                        pictures,
+                        texts,
+                    );
+                    break;
+                }
+                if (!/\/Subtype\s*\/Image(?![a-zA-Z])/.test(dictionary))
+                    throw new Error(
+                        `The PDF page paints /${name}, which is neither a picture nor a form: ${dictionary}`,
+                    );
+                const box = boundingBox([
+                    toMillimetres(ctm, 0, 0),
+                    toMillimetres(ctm, 1, 0),
+                    toMillimetres(ctm, 0, 1),
+                    toMillimetres(ctm, 1, 1),
+                ]);
+                const shown = intersect(clip, box);
+                pictures.push({
+                    width: Number(/\/Width\s+(\d+)/.exec(dictionary)![1]),
+                    height: Number(/\/Height\s+(\d+)/.exec(dictionary)![1]),
+                    box,
+                    shownBox: isEmpty(shown) ? undefined : shown,
+                    inForm,
+                });
+                break;
+            }
+        }
+        operands.length = 0;
+    }
+}
+
+/**
+ * The characters each two-byte code of a font stands for, from the font's ToUnicode map (its
+ * bfchar and bfrange entries), keyed by the code in upper-case hex.
+ */
+function readToUnicodeMap(cmap: string): Map<string, string> {
+    const map = new Map<string, string>();
+    const fromHex = (hex: string) => {
+        let text = "";
+        for (let i = 0; i + 4 <= hex.length; i += 4)
+            text += String.fromCharCode(parseInt(hex.slice(i, i + 4), 16));
+        return text;
+    };
+    for (const [, block] of cmap.matchAll(/beginbfchar([\s\S]*?)endbfchar/g))
+        for (const [, code, unicode] of block.matchAll(
+            /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g,
+        ))
+            map.set(code.toUpperCase().padStart(4, "0"), fromHex(unicode));
+    for (const [, block] of cmap.matchAll(/beginbfrange([\s\S]*?)endbfrange/g))
+        for (const [, first, last, target] of block.matchAll(
+            /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(<[0-9A-Fa-f]+>|\[[^\]]*\])/g,
+        )) {
+            const start = parseInt(first, 16);
+            const end = parseInt(last, 16);
+            const targets = target.startsWith("[")
+                ? [...target.matchAll(/<([0-9A-Fa-f]+)>/g)].map((m) => m[1])
+                : undefined;
+            for (let code = start; code <= end; code++) {
+                const key = code.toString(16).toUpperCase().padStart(4, "0");
+                if (targets) {
+                    const hex = targets[code - start];
+                    if (hex) map.set(key, fromHex(hex));
+                } else {
+                    const base = target.slice(1, -1);
+                    const head = base.slice(0, -4);
+                    const tail = parseInt(base.slice(-4), 16) + (code - start);
+                    map.set(
+                        key,
+                        fromHex(head + tail.toString(16).padStart(4, "0")),
+                    );
+                }
+            }
+        }
+    return map;
 }

@@ -402,11 +402,26 @@ export async function selectCanvasElementAt(
 ): Promise<Locator> {
     await element.waitFor({ state: "visible", timeout: 30000 });
     await realClick(element);
-    await expect(
+    await expectCanvasElementSelected(
         element,
         `Clicking ${what} did not select it.`,
-    ).toHaveAttribute("data-bloom-active", "true", { timeout: 15000 });
+    );
     return element;
+}
+
+/**
+ * Wait until Bloom marks the canvas element `element` locates as the selected one, and fail with
+ * `message` if it does not.
+ */
+export async function expectCanvasElementSelected(
+    element: Locator,
+    message: string,
+): Promise<void> {
+    await expect(element, message).toHaveAttribute(
+        "data-bloom-active",
+        "true",
+        { timeout: 15000 },
+    );
 }
 
 /** Where on the page a locator is drawn. Throws naming it when it has no on-screen box. */
@@ -969,6 +984,29 @@ export async function duplicateCanvasElement(page: Page): Promise<number> {
 }
 
 /**
+ * Duplicate the selected canvas element with the Duplicate button on its floating toolbar, and wait
+ * until the page has more elements than it did. Returns the index the first new element takes, as
+ * duplicateCanvasElement does.
+ */
+export async function duplicateCanvasElementFromToolbar(
+    page: Page,
+): Promise<number> {
+    const countBefore = await getCanvasElementCount(page);
+    await waitForCanvasElementToolbar(page);
+    await editablePageFrame(page)
+        .locator(`${TOOLBAR}:visible [data-testid="toolbar-duplicate"]`)
+        .first()
+        .click({ timeout: 30000 });
+    await expect
+        .poll(async () => getCanvasElementCount(page), {
+            timeout: 30000,
+            message: `The toolbar's Duplicate button did not add a canvas element (there are still ${countBefore}).`,
+        })
+        .toBeGreaterThan(countBefore);
+    return countBefore;
+}
+
+/**
  * Give the selected speech bubble a child bubble through its "..." menu (Add Child Bubble), and wait
  * until the page has one more canvas element. A child bubble is drawn joined to its parent, and the
  * two move as one family.
@@ -1229,8 +1267,10 @@ export async function rightClickCanvasElementEdge(page: Page): Promise<void> {
  * bloomImages.ts) and leaves the stylesheet to decide whether it shows (`.bloom-canvas:hover` in
  * editMode.less), so it is always in the page and only its visibility changes.
  */
-function changeImageButton(page: Page): Locator {
-    return canvas(page).locator(":scope > .changeImageButton");
+function changeImageButton(page: Page, pictureCanvas?: Locator): Locator {
+    return (pictureCanvas ?? canvas(page)).locator(
+        ":scope > .changeImageButton",
+    );
 }
 
 /**
@@ -1245,9 +1285,11 @@ function changeImageButton(page: Page): Locator {
 export async function hoverOverCanvas(
     page: Page,
     at: { xFraction: number; yFraction: number },
+    pictureCanvas?: Locator,
 ): Promise<void> {
-    const box = await getCanvasRect(page);
-    await canvas(page).hover({
+    const target = pictureCanvas ?? canvas(page);
+    const box = await requireBox(target, "the canvas to hover");
+    await target.hover({
         position: { x: box.width * at.xFraction, y: box.height * at.yFraction },
         force: true,
         timeout: 30000,
@@ -1255,7 +1297,7 @@ export async function hoverOverCanvas(
     // Wait until the browser itself counts the pointer as over the canvas, so a check that
     // something stays hidden on hover cannot pass merely because the hover never took.
     await expect
-        .poll(async () => canvas(page).evaluate((el) => el.matches(":hover")), {
+        .poll(async () => target.evaluate((el) => el.matches(":hover")), {
             timeout: 15000,
             message:
                 "The pointer was moved onto the canvas, but the canvas is not hovered.",
@@ -1303,8 +1345,9 @@ export async function expectChangeImageButton(
     page: Page,
     showing: boolean,
     why: string,
+    pictureCanvas?: Locator,
 ): Promise<void> {
-    const button = changeImageButton(page);
+    const button = changeImageButton(page, pictureCanvas);
     await expect(
         button,
         "The canvas has no Change Image button at all.",
@@ -1319,9 +1362,25 @@ export async function expectChangeImageButton(
  * (SetupMetadataButton in bloomImages.ts) only once the background holds a real picture, marks it
  * `imgMetadataProblem` when the picture has no copyright, and leaves the stylesheet
  * (editMode.less) to decide whether it shows and which icon it wears.
+ *
+ * This and the other picture-button helpers below work on the canvas of a Canvas page or a custom
+ * layout page by default; pass `pictureCanvas` (a `.bloom-canvas`, such as the cover's picture box
+ * from `pictureCanvasOf`) to work on another one.
  */
-export function imageInfoButton(page: Page): Locator {
-    return canvas(page).locator(":scope > .editMetadataButton");
+export function imageInfoButton(page: Page, pictureCanvas?: Locator): Locator {
+    return (pictureCanvas ?? canvas(page)).locator(
+        ":scope > .editMetadataButton",
+    );
+}
+
+/**
+ * The picture box (`.bloom-canvas`) that holds the picture `image` locates, such as a cover's
+ * picture box, for the picture-button helpers' `pictureCanvas`.
+ */
+export function pictureCanvasOf(image: Locator): Locator {
+    return image.locator(
+        "xpath=ancestor::div[contains(concat(' ', @class, ' '), ' bloom-canvas ')][1]",
+    );
 }
 
 /** How the canvas's image information button looks at one moment. */
@@ -1338,8 +1397,9 @@ export interface IImageInfoButtonState {
 /** Read how the canvas's image information button looks now. */
 export async function getImageInfoButtonState(
     page: Page,
+    pictureCanvas?: Locator,
 ): Promise<IImageInfoButtonState> {
-    const button = imageInfoButton(page);
+    const button = imageInfoButton(page, pictureCanvas);
     if ((await button.count()) === 0)
         return { present: false, showing: false, missingInfo: false, icon: "" };
     const showing = await button.isVisible();
@@ -1365,11 +1425,15 @@ export async function expectImageInfoButton(
     page: Page,
     expected: Partial<Omit<IImageInfoButtonState, "present">>,
     why: string,
+    pictureCanvas?: Locator,
 ): Promise<void> {
     await expect
         .poll(
             async () => {
-                const state = await getImageInfoButtonState(page);
+                const state = await getImageInfoButtonState(
+                    page,
+                    pictureCanvas,
+                );
                 const shown: Record<string, unknown> = {
                     present: state.present,
                 };
@@ -1587,6 +1651,55 @@ export async function typeKeyAndWaitForHeightCheck(
         .toBe(false);
 }
 
+/**
+ * Have Bloom check the selected canvas element's height against its text now, and return once it
+ * has, without changing the text. Bloom also checks each box on a timer after it is set up, so a
+ * size read before any check may still change; one read after this does not, since every check of
+ * the same text gives the same height.
+ *
+ * Clicks into the element's text box and presses Shift there: a key that types nothing, but whose
+ * key-up Bloom answers with a check of that box (OverflowChecker.AddOverflowHandlers).
+ *
+ * The sign that the check ran is a mark on the box's parent, its translation group, put there
+ * while the key is down: `childOverflowingThis`. A check of a box starts by taking that mark off
+ * every element around the box (AdjustSizeAndMarkSelfOverflow), in the same turn in which it fits
+ * the canvas element's height. Bloom checks only the box each group shows, so in this group only
+ * this box's own check takes the mark off; the page-wide part of another box's check, which can
+ * take off the mark that typeKeyAndWaitForHeightCheck uses, leaves this one alone. The mark is
+ * put back only around a box that runs past its group, so this is for a box that fits in it.
+ */
+export async function waitForHeightCheckOfSelectedElement(
+    page: Page,
+): Promise<void> {
+    const kMark = "childOverflowingThis";
+    const box = shownTextBoxOfActiveElement(page);
+    await realClick(box);
+    await expect(
+        box,
+        "The canvas element's text box does not have the focus, so Shift would go elsewhere.",
+    ).toBeFocused({ timeout: 15000 });
+    await page.keyboard.down("Shift");
+    await box.evaluate(
+        (box, mark) => box.parentElement!.classList.add(mark),
+        kMark,
+    );
+    await page.keyboard.up("Shift");
+    await expect
+        .poll(
+            () =>
+                box.evaluate(
+                    (box, mark) => box.parentElement!.classList.contains(mark),
+                    kMark,
+                ),
+            {
+                timeout: 15000,
+                message:
+                    "Bloom did not check the canvas element's text box after Shift was pressed in it.",
+            },
+        )
+        .toBe(false);
+}
+
 /** The box that the selected canvas element's text is showing. */
 function shownTextBoxOfActiveElement(page: Page): Locator {
     return activeCanvasElement(page).locator(SHOWN_TEXT_BOX);
@@ -1648,4 +1761,30 @@ export async function setCanvasElementAutoHeight(
             message: `The Auto Height command did not turn Auto Height ${on ? "on" : "off"}.`,
         })
         .toBe(on);
+}
+
+/**
+ * Whether the selected canvas element's "..." menu shows Auto Height as on, the way a person reads
+ * it: the Auto Height command carries a tick, which Bloom shows only while the element's height is
+ * automatic. Opens the menu to read it, and closes it again.
+ */
+export async function getAutoHeightShownInMenu(page: Page): Promise<boolean> {
+    await openCanvasElementMenu(page);
+    const row = editablePageFrame(page)
+        .locator(
+            `${MENU} li[data-testid="EditTab.Toolbox.ComicTool.Options.AutoHeight"]`,
+        )
+        .first();
+    await row.waitFor({ state: "visible", timeout: 30000 });
+    const icons = row.locator("svg");
+    const iconCount = await icons.count();
+    if (iconCount !== 1)
+        throw new Error(
+            `The Auto Height command should have one icon, its tick; it has ${iconCount}.`,
+        );
+    const ticked = await icons
+        .first()
+        .evaluate((svg) => getComputedStyle(svg).visibility === "visible");
+    await closeCanvasElementMenu(page);
+    return ticked;
 }

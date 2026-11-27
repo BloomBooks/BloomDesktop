@@ -9,18 +9,19 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
-import type { Page } from "@playwright/test";
-import { apiPost } from "../helpers/api";
 import {
     cancelCollectionSettings,
-    clickAndFollowRestart,
     kEnterpriseSubscriptionCode,
     openCollectionSettings,
     setCollectionSettingsText,
     showCollectionSettingsPage,
 } from "../helpers/collectionSettings";
 import { realClick } from "../helpers/realClick";
-import { armFileChooser } from "../helpers/talkingBook";
+import {
+    createTeamCollection,
+    createTeamCollectionButton as createButton,
+    createTeamCollectionDialog as createDialog,
+} from "../helpers/teamCollection";
 
 // The page shows only while Team Collections is turned on, and needs a tier above Basic.
 test.use({
@@ -31,21 +32,6 @@ test.use({
     },
     experimentalFeatures: ["team-collections"],
 });
-
-function createButton(page: Page) {
-    return page.getByRole("button", {
-        name: "Create a Team Collection",
-        exact: true,
-    });
-}
-
-// Found by its folder label: its checklist mentions Collection Settings, so the settings dialog's
-// helpers would match it too while it is open.
-function createDialog(page: Page) {
-    return page
-        .getByRole("dialog")
-        .filter({ hasText: "LAN or Dropbox Folder:" });
-}
 
 function teamCollectionLinkFile(collectionDir: string): string {
     return Path.join(collectionDir, "TeamCollectionLink.txt");
@@ -96,7 +82,6 @@ test("the Team Collection page holds Create back while a rename is unsaved, and 
 });
 
 test("Create & Restart makes the collection a Team Collection in the chosen folder [Test Case ID 853]", async ({
-    page,
     bloomApp,
 }) => {
     const linkFile = teamCollectionLinkFile(bloomApp.collectionDir);
@@ -105,43 +90,7 @@ test("Create & Restart makes the collection a Team Collection in the chosen fold
         Path.join(os.tmpdir(), "bloom-e2e-tc-"),
     );
     try {
-        // Creating a Team Collection needs the user's email; the registration dialog that asks
-        // for it is not what this test is about.
-        await apiPost(
-            page,
-            "registration/userInfo",
-            JSON.stringify({
-                firstName: "E2E",
-                surname: "Tester",
-                email: "e2e.tester@example.com",
-                organization: "SIL",
-                usingFor: "Testing",
-                hadEmailAlready: false,
-            }),
-            "application/json",
-        );
-
-        await openCollectionSettings(page);
-        await showCollectionSettingsPage(page, "Team Collection");
-        await realClick(createButton(page));
-        const dialog = createDialog(page);
-        await expect(dialog).toBeVisible();
-
-        await armFileChooser(page, sharedFolder);
-        await realClick(dialog.getByRole("button", { name: /Choose Folder/i }));
-        await expect(
-            dialog.getByText(sharedFolder, { exact: true }),
-        ).toBeVisible();
-        const checkboxes = dialog.getByRole("checkbox");
-        await expect(checkboxes).toHaveCount(4);
-        for (const checkbox of await checkboxes.all())
-            await realClick(checkbox);
-        const createAndRestart = dialog.getByRole("button", {
-            name: /Create & Restart/i,
-        });
-        await expect(createAndRestart).toBeEnabled();
-
-        await clickAndFollowRestart(bloomApp, createAndRestart);
+        await createTeamCollection(bloomApp, sharedFolder);
 
         expect(
             fs.existsSync(linkFile),

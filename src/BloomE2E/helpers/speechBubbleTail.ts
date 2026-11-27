@@ -132,6 +132,130 @@ export async function drawingPointOnScreen(
     return { x: box.x + x * scale, y: box.y + y * scale };
 }
 
+/** A point of the screen where the bubble drawing is opaque, and the colour drawn there. */
+export interface IOpaqueDrawingPoint extends IScreenPoint {
+    color: { r: number; g: number; b: number; a: number };
+}
+
+/**
+ * The nearest pixel of the screen to `near` that ComicalJS's drawing covers completely, in one
+ * opaque colour: every pixel of the drawing that falls inside that screen pixel is that colour, so
+ * none of it is a smoothed edge. Whatever lies under such a pixel cannot show through the drawing,
+ * so the browser paints it in the drawing's own colour unless something is in front of the
+ * drawing. Returns the middle of that screen pixel. Throws when there is none within `radius`
+ * pixels.
+ */
+export async function findOpaqueDrawingPointNear(
+    page: Page,
+    near: IScreenPoint,
+    radius = 8,
+): Promise<IOpaqueDrawingPoint> {
+    const drawing = comicalDrawing(page);
+    const box = await drawing.boundingBox({ timeout: 15000 });
+    if (!box)
+        throw new Error(
+            "The bubble drawing surface (canvas.comical-editing) has no on-screen box.",
+        );
+    const found = await drawing.evaluate(
+        (c, args) => {
+            const surface = c as HTMLCanvasElement;
+            // Screen pixels per layout pixel (the page's zoom), and backing pixels per layout pixel.
+            const scale = args.box.width / surface.offsetWidth;
+            const ratio = surface.width / surface.offsetWidth;
+            const context = surface.getContext("2d")!;
+            // The colour of the drawing over the whole of screen pixel (sx, sy), or undefined when
+            // the drawing's pixels there are not all the same opaque colour.
+            const solidColorOf = (sx: number, sy: number) => {
+                const toBacking = (screen: number, origin: number) =>
+                    ((screen - origin) / scale) * ratio;
+                const left = Math.floor(toBacking(sx, args.box.x));
+                const right = Math.ceil(toBacking(sx + 1, args.box.x));
+                const top = Math.floor(toBacking(sy, args.box.y));
+                const bottom = Math.ceil(toBacking(sy + 1, args.box.y));
+                const d = context.getImageData(
+                    left,
+                    top,
+                    right - left,
+                    bottom - top,
+                ).data;
+                for (let i = 0; i < d.length; i += 4)
+                    if (
+                        d[i + 3] !== 255 ||
+                        d[i] !== d[0] ||
+                        d[i + 1] !== d[1] ||
+                        d[i + 2] !== d[2]
+                    )
+                        return undefined;
+                return { r: d[0], g: d[1], b: d[2], a: 255 };
+            };
+            const cx = Math.floor(args.near.x);
+            const cy = Math.floor(args.near.y);
+            for (let r = 0; r <= args.radius; r++)
+                for (let dx = -r; dx <= r; dx++)
+                    for (let dy = -r; dy <= r; dy++) {
+                        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r)
+                            continue;
+                        const color = solidColorOf(cx + dx, cy + dy);
+                        if (color)
+                            return {
+                                x: cx + dx + 0.5,
+                                y: cy + dy + 0.5,
+                                color,
+                            };
+                    }
+            return undefined;
+        },
+        { near, radius, box },
+    );
+    if (!found)
+        throw new Error(
+            `The bubble drawing covers no screen pixel solidly within ${radius} pixels of ` +
+                `(${Math.round(near.x)}, ${Math.round(near.y)}): nothing of a bubble or tail is ` +
+                `drawn there.`,
+        );
+    return found;
+}
+
+/**
+ * Whether ComicalJS's drawing leaves the whole of the screen pixel at `at` untouched (fully
+ * transparent), so that whatever lies under the drawing shows there.
+ */
+export async function isDrawingClearAt(
+    page: Page,
+    at: IScreenPoint,
+): Promise<boolean> {
+    const drawing = comicalDrawing(page);
+    const box = await drawing.boundingBox({ timeout: 15000 });
+    if (!box)
+        throw new Error(
+            "The bubble drawing surface (canvas.comical-editing) has no on-screen box.",
+        );
+    return drawing.evaluate(
+        (c, args) => {
+            const surface = c as HTMLCanvasElement;
+            const scale = args.box.width / surface.offsetWidth;
+            const ratio = surface.width / surface.offsetWidth;
+            const toBacking = (screen: number, origin: number) =>
+                ((screen - origin) / scale) * ratio;
+            const sx = Math.floor(args.at.x);
+            const sy = Math.floor(args.at.y);
+            const left = Math.floor(toBacking(sx, args.box.x));
+            const top = Math.floor(toBacking(sy, args.box.y));
+            const d = surface
+                .getContext("2d")!
+                .getImageData(
+                    left,
+                    top,
+                    Math.ceil(toBacking(sx + 1, args.box.x)) - left,
+                    Math.ceil(toBacking(sy + 1, args.box.y)) - top,
+                ).data;
+            for (let i = 3; i < d.length; i += 4) if (d[i] !== 0) return false;
+            return true;
+        },
+        { at, box },
+    );
+}
+
 /** How a tail handle is drawn at a point: filled, an open circle, or not there at all. */
 export type HandleDrawing = "filled" | "open" | "none";
 
@@ -282,6 +406,61 @@ export async function dragTailMidpoint(
                 `(the tail was ${JSON.stringify(before)}).`,
         })
         .toBe(false);
+    return readTail(element);
+}
+
+/**
+ * Drag the selected bubble's tail tip handle by (dx, dy) in the drawing surface's coordinates,
+ * pressing on the handle and moving in small steps, as a person does. Every kind of tail has a tip
+ * handle (a straight tail has no midpoint handle). Returns the tail once ComicalJS has saved a tip
+ * that moved at least half the way asked.
+ */
+export async function dragTailTip(
+    page: Page,
+    element: Locator,
+    dx: number,
+    dy: number,
+): Promise<ITailSpec> {
+    const before = await readTail(element);
+    const start = await drawingPointOnScreen(page, before.tipX, before.tipY);
+    const end = await drawingPointOnScreen(
+        page,
+        before.tipX + dx,
+        before.tipY + dy,
+    );
+    const steps = 10;
+    await page.mouse.move(start.x, start.y);
+    try {
+        await page.mouse.down();
+        for (let i = 1; i <= steps; i++) {
+            await page.mouse.move(
+                start.x + ((end.x - start.x) * i) / steps,
+                start.y + ((end.y - start.y) * i) / steps,
+            );
+        }
+    } finally {
+        await page.mouse.up();
+    }
+    await expect
+        .poll(
+            async () => {
+                const tail = await readTail(element);
+                return (
+                    Math.hypot(
+                        tail.tipX - before.tipX,
+                        tail.tipY - before.tipY,
+                    ) >=
+                    Math.hypot(dx, dy) / 2
+                );
+            },
+            {
+                timeout: 15000,
+                message:
+                    "Dragging the tail's tip handle did not move the tip in the bubble's data-bubble " +
+                    `(the tail was ${JSON.stringify(before)}).`,
+            },
+        )
+        .toBe(true);
     return readTail(element);
 }
 

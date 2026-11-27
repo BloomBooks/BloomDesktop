@@ -69,17 +69,20 @@ export async function restoreRequestedViewport(): Promise<void> {
  * Emulate a page area of this size on this page, as if the Bloom window had been made that size,
  * until resetViewportSize() or until the connection closes (a restart). The page lays out, and
  * ResizeObservers fire, as they would for a real resize of the window; the window itself does
- * not change, so WinForms sees nothing.
+ * not change, so WinForms sees nothing. A `deviceScaleFactor` other than 1 emulates Windows display
+ * scaling too: at 150%, for example, the page draws 1.5 screen pixels for each CSS pixel, so `size`
+ * (in CSS pixels) is the screen area divided by 1.5.
  */
 export async function setViewportSize(
     page: Page,
     size: { width: number; height: number },
+    deviceScaleFactor = 1,
 ): Promise<void> {
     if (!viewportSession || viewportSessionPage !== page) {
         viewportSession = await page.context().newCDPSession(page);
         viewportSessionPage = page;
     }
-    await setOverride(viewportSession, size);
+    await setOverride(viewportSession, size, deviceScaleFactor);
 }
 
 /**
@@ -98,10 +101,11 @@ let viewportSessionPage: Page | undefined;
 const setOverride = (
     session: CDPSession,
     size: { width: number; height: number },
+    deviceScaleFactor = 1,
 ) =>
     session.send("Emulation.setDeviceMetricsOverride", {
         width: size.width,
         height: size.height,
-        deviceScaleFactor: 1,
+        deviceScaleFactor,
         mobile: false,
     });

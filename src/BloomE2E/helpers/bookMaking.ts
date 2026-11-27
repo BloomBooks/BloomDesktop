@@ -66,6 +66,45 @@ export async function makeBookFromSourceBook(
     sourceCollectionName: string,
     bookTitle: string,
 ): Promise<string> {
+    await selectSourceBook(page, sourceCollectionName, bookTitle);
+    return makeBookFromSelectedBook(page, bookTitle);
+}
+
+/**
+ * Make a new book from one of Bloom's factory templates the way a person does: select it in
+ * Sources For New Books and click the book pane's MAKE A BOOK USING THIS SOURCE button (found by
+ * its test id, not its words). Returns the new book's folder; Bloom lands in the Edit tab, showing
+ * the new book's cover.
+ *
+ * makeBookFromTemplate gets the same result through the API, for a test whose subject is not the
+ * making of the book.
+ */
+export async function makeBookFromTemplateWithItsButton(
+    page: Page,
+    templateTitle: string,
+): Promise<string> {
+    await selectSourceBook(page, "Templates", templateTitle);
+    // Only the book pane's button: the book menu has an entry with the same test id.
+    const button = page.locator(
+        'button[data-testid="CollectionTab.MakeBookUsingThisTemplate"]',
+    );
+    return makeBookFromSelectedBook(page, templateTitle, async () => {
+        await expect(
+            button,
+            `The book pane offers no enabled "Make a book using this source" button for "${templateTitle}".`,
+        ).toBeEnabled({ timeout: 30000 });
+        // The click starts a request that ends with Bloom reloading the shell document into the
+        // Edit tab, so wait only for the click itself; makeBookFromSelectedBook waits for the book.
+        await button.click({ noWaitAfter: true });
+    });
+}
+
+/** Show the Collections tab and select one book of a source collection there. */
+async function selectSourceBook(
+    page: Page,
+    sourceCollectionName: string,
+    bookTitle: string,
+): Promise<void> {
     // A person makes a book from the Collections tab, and so does this. Selecting the template
     // while the Edit tab is showing a book has been seen to leave the Edit tab showing the
     // template, which has no page to edit, once the new book is made (every time the book being
@@ -82,7 +121,6 @@ export async function makeBookFromSourceBook(
         `collections/selected-book?path=${encodeURIComponent(book.folderPath)}` +
             `&collection-id=${encodeURIComponent(collectionId)}`,
     );
-    return makeBookFromSelectedBook(page, bookTitle);
 }
 
 /**
@@ -1078,8 +1116,17 @@ export async function getLanguagesShownInGroup(
     page: Page,
     groupSelector: string,
 ): Promise<string[]> {
-    return editablePageFrame(page)
-        .locator(`${groupSelector} .bloom-editable[lang]`)
+    return getLanguagesShownIn(editablePageFrame(page).locator(groupSelector));
+}
+
+/**
+ * The languages whose box is showing in the translation groups `groups`, in document order: the
+ * same as getLanguagesShownInGroup, for a test that tells one group from another by its position
+ * rather than by a selector.
+ */
+export async function getLanguagesShownIn(groups: Locator): Promise<string[]> {
+    return groups
+        .locator(".bloom-editable[lang]")
         .evaluateAll((boxes) =>
             boxes
                 .filter(
