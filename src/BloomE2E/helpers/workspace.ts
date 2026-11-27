@@ -7,7 +7,7 @@
 // finished the switch rather than merely started it.
 
 import { expect, type Page, type Response } from "@playwright/test";
-import { apiGetJson, apiPost } from "./api";
+import { apiGetJson, apiPost, getUiString } from "./api";
 import { editablePageFrame, waitForBloomToHavePageAsItIs } from "./bookMaking";
 import { pageListFrame } from "./pageList";
 import { toolboxFrame } from "./toolbox";
@@ -75,6 +75,23 @@ export async function switchTab(
     await target.waitFor({ state: "visible", timeout: timeoutMs });
     await target.click();
     await waitForActiveTab(page, tab, timeoutMs);
+}
+
+/**
+ * Open the top bar's help menu (the "?" at its right end) and choose "Help...", which asks Bloom
+ * to open its help file at the topic for the tab showing. The entry is found by its label in the
+ * UI's language (HelpMenu.DocumentationMenuItem); the menu closes as the entry is chosen.
+ */
+export async function chooseHelpFromHelpMenu(page: Page): Promise<void> {
+    const label = await getUiString(
+        page,
+        "HelpMenu.DocumentationMenuItem",
+        "Help...",
+    );
+    await page.locator("#helpMenuButton").click();
+    const entry = page.getByRole("menuitem", { name: label, exact: true });
+    await entry.click();
+    await expect(entry, "the help menu stayed open after Help...").toBeHidden();
 }
 
 /** What GET workspace/zoom replies with: the Edit tab's zoom, as a percentage. */
