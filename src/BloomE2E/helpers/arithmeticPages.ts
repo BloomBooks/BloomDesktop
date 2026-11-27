@@ -136,6 +136,73 @@ export async function tabInto(
     ).toBe(true);
 }
 
+/** What Bloom's overflow check of the page being edited found. */
+export interface IPageOverflowCheck {
+    /** Each box Bloom marked as overflowing (`overflow` or `thisOverflowingParent`), by its classes. */
+    markedBoxes: string[];
+    /** Whether Bloom marked the page as having too much on it (`pageOverflows`). */
+    pageOverflows: boolean;
+}
+
+/**
+ * Have Bloom check the page being edited for overflow now, through its heading, and return what
+ * the check found once it has run.
+ *
+ * Bloom checks a box 100 ms after a key comes up in it, and that check also checks every box on
+ * the page against the page's margins and marks the page (OverflowChecker.AdjustSizeOrMarkOverflow,
+ * AddOverflowHandlers). The equation boxes are not among the boxes Bloom checks, since they lack
+ * bloom-visibility-code-on, but the heading is. So this presses Shift in the heading, a key that
+ * types nothing. The sign that the check ran is a mark put on the heading's translation group
+ * while the key is down, `childOverflowingThis`: the check of the heading starts by taking that
+ * mark off every element around it (AdjustSizeAndMarkSelfOverflow), and puts it back only on an
+ * element the heading runs past.
+ */
+export async function checkPageForOverflow(
+    page: Page,
+    languageTag: string,
+): Promise<IPageOverflowCheck> {
+    const kMark = "childOverflowingThis";
+    const heading = editablePageFrame(page)
+        .locator(
+            `${kArithmeticHeadingGroup} > .bloom-editable[lang="${languageTag}"]`,
+        )
+        .first();
+    await heading.click();
+    await expect(
+        heading,
+        "The heading does not have the focus, so Shift would go elsewhere.",
+    ).toBeFocused({ timeout: 15000 });
+    await page.keyboard.down("Shift");
+    await heading.evaluate(
+        (h, mark) => h.parentElement!.classList.add(mark),
+        kMark,
+    );
+    await page.keyboard.up("Shift");
+    await expect
+        .poll(
+            () =>
+                heading.evaluate(
+                    (h, mark) => h.parentElement!.classList.contains(mark),
+                    kMark,
+                ),
+            {
+                timeout: 15000,
+                message:
+                    "Bloom did not check the heading for overflow after Shift was pressed in it, or found the heading running past its group.",
+            },
+        )
+        .toBe(false);
+    return heading.evaluate((h) => {
+        const p = h.closest(".bloom-page")!;
+        return {
+            markedBoxes: Array.from(
+                p.querySelectorAll(".overflow, .thisOverflowingParent"),
+            ).map((box) => box.className),
+            pageOverflows: p.classList.contains("pageOverflows"),
+        };
+    });
+}
+
 /**
  * How an equation box holds its text: the text of each of its paragraphs, and any text that sits
  * directly in the box outside a paragraph. Bloom keeps a box's text in paragraphs; text outside
