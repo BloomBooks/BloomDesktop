@@ -969,6 +969,29 @@ export async function duplicateCanvasElement(page: Page): Promise<number> {
 }
 
 /**
+ * Duplicate the selected canvas element with the Duplicate button on its floating toolbar, and wait
+ * until the page has more elements than it did. Returns the index the first new element takes, as
+ * duplicateCanvasElement does.
+ */
+export async function duplicateCanvasElementFromToolbar(
+    page: Page,
+): Promise<number> {
+    const countBefore = await getCanvasElementCount(page);
+    await waitForCanvasElementToolbar(page);
+    await editablePageFrame(page)
+        .locator(`${TOOLBAR}:visible [data-testid="toolbar-duplicate"]`)
+        .first()
+        .click({ timeout: 30000 });
+    await expect
+        .poll(async () => getCanvasElementCount(page), {
+            timeout: 30000,
+            message: `The toolbar's Duplicate button did not add a canvas element (there are still ${countBefore}).`,
+        })
+        .toBeGreaterThan(countBefore);
+    return countBefore;
+}
+
+/**
  * Give the selected speech bubble a child bubble through its "..." menu (Add Child Bubble), and wait
  * until the page has one more canvas element. A child bubble is drawn joined to its parent, and the
  * two move as one family.
@@ -1648,4 +1671,30 @@ export async function setCanvasElementAutoHeight(
             message: `The Auto Height command did not turn Auto Height ${on ? "on" : "off"}.`,
         })
         .toBe(on);
+}
+
+/**
+ * Whether the selected canvas element's "..." menu shows Auto Height as on, the way a person reads
+ * it: the Auto Height command carries a tick, which Bloom shows only while the element's height is
+ * automatic. Opens the menu to read it, and closes it again.
+ */
+export async function getAutoHeightShownInMenu(page: Page): Promise<boolean> {
+    await openCanvasElementMenu(page);
+    const row = editablePageFrame(page)
+        .locator(
+            `${MENU} li[data-testid="EditTab.Toolbox.ComicTool.Options.AutoHeight"]`,
+        )
+        .first();
+    await row.waitFor({ state: "visible", timeout: 30000 });
+    const icons = row.locator("svg");
+    const iconCount = await icons.count();
+    if (iconCount !== 1)
+        throw new Error(
+            `The Auto Height command should have one icon, its tick; it has ${iconCount}.`,
+        );
+    const ticked = await icons
+        .first()
+        .evaluate((svg) => getComputedStyle(svg).visibility === "visible");
+    await closeCanvasElementMenu(page);
+    return ticked;
 }
