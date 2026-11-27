@@ -303,11 +303,13 @@ test("an ePUB plays a page with two boxes' recordings aligned by Adjust Timings 
             // The first box's recording sounds all through, and the second's starts with
             // silence, so in page order the page's audio sounds, falls silent where the second
             // box's part starts, and sounds again once that silence is over. Swapped, the
-            // silence would come first.
+            // silence would come first. The first box's part is measured in two halves, so
+            // that silence in either cannot hide behind sound in the other.
             const secondStart = endTimes[0][endTimes[0].length - 1];
-            const [first, secondsSilence, secondsSound] =
+            const [firstOpening, firstRest, secondsSilence, secondsSound] =
                 await getEpubPreviewAudioLoudness(page, pageFile, [
-                    { start: 0.1, end: secondStart - 0.2 },
+                    { start: 0.1, end: secondStart / 2 },
+                    { start: secondStart / 2, end: secondStart - 0.2 },
                     {
                         start: secondStart + 0.2,
                         end: secondStart + kSecondBoxSilence - 0.3,
@@ -318,13 +320,15 @@ test("an ePUB plays a page with two boxes' recordings aligned by Adjust Timings 
                     },
                 ]);
             const loudness = JSON.stringify({
-                first,
+                firstOpening,
+                firstRest,
                 secondsSilence,
                 secondsSound,
             });
             expect(
-                secondsSilence * 20 < first &&
-                    secondsSilence * 20 < secondsSound,
+                [firstOpening, firstRest, secondsSound].every(
+                    (sound) => secondsSilence * 20 < sound,
+                ),
                 "the page's audio should be the first box's recording, which sounds all through, " +
                     "then the second's, which starts silent and then sounds (loudness, as root mean " +
                     `square, of each part: ${loudness})`,
