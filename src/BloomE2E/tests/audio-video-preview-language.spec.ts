@@ -19,7 +19,7 @@ import {
     showAudioVideoPreviewAgain,
 } from "../helpers/audioVideoPublish";
 import {
-    getPreviewSoundsPlayed,
+    expectPreviewSoundsPlayed,
     startRecordingPreviewSounds,
 } from "../helpers/bloomPlayer";
 import {
@@ -39,6 +39,10 @@ import {
     getNarrationSentences,
     openToolboxWithTalkingBook,
 } from "../helpers/talkingBook";
+import {
+    getCurrentUiLanguageTag,
+    setUiStateViaApi,
+} from "../helpers/uiLanguage";
 
 test.use({
     collectionSpec: {
@@ -52,9 +56,14 @@ test.use({
 const BOOK_TITLE = "Preview Language Test";
 
 test("the language chosen in the Audio or Video preview is the one whose narration plays [Test Case ID 233]", async ({
-    page,
+    bloomApp,
 }) => {
     test.setTimeout(600000);
+    // The Publish tab's destinations are found by their English names, and a fresh Bloom takes
+    // the operating system's UI language.
+    if ((await getCurrentUiLanguageTag(bloomApp.page)) !== "en")
+        await setUiStateViaApi(bloomApp, "en", false);
+    const page = bloomApp.page;
 
     await makeBookFromTemplate(page, "Basic Book");
     await typeInGroup(page, ".bookTitle", "en", BOOK_TITLE);
@@ -113,10 +122,11 @@ test("the language chosen in the Audio or Video preview is the one whose narrati
         .toBe("fr");
     await startRecordingPreviewSounds(player);
     await playAudioVideoPreviewToTheEnd(page);
-    expect(
-        await getPreviewSoundsPlayed(player),
-        "With French chosen, Play should have played the French narration and only that.",
-    ).toEqual([narrationFile.fr]);
+    await expectPreviewSoundsPlayed(
+        player,
+        [narrationFile.fr],
+        "With French chosen, Play should have played the French narration and only that",
+    );
 
     // Press Preview again, as the manual case does, choose English and play: now the English
     // narration plays. (Pressing Reset instead of Preview leaves Bloom Player playing the French
@@ -132,8 +142,9 @@ test("the language chosen in the Audio or Video preview is the one whose narrati
         .toBe("en");
     await startRecordingPreviewSounds(player);
     await playAudioVideoPreviewToTheEnd(page);
-    expect(
-        await getPreviewSoundsPlayed(player),
-        "With English chosen, Play should have played the English narration and only that.",
-    ).toEqual([narrationFile.en]);
+    await expectPreviewSoundsPlayed(
+        player,
+        [narrationFile.en],
+        "With English chosen, Play should have played the English narration and only that",
+    );
 });
