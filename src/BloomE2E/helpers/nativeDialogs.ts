@@ -213,8 +213,9 @@ ${kPauseBetweenScans}
 }
 
 /**
- * Wait up to `timeoutMs` for the Save As dialog of the Bloom with process id `bloomPid`, type
- * `filePath` into its "File name:" box, press Save, and wait until it has closed. `filePath` must
+ * Wait up to `timeoutMs` for the Save As dialog of the Bloom with process id `bloomPid` to show
+ * its suggested file name, type `filePath` into its "File name:" box in its place, press Save, and
+ * wait until it has closed. `filePath` must
  * not exist yet, so that no "replace it?" box comes up, and must be outside the collection folder,
  * which Bloom refuses. `foregroundBefore` is as for readAndCloseMessageBox.
  */
@@ -236,23 +237,25 @@ function FindSaveAs {
     # The "File name:" ComboBox holds an Edit of the same id; only the Edit takes a value.
     $name = $d.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.AndCondition((ById '1001'), $isEdit)))
     $save = $d.FindFirst($Scope::Children, (ById '1'))
-    if ($name -and $save) { return @{ dialog = $d; name = $name; save = $save } }
+    # The box shows before the dialog puts its suggested name in it (Bloom always gives one), and a
+    # value set before that is overwritten, so Save saves under the suggested name in the folder
+    # that the dialog opened in. So the dialog counts as ready once its box holds a name.
+    if ($name -and $save -and $name.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value) {
+      return @{ dialog = $d; name = $name; save = $save }
+    }
   }
   return $null
 }
-# The dialog puts its own suggested name in the box as it finishes opening, which on a slow machine
-# comes after a value set as soon as the box appears, and Save then saves under the suggested name in
-# the folder that the dialog opened in. So the value is set again until the box has kept it for half
-# a second.
+# Set the box to $text, and set it again if the dialog changes it within half a second.
 function SetUntilKept($box, $text) {
   $value = $box.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
   do {
     $value.SetValue($text)
     $watch = [Diagnostics.Stopwatch]::StartNew()
-    while ($watch.ElapsedMilliseconds -lt 500 -and $value.Current.Value -eq $text) { Start-Sleep -Milliseconds 50 }
-    if ($value.Current.Value -eq $text) { return }
+    do { GiveBack; Start-Sleep -Milliseconds 50; $now = $value.Current.Value } while ($watch.ElapsedMilliseconds -lt 500 -and $now -eq $text)
+    if ($now -eq $text) { return }
   } while ((Get-Date) -lt $deadline)
-  throw ('The "File name:" box did not keep ' + $text + '; it holds ' + $value.Current.Value)
+  throw ('The "File name:" box did not keep ' + $text + '; it holds ' + $now)
 }
 do {
   # The dialog shows before its controls do, so a dialog without them yet is waited on too.
