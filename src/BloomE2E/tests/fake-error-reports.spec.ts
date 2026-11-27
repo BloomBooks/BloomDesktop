@@ -168,12 +168,13 @@ async function makeBook(page: Page): Promise<void> {
 }
 
 test("books with the fake notify titles show their notices, with the buttons each was given [Test Case ID 52]", async ({
-    page,
     bloomApp,
     problemDialogWatcher,
 }) => {
     test.setTimeout(300000);
     const titles = await pinEnglishAndReadDialogTitles(bloomApp);
+    // Read after the UI language is pinned: changing it gives Bloom a new shell page.
+    const page = bloomApp.page;
     await makeBook(page);
     const cases: [string, string, string[]][] = [
         ["Error NotifyUser NoReport", kFakeProblem, [kClose]],
@@ -212,12 +213,13 @@ test("books with the fake notify titles show their notices, with the buttons eac
 });
 
 test("books with the fake non-fatal report titles show the problem report dialog [Test Case ID 52]", async ({
-    page,
     bloomApp,
     problemDialogWatcher,
 }) => {
     test.setTimeout(300000);
     const titles = await pinEnglishAndReadDialogTitles(bloomApp);
+    // Read after the UI language is pinned: changing it gives Bloom a new shell page.
+    const page = bloomApp.page;
     await makeBook(page);
     const cases: [string, string][] = [
         // With no message of its own, the dialog says what the exception says.
