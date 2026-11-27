@@ -80,16 +80,23 @@ const kFormats: IFormat[] = [
 
 /** The Windows Documents folder, wherever this machine keeps it. */
 function documentsFolder(): string {
-    return execFileSync(
+    const folder = execFileSync(
         "powershell",
         [
             "-NoProfile",
             "-NonInteractive",
             "-Command",
-            "[Environment]::GetFolderPath('MyDocuments')",
+            // UTF-8 out, or a folder name with letters outside the console's code page reaches
+            // Node garbled.
+            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; [Environment]::GetFolderPath('MyDocuments')",
         ],
         { encoding: "utf8" },
     ).trim();
+    if (!Path.isAbsolute(folder) || !fs.existsSync(folder))
+        throw new Error(
+            `Windows gave "${folder}" as the Documents folder, which is not a folder on this machine.`,
+        );
+    return folder;
 }
 
 /**
@@ -213,14 +220,18 @@ test("Bloom refuses to save a published file inside the collection folder, and s
                     );
 
                     const message = await readAndCloseBloomMessageBox(page);
-                    // Checked by the paths it names, which read the same in every UI language.
-                    expect(
-                        comparable(message).includes(comparable(collectionDir)),
-                        `Bloom's message should name the collection folder ${collectionDir}: "${message}"`,
-                    ).toBe(true);
+                    // Checked by the paths it names, which read the same in every UI language. The
+                    // place chosen holds the collection folder's path, so the collection folder is
+                    // looked for in what is left once the place chosen is taken out.
                     expect(
                         comparable(message).includes(comparable(refusedPath)),
                         `Bloom's message should name the place chosen, ${refusedPath}: "${message}"`,
+                    ).toBe(true);
+                    expect(
+                        comparable(message)
+                            .replace(comparable(refusedPath), "")
+                            .includes(comparable(collectionDir)),
+                        `Bloom's message should name the collection folder ${collectionDir}, besides the place chosen: "${message}"`,
                     ).toBe(true);
 
                     // Bloom shows the Save As dialog again; this time the place is allowed.
