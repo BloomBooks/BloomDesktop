@@ -13,9 +13,10 @@
 // The test reads what Bloom saved: the element's data-bubble, which holds its type and its tail's
 // tip, and the drawing ComicalJS saved for the page (svg.comical-generated), which is what every
 // reader of the book sees. For each type it saves the page with the tail shown, with the tail's
-// tip dragged somewhere else, and with the tail hidden. The shapes of a drawing with the tail that
-// the drawing without it lacks are the tail's (for a curved wedge, the bubble's outline grown to
-// take in the tail), and they must reach the saved tip.
+// tip dragged somewhere else, with the tail hidden, and with it shown again. The shapes of a drawing
+// with the tail that the drawing without it lacks are the tail's (for a curved wedge, the bubble's
+// outline grown to take in the tail), and the one nearest the saved tip must reach it. The drawing
+// without the tail must have no ink left where the tip was.
 //
 // Automates "Show Tail Comic Styles" (Test Case ID 328).
 
@@ -92,6 +93,8 @@ const kTipDrag = 40;
 const kTipReach = 6;
 /** The largest a little bubble of a thought tail is drawn, in the drawing's pixels. */
 const kLittleBubbleSize = 30;
+/** How many points along a diagonal ISavedShape.diagonalPointsCovered looks at. */
+const kDiagonalPoints = 7;
 /** How far a shape may move between two saves and still count as the same shape. */
 const kSameShapeTolerance = 1;
 
@@ -192,13 +195,36 @@ function distanceOutside(shapes: ISavedShape[], point: IPoint): number {
 }
 
 /**
+ * How far `point` lies from the nearest of `shapes`, measured to each shape's own bounding box, so
+ * that the gaps between the little bubbles of a thought tail do not count as ink. Infinity when
+ * there are no shapes.
+ */
+function distanceToNearest(shapes: ISavedShape[], point: IPoint): number {
+    return Math.min(...shapes.map((s) => distanceOutside([s], point)));
+}
+
+/**
+ * Whether ComicalJS drew anything that shows (a dark outline or a fill) within kTipReach of
+ * `point`, besides the page's own background shape, which takes in the whole canvas.
+ */
+function hasInkNear(shapes: ISavedShape[], point: IPoint): boolean {
+    return (
+        distanceToNearest(
+            shapes.filter((s) => isDarkStroke(s) || isFilled(s)),
+            point,
+        ) <= kTipReach
+    );
+}
+
+/**
  * The kind of tail the saved drawing `withTail` shows that `withoutTail`, the same element's
  * drawing with its tail hidden, lacks, and whether that tail reaches `tip`. The shapes of
  * `withTail` that `withoutTail` lacks are the tail's:
  * - a trail of little bubbles: two or more small filled shapes, each with a dark outline;
  * - a curved wedge: one filled shape with a dark outline that takes in the whole of the bubble's
  *   own outline, since ComicalJS joins a curved tail to its bubble;
- * - a straight line: dark-outlined shapes, none of them filled.
+ * - a straight line: dark-outlined shapes, none of them filled, each covering the whole of a
+ *   diagonal of its bounding box, as only a straight line does.
  */
 function describeTail(
     withTail: ISavedShape[],
@@ -211,8 +237,7 @@ function describeTail(
     if (tailShapes.length === 0) return { kind: "no tail", reachesTip: false };
     const outlined = tailShapes.filter(isDarkStroke);
     const filled = outlined.filter(isFilled);
-    const reachesTip =
-        outlined.length > 0 && distanceOutside(outlined, tip) <= kTipReach;
+    const reachesTip = distanceToNearest(outlined, tip) <= kTipReach;
     // The bubble's own filled, outlined shape, as drawn without the tail.
     const bubble = withoutTail.filter((s) => isFilled(s) && isDarkStroke(s));
     if (
@@ -234,7 +259,11 @@ function describeTail(
             bubble[0].y + bubble[0].height - kSameShapeTolerance
     )
         return { kind: "curved wedge", reachesTip };
-    if (outlined.length > 0 && filled.length === 0)
+    if (
+        outlined.length > 0 &&
+        filled.length === 0 &&
+        outlined.every((s) => s.diagonalPointsCovered === kDiagonalPoints)
+    )
         return { kind: "straight line", reachesTip };
     return { kind: "unrecognized", reachesTip };
 }
@@ -329,6 +358,7 @@ test("Show Tail draws the tail of each Element Type, and the tail follows a chan
 
             let shown!: ISaved;
             let moved!: ISaved;
+            let hiddenShapes!: ISavedShape[];
             await step(
                 `Save the ${type} element with its tail shown`,
                 async () => {
@@ -386,6 +416,13 @@ test("Show Tail draws the tail of each Element Type, and the tail follows a chan
                 );
                 const drawings = (saved: ISaved) =>
                     JSON.stringify(saved.shapes);
+                // Hiding the tail must leave nothing of it, at either place its tip has been.
+                for (const tip of [shown.tailTips[0], moved.tailTips[0]])
+                    expect(
+                        hasInkNear(hidden.shapes, tip),
+                        `With Show Tail unticked, the ${type} element's saved drawing still has ink ` +
+                            `near where its tail's tip was, ${JSON.stringify(tip)}: ${drawings(hidden)}.`,
+                    ).toBe(false);
                 expect(
                     describeTail(
                         shown.shapes,
@@ -410,23 +447,32 @@ test("Show Tail draws the tail of each Element Type, and the tail follows a chan
                     JSON.stringify(moved.shapes),
                     `The ${type} element's saved drawing did not change when its tail tip was dragged.`,
                 ).not.toBe(JSON.stringify(shown.shapes));
+                hiddenShapes = hidden.shapes;
             });
             await step(
                 `Tick Show Tail again for the ${type} element`,
                 async () => {
                     await setShowTail(page, true);
-                    await expect
-                        .poll(
-                            async () =>
-                                (await readTail(bubble).catch(
-                                    () => undefined,
-                                )) !== undefined,
-                            {
-                                timeout: 15000,
-                                message: `Ticking Show Tail did not give the ${type} element a tail again.`,
-                            },
-                        )
-                        .toBe(true);
+                    const restored = await savePage(
+                        page,
+                        bookFolder,
+                        pageId,
+                        index,
+                        type,
+                        1,
+                        `Ticking Show Tail again did not save the ${type} element with a tail.`,
+                    );
+                    expect(
+                        describeTail(
+                            restored.shapes,
+                            hiddenShapes,
+                            restored.tailTips[0],
+                        ),
+                        `After Show Tail was ticked again, the ${type} element's saved drawing ` +
+                            `should show a ${tail} reaching its tip ${JSON.stringify(restored.tailTips[0])}. ` +
+                            `With the tail: ${JSON.stringify(restored.shapes)}. Without: ` +
+                            `${JSON.stringify(hiddenShapes)}.`,
+                    ).toEqual({ kind: tail, reachesTip: true });
                 },
             );
             previous = current;

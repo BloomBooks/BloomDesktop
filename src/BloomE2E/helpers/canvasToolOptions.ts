@@ -275,6 +275,12 @@ export interface ISavedShape {
      * not; an ellipse, which also leaves the corners empty, covers none.
      */
     edgePointsCovered: number;
+    /**
+     * How many of seven points along a diagonal of the bounding box, an eighth to seven eighths of
+     * the way across, the shape covers, on whichever diagonal it covers more of. A straight line
+     * covers all seven of its own diagonal; a curve between the same corners bows away from it.
+     */
+    diagonalPointsCovered: number;
 }
 
 /**
@@ -376,6 +382,15 @@ export async function readSavedCanvasShapes(
                                     (stroked && shape.isPointInStroke(point))
                                 );
                             }).length;
+                        const diagonal = (fromTop: boolean) =>
+                            [1, 2, 3, 4, 5, 6, 7].map((eighths) => [
+                                box.x + (box.width * eighths) / 8,
+                                fromTop
+                                    ? box.y + (box.height * eighths) / 8
+                                    : box.y +
+                                      box.height -
+                                      (box.height * eighths) / 8,
+                            ]);
                         return {
                             visible: filled || stroked,
                             shape: {
@@ -390,6 +405,10 @@ export async function readSavedCanvasShapes(
                                 height: Math.round(box.height),
                                 cornersCovered: coveredOf(corners),
                                 edgePointsCovered: coveredOf(edgePoints),
+                                diagonalPointsCovered: Math.max(
+                                    coveredOf(diagonal(true)),
+                                    coveredOf(diagonal(false)),
+                                ),
                             },
                         };
                     })
