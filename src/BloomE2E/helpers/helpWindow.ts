@@ -2,8 +2,9 @@
 // HTML Help viewer (HelpLauncher.cs), which runs inside Bloom's own process in a native window of
 // the class "HH Parent". That window is outside WebView2, so CDP cannot see it; it is read here
 // through Win32 from PowerShell. Inside it the topic is an Internet Explorer document, which
-// answers WM_HTML_GETOBJECT with its IHTMLDocument2: its URL names the help file and the topic,
-// as "mk:@MSITStore:<folder>\Bloom.chm::/<topic>", and its title is the topic's own title.
+// answers WM_HTML_GETOBJECT with its IHTMLDocument2, whose properties are read through IDispatch:
+// its URL names the help file and the topic, as "mk:@MSITStore:<folder>\Bloom.chm::/<topic>",
+// and its title is the topic's own title.
 //
 // Opening help takes the foreground, so a test that uses this skips under launchWithDontDisturb().
 
@@ -20,6 +21,8 @@ export interface IHelpWindow {
     url: string;
     /** The topic's title, as the help file gives it in the page's <title>. */
     title: string;
+    /** Why the document could not be read (no document yet, a property that failed), or "". */
+    problem: string;
 }
 
 /** A topic as Bloom's help window showed it. */
@@ -36,6 +39,17 @@ const kReadHelpWindows = `
 $ErrorActionPreference = 'Stop'
 Add-Type @'
 using System; using System.Collections.Generic; using System.Linq; using System.Runtime.InteropServices; using System.Text;
+using DISPPARAMS = System.Runtime.InteropServices.ComTypes.DISPPARAMS;
+// IDispatch, called directly. PowerShell's COM binder and .NET late binding find the document's
+// properties through its type, which only the Microsoft.mshtml interop assembly supplies; on a
+// machine without that assembly (the CI runner) every property read as empty.
+[ComImport, Guid("00020400-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+public interface IBloomDispatch {
+  [PreserveSig] int GetTypeInfoCount(out uint count);
+  [PreserveSig] int GetTypeInfo(uint index, int lcid, out IntPtr typeInfo);
+  [PreserveSig] int GetIDsOfNames(ref Guid riid, [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.LPWStr)] string[] names, int count, int lcid, [Out, MarshalAs(UnmanagedType.LPArray)] int[] ids);
+  [PreserveSig] int Invoke(int id, ref Guid riid, int lcid, ushort flags, ref DISPPARAMS parameters, out object result, IntPtr exceptionInfo, IntPtr argumentError);
+}
 public static class BloomHelpWindows {
   delegate bool EnumProc(IntPtr h, IntPtr l);
   [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc f, IntPtr l);
@@ -44,10 +58,12 @@ public static class BloomHelpWindows {
   [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr h);
   [DllImport("user32.dll")] static extern bool PostMessage(IntPtr h, uint msg, IntPtr w, IntPtr l);
   [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetClassName(IntPtr h, StringBuilder s, int n);
+  [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
   [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern uint RegisterWindowMessage(string s);
   [DllImport("user32.dll")] static extern IntPtr SendMessageTimeout(IntPtr h, uint msg, IntPtr w, IntPtr l, uint flags, uint timeout, out IntPtr result);
-  [DllImport("oleacc.dll")] static extern int ObjectFromLresult(IntPtr lresult, ref Guid iid, IntPtr w, [MarshalAs(UnmanagedType.IDispatch)] out object o);
+  [DllImport("oleacc.dll")] static extern int ObjectFromLresult(IntPtr lresult, ref Guid iid, IntPtr w, out IntPtr o);
   static string ClassOf(IntPtr h) { var s = new StringBuilder(256); GetClassName(h, s, 256); return s.ToString(); }
+  static string TextOf(IntPtr h) { var s = new StringBuilder(256); GetWindowText(h, s, 256); return s.ToString(); }
   // The help windows (class "HH Parent") of the process pid.
   public static List<IntPtr> Find(int pid) {
     var found = new List<IntPtr>();
@@ -58,7 +74,52 @@ public static class BloomHelpWindows {
     }, IntPtr.Zero);
     return found;
   }
-  [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
+  public static bool IsVisible(IntPtr h) { return IsWindowVisible(h); }
+  // What a help window shows: its document's readyState, URL and title, and why the document
+  // could not be read ("" when it could).
+  public static string[] Read(IntPtr h) {
+    string problem;
+    var document = Document(h, out problem);
+    if (document == null) return new[] { "", "", "", problem };
+    try {
+      var values = new List<string>();
+      foreach (var name in new[] { "readyState", "url", "title" }) values.Add(Property(document, name, ref problem));
+      values.Add(problem);
+      return values.ToArray();
+    } finally { Marshal.ReleaseComObject(document); }
+  }
+  // The document a help window shows, or null (and why) while it has none.
+  static IBloomDispatch Document(IntPtr h, out string problem) {
+    IntPtr ie = IntPtr.Zero;
+    EnumChildWindows(h, (c, l) => { if (ClassOf(c) == "Internet Explorer_Server") { ie = c; return false; } return true; }, IntPtr.Zero);
+    if (ie == IntPtr.Zero) { problem = "no Internet Explorer_Server window yet"; return null; }
+    IntPtr result;
+    // SMTO_ABORTIFHUNG, five seconds.
+    if (SendMessageTimeout(ie, RegisterWindowMessage("WM_HTML_GETOBJECT"), IntPtr.Zero, IntPtr.Zero, 2, 5000, out result) == IntPtr.Zero || result == IntPtr.Zero) {
+      problem = "no answer to WM_HTML_GETOBJECT";
+      return null;
+    }
+    var iid = new Guid("332C4425-26CB-11D0-B483-00C04FD90119"); // IHTMLDocument2
+    IntPtr pointer;
+    var hr = ObjectFromLresult(result, ref iid, IntPtr.Zero, out pointer);
+    if (hr != 0) { problem = "ObjectFromLresult failed, 0x" + hr.ToString("X8"); return null; }
+    try { problem = ""; return (IBloomDispatch)Marshal.GetObjectForIUnknown(pointer); }
+    finally { Marshal.Release(pointer); }
+  }
+  // A property of the document, read through its IDispatch, or "" (and why) when it cannot be read.
+  static string Property(IBloomDispatch document, string name, ref string problem) {
+    var none = Guid.Empty;
+    var ids = new int[1];
+    var hr = document.GetIDsOfNames(ref none, new[] { name }, 1, 0, ids);
+    if (hr == 0) {
+      var noArguments = new DISPPARAMS();
+      object value;
+      hr = document.Invoke(ids[0], ref none, 0, 2 /* DISPATCH_PROPERTYGET */, ref noArguments, out value, IntPtr.Zero, IntPtr.Zero);
+      if (hr == 0) return value == null ? "" : value.ToString();
+    }
+    problem += (problem.Length > 0 ? "; " : "") + "could not read " + name + ", 0x" + hr.ToString("X8");
+    return "";
+  }
   // Every visible top-level window of the process pid, and every help window, as
   // "class|title|visible", with its child windows, for a failure message.
   public static List<string> Describe(int pid) {
@@ -66,44 +127,15 @@ public static class BloomHelpWindows {
     EnumWindows((h, l) => {
       int p; GetWindowThreadProcessId(h, out p);
       if (p == pid && (IsWindowVisible(h) || ClassOf(h) == "HH Parent")) {
-        var title = new StringBuilder(256); GetWindowText(h, title, 256);
         var children = new List<string>();
-        EnumChildWindows(h, (c, l2) => { var t = new StringBuilder(256); GetWindowText(c, t, 256); children.Add(ClassOf(c) + (t.Length > 0 ? ":" + t : "")); return true; }, IntPtr.Zero);
-        var line = ClassOf(h) + "|" + title + "|" + (IsWindowVisible(h) ? "visible" : "hidden");
-        if (ClassOf(h) == "HH Parent") line += "|document: " + WhyNoDocument(h);
+        EnumChildWindows(h, (c, l2) => { var t = TextOf(c); children.Add(ClassOf(c) + (t.Length > 0 ? ":" + t : "")); return true; }, IntPtr.Zero);
+        var line = ClassOf(h) + "|" + TextOf(h) + "|" + (IsWindowVisible(h) ? "visible" : "hidden");
         if (children.Count > 0) line += "|children: " + string.Join(", ", children.Distinct());
         found.Add(line);
       }
       return true;
     }, IntPtr.Zero);
     return found;
-  }
-  // What stands in the way of reading a help window's document, for a failure message.
-  static string WhyNoDocument(IntPtr h) {
-    IntPtr ie = IntPtr.Zero;
-    EnumChildWindows(h, (c, l) => { if (ClassOf(c) == "Internet Explorer_Server") { ie = c; return false; } return true; }, IntPtr.Zero);
-    if (ie == IntPtr.Zero) return "no Internet Explorer_Server child";
-    IntPtr result;
-    if (SendMessageTimeout(ie, RegisterWindowMessage("WM_HTML_GETOBJECT"), IntPtr.Zero, IntPtr.Zero, 2, 5000, out result) == IntPtr.Zero)
-      return "WM_HTML_GETOBJECT timed out or failed, error " + Marshal.GetLastWin32Error();
-    if (result == IntPtr.Zero) return "WM_HTML_GETOBJECT answered 0";
-    var iid = new Guid("626FC520-A41E-11CF-A731-00A0C9082637");
-    object document;
-    var hr = ObjectFromLresult(result, ref iid, IntPtr.Zero, out document);
-    return hr == 0 ? "readable" : "ObjectFromLresult failed, 0x" + hr.ToString("X8");
-  }
-  public static bool IsVisible(IntPtr h) { return IsWindowVisible(h); }
-  // The document a help window shows (an IHTMLDocument2), or null while it has none.
-  public static object Document(IntPtr h) {
-    IntPtr ie = IntPtr.Zero;
-    EnumChildWindows(h, (c, l) => { if (ClassOf(c) == "Internet Explorer_Server") { ie = c; return false; } return true; }, IntPtr.Zero);
-    if (ie == IntPtr.Zero) return null;
-    IntPtr result;
-    // SMTO_ABORTIFHUNG, five seconds.
-    if (SendMessageTimeout(ie, RegisterWindowMessage("WM_HTML_GETOBJECT"), IntPtr.Zero, IntPtr.Zero, 2, 5000, out result) == IntPtr.Zero) return null;
-    var iid = new Guid("626FC520-A41E-11CF-A731-00A0C9082637"); // IHTMLDocument
-    object document;
-    return ObjectFromLresult(result, ref iid, IntPtr.Zero, out document) == 0 ? document : null;
   }
   // Ask a help window to close, as its close box does (WM_CLOSE).
   public static void Close(IntPtr h) { PostMessage(h, 0x10, IntPtr.Zero, IntPtr.Zero); }
@@ -117,15 +149,14 @@ if ($env:BLOOM_E2E_DESCRIBE -eq '1') {
 $found = @()
 foreach ($h in [BloomHelpWindows]::Find($pid_)) {
   if ($env:BLOOM_E2E_CLOSE -eq '1') { [BloomHelpWindows]::Close($h); continue }
-  # The document's properties are read here, through PowerShell's own COM binder: late binding
-  # from the compiled C# answers DISP_E_UNKNOWNNAME for them.
-  $document = [BloomHelpWindows]::Document($h)
+  $shown = [BloomHelpWindows]::Read($h)
   $found += [pscustomobject]@{
     hwnd = $h.ToInt64()
     visible = [BloomHelpWindows]::IsVisible($h)
-    readyState = if ($document) { [string]$document.readyState } else { '' }
-    url = if ($document) { [string]$document.url } else { '' }
-    title = if ($document) { [string]$document.title } else { '' }
+    readyState = $shown[0]
+    url = $shown[1]
+    title = $shown[2]
+    problem = $shown[3]
   }
 }
 ConvertTo-Json -Compress -InputObject @($found)
