@@ -900,19 +900,6 @@ the labels they came with, and does not check a label typed by the template's au
 direction: fix BL-17185, then have that test type a label of its own on each page. (Found
 2026-11-25 while automating Test Case ID 79.)
 
-## Make All BloomPUBs opens File Explorer
-
-When Publish: BloomPUB's "Make All BloomPUBs from Collection" finishes, Bloom opens the folder it
-made the files in, `%TEMP%\BloomPubs`, in File Explorer (`ProcessExtra.SafeStartInFront` at the end
-of `BulkBloomPubCreator.PublishAllBooksAsync`), and it does so under `--e2e` too. Playwright drives
-only Bloom's WebView2, so the test cannot close the window, and every run of
-`bulk-bloompub-bundle.spec.ts` (Test Case ID 194) leaves one Explorer window open on the machine it
-ran on. The test reads the folder's path from the progress box and checks the files there, so
-nothing it checks depends on the window. Cost: a stray window per run on a developer's desktop or
-the runner. Fix direction: skip opening the folder when `Program.RunningE2eTests` is true, or route
-it through a hook a test can read, as the file choosers are. (Found 2026-11-25 while automating Test
-Case ID 194.)
-
 ## Export to Spreadsheet opens the spreadsheet
 
 When More > Export to Spreadsheet... finishes, Bloom opens the spreadsheet in the program the
