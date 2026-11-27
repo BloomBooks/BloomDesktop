@@ -52,7 +52,8 @@ import {
     readEpubPreviewPackage,
     showEpubPreview,
 } from "../helpers/epubPublish";
-import { getFontsMetadata } from "../helpers/fontChooser";
+import { apiGetJson } from "../helpers/api";
+import { getFontsMetadata, type IFontMetadata } from "../helpers/fontChooser";
 import {
     applyStyleById,
     chooseFont,
@@ -291,60 +292,69 @@ async function pressRepeatedly(
 /**
  * The name of a font, other than those in `exclude`, that Bloom may embed in an ePUB and that has a
  * regular face: the first of PREFERRED_L3_FONTS that this machine has, otherwise the first such
- * font. Bloom embeds a font whose license it judged fine ("ok") and one it could not judge
- * ("unknown"), and leaves out one it judged unsuitable (PublishHelper.CheckFontsForEmbedding).
+ * font in alphabetical order. Bloom embeds a font whose license it judged fine ("ok") and one it
+ * could not judge ("unknown"), and leaves out one it judged unsuitable
+ * (PublishHelper.CheckFontsForEmbedding).
  *
- * Bloom scans the machine's fonts in the background at startup, in alphabetical order
- * (FontsApi.GetAllFontMetadata), and fonts/metadata answers with the fonts scanned so far. So a
- * font early in the alphabet can be listed before a preferred one is. This asks until a preferred
- * font is listed, or until the list has stopped growing for three seconds, which means the scan is
- * over.
+ * Bloom reads each font's metadata in the background at startup, one font at a time, in the order
+ * of fonts/names (FontsApi.GetAllFontMetadata), and fonts/metadata answers with the fonts read so
+ * far. So before judging a font, this waits until Bloom has read past it: fonts/metadata lists that
+ * font or one that comes after it in fonts/names. (A font of which Bloom finds no regular face gets
+ * no metadata at all, so "lists that font" alone is not enough.)
  */
 async function pickEmbeddableFont(
     page: Page,
     exclude: string[],
 ): Promise<string> {
-    let candidates: string[] = [];
-    let fontCount = -1;
-    let pollsWithoutGrowth = 0;
-    await expect
-        .poll(
-            async () => {
-                const fonts = await getFontsMetadata(page);
-                if (fonts.length === fontCount) pollsWithoutGrowth++;
-                else {
-                    fontCount = fonts.length;
-                    pollsWithoutGrowth = 0;
-                }
-                candidates = fonts
-                    .filter(
-                        (font) =>
-                            font.name &&
-                            !exclude.includes(font.name) &&
-                            (font.determinedSuitability === "ok" ||
-                                font.determinedSuitability === "unknown") &&
-                            font.variants?.includes("regular"),
-                    )
-                    .map((font) => font.name);
-                if (
-                    PREFERRED_L3_FONTS.some((name) => candidates.includes(name))
-                )
-                    return true;
-                return pollsWithoutGrowth >= 3 && candidates.length > 0;
-            },
-            {
-                intervals: [1000],
-                timeout: 60000,
-                message:
-                    `Bloom listed no font besides ${exclude.join(" and ")} that it may embed in ` +
-                    "an ePUB, or its list of fonts never stopped growing, so the test cannot " +
-                    "give Language 3 a font.",
-            },
-        )
-        .toBe(true);
-    return (
-        PREFERRED_L3_FONTS.find((name) => candidates.includes(name)) ??
-        candidates[0]
+    const names = (await apiGetJson<{ fonts: string[] }>(page, "fonts/names"))
+        .fonts;
+    const isEmbeddable = (font: IFontMetadata): boolean =>
+        !!font.name &&
+        !exclude.includes(font.name) &&
+        (font.determinedSuitability === "ok" ||
+            font.determinedSuitability === "unknown") &&
+        !!font.variants?.includes("regular");
+    /** fonts/metadata, once Bloom has read past the font at `index` in `names`. */
+    const metadataReadPast = async (
+        index: number,
+    ): Promise<IFontMetadata[]> => {
+        let fonts: IFontMetadata[] = [];
+        await expect
+            .poll(
+                async () => {
+                    fonts = await getFontsMetadata(page);
+                    return fonts.some(
+                        (font) => names.indexOf(font.name) >= index,
+                    );
+                },
+                {
+                    timeout: 60000,
+                    message: `Bloom never finished reading the metadata of the font "${names[index]}".`,
+                },
+            )
+            .toBe(true);
+        return fonts;
+    };
+
+    for (const name of PREFERRED_L3_FONTS) {
+        const index = names.indexOf(name);
+        if (index < 0) continue;
+        const font = (await metadataReadPast(index)).find(
+            (f) => f.name === name,
+        );
+        if (font && isEmbeddable(font)) return name;
+    }
+    // No preferred font: the first embeddable font in the order Bloom reads them. Once one is
+    // listed, Bloom has read every font before it, so no earlier one can still appear.
+    for (let index = 0; index < names.length; index++) {
+        const font = (await metadataReadPast(index)).find(
+            (f) => f.name === names[index],
+        );
+        if (font && isEmbeddable(font)) return font.name;
+    }
+    throw new Error(
+        `This machine has no font besides ${exclude.join(" and ")} that Bloom may embed in an ` +
+            "ePUB, so the test cannot give Language 3 one.",
     );
 }
 

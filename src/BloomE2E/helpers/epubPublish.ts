@@ -518,9 +518,17 @@ export function getEpubPreviewContentFolder(page: Page): string {
         throw new Error(
             `The ePUB reader's manifest is not served from a file: ${manifestPath}`,
         );
-    const manifestFile = decodeURIComponent(
-        manifestPath.substring(prefix.length),
-    );
+    // Decode only what is a percent-encoding. A folder whose name holds a percent sign can reach
+    // here with that sign left as it is, and decodeURIComponent would refuse the whole path.
+    const manifestFile = manifestPath
+        .substring(prefix.length)
+        .replace(/(%[0-9A-Fa-f]{2})+/g, (encoded) => {
+            try {
+                return decodeURIComponent(encoded);
+            } catch {
+                return encoded;
+            }
+        });
     return Path.join(Path.dirname(manifestFile), "content");
 }
 
