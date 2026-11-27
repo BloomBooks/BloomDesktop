@@ -402,11 +402,26 @@ export async function selectCanvasElementAt(
 ): Promise<Locator> {
     await element.waitFor({ state: "visible", timeout: 30000 });
     await realClick(element);
-    await expect(
+    await expectCanvasElementSelected(
         element,
         `Clicking ${what} did not select it.`,
-    ).toHaveAttribute("data-bloom-active", "true", { timeout: 15000 });
+    );
     return element;
+}
+
+/**
+ * Wait until Bloom marks the canvas element `element` locates as the selected one, and fail with
+ * `message` if it does not.
+ */
+export async function expectCanvasElementSelected(
+    element: Locator,
+    message: string,
+): Promise<void> {
+    await expect(element, message).toHaveAttribute(
+        "data-bloom-active",
+        "true",
+        { timeout: 15000 },
+    );
 }
 
 /** Where on the page a locator is drawn. Throws naming it when it has no on-screen box. */
@@ -1608,6 +1623,22 @@ export async function typeKeyAndWaitForHeightCheck(
             },
         )
         .toBe(false);
+}
+
+/**
+ * Have Bloom check the selected canvas element's height against its text now, and return once it
+ * has, without changing the text. Bloom also checks each box on a timer after it is set up, so a
+ * size read before any check may still change; one read after this does not, since every check of
+ * the same text gives the same height.
+ *
+ * Clicks into the element's text box and presses Shift there: a key that types nothing, but whose
+ * key-up Bloom answers with a check, as typeKeyAndWaitForHeightCheck describes.
+ */
+export async function waitForHeightCheckOfSelectedElement(
+    page: Page,
+): Promise<void> {
+    await realClick(shownTextBoxOfActiveElement(page));
+    await typeKeyAndWaitForHeightCheck(page, "Shift");
 }
 
 /** The box that the selected canvas element's text is showing. */

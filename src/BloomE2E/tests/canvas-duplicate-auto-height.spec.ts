@@ -13,13 +13,16 @@ import {
     dragCanvasElementSide,
     dragPaletteItemOntoCanvas,
     duplicateCanvasElementFromToolbar,
+    expectCanvasElementSelected,
     getAutoHeightShownInMenu,
+    getCanvasElementAutoHeight,
     getCanvasElementText,
     getCanvasElementTextFit,
     isCanvasElementSideHandleShown,
     selectCanvasElement,
     setCanvasElementAutoHeight,
     typeInCanvasElement,
+    waitForHeightCheckOfSelectedElement,
 } from "../helpers/canvasElements";
 import { getElementSize } from "../helpers/canvasResize";
 import { watchForScriptErrors } from "../helpers/scriptErrors";
@@ -123,14 +126,16 @@ test("a duplicated text block keeps its source's size and its Auto Height settin
             firstCopyIndex = await duplicateCanvasElementFromToolbar(page);
         });
         const firstCopy = canvasElement(page, firstCopyIndex);
-        await expect(
+        await expectCanvasElementSelected(
             firstCopy,
             "Bloom should select the copy it has just made.",
-        ).toHaveAttribute("data-bloom-active", "true", { timeout: 15000 });
+        );
         expect(
             await getCanvasElementText(page, firstCopyIndex),
             "The copy should have the original's words.",
         ).toBe(originalWords);
+        // Read the size once Bloom has fitted the copy's height, not before.
+        await waitForHeightCheckOfSelectedElement(page);
         await expectSameSize(firstCopy, originalSize, "The copy");
         expect(
             await readSize(original),
@@ -177,20 +182,27 @@ test("a duplicated text block keeps its source's size and its Auto Height settin
             secondCopyIndex = await duplicateCanvasElementFromToolbar(page);
         });
         const secondCopy = canvasElement(page, secondCopyIndex);
-        await expect(
+        await expectCanvasElementSelected(
             secondCopy,
             "Bloom should select the second copy it has just made.",
-        ).toHaveAttribute("data-bloom-active", "true", { timeout: 15000 });
+        );
+        await waitForHeightCheckOfSelectedElement(page);
         await expectSameSize(secondCopy, firstCopySize, "The second copy");
 
         await step("Select the second copy and read its menu", async () => {
             await clearCanvasElementSelection(page);
             await selectCanvasElement(page, secondCopyIndex);
+            // What the menu shows a person, and the setting Bloom keeps for the element.
             expect(
                 await getAutoHeightShownInMenu(page),
                 "The copy of a text block with Auto Height off should show Auto Height off in its menu.",
             ).toBe(false);
+            expect(
+                await getCanvasElementAutoHeight(page),
+                "The copy of a text block with Auto Height off should have Auto Height off.",
+            ).toBe(false);
             // Selecting it again gave Bloom the chance to fit its height, which it must not have.
+            await waitForHeightCheckOfSelectedElement(page);
             await expectSameSize(
                 secondCopy,
                 firstCopySize,
