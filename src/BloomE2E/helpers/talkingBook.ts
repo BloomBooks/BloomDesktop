@@ -299,6 +299,7 @@ export function getNarratedLanguages(
  * it through Bloom's e2e hook before clicking (see E2eTestingApi's nextFileToChoose).
  *
  * `bookFolder` is needed to wait for the import to finish -- see the comment on the wait below.
+ * `groupIndex` picks the box when `groupSelector` matches more than one group on the page.
  */
 export async function importNarration(
     page: Page,
@@ -306,11 +307,18 @@ export async function importNarration(
     groupSelector: string,
     languageTag: string,
     mp3Path: string = sampleNarrationFile,
+    groupIndex = 0,
 ): Promise<void> {
     const audioFolder = Path.join(bookFolder, "audio");
     const before = narrationFilesIn(audioFolder).length;
 
-    await clickImportRecording(page, groupSelector, languageTag, mp3Path);
+    await clickImportRecording(
+        page,
+        groupSelector,
+        languageTag,
+        mp3Path,
+        groupIndex,
+    );
 
     // The import is several round trips -- choose the file, find the book's audio folder, copy,
     // then write the markup -- so wait for its RESULT: one more narration file on disk than
@@ -396,8 +404,9 @@ async function clickImportRecording(
     groupSelector: string,
     languageTag: string,
     mp3Path: string,
+    groupIndex = 0,
 ): Promise<void> {
-    await clickInGroup(page, groupSelector, languageTag);
+    await clickInGroup(page, groupSelector, languageTag, groupIndex);
     await setRecordingMode(page, "By Whole Text Box");
     await openAdvancedSection(page);
 
@@ -470,6 +479,20 @@ export async function expectNarrationToBe(
 export function writeSecondSampleNarration(filePath: string): void {
     const sample = fs.readFileSync(Path.resolve(sampleNarrationFile));
     fs.writeFileSync(filePath, Buffer.concat([sample, sample]));
+}
+
+/**
+ * About `seconds` of silence as mp3 frames in the format of sampleNarrationFile (MPEG-1 Layer III,
+ * 64 kbps, 44.1 kHz, mono), so that it can be joined to that sample's bytes to make a recording
+ * whose sound and silence fall at known times. Each frame is a header and nothing else: it holds
+ * no sound, and lasts 1152 samples.
+ */
+export function silentMp3Frames(seconds: number): Buffer {
+    const frameCount = Math.round((seconds * 44100) / 1152);
+    // 144 * bitrate / sample rate, with no padding byte.
+    const frame = Buffer.alloc(Math.floor((144 * 64000) / 44100));
+    Buffer.from([0xff, 0xfb, 0x50, 0xc0]).copy(frame);
+    return Buffer.concat(Array(frameCount).fill(frame));
 }
 
 /** The narration files in a book's audio folder; empty when the folder does not exist yet. */
@@ -643,10 +666,14 @@ export async function isImportRecordingEnabled(page: Page): Promise<boolean> {
  * end time for each, and OK saves those times on the box (data-audiorecordingendtimes) and shows
  * the box as split (bloom-postAudioSplit). Returns once the box shows as split.
  *
- * The box must hold a whole-text-box recording (see importNarration). The button is found by its
- * picture, since it has no id and its label is localized.
+ * The box must hold a whole-text-box recording (see importNarration) and not be split yet. The
+ * button is found by its picture, since it has no id and its label is localized.
  */
 export async function acceptProposedTimings(page: Page): Promise<void> {
+    const splitBoxes = editablePageFrame(page).locator(
+        ".bloom-editable.bloom-postAudioSplit",
+    );
+    const splitBefore = await splitBoxes.count();
     const button = toolboxFrame(page).locator(
         'button:has(img[src*="adjustTimings.svg"])',
     );
@@ -670,9 +697,9 @@ export async function acceptProposedTimings(page: Page): Promise<void> {
     await dialog.getByTestId("dialog-ok").click();
     await expect(dialog).toBeHidden({ timeout: 30000 });
     await expect(
-        editablePageFrame(page).locator(".bloom-editable.bloom-postAudioSplit"),
+        splitBoxes,
         "OK in Adjust Timings did not mark the text box as split into timed segments.",
-    ).toHaveCount(1, { timeout: 30000 });
+    ).toHaveCount(splitBefore + 1, { timeout: 30000 });
 }
 
 /**

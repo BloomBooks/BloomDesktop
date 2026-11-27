@@ -33,6 +33,7 @@ import {
     getEpubPreviewReadAlongHighlights,
     idInEpub,
     isEpubModeListEnabled,
+    isPaintedColor,
     openEpubPublishScreen,
     playEpubPreviewReadAlong,
     showEpubPreview,
@@ -76,15 +77,6 @@ type HighlightEvent = Extract<
     { kind: "highlighted" | "unhighlighted" }
 >;
 type AudioEvent = Exclude<EpubReadAlongEvent, HighlightEvent>;
-
-/** Whether a CSS color, as getComputedStyle gives it, paints anything: it is not fully transparent. */
-function isPainted(color: string): boolean {
-    const match = /^rgba?\(([^)]*)\)$/.exec(color.trim());
-    if (!match)
-        throw new Error(`"${color}" is not a color as rgb() or rgba().`);
-    const parts = match[1].split(/[\s,/]+/).filter((part) => part !== "");
-    return parts.length < 4 || Number(parts[3]) > 0;
-}
 
 test("a fixed-mode ePUB highlights the cover's title while it reads it aloud [Test Case ID 574]", async ({
     page,
@@ -227,7 +219,7 @@ test("a fixed-mode ePUB highlights the cover's title while it reads it aloud [Te
             if (on.kind !== "highlighted" || off.kind !== "unhighlighted")
                 throw new Error("Unreachable: the kinds were checked above.");
             expect(
-                isPainted(on.background),
+                isPaintedColor(on.background),
                 `the highlighted title should have a background that shows, not ${on.background}`,
             ).toBe(true);
             expect(
