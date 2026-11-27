@@ -57,6 +57,9 @@ const kBrokenTitle = "Book to break";
 const kFirstText = "Text typed when the book was made.";
 const kSecondText = "A small change made on coming back.";
 const kThirdText = "Typed after the stylesheet broke.";
+// What the test makes of the typed text in the backup and in the .htm it breaks.
+const kBackupVersion = "The typed text, as the backup has it.";
+const kBrokenVersion = "The typed text, as the broken file has it.";
 
 // What Bloom says, in English, when it restored a book's backup (BookStorage.CorruptBook), and
 // what the preview of a book it cannot read starts with (Errors.BookProblem). The test pins the UI
@@ -110,6 +113,17 @@ function corruptHtm(folder: string): string {
     return broken;
 }
 
+/** Replace the text typed in the book file at `path` (either version of it) with `version`. */
+function markText(path: string, version: string): void {
+    const html = fs.readFileSync(path, "utf8");
+    const typed = [kSecondText, kFirstText].find((text) => html.includes(text));
+    expect(
+        typed,
+        `test setup: ${Path.basename(path)} should hold text the test typed`,
+    ).toBeDefined();
+    fs.writeFileSync(path, html.split(typed!).join(version), "utf8");
+}
+
 /** The size, in CSS pixels, of the page the Edit tab shows. */
 async function readShownPageSize(
     page: Page,
@@ -160,7 +174,6 @@ test("a book with an unreadable .htm or a broken basePage.css does not crash Blo
     let pageCount = 0;
     let pageSize = { width: 0, height: 0 };
     let originalCss = "";
-    let backupContent: string[] = [];
     let corruptedHtml = "";
 
     await step(
@@ -245,21 +258,10 @@ test("a book with an unreadable .htm or a broken basePage.css does not crash Blo
         "Quit Bloom, make the book's .htm unreadable, and start Bloom",
         () =>
             bloomApp.restart(() => {
-                const backup = fs.readFileSync(
-                    Path.join(brokenFolder, kBackupFile),
-                    "utf8",
-                );
-                backupContent = [kFirstText, kSecondText, "bird.png"].filter(
-                    (content) => backup.includes(content),
-                );
-                expect(
-                    backupContent,
-                    "test setup: the backup should hold the picture and some of the typed text",
-                ).toContain("bird.png");
-                expect(
-                    backupContent.length,
-                    "test setup: the backup should hold some of the typed text",
-                ).toBeGreaterThan(1);
+                // Give the backup and the .htm different versions of the first text, so that
+                // the restored book shows which of the two Bloom kept.
+                markText(Path.join(brokenFolder, kBackupFile), kBackupVersion);
+                markText(bookHtmPath(brokenFolder), kBrokenVersion);
                 corruptedHtml = corruptHtm(brokenFolder);
             }),
     );
@@ -335,12 +337,20 @@ test("a book with an unreadable .htm or a broken basePage.css does not crash Blo
                 restored,
                 "the restored .htm should have its <body> back",
             ).toMatch(/<body[\s>]/);
-            // The backup's text and picture come back with it.
-            for (const content of backupContent)
-                expect(
-                    restored,
-                    `the restored book should still hold "${content}" from its backup`,
-                ).toContain(content);
+            // The book is the backup's version, with its text and picture, not a repair of the
+            // unreadable file.
+            expect(
+                restored,
+                "the restored book should hold the backup's version of the text",
+            ).toContain(kBackupVersion);
+            expect(
+                restored,
+                "the restored book should not hold the unreadable file's version of the text",
+            ).not.toContain(kBrokenVersion);
+            expect(
+                restored,
+                "the restored book should still show its picture",
+            ).toContain("bird.png");
         },
     );
 
