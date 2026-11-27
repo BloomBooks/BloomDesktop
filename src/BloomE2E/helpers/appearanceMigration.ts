@@ -13,7 +13,7 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { FrameLocator } from "@playwright/test";
+import { expect, type FrameLocator } from "@playwright/test";
 
 /** The appearance migrations in the source tree, which the build copies for Bloom to read. */
 export const kAppearanceMigrationsFolder = Path.resolve(
@@ -169,10 +169,21 @@ export interface IPageLayout {
     /** The page's size in millimetres. */
     width: number;
     height: number;
+    /**
+     * The page's width on screen, in CSS pixels. The millimetre numbers are scaled by the page's
+     * nominal width, so they cannot show a page drawn larger or smaller as a whole; this can,
+     * when compared with the same book's page shown in the same place.
+     */
+    pixelWidth: number;
     /** The page's margin box: the area inside its margins. */
     marginBox?: IBoxOnPage;
     /** Each picture's slot, in page order. */
     pictures: IBoxOnPage[];
+    /**
+     * The file name of each picture the page's picture slots show, loaded, in page order. A slot
+     * can show while CSS hides its picture, so this is counted apart from `pictures`.
+     */
+    shownPictures: string[];
     /** Each text group that shows text, in page order. */
     textGroups: IBoxOnPage[];
     /** The start of the text of each shown text box whose text does not fit in it. */
@@ -220,11 +231,8 @@ export async function readPageLayouts(
             const size = /^(.*?)(Portrait|Landscape)$/.exec(sizeClass);
             const known = size ? kSizes[size[1]] : undefined;
             const pageRect = p.getBoundingClientRect();
-            const mmWide = known
-                ? size![2] === "Portrait"
-                    ? known[0]
-                    : known[1]
-                : pageRect.width;
+            let mmWide = pageRect.width;
+            if (known) mmWide = size![2] === "Portrait" ? known[0] : known[1];
             const scale = mmWide / pageRect.width;
             const shown = (e: Element) => {
                 const r = e.getBoundingClientRect();
@@ -248,18 +256,24 @@ export async function readPageLayouts(
                 };
             };
             const marginBox = p.querySelector(".marginBox");
+            const slots = Array.from(
+                p.querySelectorAll(".bloom-canvas, .bloom-imageContainer"),
+            )
+                .filter((e) => !e.parentElement?.closest(".bloom-canvas"))
+                .filter(shown);
             return {
                 id: p.id,
                 label: `${sizeClass} ${p.getAttribute("data-xmatter-page") ?? p.getAttribute("data-pagelineage")?.split(";").at(-1) ?? ""}`,
                 width: Math.round(pageRect.width * scale * 100) / 100,
                 height: Math.round(pageRect.height * scale * 100) / 100,
+                pixelWidth: Math.round(pageRect.width * 100) / 100,
                 marginBox: marginBox ? box(marginBox) : undefined,
-                pictures: Array.from(
-                    p.querySelectorAll(".bloom-canvas, .bloom-imageContainer"),
-                )
-                    .filter((e) => !e.parentElement?.closest(".bloom-canvas"))
-                    .filter(shown)
-                    .map(box),
+                pictures: slots.map(box),
+                shownPictures: slots.flatMap((slot) =>
+                    Array.from(slot.querySelectorAll("img"))
+                        .filter((img) => shown(img) && img.naturalWidth > 0)
+                        .map((img) => img.getAttribute("src") ?? ""),
+                ),
                 textGroups: Array.from(
                     p.querySelectorAll(".bloom-translationGroup"),
                 )
@@ -307,13 +321,32 @@ export async function readPageLayouts(
 }
 
 /**
- * Wait until the book in `frame` shows all `pageCount` of its pages, with its fonts and every
- * picture loaded (or failed), so that what readPageLayouts measures is the finished layout.
+ * Wait until the preview `frame` holds the document of the book with id `bookId` and shows all
+ * `pageCount` of its pages, with its fonts and every picture loaded (or failed), so that what
+ * readPageLayouts measures is that book's finished layout.
+ *
+ * The Collections tab keeps one preview frame and changes its address when another book is
+ * selected (CollectionsTabBookPane.tsx), so for a moment the frame's address names the new book
+ * while its document is still the old one. Two copies of a book have the same page ids, so the
+ * pages cannot tell them apart; the address of the document itself can.
  */
 export async function waitForBookLaidOut(
     frame: FrameLocator,
+    bookId: string,
     pageCount: number,
 ): Promise<void> {
+    await expect
+        .poll(
+            () =>
+                frame
+                    .locator("body")
+                    .evaluate((body) => body.ownerDocument.location.href),
+            {
+                message: `the preview should hold the document of book ${bookId}`,
+                timeout: 60000,
+            },
+        )
+        .toContain(`dummy=${bookId}`);
     await frame
         .locator(".bloom-page")
         .nth(pageCount - 1)

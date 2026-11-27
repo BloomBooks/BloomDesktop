@@ -126,8 +126,9 @@ async function openAndMeasure(
     await switchTab(page, "collection");
     await setBranding(page, branding);
     await selectBook(page, bookFolder);
-    const preview = collectionBookPreviewOf(page, readBookId(bookFolder));
-    await waitForBookLaidOut(preview, countPagesOnDisk(bookFolder));
+    const bookId = readBookId(bookFolder);
+    const preview = collectionBookPreviewOf(page, bookId);
+    await waitForBookLaidOut(preview, bookId, countPagesOnDisk(bookFolder));
     return readPageLayouts(preview);
 }
 
@@ -263,10 +264,20 @@ for (const book of kBooks.filter((b) => b.migration)) {
                         [p.width, p.height],
                         `${where} should keep its size`,
                     ).toEqual([old.width, old.height]);
+                    // Both are drawn in the same preview pane, so a page drawn larger or smaller
+                    // as a whole (which the millimetre numbers cannot show) changes this.
+                    expect(
+                        Math.abs(p.pixelWidth - old.pixelWidth),
+                        `${where} should be drawn as wide as under the old CSS (${old.pixelWidth} px), not ${p.pixelWidth} px`,
+                    ).toBeLessThanOrEqual(1);
                     expect(
                         p.pictures.length,
-                        `${where} should show as many pictures as under the old CSS`,
+                        `${where} should show as many picture slots as under the old CSS`,
                     ).toBe(old.pictures.length);
+                    expect(
+                        p.shownPictures,
+                        `${where} should show the pictures it showed under the old CSS`,
+                    ).toEqual(old.shownPictures);
                     expect(
                         p.textGroups.length,
                         `${where} should show as many text boxes as under the old CSS`,
