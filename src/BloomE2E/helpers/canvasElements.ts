@@ -1633,12 +1633,21 @@ export async function typeKeyAndWaitForHeightCheck(
  *
  * Clicks into the element's text box and presses Shift there: a key that types nothing, but whose
  * key-up Bloom answers with a check, as typeKeyAndWaitForHeightCheck describes.
+ *
+ * The mark that typeKeyAndWaitForHeightCheck watches can also be taken off by the page-wide part
+ * of another box's check (CheckPageAncestorOverflow), so its going does not prove that this box
+ * was checked. What does: Bloom's key-up handler starts the check with setTimeout(..., 0) while
+ * the key-up is being handled, which is before keyboard.up returns, and a zero-delay timer set
+ * afterwards in the same frame runs after it. So this then waits for one such timer in the page.
  */
 export async function waitForHeightCheckOfSelectedElement(
     page: Page,
 ): Promise<void> {
     await realClick(shownTextBoxOfActiveElement(page));
     await typeKeyAndWaitForHeightCheck(page, "Shift");
+    await editablePageFrame(page).evaluate(
+        () => new Promise<void>((resolve) => setTimeout(resolve, 0)),
+    );
 }
 
 /** The box that the selected canvas element's text is showing. */
