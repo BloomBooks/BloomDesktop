@@ -490,3 +490,216 @@ export async function chooseGameSoundFile(
         })
         .toBe(fileName);
 }
+
+/**
+ * The draggable items of a game page that hold a video, and the video file of each, by
+ * data-draggable-id. `gamePage` locates the page: the page being edited (gamePageInEditTab), or
+ * the one the BloomPUB preview shows (activePreviewPage).
+ */
+export async function getDraggableVideoFiles(
+    gamePage: Locator,
+): Promise<Record<string, string>> {
+    return gamePage.evaluate((pageElement) =>
+        Object.fromEntries(
+            Array.from(
+                pageElement.querySelectorAll<HTMLElement>(
+                    "[data-draggable-id]",
+                ),
+            )
+                .map((item) => {
+                    const source = item.querySelector("video source");
+                    const src = (source?.getAttribute("src") ?? "").split(
+                        /[?#]/,
+                    )[0];
+                    return [
+                        item.getAttribute("data-draggable-id")!,
+                        decodeURIComponent(src.split("/").pop() ?? ""),
+                    ];
+                })
+                .filter(([, file]) => file !== ""),
+        ),
+    );
+}
+
+/** The game page being edited, as a locator the draggable-video helpers take. */
+export function gamePageInEditTab(page: Page): Locator {
+    return editablePageFrame(page).locator(".bloom-page").first();
+}
+
+/** One thing a draggable item's video did, as startRecordingDraggableVideos records it. */
+export interface IDraggableVideoEvent {
+    /** The data-draggable-id of the item that holds the video. */
+    itemId: string;
+    /**
+     * "playing" when the video began to play with its sound on, "ended" when it played to its
+     * end. Bloom Player also plays each draggable video for an instant with its sound off, to
+     * show its first frame (showVideoFirstFrameWhenReady); that is not playing it for the
+     * reader, so it is left out.
+     */
+    event: "playing" | "ended";
+    /** True when a mouse button was held down on the page at the time. */
+    pressed: boolean;
+}
+
+/**
+ * Start recording what the videos of `gamePage`'s draggable items do (see IDraggableVideoEvent),
+ * from now on. The record lives in the page's document; calling this again clears it. A media
+ * element's events do not bubble, so they are caught on their way down.
+ */
+export async function startRecordingDraggableVideos(
+    gamePage: Locator,
+): Promise<void> {
+    await gamePage.evaluate((pageElement) => {
+        const w = pageElement.ownerDocument.defaultView as unknown as {
+            e2eDraggableVideoEvents?: {
+                itemId: string;
+                event: string;
+                pressed: boolean;
+            }[];
+        };
+        if (w.e2eDraggableVideoEvents) {
+            w.e2eDraggableVideoEvents.length = 0;
+            return;
+        }
+        const events: { itemId: string; event: string; pressed: boolean }[] =
+            [];
+        w.e2eDraggableVideoEvents = events;
+        const doc = pageElement.ownerDocument;
+        let pressed = false;
+        doc.addEventListener("pointerdown", () => (pressed = true), true);
+        doc.addEventListener("pointerup", () => (pressed = false), true);
+        doc.addEventListener("pointercancel", () => (pressed = false), true);
+        for (const type of ["playing", "ended"]) {
+            doc.addEventListener(
+                type,
+                (e) => {
+                    const video = e.target as HTMLVideoElement;
+                    if (video?.tagName !== "VIDEO") return;
+                    if (type === "playing" && video.muted) return;
+                    const item = video.closest("[data-draggable-id]");
+                    if (!item) return;
+                    events.push({
+                        itemId: item.getAttribute("data-draggable-id")!,
+                        event: type,
+                        pressed,
+                    });
+                },
+                true,
+            );
+        }
+    });
+}
+
+/** What the draggable items' videos have done since startRecordingDraggableVideos, in order. */
+export async function getDraggableVideoEvents(
+    gamePage: Locator,
+): Promise<IDraggableVideoEvent[]> {
+    const events = await gamePage.evaluate(
+        (pageElement) =>
+            (
+                pageElement.ownerDocument.defaultView as unknown as {
+                    e2eDraggableVideoEvents?: IDraggableVideoEvent[];
+                }
+            ).e2eDraggableVideoEvents,
+    );
+    if (!events)
+        throw new Error(
+            "Nothing is recording the draggable videos; call startRecordingDraggableVideos first.",
+        );
+    return events;
+}
+
+/**
+ * Wait until the game on `gamePage` is ready to play its draggable videos, and shows them as it
+ * does before anyone touches them: Bloom Player has set each one up to play when pressed (it
+ * marks it bloom-ui-no-controls as it adds that listener, in prepareActivity), and each has its
+ * first frame (readyState 2 or more) and is paused.
+ */
+export async function waitForDraggableVideosShown(
+    gamePage: Locator,
+): Promise<void> {
+    await expect
+        .poll(
+            () =>
+                gamePage.evaluate((pageElement) =>
+                    Array.from(
+                        pageElement.querySelectorAll<HTMLVideoElement>(
+                            "[data-draggable-id] video",
+                        ),
+                    ).every(
+                        (v) =>
+                            v.classList.contains("bloom-ui-no-controls") &&
+                            v.readyState >= 2 &&
+                            v.paused,
+                    ),
+                ),
+            {
+                timeout: 30000,
+                message:
+                    "The game never set up all its draggable videos, showing their first frame, paused.",
+            },
+        )
+        .toBe(true);
+}
+
+/**
+ * Drag the draggable item `itemId` of `gamePage` onto the target of item `targetOf` (its own
+ * target, or another item's), with the real mouse, the way a reader does: press on the middle of
+ * the item, call `whilePressed` (if given) while the button is still down, move to the middle of
+ * the target and let go. Returns once the game shows the item on that target: Bloom Player snaps
+ * an item dropped near a target to the target's middle and marks it bloom-draggedToTarget.
+ * `page` is the Playwright page whose mouse is used.
+ */
+export async function dragDraggableItemOnto(
+    page: Page,
+    gamePage: Locator,
+    itemId: string,
+    targetOf: string,
+    whilePressed?: () => Promise<void>,
+): Promise<void> {
+    const item = gamePage.locator(`[data-draggable-id="${itemId}"]`);
+    const target = gamePage.locator(`[data-target-of="${targetOf}"]`);
+    const from = await item.boundingBox();
+    const to = await target.boundingBox();
+    if (!from || !to)
+        throw new Error(
+            `The draggable item ${itemId} or the target of ${targetOf} has no box on screen to drag between.`,
+        );
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+    await page.mouse.down();
+    try {
+        if (whilePressed) await whilePressed();
+        await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, {
+            steps: 10,
+        });
+    } finally {
+        await page.mouse.up();
+    }
+    await expect(
+        item,
+        `Dragging item ${itemId} onto the target of ${targetOf} did not leave it on a target.`,
+    ).toHaveClass(/bloom-draggedToTarget/, { timeout: 10000 });
+    // Both boxes are read at the same moment, in the page's own document: in the BloomPUB preview
+    // the drag also nudges Bloom Player's page slider, which then slides the page back, so a box
+    // read before the drag is not where the target is now.
+    expect(
+        await gamePage.evaluate(
+            (pageElement, ids) => {
+                const middleOf = (selector: string) => {
+                    const r = pageElement
+                        .querySelector(selector)!
+                        .getBoundingClientRect();
+                    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+                };
+                const placed = middleOf(`[data-draggable-id="${ids.item}"]`);
+                const target = middleOf(`[data-target-of="${ids.target}"]`);
+                return Math.max(
+                    Math.abs(placed.x - target.x),
+                    Math.abs(placed.y - target.y),
+                );
+            },
+            { item: itemId, target: targetOf },
+        ),
+        `Item ${itemId} should sit in the middle of the target of ${targetOf} (pixels off)`,
+    ).toBeLessThanOrEqual(1);
+}
