@@ -7,9 +7,13 @@
 //
 // Automates the manual test "Arithmetic Template Adds Pages" (Test Case ID 58). The manual case's
 // "work correctly" is read here as: each page has its template page's problems, and every heading,
-// picture box and equation box on it takes what is put in it, keeps it on saving, and shows no
-// overflow. Typing into an equation box reached with Tab once put the text outside the box's
-// paragraph and marked the box as overflowing (BL-9012); the test checks for that too.
+// picture box and equation box on it takes what is put in it and keeps it on saving. Typing into
+// an equation box reached with Tab once put the text outside the box's paragraph, which made Bloom
+// mark the box as overflowing (BL-9012); the test checks that the text lands in the paragraph.
+// It does not look for overflow marks on an equation box: Bloom no longer checks those boxes for
+// overflow at all (they are language-neutral, so they lack the bloom-visibility-code-on class that
+// getElementsThatCanOverflowOrNeedToBeResized in OverflowChecker.ts looks for), so such a check
+// could not fail.
 //
 // Not checked: the case's first step, "Turn on Performance Measuring for all tests and monitor".
 // It asks the tester to watch Bloom's speed and memory while working, which has no pass or fail.
@@ -52,7 +56,6 @@ import {
     makeJpegFile,
 } from "../helpers/images";
 import { typeWithKeys } from "../helpers/keys";
-import { expectNoOverflowMarks } from "../helpers/overflowMarks";
 import { getPageSize } from "../helpers/pageSize";
 import { setUiStateViaApi } from "../helpers/uiLanguage";
 
@@ -111,11 +114,24 @@ test("a book made from the Arithmetic Template offers its pages first, and each 
                 "sanity check: the Arithmetic Template should offer several pages",
             ).toBeGreaterThan(1);
             const layouts = await readArithmeticLayoutsOnDisk(page, folder);
-            for (const p of pages)
+            for (const p of pages) {
                 expect(
                     layouts[p.id]?.length ?? 0,
                     `sanity check: the template's "${p.label}" page should have problems`,
                 ).toBeGreaterThan(0);
+                // The file is the oracle for the pages Bloom adds, so it must itself have every
+                // part of a problem, or a part missing from both would pass unseen.
+                expect(
+                    layouts[p.id],
+                    `sanity check: every problem on the template's "${p.label}" page should have two picture boxes, three equation boxes, an equals sign and an answer box`,
+                ).toEqual(
+                    layouts[p.id].map(() => ({
+                        pictureBoxes: 2,
+                        equationBoxes: 3,
+                        hasEqualsAndAnswerBox: true,
+                    })),
+                );
+            }
             expect(
                 await getContentPages(page),
                 "sanity check: a book made from a template starts with no content page",
@@ -224,11 +240,8 @@ test("a book made from the Arithmetic Template offers its pages first, and each 
                         `${i + 2}`,
                     ];
                     for (const [j, text] of equation.entries()) {
-                        await tabInto(
-                            page,
-                            boxes.nth(j),
-                            `equation box ${j + 1} of problem ${i + 1}`,
-                        );
+                        const what = `equation box ${j + 1} of problem ${i + 1}`;
+                        await tabInto(page, boxes.nth(j), what);
                         await typeWithKeys(page, text);
                     }
                     addedPage.saved.problems.push({
@@ -250,10 +263,6 @@ test("a book made from the Arithmetic Template offers its pages first, and each 
                             textOutsideParagraphs: "",
                         });
                 }
-                await expectNoOverflowMarks(
-                    page,
-                    `the "${templatePage.label}" page should show no overflow after typing its equations`,
-                );
             },
         );
 
@@ -285,10 +294,6 @@ test("a book made from the Arithmetic Template offers its pages first, and each 
                             `picture box ${j + 1} of problem ${i + 1} should show its own picture`,
                         ).toBe(fileName);
                 }
-                await expectNoOverflowMarks(
-                    page,
-                    `the "${templatePage.label}" page should show no overflow with its pictures in`,
-                );
             },
         );
     }
