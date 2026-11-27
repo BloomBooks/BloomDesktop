@@ -5,6 +5,7 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect } from "@playwright/test";
+import { readBookId } from "./collection";
 
 /**
  * A fingerprint of every file under `folder`: relative path to a SHA-1 of its bytes. Two calls
@@ -40,14 +41,6 @@ export function isInsideFolder(child: string, parent: string): boolean {
         relative === "" ||
         (!relative.startsWith("..") && !Path.isAbsolute(relative))
     );
-}
-
-/** The id Bloom gave the book in `bookFolder`: its meta.json's bookInstanceId. */
-export function readBookId(bookFolder: string): string {
-    const meta = JSON.parse(
-        fs.readFileSync(Path.join(bookFolder, "meta.json"), "utf8"),
-    ) as { bookInstanceId: string };
-    return meta.bookInstanceId;
 }
 
 /** The names of the .htm files directly in `bookFolder`. A book folder has one: the book itself. */

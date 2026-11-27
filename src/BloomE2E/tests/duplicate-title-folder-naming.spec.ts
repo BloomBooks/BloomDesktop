@@ -15,11 +15,8 @@ import {
     typeInGroup,
 } from "../helpers/bookMaking";
 import { bookHtmlPath } from "../helpers/bookHtml";
-import {
-    listBookHtmlFiles,
-    readBookId,
-    waitForBookFolderRenamed,
-} from "../helpers/files";
+import { readBookId } from "../helpers/collection";
+import { listBookHtmlFiles, waitForBookFolderRenamed } from "../helpers/files";
 import type { Page } from "@playwright/test";
 
 test.use({
@@ -39,10 +36,12 @@ async function makeBookWithTitle(
     title: string,
 ): Promise<{ id: string; folder: string }> {
     const untitledFolder = await makeBookFromTemplate(page, "Basic Book");
+    // Bloom's placeholder name for an untitled book is translated, so check only that it is not
+    // already the title's (otherwise the rename below would prove nothing).
     expect(
-        Path.basename(untitledFolder),
-        "test setup: a book with no title yet has a placeholder folder name",
-    ).toMatch(/^Book/);
+        Path.basename(untitledFolder).startsWith(title),
+        "test setup: a book with no title yet is not in a folder named for the title",
+    ).toBe(false);
     const id = readBookId(untitledFolder);
     const pages = await getPages(page);
     expect(
