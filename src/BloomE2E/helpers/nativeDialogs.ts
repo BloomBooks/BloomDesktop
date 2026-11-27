@@ -215,9 +215,9 @@ ${kPauseBetweenScans}
 /**
  * Wait up to `timeoutMs` for the Save As dialog of the Bloom with process id `bloomPid` to show
  * its suggested file name, type `filePath` into its "File name:" box in its place, press Save, and
- * wait until it has closed. `filePath` must
- * not exist yet, so that no "replace it?" box comes up, and must be outside the collection folder,
- * which Bloom refuses. `foregroundBefore` is as for readAndCloseMessageBox.
+ * wait until it has closed. `filePath` must not exist yet, so that no "replace it?" box comes up,
+ * and must be outside the collection folder, which Bloom refuses. `foregroundBefore` is as for
+ * readAndCloseMessageBox.
  */
 export async function answerSaveAsDialog(
     bloomPid: number,
@@ -237,31 +237,28 @@ function FindSaveAs {
     # The "File name:" ComboBox holds an Edit of the same id; only the Edit takes a value.
     $name = $d.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.AndCondition((ById '1001'), $isEdit)))
     $save = $d.FindFirst($Scope::Children, (ById '1'))
-    # The box shows before the dialog puts its suggested name in it (Bloom always gives one), and a
-    # value set before that is overwritten, so Save saves under the suggested name in the folder
-    # that the dialog opened in. So the dialog counts as ready once its box holds a name.
-    if ($name -and $save -and $name.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value) {
-      return @{ dialog = $d; name = $name; save = $save }
-    }
+    if ($name -and $save) { return @{ dialog = $d; name = $name.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern); save = $save } }
   }
   return $null
 }
-# Set the box to $text, and set it again if the dialog changes it within half a second.
-function SetUntilKept($box, $text) {
-  $value = $box.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
+# Set the "File name:" box to $text, and check that it holds it.
+function SetName($name, $text) {
   do {
-    $value.SetValue($text)
-    $watch = [Diagnostics.Stopwatch]::StartNew()
-    do { GiveBack; Start-Sleep -Milliseconds 50; $now = $value.Current.Value } while ($watch.ElapsedMilliseconds -lt 500 -and $now -eq $text)
+    $name.SetValue($text)
+    $now = $name.Current.Value
     if ($now -eq $text) { return }
+    ${kPauseBetweenScans}
   } while ((Get-Date) -lt $deadline)
-  throw ('The "File name:" box did not keep ' + $text + '; it holds ' + $now)
+  throw ('The "File name:" box did not take ' + $text + '; it holds ' + $now)
 }
 do {
-  # The dialog shows before its controls do, so a dialog without them yet is waited on too.
+  # The dialog shows before its controls do, and its "File name:" box shows before the dialog puts
+  # its suggested name in it (Bloom always gives one). A path set before that is overwritten, and
+  # Save then saves under the suggested name in the folder that the dialog opened in. So the dialog
+  # is waited on until its box holds a name.
   $found = FindSaveAs
-  if ($found) {
-    SetUntilKept $found.name $env:BLOOM_E2E_FILE
+  if ($found -and $found.name.Current.Value) {
+    SetName $found.name $env:BLOOM_E2E_FILE
     PressAndWaitForClose $found.save { [bool](FindSaveAs) }
     'saved'
     exit 0
