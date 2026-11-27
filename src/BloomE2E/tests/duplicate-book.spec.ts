@@ -9,6 +9,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
 import {
+    editablePageFrame,
     makeBookFromTemplate,
     waitForEditablePage,
 } from "../helpers/bookMaking";
@@ -45,7 +46,11 @@ function parseJsonKeepingNumberText(text: string): unknown {
         const c = text[i];
         if (c === '"') {
             let end = i + 1;
-            while (text[end] !== '"') end += text[end] === "\\" ? 2 : 1;
+            while (text[end] !== '"') {
+                if (end >= text.length)
+                    throw new Error(`a string in the JSON never ends: ${text}`);
+                end += text[end] === "\\" ? 2 : 1;
+            }
             marked += text.slice(i, end + 1);
             i = end + 1;
         } else if (c === "-" || (c >= "0" && c <= "9")) {
@@ -168,6 +173,27 @@ test("Duplicate Book right after making a book copies its meta.json exactly and 
 
     let copyId = "";
     let copyFolder = "";
+    /**
+     * Wait until the copy's meta.json says what the original's said apart from the id, and fail
+     * with `message` and the difference when it never does. It is read whole each time, so a
+     * reading taken while Bloom is writing it is retried rather than failed.
+     */
+    const expectCopyMetaLikeOriginal = async (message: string) => {
+        await expect
+            .poll(
+                () => {
+                    try {
+                        return comparableMeta(
+                            readMetaKeepingNumberText(copyFolder),
+                        );
+                    } catch (e) {
+                        return `meta.json could not be read: ${e}`;
+                    }
+                },
+                { timeout: 15000, message },
+            )
+            .toEqual(comparableMeta(originalMeta));
+    };
     await step("See the copy in the collection, selected", async () => {
         await expect
             .poll(async () => (await listEditableBooks(page)).length, {
@@ -209,26 +235,11 @@ test("Duplicate Book right after making a book copies its meta.json exactly and 
             "the copy's meta.json should hold the copy's own id",
         ).toBe(copyId);
         // Bloom writes the copy's meta.json twice: Duplicate Book copies the original's and puts the
-        // new id in, then Bloom reads the copy and saves it again a moment later. So wait for the
-        // file to settle on what the original says, and show what it says when it never does.
-        await expect
-            .poll(
-                () => {
-                    try {
-                        return comparableMeta(
-                            readMetaKeepingNumberText(copyFolder),
-                        );
-                    } catch (e) {
-                        return `meta.json could not be read: ${e}`;
-                    }
-                },
-                {
-                    timeout: 15000,
-                    message:
-                        "apart from its id, the copy's meta.json should say what the original's says, with each number written the same and no [] turned into {} or null",
-                },
-            )
-            .toEqual(comparableMeta(originalMeta));
+        // new id in, then Bloom reads the copy and saves it again a moment later. This can see
+        // either; the check after the copy opens in the Edit tab sees what Bloom made of it.
+        await expectCopyMetaLikeOriginal(
+            "apart from its id, the copy's meta.json should say what the original's says, with each number written the same and no [] turned into {} or null",
+        );
         expect(
             bloomApp.takeNonFatalProblems(),
             "Bloom should report no problem while duplicating the book",
@@ -238,10 +249,19 @@ test("Duplicate Book right after making a book copies its meta.json exactly and 
     await step("Open the copy in the Edit tab", async () => {
         await switchTab(page, "edit");
         await waitForEditablePage(page);
+        // The page frame's address is the page's file in its book's folder. The copy's pages
+        // have the same ids as the original's, so the folder is what tells the two apart.
         expect(
-            await getSelectedBookId(page),
-            "the Edit tab should be showing the copy",
-        ).toBe(copyId);
+            decodeURIComponent(editablePageFrame(page).url()).replace(
+                /\\/g,
+                "/",
+            ),
+            "the Edit tab should be showing a page of the copy",
+        ).toContain(`/${Path.basename(copyFolder)}/`);
+        // By now Bloom has read the copy's meta.json to open it, and saved what it read.
+        await expectCopyMetaLikeOriginal(
+            "once the copy is open in the Edit tab, its meta.json should still say what the original's says, apart from its id: Bloom should have read everything that was copied",
+        );
         expect(
             bloomApp.takeNonFatalProblems(),
             "Bloom should report no problem while opening the copy",
