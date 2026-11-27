@@ -136,32 +136,27 @@ export async function tabInto(
     ).toBe(true);
 }
 
-/** What Bloom's overflow check of the page being edited found. */
-export interface IPageOverflowCheck {
-    /** Each box Bloom marked as overflowing (`overflow` or `thisOverflowingParent`), by its classes. */
-    markedBoxes: string[];
-    /** Whether Bloom marked the page as having too much on it (`pageOverflows`). */
-    pageOverflows: boolean;
-}
-
 /**
- * Have Bloom check the page being edited for overflow now, through its heading, and return what
- * the check found once it has run.
+ * Have Bloom check the page being edited for overflow now, and wait until a check of the whole
+ * page has run and found nothing overflowing. Fails, saying which boxes Bloom marked, if the page
+ * stays marked as overflowing.
  *
- * Bloom checks a box 100 ms after a key comes up in it, and that check also checks every box on
- * the page against the page's margins and marks the page (OverflowChecker.AdjustSizeOrMarkOverflow,
- * AddOverflowHandlers). The equation boxes are not among the boxes Bloom checks, since they lack
- * bloom-visibility-code-on, but the heading is. So this presses Shift in the heading, a key that
- * types nothing. The sign that the check ran is a mark put on the heading's translation group
- * while the key is down, `childOverflowingThis`: the check of the heading starts by taking that
- * mark off every element around it (AdjustSizeAndMarkSelfOverflow), and puts it back only on an
- * element the heading runs past.
+ * Bloom checks a box 100 ms after a key comes up in it, and then checks every box it watches on
+ * the page, each against itself and against the page's margins, and marks the page
+ * `pageOverflows` or takes that mark off (OverflowChecker.AdjustSizeOrMarkOverflow,
+ * CheckPageAncestorOverflow, UpdatePageOverflow). The equation boxes are not among the boxes Bloom
+ * watches, since they lack bloom-visibility-code-on, but the heading is. So this presses Shift in
+ * the heading, a key that types nothing, and puts `pageOverflows` on the page while the key is
+ * down. Only that page-wide check takes the mark off, and only when no box it watches overflows,
+ * so its going is the sign both that a check ran after the mark went on, which is after the last
+ * change to the page, and what it found.
  */
-export async function checkPageForOverflow(
+export async function expectBloomFindsNoOverflowOnPage(
     page: Page,
     languageTag: string,
-): Promise<IPageOverflowCheck> {
-    const kMark = "childOverflowingThis";
+    what: string,
+): Promise<void> {
+    const kMark = "pageOverflows";
     const heading = editablePageFrame(page)
         .locator(
             `${kArithmeticHeadingGroup} > .bloom-editable[lang="${languageTag}"]`,
@@ -174,33 +169,60 @@ export async function checkPageForOverflow(
     ).toBeFocused({ timeout: 15000 });
     await page.keyboard.down("Shift");
     await heading.evaluate(
-        (h, mark) => h.parentElement!.classList.add(mark),
+        (h, mark) => h.closest(".bloom-page")!.classList.add(mark),
         kMark,
     );
     await page.keyboard.up("Shift");
+    // The boxes Bloom marked travel with the page's mark, so a failure shows them as they were.
     await expect
         .poll(
             () =>
-                heading.evaluate(
-                    (h, mark) => h.parentElement!.classList.contains(mark),
-                    kMark,
-                ),
+                heading.evaluate((h, mark) => {
+                    const p = h.closest(".bloom-page")!;
+                    return {
+                        pageMarkedOverflowing: p.classList.contains(mark),
+                        boxesMarkedOverflowing: Array.from(
+                            p.querySelectorAll(
+                                ".overflow, .thisOverflowingParent",
+                            ),
+                        ).map((box) => box.className),
+                    };
+                }, kMark),
             {
                 timeout: 15000,
-                message:
-                    "Bloom did not check the heading for overflow after Shift was pressed in it, or found the heading running past its group.",
+                message: `Bloom never found ${what} free of overflow after Shift was pressed in its heading.`,
             },
         )
-        .toBe(false);
-    return heading.evaluate((h) => {
-        const p = h.closest(".bloom-page")!;
-        return {
-            markedBoxes: Array.from(
-                p.querySelectorAll(".overflow, .thisOverflowingParent"),
-            ).map((box) => box.className),
-            pageOverflows: p.classList.contains("pageOverflows"),
-        };
-    });
+        .toEqual({ pageMarkedOverflowing: false, boxesMarkedOverflowing: [] });
+}
+
+/**
+ * The problems of the page being edited that do not lie wholly inside the page's margins, by
+ * their number on the page (1 for the first). Bloom's own overflow check measures only text boxes
+ * it watches, which leaves out the problems' rows of pictures and equations.
+ */
+export async function getProblemsPastMargins(page: Page): Promise<number[]> {
+    return editablePageFrame(page)
+        .locator(".bloom-page .marginBox")
+        .evaluate((marginBox) => {
+            const margin = marginBox.getBoundingClientRect();
+            const kTolerance = 1;
+            return Array.from(
+                marginBox.querySelectorAll(".problemSet .problem"),
+            )
+                .map((problem, index) => ({
+                    r: problem.getBoundingClientRect(),
+                    number: index + 1,
+                }))
+                .filter(
+                    ({ r }) =>
+                        r.top < margin.top - kTolerance ||
+                        r.bottom > margin.bottom + kTolerance ||
+                        r.left < margin.left - kTolerance ||
+                        r.right > margin.right + kTolerance,
+                )
+                .map(({ number }) => number);
+        });
 }
 
 /**

@@ -8,12 +8,13 @@
 // Automates the manual test "Arithmetic Template Adds Pages" (Test Case ID 58). The manual case's
 // "work correctly" is read here as: each page has its template page's problems, and every heading,
 // picture box and equation box on it takes what is put in it and keeps it on saving, and Bloom's
-// overflow check, run once everything is in, finds nothing overflowing on the page. Typing into an
+// overflow check, run once everything is in, finds nothing overflowing on the page, and every
+// problem lies inside the page's margins (which Bloom's check does not measure). Typing into an
 // equation box reached with Tab once put the text outside the box's paragraph, which made Bloom
 // mark the box as overflowing (BL-9012); the test checks that the text lands in the paragraph.
 // Bloom no longer checks the equation boxes themselves for overflow (they are language-neutral, so
 // they lack the bloom-visibility-code-on class that getElementsThatCanOverflowOrNeedToBeResized in
-// OverflowChecker.ts looks for), so the overflow check covers the heading and the page's margins.
+// OverflowChecker.ts looks for), so Bloom's check covers the heading against itself and the margins.
 //
 // Not checked: the case's first step, "Turn on Performance Measuring for all tests and monitor".
 // It asks the tester to watch Bloom's speed and memory while working, which has no pass or fail.
@@ -27,8 +28,9 @@ import {
 } from "../helpers/addPageDialog";
 import {
     arithmeticProblems,
-    checkPageForOverflow,
+    expectBloomFindsNoOverflowOnPage,
     getArithmeticLayoutShown,
+    getProblemsPastMargins,
     getEquationBoxText,
     kArithmeticHeadingGroup,
     problemEquationBoxes,
@@ -295,10 +297,15 @@ test("a book made from the Arithmetic Template offers its pages first, and each 
                             `picture box ${j + 1} of problem ${i + 1} should show its own picture`,
                         ).toBe(fileName);
                 }
+                await expectBloomFindsNoOverflowOnPage(
+                    page,
+                    kLanguage,
+                    `the "${templatePage.label}" page, with its heading, equations and pictures in,`,
+                );
                 expect(
-                    await checkPageForOverflow(page, kLanguage),
-                    `Bloom should find nothing overflowing on the "${templatePage.label}" page, with its heading, equations and pictures in`,
-                ).toEqual({ markedBoxes: [], pageOverflows: false });
+                    await getProblemsPastMargins(page),
+                    `every problem on the "${templatePage.label}" page should lie inside the page's margins`,
+                ).toEqual([]);
             },
         );
     }
