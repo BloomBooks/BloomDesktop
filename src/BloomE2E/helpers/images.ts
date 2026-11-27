@@ -491,6 +491,58 @@ export async function getPicturesShownIn(
     });
 }
 
+/** Whether an image element got its picture, as the browser drawing it has it. */
+export interface IPictureLoad {
+    /** The file name the image element asks for, without any query string. */
+    fileName: string;
+    /** True when the browser has the picture: it loaded rather than failed. */
+    loaded: boolean;
+    /** True when Bloom marked the image as one that failed to load (bloom-imageLoadError). */
+    markedLoadError: boolean;
+    /** The image's alternative text, which the browser draws beside its broken-image icon. */
+    alt: string;
+    /** The size of the box the browser draws the image in, in CSS pixels. */
+    width: number;
+    height: number;
+}
+
+/**
+ * Wait until the browser has either loaded the picture of the image element `image` locates or
+ * given up on it, and say which, with what Bloom has written on the element. A picture the browser
+ * gave up on is drawn as the browser's broken-image icon with the alternative text beside it.
+ */
+export async function getPictureLoad(image: Locator): Promise<IPictureLoad> {
+    await image.waitFor({ state: "attached", timeout: 30000 });
+    return image.evaluate(
+        (img) =>
+            new Promise<IPictureLoad>((resolve) => {
+                const image = img as HTMLImageElement;
+                const report = () => {
+                    const box = image.getBoundingClientRect();
+                    const src = image.getAttribute("src") ?? "";
+                    resolve({
+                        fileName: decodeURIComponent(
+                            src.split("?")[0].split("/").pop() ?? "",
+                        ),
+                        loaded: image.naturalWidth > 0,
+                        markedLoadError: image.classList.contains(
+                            "bloom-imageLoadError",
+                        ),
+                        alt: image.getAttribute("alt") ?? "",
+                        width: box.width,
+                        height: box.height,
+                    });
+                };
+                if (image.complete) {
+                    report();
+                    return;
+                }
+                image.addEventListener("load", report, { once: true });
+                image.addEventListener("error", report, { once: true });
+            }),
+    );
+}
+
 /**
  * The picture to act on: the one inside `within` when a scope is given, otherwise the page's first
  * image slot.

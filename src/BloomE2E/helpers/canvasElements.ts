@@ -1267,8 +1267,10 @@ export async function rightClickCanvasElementEdge(page: Page): Promise<void> {
  * bloomImages.ts) and leaves the stylesheet to decide whether it shows (`.bloom-canvas:hover` in
  * editMode.less), so it is always in the page and only its visibility changes.
  */
-function changeImageButton(page: Page): Locator {
-    return canvas(page).locator(":scope > .changeImageButton");
+function changeImageButton(page: Page, pictureCanvas?: Locator): Locator {
+    return (pictureCanvas ?? canvas(page)).locator(
+        ":scope > .changeImageButton",
+    );
 }
 
 /**
@@ -1283,9 +1285,11 @@ function changeImageButton(page: Page): Locator {
 export async function hoverOverCanvas(
     page: Page,
     at: { xFraction: number; yFraction: number },
+    pictureCanvas?: Locator,
 ): Promise<void> {
-    const box = await getCanvasRect(page);
-    await canvas(page).hover({
+    const target = pictureCanvas ?? canvas(page);
+    const box = await requireBox(target, "the canvas to hover");
+    await target.hover({
         position: { x: box.width * at.xFraction, y: box.height * at.yFraction },
         force: true,
         timeout: 30000,
@@ -1293,7 +1297,7 @@ export async function hoverOverCanvas(
     // Wait until the browser itself counts the pointer as over the canvas, so a check that
     // something stays hidden on hover cannot pass merely because the hover never took.
     await expect
-        .poll(async () => canvas(page).evaluate((el) => el.matches(":hover")), {
+        .poll(async () => target.evaluate((el) => el.matches(":hover")), {
             timeout: 15000,
             message:
                 "The pointer was moved onto the canvas, but the canvas is not hovered.",
@@ -1341,8 +1345,9 @@ export async function expectChangeImageButton(
     page: Page,
     showing: boolean,
     why: string,
+    pictureCanvas?: Locator,
 ): Promise<void> {
-    const button = changeImageButton(page);
+    const button = changeImageButton(page, pictureCanvas);
     await expect(
         button,
         "The canvas has no Change Image button at all.",
@@ -1357,9 +1362,25 @@ export async function expectChangeImageButton(
  * (SetupMetadataButton in bloomImages.ts) only once the background holds a real picture, marks it
  * `imgMetadataProblem` when the picture has no copyright, and leaves the stylesheet
  * (editMode.less) to decide whether it shows and which icon it wears.
+ *
+ * This and the other picture-button helpers below work on the canvas of a Canvas page or a custom
+ * layout page by default; pass `pictureCanvas` (a `.bloom-canvas`, such as the cover's picture box
+ * from `pictureCanvasOf`) to work on another one.
  */
-export function imageInfoButton(page: Page): Locator {
-    return canvas(page).locator(":scope > .editMetadataButton");
+export function imageInfoButton(page: Page, pictureCanvas?: Locator): Locator {
+    return (pictureCanvas ?? canvas(page)).locator(
+        ":scope > .editMetadataButton",
+    );
+}
+
+/**
+ * The picture box (`.bloom-canvas`) that holds the picture `image` locates, such as a cover's
+ * picture box, for the picture-button helpers' `pictureCanvas`.
+ */
+export function pictureCanvasOf(image: Locator): Locator {
+    return image.locator(
+        "xpath=ancestor::div[contains(concat(' ', @class, ' '), ' bloom-canvas ')][1]",
+    );
 }
 
 /** How the canvas's image information button looks at one moment. */
@@ -1376,8 +1397,9 @@ export interface IImageInfoButtonState {
 /** Read how the canvas's image information button looks now. */
 export async function getImageInfoButtonState(
     page: Page,
+    pictureCanvas?: Locator,
 ): Promise<IImageInfoButtonState> {
-    const button = imageInfoButton(page);
+    const button = imageInfoButton(page, pictureCanvas);
     if ((await button.count()) === 0)
         return { present: false, showing: false, missingInfo: false, icon: "" };
     const showing = await button.isVisible();
@@ -1403,11 +1425,15 @@ export async function expectImageInfoButton(
     page: Page,
     expected: Partial<Omit<IImageInfoButtonState, "present">>,
     why: string,
+    pictureCanvas?: Locator,
 ): Promise<void> {
     await expect
         .poll(
             async () => {
-                const state = await getImageInfoButtonState(page);
+                const state = await getImageInfoButtonState(
+                    page,
+                    pictureCanvas,
+                );
                 const shown: Record<string, unknown> = {
                     present: state.present,
                 };
