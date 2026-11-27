@@ -11,8 +11,8 @@
 // and every Bloom of the same Windows user shares it, so a person's own bulk export may still be
 // sitting there. makeAllBloomPubs therefore moves any folder already there aside before Make, reads
 // what Bloom made into memory, and puts the person's folder back. Bloom then opens the folder in
-// File Explorer (BulkBloomPubCreator, also under --e2e), and makeAllBloomPubs closes that window
-// before it touches the folder.
+// File Explorer (BulkBloomPubCreator, also under --e2e), and makeAllBloomPubs closes that window,
+// and no Explorer window that was open before Make, before it touches the folder.
 //
 // A .bloombundle is an uncompressed tar of the .bloompub files and the .bloomshelf file
 // (BloomTarArchive); a .bloompub is a zip. Bloom Reader reads both, so readBloomBundle and
@@ -23,7 +23,10 @@ import * as os from "node:os";
 import * as Path from "node:path";
 import { inflateRawSync } from "node:zlib";
 import { expect, type Locator, type Page } from "@playwright/test";
-import { closeExplorerWindowsOnFolder } from "./fileExplorer";
+import {
+    closeNewExplorerWindowsOnFolder,
+    listExplorerWindowHandles,
+} from "./fileExplorer";
 import { realClick } from "./realClick";
 import { selectPublishDestination } from "./publish";
 
@@ -142,6 +145,7 @@ async function makeAllBloomPubsInto(
     page: Page,
 ): Promise<IMakeAllBloomPubsResult> {
     const dialog = bulkBloomPubDialog(page);
+    const explorerWindowsBefore = await listExplorerWindowHandles();
     await realClick(dialog.getByRole("button", { name: "Make", exact: true }));
     await expect(
         dialog,
@@ -174,11 +178,13 @@ async function makeAllBloomPubsInto(
                 "protects and reads.",
         );
     }
-    // Bloom opens the folder in File Explorer once it is done. Explorer names the folder by its
-    // long path.
-    await closeExplorerWindowsOnFolder(
+    // Bloom opens the folder in File Explorer once it is done: close that window, and only that
+    // one. Explorer names the folder by its long path. This is cleanup, so finding no window
+    // does not fail the export.
+    await closeNewExplorerWindowsOnFolder(
         fs.realpathSync.native(OUTPUT_FOLDER),
-        30000,
+        explorerWindowsBefore,
+        15000,
     );
 
     const progressDialog = page
