@@ -50,29 +50,35 @@ export async function clickBookTileThroughOneProblemDialog(
             selectError = error;
         });
         let shown: string[] = [];
+        // Polling the texts themselves, so that a failure shows what each dialog said.
         await expect
             .poll(
                 async () => {
                     if (selectError) throw selectError;
                     shown = await readProblemDialogs(page);
-                    return shown.length;
+                    return shown;
                 },
                 {
                     timeout: 60000,
-                    message: "Bloom never showed a dialog about the book",
+                    message:
+                        "Bloom should show exactly one dialog about the book",
                 },
             )
-            .toBe(1);
+            .toHaveLength(1);
+        const text = shown[0];
         await apiPost(page, "common/closeReactDialog");
         await expect
-            .poll(async () => (await readProblemDialogs(page)).length, {
+            .poll(async () => readProblemDialogs(page), {
                 timeout: 30000,
-                message: "the dialog never closed",
+                message: `the dialog that said "${text}" never closed`,
             })
-            .toBe(0);
+            .toEqual([]);
         await selected;
-        if (selectError) throw selectError;
-        return shown[0];
+        if (selectError)
+            throw new Error(
+                `Selecting the book failed after Bloom's dialog said "${text}": ${String(selectError)}`,
+            );
+        return text;
     } finally {
         resumeWatcher();
     }

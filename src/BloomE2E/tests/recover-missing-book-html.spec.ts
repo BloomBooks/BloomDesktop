@@ -84,6 +84,8 @@ test("a book whose .htm was deleted is recovered from its backup [Test Case ID 3
     let otherFolder = "";
     let htmName = "";
     let pageCount = 0;
+    // What the test leaves in the backup before it starts Bloom again.
+    let backupAsLeft = "";
 
     await step(
         "Make a book with pages of text and a picture, and another book",
@@ -176,7 +178,7 @@ test("a book whose .htm was deleted is recovered from its backup [Test Case ID 3
                     typed,
                     `test setup: ${kBackupFile} should hold text the test typed`,
                 ).toBeDefined();
-                const backupAsLeft = backup.split(typed!).join(kBackupVersion);
+                backupAsLeft = backup.split(typed!).join(kBackupVersion);
                 fs.writeFileSync(backupPath, backupAsLeft, "utf8");
                 fs.rmSync(bookHtmPath(folder));
                 expect(
@@ -221,6 +223,13 @@ test("a book whose .htm was deleted is recovered from its backup [Test Case ID 3
                 restored,
                 "the restored book should still show its picture",
             ).toContain("bird.png");
+            // The book is left with a backup of what was restored. (Bloom copies the backup, and
+            // also saves the book once it is selected, which backs up the restored .htm, so a
+            // move instead of the copy would leave the same backup.)
+            expect(
+                fs.readFileSync(Path.join(folder, kBackupFile), "utf8"),
+                `the book should still have a ${kBackupFile} holding what was restored`,
+            ).toBe(backupAsLeft);
             expect(
                 fs
                     .readdirSync(folder)
