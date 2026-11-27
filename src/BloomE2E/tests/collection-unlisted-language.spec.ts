@@ -27,6 +27,7 @@ import {
     cancelCollectionSettings,
     getCollectionSettingsLanguage,
     kEnterpriseSubscriptionCode,
+    kTestBookshelves,
     openCollectionSettings,
     openCollectionSettingsLanguageChooser,
     readSavedLanguageSetting,
@@ -53,9 +54,14 @@ import {
     typeUnlistedLanguageName,
 } from "../helpers/languagePicker";
 import {
+    makeAllBloomPubs,
+    openMakeAllBloomPubsDialog,
+    readZip,
+    setMakeAllBloomPubsOption,
+} from "../helpers/bulkBloomPub";
+import {
     getLanguagesInBook,
     selectPublishDestination,
-    stageBloomPub,
 } from "../helpers/publish";
 import { realClick } from "../helpers/realClick";
 import { setUiStateViaApi } from "../helpers/uiLanguage";
@@ -65,8 +71,10 @@ test.use({
     collectionSpec: {
         name: "unlisted-language",
         languages: ["en"],
-        // Publishing an ePUB needs Pro.
+        // Publishing an ePUB needs Pro, and Make All BloomPUBs needs Enterprise.
         subscriptionCode: kEnterpriseSubscriptionCode,
+        // With no bookshelf, Make All BloomPUBs fails before it makes anything (BL-17197).
+        bookshelf: kTestBookshelves[0],
     },
 });
 
@@ -78,18 +86,20 @@ const kTag = "qaa-PG-x-Whatcham";
 const kText = "Whatcham words on a page.";
 
 test("an unlisted language gets the tag qaa-<country>-x-<name>, which the collection, a book in it and its publications keep [Test Case ID 114]", async ({
-    page,
     bloomApp,
     step,
 }) => {
     test.setTimeout(420000);
 
+    // The helpers find the Settings dialog's pages and groups, and the chooser's countries, by
+    // their English names. Switching the UI language can replace the shell page, so the page is
+    // read from bloomApp after it.
+    await setUiStateViaApi(bloomApp, "en", false);
+    const page = bloomApp.page;
+
     await step(
         "On the Languages page of Collection Settings, open the chooser for the first language",
         async () => {
-            // The helpers find the Settings dialog's pages and groups, and the chooser's
-            // countries, by their English names.
-            await setUiStateViaApi(bloomApp, "en", false);
             await openCollectionSettings(page);
             await showCollectionSettingsPage(page, "Languages");
             expect(
@@ -170,7 +180,7 @@ test("an unlisted language gets the tag qaa-<country>-x-<name>, which the collec
         },
     );
 
-    await step(
+    const bookFolder = (await step(
         "Make a book, type in its first-language box, and check its HTML carries the tag",
         async () => {
             // The book gets no title, so its folder keeps the name it was made with.
@@ -190,8 +200,9 @@ test("an unlisted language gets the tag qaa-<country>-x-<name>, which the collec
                     { message: "the book's HTML on disk", timeout: 30000 },
                 )
                 .toEqual({ contentLanguage1: kTag, langOfText: [kTag] });
+            return folder;
         },
-    );
+    ))!;
 
     await step(
         "Publish it as a BloomPUB, and check the tag travels with the text",
@@ -204,18 +215,27 @@ test("an unlisted language gets the tag qaa-<country>-x-<name>, which the collec
                 languages.find((l) => l.code === kTag)?.name,
                 `the Publish tab's languages: ${JSON.stringify(languages)}`,
             ).toMatch(new RegExp(`^${kName} \\(`));
-            const staged = await stageBloomPub(reopened);
-            const stagedHtml = fs
-                .readdirSync(staged)
-                .filter((name) => name.endsWith(".htm"));
-            expect(
-                stagedHtml,
-                `the staged BloomPUB in ${staged} should have one .htm`,
-            ).toHaveLength(1);
-            const html = fs.readFileSync(
-                Path.join(staged, stagedHtml[0]),
-                "utf8",
+            // A real .bloompub, as Bloom writes it to disk. Make All BloomPUBs writes it without
+            // the save dialog that the single-book Save does.
+            await openMakeAllBloomPubsDialog(reopened);
+            await setMakeAllBloomPubsOption(reopened, "bookshelfFile", false);
+            await setMakeAllBloomPubsOption(reopened, "bloomBundle", false);
+            const result = await makeAllBloomPubs(reopened);
+            const bloomPubName = `${Path.basename(bookFolder)}.bloompub`;
+            const bloomPub = result.files.get(bloomPubName);
+            if (!bloomPub)
+                throw new Error(
+                    `Make All BloomPUBs made no ${bloomPubName}. It made: ` +
+                        `${[...result.files.keys()].join(", ")}. The progress box said:\n${result.log}`,
+                );
+            const htmlEntries = readZip(bloomPub).filter((entry) =>
+                entry.name.endsWith(".htm"),
             );
+            expect(
+                htmlEntries.map((entry) => entry.name),
+                "the BloomPUB should hold one .htm",
+            ).toHaveLength(1);
+            const html = htmlEntries[0].content.toString("utf8");
             expect(await readLanguageMarks(reopened, html)).toEqual({
                 contentLanguage1: kTag,
                 langOfText: [kTag],
@@ -226,6 +246,8 @@ test("an unlisted language gets the tag qaa-<country>-x-<name>, which the collec
     await step(
         "Publish it as an ePUB, and check the ePUB's language is the tag",
         async () => {
+            // The preview stages the ePUB's files, and Save... zips that staging folder as it is
+            // (EpubMaker.ZipAndSaveEpub); Save itself opens the system's save dialog.
             await openEpubPublishScreen(reopened);
             await showEpubPreview(reopened);
             const packageText = await readEpubPreviewPackage(reopened);
