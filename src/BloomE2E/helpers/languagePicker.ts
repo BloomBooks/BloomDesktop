@@ -514,3 +514,167 @@ export async function cancelLanguageChooser(
     );
     await expect(chooser).toHaveCount(0);
 }
+
+/** How the open chooser fits in Bloom's window, as getLanguageChooserFit reads it. */
+export interface ILanguageChooserFit {
+    /** The window's inside, in CSS pixels. */
+    window: { width: number; height: number };
+    /** The chooser's dialog box (its MUI paper), in CSS pixels from the window's top left. */
+    dialog: { left: number; top: number; right: number; bottom: number };
+    /**
+     * The chooser's visible controls (buttons, text boxes, its title) that do not lie wholly
+     * inside the dialog box, each named by its test id, id, or text. The language cards in the
+     * search results are left out, since that list scrolls by design.
+     */
+    controlsCutOff: string[];
+    /**
+     * The parts of the chooser that hold more than they show, so that a scroll bar shows: every
+     * element that may scroll (overflow auto or scroll) and does, named as above followed by the
+     * way it scrolls, "(sideways)" or "(up and down)"; an element that scrolls both ways is listed
+     * twice.
+     */
+    scrollingParts: string[];
+}
+
+/**
+ * Read how the open chooser fits in Bloom's window: the window's size, the dialog's box, which of
+ * its controls stick out of that box, and which of its parts scroll.
+ */
+export async function getLanguageChooserFit(
+    page: Page,
+): Promise<ILanguageChooserFit> {
+    return languageChooserDialog(page).evaluate((dialog) => {
+        const paper = dialog.querySelector(".MuiDialog-paper") ?? dialog;
+        const box = paper.getBoundingClientRect();
+        const name = (element: Element) =>
+            element.getAttribute("data-testid") ||
+            element.id ||
+            (element as HTMLElement).innerText?.trim().slice(0, 40) ||
+            `${element.tagName.toLowerCase()}.${element.className}`;
+        const list = dialog.querySelector("#language-card-list");
+        const controls = Array.from(
+            dialog.querySelectorAll("button, input, textarea, h1"),
+        ).filter(
+            (element) =>
+                !list?.contains(element) &&
+                (element as HTMLElement).checkVisibility({
+                    visibilityProperty: true,
+                }),
+        );
+        const controlsCutOff = controls
+            .filter((element) => {
+                const r = element.getBoundingClientRect();
+                return (
+                    r.left < box.left - 0.5 ||
+                    r.top < box.top - 0.5 ||
+                    r.right > box.right + 0.5 ||
+                    r.bottom > box.bottom + 0.5
+                );
+            })
+            .map(name);
+        const scrolls = (overflow: string) =>
+            overflow === "auto" || overflow === "scroll";
+        const scrollingParts = [
+            dialog,
+            ...Array.from(dialog.querySelectorAll("*")),
+        ].flatMap((element) => {
+            const style = getComputedStyle(element);
+            return [
+                scrolls(style.overflowX) &&
+                    element.scrollWidth > element.clientWidth + 1 &&
+                    `${name(element)} (sideways)`,
+                scrolls(style.overflowY) &&
+                    element.scrollHeight > element.clientHeight + 1 &&
+                    `${name(element)} (up and down)`,
+            ].filter((part): part is string => !!part);
+        });
+        return {
+            window: { width: window.innerWidth, height: window.innerHeight },
+            dialog: {
+                left: box.left,
+                top: box.top,
+                right: box.right,
+                bottom: box.bottom,
+            },
+            controlsCutOff,
+            scrollingParts,
+        };
+    });
+}
+
+/** What happened when a tag was typed by hand into the chooser's prompt. */
+export interface ITagTypedByHand {
+    /** The prompt's question. */
+    prompt: string;
+    /** The messages of the alerts that followed, in order (none when the tag was taken). */
+    alerts: string[];
+}
+
+/**
+ * Type a language tag by hand, as a person does: with the Customize dialog open, Ctrl-click its
+ * tag preview, which makes the chooser ask for a tag with the browser's own prompt, and answer it
+ * with `tag`. Returns once the chooser has dealt with the answer: the Customize dialog has closed
+ * (the tag was taken) or an alert has come (it was refused), so that the caller can tell which.
+ */
+export async function typeLanguageTagByHand(
+    page: Page,
+    tag: string,
+): Promise<ITagTypedByHand> {
+    const preview = customizeDialog(page).getByTestId(
+        "customization-dialog-tag-preview",
+    );
+    await expect(preview, "the Customize dialog is not open").toBeVisible();
+    const prompts: string[] = [];
+    const alerts: string[] = [];
+    const answer = async (dialog: import("@playwright/test").Dialog) => {
+        if (dialog.type() === "prompt") {
+            prompts.push(dialog.message());
+            await dialog.accept(tag);
+        } else {
+            if (dialog.type() === "alert") alerts.push(dialog.message());
+            await dialog.dismiss();
+        }
+    };
+    page.on("dialog", answer);
+    try {
+        await page.keyboard.down("Control");
+        try {
+            await realClick(preview);
+        } finally {
+            await page.keyboard.up("Control");
+        }
+        await expect
+            .poll(() => prompts.length, {
+                message: "Ctrl-clicking the tag preview did not open a prompt",
+            })
+            .toBe(1);
+        await expect
+            .poll(
+                async () =>
+                    alerts.length > 0 ||
+                    (await customizeDialog(page).count()) === 0,
+                {
+                    message:
+                        "after the prompt was answered, the Customize dialog neither closed nor gave an alert",
+                },
+            )
+            .toBe(true);
+    } finally {
+        page.off("dialog", answer);
+    }
+    return { prompt: prompts[0], alerts };
+}
+
+/** Press Escape in the open chooser and return once it has closed. */
+export async function escapeLanguageChooser(page: Page): Promise<void> {
+    const chooser = languageChooserDialog(page);
+    await expect(chooser.getByTestId("search-bar")).toBeVisible();
+    await chooser.locator("#search-bar").focus();
+    await page.keyboard.press("Escape");
+    await expect(chooser).toHaveCount(0);
+}
+
+/** Whether the Collection Settings dialog is open. */
+export async function isSettingsDialogOpen(page: Page): Promise<boolean> {
+    return (await settingsDialog(page).count()) === 1;
+}
