@@ -492,12 +492,13 @@ export async function expectPreviewSoundsPlayed(
     await player
         .waitForFunction(
             (count) => {
-                const plays =
-                    (
-                        window as unknown as {
-                            e2eSoundsPlayed?: { outcome: string }[];
-                        }
-                    ).e2eSoundsPlayed ?? [];
+                const plays = (
+                    window as unknown as {
+                        e2eSoundsPlayed?: { outcome: string }[];
+                    }
+                ).e2eSoundsPlayed;
+                // Nothing is recording: stop waiting, and let the reading below say so.
+                if (!plays) return true;
                 return (
                     plays.some((p) => p.outcome.startsWith("failed")) ||
                     (plays.length >= count &&
