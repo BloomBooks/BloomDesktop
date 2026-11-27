@@ -14,7 +14,7 @@
 
 import type { Page } from "@playwright/test";
 import type { IProblemDialogWatcher } from "../fixtures/problemDialogWatcher";
-import { expect, test } from "../fixtures/bloomTest";
+import { expect, test, type IBloomApp } from "../fixtures/bloomTest";
 import { getUiString } from "../helpers/api";
 import {
     editablePageFrame,
@@ -27,6 +27,7 @@ import {
     type IProblemDialogButton,
     type IProblemDialogShown,
 } from "../helpers/problemDialogs";
+import { setUiStateViaApi } from "../helpers/uiLanguage";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
@@ -78,10 +79,19 @@ interface IExpectedDialog {
     buttons: string[];
 }
 
-/** The title bars of the two levels of problem, in Bloom's current UI language. */
+/** The title bars of the two levels of problem. */
 type IDialogTitles = Record<IExpectedDialog["level"], string>;
 
-async function readDialogTitles(page: Page): Promise<IDialogTitles> {
+/**
+ * Put Bloom's UI in English, and return the title bars of the two levels of problem. In another UI
+ * language a dialog shows its English title until the translation arrives, so a check of what it
+ * showed could pass or fail on how quickly that came.
+ */
+async function pinEnglishAndReadDialogTitles(
+    bloomApp: IBloomApp,
+): Promise<IDialogTitles> {
+    await setUiStateViaApi(bloomApp, "en", false);
+    const page = bloomApp.page;
     return {
         nonfatal: await getUiString(
             page,
@@ -159,11 +169,12 @@ async function makeBook(page: Page): Promise<void> {
 
 test("books with the fake notify titles show their notices, with the buttons each was given [Test Case ID 52]", async ({
     page,
+    bloomApp,
     problemDialogWatcher,
 }) => {
     test.setTimeout(300000);
+    const titles = await pinEnglishAndReadDialogTitles(bloomApp);
     await makeBook(page);
-    const titles = await readDialogTitles(page);
     const cases: [string, string, string[]][] = [
         ["Error NotifyUser NoReport", kFakeProblem, [kClose]],
         ["Error NotifyUser NoReport 2", kFakeProblem, [kClose]],
@@ -202,11 +213,12 @@ test("books with the fake notify titles show their notices, with the buttons eac
 
 test("books with the fake non-fatal report titles show the problem report dialog [Test Case ID 52]", async ({
     page,
+    bloomApp,
     problemDialogWatcher,
 }) => {
     test.setTimeout(300000);
+    const titles = await pinEnglishAndReadDialogTitles(bloomApp);
     await makeBook(page);
-    const titles = await readDialogTitles(page);
     const cases: [string, string][] = [
         // With no message of its own, the dialog says what the exception says.
         ["Error ReportNonFatalException", kFakeException],
@@ -239,7 +251,7 @@ test("books with the fake fatal titles show the fatal report dialog, and Bloom q
     problemDialogWatcher,
 }) => {
     test.setTimeout(480000);
-    const titles = await readDialogTitles(bloomApp.page);
+    const titles = await pinEnglishAndReadDialogTitles(bloomApp);
     const cases: [string, string][] = [
         ["Error ReportFatalException", kFakeException],
         ["Error ReportFatalMessageWithStackTrace", kFakeProblem],

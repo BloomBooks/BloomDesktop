@@ -231,8 +231,9 @@ export async function doThroughOneProblemDialog(
                     if (actionFailed && !bloomQuitsWithPid) throw actionError;
                     found = await findProblemDialogsShown(page);
                     // A dialog is ready once it has its title, its message and its buttons: a
-                    // report dialog asks Bloom for its heading after it opens, and the title
-                    // and button labels are localized as they render.
+                    // report dialog asks Bloom for its heading after it opens. In a UI language
+                    // other than English, the title and labels show in English until their
+                    // translations arrive, so a test that checks them pins the UI language.
                     const ready =
                         found.length === 1 &&
                         found[0].shown.title !== "" &&
@@ -250,8 +251,21 @@ export async function doThroughOneProblemDialog(
             .toBe(1);
         const { page: dialogPage, shown } = found[0];
         if (bloomQuitsWithPid) {
-            // Bloom quits as soon as the dialog closes, which may be before it answers.
-            await closeProblemDialog(page).catch(() => {});
+            expect(
+                isProcessRunning(bloomQuitsWithPid),
+                `Bloom (process ${bloomQuitsWithPid}) is still running while its "${shown.title}" dialog shows`,
+            ).toBe(true);
+            // Bloom quits as soon as the dialog closes, which may be before it answers: a dropped
+            // connection is all that may go wrong with the close. Any other failure (an error
+            // status, no Bloom listening) means the close did not happen.
+            await closeProblemDialog(page).catch((error: unknown) => {
+                const code = (error as NodeJS.ErrnoException).code;
+                if (
+                    code !== "ECONNRESET" &&
+                    !/socket hang up/i.test(String(error))
+                )
+                    throw error;
+            });
             await expect
                 .poll(() => isProcessRunning(bloomQuitsWithPid), {
                     timeout: 30000,
