@@ -94,6 +94,28 @@ export async function chooseHelpFromHelpMenu(page: Page): Promise<void> {
     await expect(entry, "the help menu stayed open after Help...").toBeHidden();
 }
 
+/**
+ * Open the top bar's help menu and choose "Report a Problem...", which asks Bloom to show its
+ * report dialog (waitForReportDialogPage in problemDialogs.ts finds it). The entry is found by its
+ * label in the UI's language (HelpMenu.ReportAProblemToolStripMenuItem).
+ */
+export async function chooseReportAProblemFromHelpMenu(
+    page: Page,
+): Promise<void> {
+    const label = await getUiString(
+        page,
+        "HelpMenu.ReportAProblemToolStripMenuItem",
+        "Report a Problem...",
+    );
+    await page.locator("#helpMenuButton").click();
+    const entry = page.getByRole("menuitem", { name: label, exact: true });
+    await entry.click();
+    await expect(
+        entry,
+        "the help menu stayed open after Report a Problem...",
+    ).toBeHidden();
+}
+
 /** What GET workspace/zoom replies with: the Edit tab's zoom, as a percentage. */
 export interface IZoomInfo {
     zoom: number;
