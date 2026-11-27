@@ -35,7 +35,7 @@ export interface IHelpTopicShown {
 const kReadHelpWindows = `
 $ErrorActionPreference = 'Stop'
 Add-Type @'
-using System; using System.Collections.Generic; using System.Runtime.InteropServices; using System.Text;
+using System; using System.Collections.Generic; using System.Linq; using System.Runtime.InteropServices; using System.Text;
 public static class BloomHelpWindows {
   delegate bool EnumProc(IntPtr h, IntPtr l);
   [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc f, IntPtr l);
@@ -59,18 +59,38 @@ public static class BloomHelpWindows {
     return found;
   }
   [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
-  // Every top-level window of the process pid, as "class|title|visible", for a failure message.
+  // Every visible top-level window of the process pid, and every help window, as
+  // "class|title|visible", with its child windows, for a failure message.
   public static List<string> Describe(int pid) {
     var found = new List<string>();
     EnumWindows((h, l) => {
       int p; GetWindowThreadProcessId(h, out p);
-      if (p == pid) {
+      if (p == pid && (IsWindowVisible(h) || ClassOf(h) == "HH Parent")) {
         var title = new StringBuilder(256); GetWindowText(h, title, 256);
-        found.Add(ClassOf(h) + "|" + title + "|" + (IsWindowVisible(h) ? "visible" : "hidden"));
+        var children = new List<string>();
+        EnumChildWindows(h, (c, l2) => { var t = new StringBuilder(256); GetWindowText(c, t, 256); children.Add(ClassOf(c) + (t.Length > 0 ? ":" + t : "")); return true; }, IntPtr.Zero);
+        var line = ClassOf(h) + "|" + title + "|" + (IsWindowVisible(h) ? "visible" : "hidden");
+        if (ClassOf(h) == "HH Parent") line += "|document: " + WhyNoDocument(h);
+        if (children.Count > 0) line += "|children: " + string.Join(", ", children.Distinct());
+        found.Add(line);
       }
       return true;
     }, IntPtr.Zero);
     return found;
+  }
+  // What stands in the way of reading a help window's document, for a failure message.
+  static string WhyNoDocument(IntPtr h) {
+    IntPtr ie = IntPtr.Zero;
+    EnumChildWindows(h, (c, l) => { if (ClassOf(c) == "Internet Explorer_Server") { ie = c; return false; } return true; }, IntPtr.Zero);
+    if (ie == IntPtr.Zero) return "no Internet Explorer_Server child";
+    IntPtr result;
+    if (SendMessageTimeout(ie, RegisterWindowMessage("WM_HTML_GETOBJECT"), IntPtr.Zero, IntPtr.Zero, 2, 5000, out result) == IntPtr.Zero)
+      return "WM_HTML_GETOBJECT timed out or failed, error " + Marshal.GetLastWin32Error();
+    if (result == IntPtr.Zero) return "WM_HTML_GETOBJECT answered 0";
+    var iid = new Guid("626FC520-A41E-11CF-A731-00A0C9082637");
+    object document;
+    var hr = ObjectFromLresult(result, ref iid, IntPtr.Zero, out document);
+    return hr == 0 ? "readable" : "ObjectFromLresult failed, 0x" + hr.ToString("X8");
   }
   public static bool IsVisible(IntPtr h) { return IsWindowVisible(h); }
   // The document a help window shows (an IHTMLDocument2), or null while it has none.
@@ -206,12 +226,10 @@ export async function openHelpAndReadTopic(
             )
             .toBe(true);
     } catch (error) {
-        // Say what there was instead: a help window whose page had not loaded, or no help window
-        // at all and which windows Bloom had.
-        const seen =
-            lastSeen.length > 0
-                ? `help windows: ${JSON.stringify(lastSeen)}`
-                : `no help window; Bloom's windows: ${await describeWindows(pid).catch((e) => String(e))}`;
+        // Say what there was instead: the help windows that were found, and every window of
+        // Bloom's with its child windows (a help window whose document could not be read says
+        // why, and an error box beside it shows up here too).
+        const seen = `help windows: ${JSON.stringify(lastSeen)}; Bloom's windows: ${await describeWindows(pid).catch((e) => String(e))}`;
         // Close whatever opened, but report the failure that names the button, not a failure
         // to close.
         await closeHelpWindows(pid).catch(() => undefined);
