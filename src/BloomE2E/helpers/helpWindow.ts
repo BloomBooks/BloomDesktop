@@ -208,8 +208,10 @@ export async function openHelpAndReadTopic(
         `a help window was already open before ${whatWasClicked}`,
     ).toEqual([]);
     await openHelp();
+    // A window whose URL or title could not be read is not taken as loaded, so that the failure
+    // below gives the reason instead of a check of an empty URL or title.
     const isLoaded = (w: IHelpWindow) =>
-        w.visible && w.readyState === "complete";
+        w.visible && w.readyState === "complete" && w.problem === "";
     let lastSeen: IHelpWindow[] = [];
     try {
         await expect
