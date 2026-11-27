@@ -434,7 +434,11 @@ export async function clickEpubPreviewArrow(
         )
         .toBe(true);
     const frame = getEpubPreviewPageFrame(page);
-    if (frame) await waitForEpubPreviewPageToFinishLoading(frame);
+    if (!frame)
+        throw new Error(
+            `The ePUB preview's page went away right after the ${side} arrow turned to ${after}.`,
+        );
+    await waitForEpubPreviewPageToFinishLoading(frame);
     return after!;
 }
 
