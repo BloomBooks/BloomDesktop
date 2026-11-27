@@ -167,6 +167,11 @@ real bug in the code under test; read the message and fix it rather than working
   answered through Bloom's e2e hook and what the progress box said.
 - `helpers/bloomLibraryDownload.ts` — `downloadBookFromBloomLibrary`: copy a public book's files
   from bloomlibrary.org as Bloom's own download does, for a test that needs a real book.
+- `helpers/appearanceMigration.ts` — `findAppearanceMigration` (the migration Bloom applies to a
+  pre-6.0 book's custom CSS), `copyBookKeepingItsOldCss` (a copy Bloom leaves on the legacy theme,
+  to compare with), and `readPageLayouts`/`waitForBookLaidOut` (where every page's margin box,
+  pictures and text boxes sit in mm, and which text overflows or picture failed to load). With
+  `collectionBookPreviewOf` (helpers/collection.ts), the preview of one given book.
 - `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
 - `helpers/addPageDialog.ts` — open, read, scroll and close the real Add Page dialog, and add a
   page through it. Tests that only need a page in their book call `addPage` instead.

@@ -704,6 +704,20 @@ export function collectionBookPreview(page: Page): FrameLocator {
     return page.getByTestId(kBookPane).frameLocator(kBookPreviewFrame);
 }
 
+/**
+ * The Collections tab's preview of the book with this id. The pane names the selected book's id
+ * in its preview frame's address, so this finds no frame until the pane previews that book, not
+ * the book selected before it.
+ */
+export function collectionBookPreviewOf(
+    page: Page,
+    bookId: string,
+): FrameLocator {
+    return page
+        .getByTestId(kBookPane)
+        .frameLocator(`${kBookPreviewFrame}[src*="dummy=${bookId}"]`);
+}
+
 /** The front cover in the Collections tab's preview of the selected book. */
 export function collectionPreviewCover(page: Page): Locator {
     return collectionBookPreview(page)
