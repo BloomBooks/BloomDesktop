@@ -149,6 +149,18 @@ async function colorPickerFrame(page: Page): Promise<Frame> {
 }
 
 /**
+ * Open the color picker from the Canvas tool's Background Color bar, for the selected element, and
+ * return the frame that shows it, for the helpers of colorPicker.ts.
+ */
+export async function openCanvasElementBackgroundColorPicker(
+    page: Page,
+): Promise<Frame> {
+    const toolbox = await openCanvasTool(page);
+    await toolbox.locator(BACKGROUND_COLOR_BAR).first().click();
+    return colorPickerFrame(page);
+}
+
+/**
  * Choose the selected element's background color from the Canvas tool's Background Color bar:
  * open the color picker, click the swatch of `color` ("#rrggbb", one of the picker's palette), and
  * OK it. Throws, listing the swatches, if the palette has no such color.
@@ -157,9 +169,7 @@ export async function chooseCanvasElementBackgroundColor(
     page: Page,
     color: string,
 ): Promise<void> {
-    const toolbox = await openCanvasTool(page);
-    await toolbox.locator(BACKGROUND_COLOR_BAR).first().click();
-    const frame = await colorPickerFrame(page);
+    const frame = await openCanvasElementBackgroundColorPicker(page);
     const dialog = frame.locator(COLOR_PICKER).first();
     const swatches = dialog.locator(COLOR_SWATCH);
     await swatches.first().waitFor({ state: "visible", timeout: 15000 });
@@ -189,9 +199,7 @@ export async function typeCanvasElementBackgroundColor(
     page: Page,
     color: string,
 ): Promise<void> {
-    const toolbox = await openCanvasTool(page);
-    await toolbox.locator(BACKGROUND_COLOR_BAR).first().click();
-    const frame = await colorPickerFrame(page);
+    const frame = await openCanvasElementBackgroundColorPicker(page);
     await typeInHexBox(frame, color);
     // Read the hex box alone: the picker leaves out its alpha slider for a caption, so a reader
     // of every control would fail there.
