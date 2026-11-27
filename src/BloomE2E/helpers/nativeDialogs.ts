@@ -237,16 +237,33 @@ function FindSaveAs {
     # The "File name:" ComboBox holds an Edit of the same id; only the Edit takes a value.
     $name = $d.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.AndCondition((ById '1001'), $isEdit)))
     $save = $d.FindFirst($Scope::Children, (ById '1'))
-    if ($name -and $save) { return @{ dialog = $d; name = $name.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern); save = $save } }
+    if ($name -and $save) { return @{ dialog = $d; edit = $name; name = $name.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern); save = $save } }
   }
   return $null
 }
-# Set the "File name:" box to $text, and check that it holds it.
-function SetName($name, $text) {
+Add-Type @'
+using System; using System.Runtime.InteropServices;
+public static class Typing {
+  [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern bool PostMessage(IntPtr h, uint msg, IntPtr w, IntPtr l);
+}
+'@
+$WM_CHAR = 0x0102
+# Type $text into the "File name:" box of $found, and check that it holds it. The dialog keeps a
+# name of its own, which follows what is typed in the box but not text that UI Automation puts
+# there (SetValue): on some machines Save then saves under the name that the dialog suggested, in
+# the folder that it opened in. So the box is emptied and the text posted to it a character at a
+# time, as a keyboard delivers it, which needs neither the foreground nor the focus.
+function SetName($found, $text) {
+  $hwnd = [IntPtr][long]$found.edit.Current.NativeWindowHandle
   do {
-    $name.SetValue($text)
-    $now = $name.Current.Value
-    if ($now -eq $text) { return }
+    $found.name.SetValue('')
+    foreach ($c in $text.ToCharArray()) { [Typing]::PostMessage($hwnd, $WM_CHAR, [IntPtr][int]$c, [IntPtr]1) | Out-Null }
+    $typing = [Diagnostics.Stopwatch]::StartNew()
+    do {
+      $now = $found.name.Current.Value
+      if ($now -eq $text) { return }
+      Start-Sleep -Milliseconds 100
+    } while ($typing.ElapsedMilliseconds -lt 5000)
     ${kPauseBetweenScans}
   } while ((Get-Date) -lt $deadline)
   throw ('The "File name:" box did not take ' + $text + '; it holds ' + $now)
@@ -262,7 +279,7 @@ do {
     'diag: dialog title=' + $found.dialog.Current.Name + ' hwnd=' + $found.dialog.Current.NativeWindowHandle + ' fg=' + (ForegroundPid) + ' bloom=' + $bloomPid
     'diag: name before set=' + $found.name.Current.Value
     foreach ($tb in $found.dialog.FindAll($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($A::ControlTypeProperty, $CT::ToolBar)))) { 'diag: toolbar=' + $tb.Current.Name }
-    SetName $found.name $env:BLOOM_E2E_FILE
+    SetName $found $env:BLOOM_E2E_FILE
     Start-Sleep -Milliseconds 300
     'diag: name at save=' + $found.name.Current.Value
     'diag: dialogs before press=' + @(FindDialogs).Count
