@@ -574,22 +574,37 @@ export async function startRecordingDraggableVideos(
         w.e2eDraggableVideosPlayingAtRelease = playingAtRelease;
         const doc = pageElement.ownerDocument;
         let pressed = false;
-        doc.addEventListener("pointerdown", () => (pressed = true), true);
+        // The videos that played to their end since the button last went down.
+        const endedSincePress = new Set<HTMLVideoElement>();
+        doc.addEventListener(
+            "pointerdown",
+            () => {
+                pressed = true;
+                endedSincePress.clear();
+            },
+            true,
+        );
         doc.addEventListener(
             "pointerup",
             () => {
                 pressed = false;
                 // A video that play() was called on is no longer paused at once, before it
                 // fires "playing", so this sees a start the press made even when the drag was
-                // too quick for "playing" to come before the release. This listener, on the
-                // document's way down, runs before the game's own one on the item.
+                // too quick for "playing" to come before the release. A short clip may also have
+                // played to its end while the button was down, on a slow machine, so that counts
+                // too. This listener, on the document's way down, runs before the game's own one
+                // on the item.
                 playingAtRelease.push(
                     Array.from(
                         doc.querySelectorAll<HTMLVideoElement>(
                             "[data-draggable-id] video",
                         ),
                     )
-                        .filter((v) => !v.paused && !v.muted)
+                        .filter(
+                            (v) =>
+                                (!v.paused && !v.muted) ||
+                                endedSincePress.has(v),
+                        )
                         .map(
                             (v) =>
                                 v
@@ -607,6 +622,7 @@ export async function startRecordingDraggableVideos(
                 (e) => {
                     const video = e.target as HTMLVideoElement;
                     if (video?.tagName !== "VIDEO") return;
+                    if (type === "ended") endedSincePress.add(video);
                     if (type === "playing" && video.muted) return;
                     const item = video.closest("[data-draggable-id]");
                     if (!item) return;
@@ -645,7 +661,7 @@ export async function getDraggableVideoEvents(
 /**
  * For each release of the mouse button on the page since startRecordingDraggableVideos, in
  * order, the data-draggable-ids of the draggable videos that were playing, with their sound on,
- * at that moment.
+ * at that moment, or had played to their end since the button went down.
  */
 export async function getDraggableVideosPlayingAtEachRelease(
     gamePage: Locator,

@@ -136,13 +136,13 @@ async function dragAndExpectOnlyItsVideoPlayed(
               }
             : undefined,
     );
-    // The press, not the release, has to start the clip: it is already playing as the button
-    // comes up, however quick the drag was.
+    // The press, not the release, has to start the clip: as the button comes up it is playing,
+    // however quick the drag was, or has already played to its end, however slow.
     expect(
         (await getDraggableVideosPlayingAtEachRelease(gamePage)).slice(
             releasesBefore,
         ),
-        `In ${where}, item ${video.id}'s video, and only it, should be playing when the drag ends`,
+        `In ${where}, item ${video.id}'s video, and only it, should have been started by the press when the drag ends`,
     ).toEqual([[video.id]]);
     const after = [
         ...before,
