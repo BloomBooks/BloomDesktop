@@ -337,10 +337,16 @@ export async function waitForBookLaidOut(
 ): Promise<void> {
     await expect
         .poll(
+            // A read made while the frame is navigating can fail; expect.poll does not retry a
+            // callback that throws, so such a read counts as "not that book yet".
             () =>
                 frame
                     .locator("body")
-                    .evaluate((body) => body.ownerDocument.location.href),
+                    .evaluate((body) => body.ownerDocument.location.href)
+                    .catch(
+                        (error: unknown) =>
+                            `(the preview could not be read yet: ${error})`,
+                    ),
             {
                 message: `the preview should hold the document of book ${bookId}`,
                 timeout: 60000,
