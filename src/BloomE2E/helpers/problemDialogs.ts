@@ -34,6 +34,38 @@ export async function readProblemDialogs(page: Page): Promise<string[]> {
     return texts;
 }
 
+/**
+ * Wait for Bloom's report dialog (ReportDialog.tsx), the one that gathers a problem report, to show
+ * its form, and return the page of Bloom's browser that it shows in: a React dialog
+ * (ReactDialog.cs) is a page of its own.
+ */
+export async function waitForReportDialogPage(page: Page): Promise<Page> {
+    let dialogPage: Page | undefined;
+    await expect
+        .poll(
+            async () => {
+                for (const candidate of bloomPages(page)) {
+                    const count = await candidate
+                        .locator(".problem-dialog .what_were_you_doing")
+                        .count()
+                        // A page that closed or navigated while we asked is not the dialog.
+                        .catch(() => 0);
+                    if (count > 0) {
+                        dialogPage = candidate;
+                        return true;
+                    }
+                }
+                return false;
+            },
+            {
+                timeout: 60000,
+                message: "Bloom's Report a Problem dialog never showed",
+            },
+        )
+        .toBe(true);
+    return dialogPage!;
+}
+
 /** One button at the foot of a Bloom problem dialog. */
 export interface IProblemDialogButton {
     /** Its data-testid (a BloomButton's l10n key, e.g. "Common.Close"), or "" when it has none. */
