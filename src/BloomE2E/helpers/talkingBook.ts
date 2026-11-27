@@ -23,7 +23,7 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Locator, type Page } from "@playwright/test";
-import { apiPost } from "./api";
+import { apiPost, getUiString } from "./api";
 import { clickInGroup, editablePageFrame } from "./bookMaking";
 import { cssColorToHex } from "./cssValues";
 
@@ -539,15 +539,18 @@ export async function isRecordingModeEnabled(
 }
 
 /**
- * The tooltip the Talking Book tool shows when the pointer rests on one of its recording-mode
- * radios, as its text. Moves the pointer onto the radio's label and waits for the tooltip to
- * appear (Bloom's tooltips open after a short hover delay), then moves the pointer away again so
- * the tooltip does not cover later clicks. Opens the Advanced section.
+ * Assert that resting the pointer on one of the Talking Book tool's recording-mode radios shows a
+ * tooltip reading `expected`. Moves the pointer onto the radio's label and waits for the tooltip
+ * to appear with that text (Bloom's tooltips open after a short hover delay, and fetch their
+ * localized text after they appear), then moves the pointer away again so the tooltip does not
+ * cover later clicks. Opens the Advanced section.
  */
-export async function getRecordingModeTooltip(
+export async function expectRecordingModeTooltip(
     page: Page,
     mode: "By Sentence" | "By Whole Text Box",
-): Promise<string> {
+    expected: string,
+    message: string,
+): Promise<void> {
     await openAdvancedSection(page);
     const frame = toolboxFrame(page);
     // The radio sits in a label; the tooltip is wrapped around that label (BloomTooltip adds a
@@ -561,11 +564,10 @@ export async function getRecordingModeTooltip(
         tooltip,
         `Resting the pointer on the "${mode}" radio showed no tooltip.`,
     ).toBeVisible({ timeout: 30000 });
-    const text = (await tooltip.innerText()).trim();
-    // Move off the radio, onto the tool's heading area, and let the tooltip go.
+    await expect(tooltip, message).toHaveText(expected, { timeout: 30000 });
+    // Move the pointer off the toolbox and let the tooltip go.
     await page.mouse.move(0, 0);
     await expect(tooltip).toBeHidden({ timeout: 30000 });
-    return text;
 }
 
 /**
@@ -682,10 +684,10 @@ export async function openAdvancedSection(page: Page): Promise<void> {
     const importButton = toolboxFrame(page).locator("#import-recording-button");
     if (await importButton.isVisible()) return;
     // The section is a TriangleCollapse, whose control is a button carrying the word "Advanced"
-    // and nothing else to find it by -- no id, no test id. Matching on the English label is what
-    // the suite already does for the top bar and the page menu; see AUTOMATION-DEBT.md.
+    // (Common.Advanced, in the UI language) and nothing else to find it by -- no id, no test id.
+    const advanced = await getUiString(page, "Common.Advanced", "Advanced");
     await toolboxFrame(page)
-        .getByRole("button", { name: "Advanced" })
+        .getByRole("button", { name: advanced, exact: true })
         .first()
         .click();
     await importButton.waitFor({ state: "visible", timeout: 30000 });

@@ -32,7 +32,7 @@ import {
     addNarration,
     clickClearRecording,
     getRecordingMode,
-    getRecordingModeTooltip,
+    expectRecordingModeTooltip,
     getTextBoxRecordingMode,
     importNarration,
     isCheckEnabled,
@@ -126,15 +126,15 @@ test("switches recording modes only as the rules allow [Test Case ID 482]", asyn
                     "By Sentence stayed enabled although the text box holds a whole-text-box recording.",
             })
             .toBe(false);
-        expect(
-            await getRecordingModeTooltip(page, "By Sentence"),
-            "The disabled By Sentence radio's tooltip does not tell the person to clear the recording.",
-        ).toBe(
+        await expectRecordingModeTooltip(
+            page,
+            "By Sentence",
             await getUiString(
                 page,
                 "EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip",
                 'If you want to change this mode, first use the "Clear" button to remove your recording.',
             ),
+            "The disabled By Sentence radio's tooltip does not tell the person to clear the recording.",
         );
     });
 
