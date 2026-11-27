@@ -467,10 +467,6 @@ namespace Bloom.Utils
                     Path.GetDirectoryName(destFileName),
                     out collectionFolder
                 );
-                // DIAGNOSTIC (BL-17232, temporary)
-                Console.Error.WriteLine(
-                    $"BL-17232 diag: SaveFileDialog gave '{destFileName}' (initial folder '{initialFolder}', initial name '{initialFilename}'); inside collection={repeat} ({collectionFolder}); personal='{Environment.GetFolderPath(Environment.SpecialFolder.Personal)}'"
-                );
                 if (repeat)
                 {
                     WarnUserOfInvalidFolderChoice(collectionFolder, destFileName);

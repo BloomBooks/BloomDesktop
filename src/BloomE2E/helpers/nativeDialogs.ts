@@ -270,21 +270,12 @@ function SetName($found, $text) {
 }
 do {
   # The dialog shows before its controls do, and its "File name:" box shows before the dialog puts
-  # its suggested name in it (Bloom always gives one). A path set before that is overwritten, and
-  # Save then saves under the suggested name in the folder that the dialog opened in. So the dialog
-  # is waited on until its box holds a name.
+  # its suggested name in it (Bloom always gives one), which would replace a path typed earlier. So
+  # the dialog is waited on until its box holds a name.
   $found = FindSaveAs
   if ($found -and $found.name.Current.Value) {
-    # DIAGNOSTIC (BL-17232, temporary)
-    'diag: dialog title=' + $found.dialog.Current.Name + ' hwnd=' + $found.dialog.Current.NativeWindowHandle + ' fg=' + (ForegroundPid) + ' bloom=' + $bloomPid
-    'diag: name before set=' + $found.name.Current.Value
-    foreach ($tb in $found.dialog.FindAll($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($A::ControlTypeProperty, $CT::ToolBar)))) { 'diag: toolbar=' + $tb.Current.Name }
     SetName $found $env:BLOOM_E2E_FILE
-    Start-Sleep -Milliseconds 300
-    'diag: name at save=' + $found.name.Current.Value
-    'diag: dialogs before press=' + @(FindDialogs).Count
     PressAndWaitForClose $found.save { [bool](FindSaveAs) }
-    'diag: dialogs after close=' + @(FindDialogs).Count
     'saved'
     exit 0
   }
@@ -307,9 +298,7 @@ if ($dialogs.Count) {
         },
         timeoutMs,
     );
-    // DIAGNOSTIC (BL-17232, temporary)
-    console.log(`[BL-17232 diag] answerSaveAsDialog(${filePath}):\n${output}`);
-    if (output.split(/\r?\n/).pop() === "saved") return;
+    if (output === "saved") return;
     if (output === "none")
         throw new Error(
             `Bloom (process ${bloomPid}) showed no Save As dialog within ${timeoutMs} ms.`,
