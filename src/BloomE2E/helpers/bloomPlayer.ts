@@ -486,21 +486,37 @@ export async function expectPreviewSoundsPlayed(
     expected: string[],
     message: string,
 ): Promise<void> {
-    await expect
-        .poll(() => getPreviewSoundsPlayed(player), { timeout: 15000, message })
-        .toEqual(expected);
-    await expect
-        .poll(
-            async () =>
-                (await getPreviewSoundPlays(player))
-                    .filter((play) => play.outcome !== "playing")
-                    .map((play) => `${play.name}: ${play.outcome}`),
-            {
-                timeout: 15000,
-                message: `${message}; the browser should have started every sound`,
+    // Wait until as many sounds as expected have been asked for and the browser has settled each
+    // of them, or until it has refused one, which no wait can undo. Then compare every sound and
+    // how it turned out in one reading, so nothing can change between two checks.
+    await player
+        .waitForFunction(
+            (count) => {
+                const plays =
+                    (
+                        window as unknown as {
+                            e2eSoundsPlayed?: { outcome: string }[];
+                        }
+                    ).e2eSoundsPlayed ?? [];
+                return (
+                    plays.some((p) => p.outcome.startsWith("failed")) ||
+                    (plays.length >= count &&
+                        plays.every((p) => p.outcome !== "pending"))
+                );
             },
+            expected.length,
+            { timeout: 15000 },
         )
-        .toEqual([]);
+        .catch((error: Error) => {
+            // On a timeout, the comparison below says what was played instead.
+            if (error.name !== "TimeoutError") throw error;
+        });
+    expect(
+        (await getPreviewSoundPlays(player)).map(
+            (play) => `${play.name}: ${play.outcome}`,
+        ),
+        `${message}, and the browser should have started each sound`,
+    ).toEqual(expected.map((name) => `${name}: playing`));
 }
 
 /** Every video on the page Bloom Player is showing. */
