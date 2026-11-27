@@ -215,6 +215,11 @@ export interface ISavedShape {
     /** The shape's fill and stroke attributes, to tell the shapes apart in a failure message. */
     fill: string;
     stroke: string;
+    /**
+     * How opaque the shape's fill is drawn, from 0 to 1: its opacity times its fill-opacity times
+     * the alpha of its fill color. 0 when it has no fill.
+     */
+    fillOpacity: number;
     /** The size of the shape's bounding box, in the SVG's units. */
     width: number;
     height: number;
@@ -278,6 +283,15 @@ export async function readSavedCanvasShapes(
                             shown &&
                             style.fill !== "none" &&
                             parseFloat(style.fillOpacity) > 0;
+                        // The computed fill is "rgb(r, g, b)" or "rgba(r, g, b, a)".
+                        const fillAlpha = /^rgba\(.*,\s*([\d.]+)\s*\)$/.exec(
+                            style.fill,
+                        );
+                        const fillOpacity = filled
+                            ? parseFloat(style.opacity) *
+                              parseFloat(style.fillOpacity) *
+                              (fillAlpha ? parseFloat(fillAlpha[1]) : 1)
+                            : 0;
                         const stroked =
                             shown &&
                             style.stroke !== "none" &&
@@ -328,6 +342,7 @@ export async function readSavedCanvasShapes(
                                 stroke:
                                     shape.getAttribute("stroke") ??
                                     style.stroke,
+                                fillOpacity,
                                 width: Math.round(box.width),
                                 height: Math.round(box.height),
                                 cornersCovered: coveredOf(corners),

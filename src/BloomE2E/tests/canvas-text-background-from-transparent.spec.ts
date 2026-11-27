@@ -202,20 +202,24 @@ test("Clicking the saturation box of a transparent Just Text's background makes 
                         bookFolder,
                         pageId,
                     );
+                    // Each filled shape's color and how opaque it is drawn, e.g. "#cd2929 at 1".
                     const fills = shapes.map((s) => {
+                        let color = s.fill;
                         try {
-                            return cssColorToHex(s.fill);
+                            color = cssColorToHex(s.fill);
                         } catch {
-                            return s.fill;
+                            // Keep the fill as saved, to show it in a failure message.
                         }
+                        return `${color} at ${s.fillOpacity}`;
                     });
+                    const opaqueFill = `${madeHex} at 1`;
                     return {
                         backgroundColors: (spec?.backgroundColors ?? []).map(
                             (c) => c.toLowerCase(),
                         ),
-                        drawingFilledWithIt: fills.includes(madeHex),
+                        drawingFilledWithItOpaque: fills.includes(opaqueFill),
                         // The fills say what the drawing holds when it is not what was expected.
-                        fills: fills.includes(madeHex) ? undefined : fills,
+                        fills: fills.includes(opaqueFill) ? undefined : fills,
                     };
                 };
                 await expect
@@ -226,7 +230,7 @@ test("Clicking the saturation box of a transparent Just Text's background makes 
                     })
                     .toEqual({
                         backgroundColors: [madeHex],
-                        drawingFilledWithIt: true,
+                        drawingFilledWithItOpaque: true,
                         fills: undefined,
                     });
             },
