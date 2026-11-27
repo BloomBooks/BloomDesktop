@@ -299,6 +299,7 @@ export function getNarratedLanguages(
  * it through Bloom's e2e hook before clicking (see E2eTestingApi's nextFileToChoose).
  *
  * `bookFolder` is needed to wait for the import to finish -- see the comment on the wait below.
+ * `groupIndex` picks the box when `groupSelector` matches more than one group on the page.
  */
 export async function importNarration(
     page: Page,
@@ -306,11 +307,18 @@ export async function importNarration(
     groupSelector: string,
     languageTag: string,
     mp3Path: string = sampleNarrationFile,
+    groupIndex = 0,
 ): Promise<void> {
     const audioFolder = Path.join(bookFolder, "audio");
     const before = narrationFilesIn(audioFolder).length;
 
-    await clickImportRecording(page, groupSelector, languageTag, mp3Path);
+    await clickImportRecording(
+        page,
+        groupSelector,
+        languageTag,
+        mp3Path,
+        groupIndex,
+    );
 
     // The import is several round trips -- choose the file, find the book's audio folder, copy,
     // then write the markup -- so wait for its RESULT: one more narration file on disk than
@@ -396,8 +404,9 @@ async function clickImportRecording(
     groupSelector: string,
     languageTag: string,
     mp3Path: string,
+    groupIndex = 0,
 ): Promise<void> {
-    await clickInGroup(page, groupSelector, languageTag);
+    await clickInGroup(page, groupSelector, languageTag, groupIndex);
     await setRecordingMode(page, "By Whole Text Box");
     await openAdvancedSection(page);
 
@@ -643,10 +652,14 @@ export async function isImportRecordingEnabled(page: Page): Promise<boolean> {
  * end time for each, and OK saves those times on the box (data-audiorecordingendtimes) and shows
  * the box as split (bloom-postAudioSplit). Returns once the box shows as split.
  *
- * The box must hold a whole-text-box recording (see importNarration). The button is found by its
- * picture, since it has no id and its label is localized.
+ * The box must hold a whole-text-box recording (see importNarration) and not be split yet. The
+ * button is found by its picture, since it has no id and its label is localized.
  */
 export async function acceptProposedTimings(page: Page): Promise<void> {
+    const splitBoxes = editablePageFrame(page).locator(
+        ".bloom-editable.bloom-postAudioSplit",
+    );
+    const splitBefore = await splitBoxes.count();
     const button = toolboxFrame(page).locator(
         'button:has(img[src*="adjustTimings.svg"])',
     );
@@ -670,9 +683,9 @@ export async function acceptProposedTimings(page: Page): Promise<void> {
     await dialog.getByTestId("dialog-ok").click();
     await expect(dialog).toBeHidden({ timeout: 30000 });
     await expect(
-        editablePageFrame(page).locator(".bloom-editable.bloom-postAudioSplit"),
+        splitBoxes,
         "OK in Adjust Timings did not mark the text box as split into timed segments.",
-    ).toHaveCount(1, { timeout: 30000 });
+    ).toHaveCount(splitBefore + 1, { timeout: 30000 });
 }
 
 /**

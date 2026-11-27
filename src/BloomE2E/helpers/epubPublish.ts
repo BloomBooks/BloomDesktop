@@ -787,8 +787,9 @@ export type EpubReadAlongEvent =
           id: string;
           /** The element's background color right after it was marked ("" when unmarked). */
           background: string;
-          /** Whether the reader's audio was playing at that moment, and where in it. */
+          /** Whether the reader's audio was playing at that moment, which file, and where in it. */
           audioPlaying: boolean;
+          audioUrl: string;
           audioTime: number;
       }
     | {
@@ -824,6 +825,8 @@ export async function getEpubPreviewReadAlongHighlights(
  * (getEpubPreviewReadAlongClass) while it plays that clip. It takes the class off and puts it back
  * on every frame; an element counts as unmarked only once it is left without the class. It is
  * told not to turn the page by itself (Readium/index.html), so it stops at the end of the page.
+ * A page whose clips play from more than one file pauses between files, so the end of the page is
+ * known by the page's last clip: its text marked, then unmarked.
  *
  * Play does nothing until the reader has loaded the page's first clip into its audio element,
  * which it does by itself after showing the page; so this waits for that before clicking.
@@ -897,6 +900,7 @@ export async function playEpubPreviewReadAlong(
                         ? getComputedStyle(element).backgroundColor
                         : "",
                     audioPlaying: !!audio && !audio.paused && !audio.ended,
+                    audioUrl: audio?.currentSrc ?? "",
                     audioTime: audio?.currentTime ?? 0,
                 });
             }
@@ -914,14 +918,26 @@ export async function playEpubPreviewReadAlong(
                     .e2eReadAlong,
         );
     await reader.locator(PLAY_BUTTON).click();
+    const lastTextId = clips[clips.length - 1].textId;
     let events: EpubReadAlongEvent[] = [];
     await expect
         .poll(
             async () => {
                 events = await readLog();
                 const started = events.findIndex((e) => e.kind === "playing");
+                const lastMarked = events.findIndex(
+                    (e) => e.kind === "highlighted" && e.id === lastTextId,
+                );
                 return (
                     started >= 0 &&
+                    lastMarked >= 0 &&
+                    events
+                        .slice(lastMarked)
+                        .some(
+                            (e) =>
+                                e.kind === "unhighlighted" &&
+                                e.id === lastTextId,
+                        ) &&
                     events
                         .slice(started)
                         .some(
