@@ -513,11 +513,7 @@ export async function setRecordingMode(
     mode: "By Sentence" | "By Whole Text Box",
 ): Promise<void> {
     await openAdvancedSection(page);
-    // The radio's value is a RecordingMode (recordingMode.ts).
-    const value = mode === "By Sentence" ? "Sentence" : "TextBox";
-    const radio = toolboxFrame(page).locator(
-        `input[type="radio"][value="${value}"]`,
-    );
+    const radio = recordingModeRadio(page, mode);
     await radio.waitFor({ state: "visible", timeout: 30000 });
     await expect(
         radio,
@@ -525,6 +521,107 @@ export async function setRecordingMode(
     ).toBeEnabled({ timeout: 30000 });
     await radio.click();
     await expect(radio).toBeChecked({ timeout: 30000 });
+}
+
+/**
+ * Whether the Talking Book tool lets a person choose one of its recording modes now, i.e. whether
+ * that radio in the Advanced section is enabled. Opens the Advanced section. `mode` is the English
+ * label of the radio; it is found by its value, since the label is localized.
+ */
+export async function isRecordingModeEnabled(
+    page: Page,
+    mode: "By Sentence" | "By Whole Text Box",
+): Promise<boolean> {
+    await openAdvancedSection(page);
+    const radio = recordingModeRadio(page, mode);
+    await radio.waitFor({ state: "visible", timeout: 30000 });
+    return radio.isEnabled();
+}
+
+/**
+ * The tooltip the Talking Book tool shows when the pointer rests on one of its recording-mode
+ * radios, as its text. Moves the pointer onto the radio's label and waits for the tooltip to
+ * appear (Bloom's tooltips open after a short hover delay), then moves the pointer away again so
+ * the tooltip does not cover later clicks. Opens the Advanced section.
+ */
+export async function getRecordingModeTooltip(
+    page: Page,
+    mode: "By Sentence" | "By Whole Text Box",
+): Promise<string> {
+    await openAdvancedSection(page);
+    const frame = toolboxFrame(page);
+    // The radio sits in a label; the tooltip is wrapped around that label (BloomTooltip adds a
+    // span so it shows even over a disabled control), so hovering the label shows it.
+    const label = frame.locator("label").filter({
+        has: recordingModeRadio(page, mode),
+    });
+    await label.hover();
+    const tooltip = frame.getByRole("tooltip");
+    await expect(
+        tooltip,
+        `Resting the pointer on the "${mode}" radio showed no tooltip.`,
+    ).toBeVisible({ timeout: 30000 });
+    const text = (await tooltip.innerText()).trim();
+    // Move off the radio, onto the tool's heading area, and let the tooltip go.
+    await page.mouse.move(0, 0);
+    await expect(tooltip).toBeHidden({ timeout: 30000 });
+    return text;
+}
+
+/**
+ * The recording mode Bloom has stored on one language's text box of the first translation group
+ * that `groupSelector` picks: its data-audiorecordingmode attribute ("Sentence" or "TextBox"), which
+ * the tool sets when a person chooses a mode with the cursor in that box. Undefined when the box
+ * has none.
+ */
+export async function getTextBoxRecordingMode(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<string | undefined> {
+    const mode = await editablePageFrame(page)
+        .locator(groupSelector)
+        .first()
+        .locator(`.bloom-editable[lang="${languageTag}"]`)
+        .getAttribute("data-audiorecordingmode");
+    return mode ?? undefined;
+}
+
+/**
+ * Whether the tool's Check button (play the current segment's recording) is enabled: the tool
+ * enables it only when the segment it is on has a recording. This is how a test sees that the
+ * tool itself knows about a recording, rather than only that the file is on disk.
+ */
+export async function isCheckEnabled(page: Page): Promise<boolean> {
+    return toolboxFrame(page)
+        .locator('button:has(img[src*="/play_"])')
+        .isEnabled();
+}
+
+/**
+ * Press the tool's Clear button, which deletes the recording of the segment the tool is on (or, in
+ * whole-text-box mode, of the whole text box). The button has no id and a localized label, so it
+ * is found by its picture; the button itself ignores the pointer, and its picture takes the click.
+ * Returns without waiting for the deletion; the caller waits for the result it expects.
+ */
+export async function clickClearRecording(page: Page): Promise<void> {
+    const button = toolboxFrame(page).locator(
+        'button:has(img[src*="clear_enabled.svg"])',
+    );
+    await expect(
+        button,
+        "Clear is disabled; the tool enables it only when the current segment has a recording.",
+    ).toBeEnabled({ timeout: 30000 });
+    await button.locator("img").click();
+}
+
+/** One of the recording-mode radios, found by its value (a RecordingMode, recordingMode.ts). */
+function recordingModeRadio(
+    page: Page,
+    mode: "By Sentence" | "By Whole Text Box",
+): Locator {
+    const value = mode === "By Sentence" ? "Sentence" : "TextBox";
+    return toolboxFrame(page).locator(`input[type="radio"][value="${value}"]`);
 }
 
 /**
