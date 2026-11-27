@@ -1083,6 +1083,10 @@ async function startBloomOn(
     let exitStatus: { code: number | null; signal: string | null } | undefined;
     bloomProcess.stdout?.on("data", (d) => recordOutput(String(d)));
     bloomProcess.stderr?.on("data", (d) => recordOutput(String(d)));
+    // DIAGNOSTIC (BL-17232, temporary)
+    bloomProcess.stderr?.on("data", (d) =>
+        process.stdout.write(`[bloom stderr] ${String(d)}`),
+    );
     const nonFatalProblems = makeNonFatalProblemCollector();
     bloomProcess.stderr?.on("data", (d) =>
         nonFatalProblems.addStderr(String(d)),

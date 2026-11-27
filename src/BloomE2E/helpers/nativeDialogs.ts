@@ -258,8 +258,16 @@ do {
   # is waited on until its box holds a name.
   $found = FindSaveAs
   if ($found -and $found.name.Current.Value) {
+    # DIAGNOSTIC (BL-17232, temporary)
+    'diag: dialog title=' + $found.dialog.Current.Name + ' hwnd=' + $found.dialog.Current.NativeWindowHandle + ' fg=' + (ForegroundPid) + ' bloom=' + $bloomPid
+    'diag: name before set=' + $found.name.Current.Value
+    foreach ($tb in $found.dialog.FindAll($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($A::ControlTypeProperty, $CT::ToolBar)))) { 'diag: toolbar=' + $tb.Current.Name }
     SetName $found.name $env:BLOOM_E2E_FILE
+    Start-Sleep -Milliseconds 300
+    'diag: name at save=' + $found.name.Current.Value
+    'diag: dialogs before press=' + @(FindDialogs).Count
     PressAndWaitForClose $found.save { [bool](FindSaveAs) }
+    'diag: dialogs after close=' + @(FindDialogs).Count
     'saved'
     exit 0
   }
@@ -282,7 +290,9 @@ if ($dialogs.Count) {
         },
         timeoutMs,
     );
-    if (output === "saved") return;
+    // DIAGNOSTIC (BL-17232, temporary)
+    console.log(`[BL-17232 diag] answerSaveAsDialog(${filePath}):\n${output}`);
+    if (output.split(/\r?\n/).pop() === "saved") return;
     if (output === "none")
         throw new Error(
             `Bloom (process ${bloomPid}) showed no Save As dialog within ${timeoutMs} ms.`,

@@ -219,7 +219,47 @@ test("Bloom refuses to save a published file inside the collection folder, and s
                         foregroundBefore,
                     );
 
-                    const message = await readAndCloseBloomMessageBox(page);
+                    // DIAGNOSTIC (BL-17232, temporary)
+                    let message = "";
+                    try {
+                        message = await readAndCloseBloomMessageBox(page);
+                    } catch (error) {
+                        const status = await Promise.race([
+                            answered.then((r) => String(r.status())),
+                            new Promise<string>((resolve) =>
+                                setTimeout(
+                                    () => resolve("no answer yet"),
+                                    2000,
+                                ),
+                            ),
+                        ]);
+                        console.log(
+                            `[BL-17232 diag] no message box. ${format.endpoint}: ${status}. ` +
+                                `collectionDir=${collectionDir} refusedPath=${refusedPath} ` +
+                                `refusedPath exists=${fs.existsSync(refusedPath)}\n` +
+                                `nonfatal problems: ${JSON.stringify(bloomApp.takeNonFatalProblems())}`,
+                        );
+                        try {
+                            console.log(
+                                "[BL-17232 diag] files saved in the last 10 minutes:\n" +
+                                    execFileSync(
+                                        "powershell",
+                                        [
+                                            "-NoProfile",
+                                            "-NonInteractive",
+                                            "-Command",
+                                            `$since=(Get-Date).AddMinutes(-10); foreach ($root in @($env:USERPROFILE, $env:TEMP, '${Path.dirname(Path.dirname(collectionDir))}')) { Get-ChildItem -LiteralPath $root -Recurse -File -Include *${format.extension},*.pdf -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -gt $since } | ForEach-Object { $_.FullName + ' ' + $_.Length + ' ' + $_.LastWriteTime.ToString('o') } }`,
+                                        ],
+                                        { encoding: "utf8", timeout: 240000 },
+                                    ),
+                            );
+                        } catch (searchError) {
+                            console.log(
+                                `[BL-17232 diag] search failed: ${searchError}`,
+                            );
+                        }
+                        throw error;
+                    }
                     // Checked by the paths it names, which read the same in every UI language. The
                     // place chosen holds the collection folder's path, so the collection folder is
                     // looked for in what is left once the place chosen is taken out.
