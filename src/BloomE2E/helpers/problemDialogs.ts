@@ -147,14 +147,15 @@ export async function readProblemDialogsShown(
 }
 
 /**
- * Close the problem dialog showing now the way its own Close button does, with
- * common/closeReactDialog, which never submits a report. The request goes from Node rather than
+ * Close the React dialog (ReactDialog.cs) showing now, such as a problem dialog or a Bloom message
+ * box, the way its own Close button does, with common/closeReactDialog, which never submits a
+ * report. `page` is any of Bloom's pages, for the port. The request goes from Node rather than
  * through a page (helpers/api.ts): every page of Bloom's browser shares one small pool of
  * connections to Bloom's server, and while the modal dialog holds Bloom's UI thread, requests
  * waiting on that thread can fill the pool, so a close sent from a page may never leave the
  * browser. Bloom accepts the request because its Host is localhost.
  */
-function closeProblemDialog(page: Page): Promise<void> {
+export function closeReactDialogFromNode(page: Page): Promise<void> {
     const port = Number(new URL(page.url()).port);
     return new Promise((resolve, reject) => {
         const req = http.request(
@@ -258,7 +259,7 @@ export async function doThroughOneProblemDialog(
             // Bloom quits as soon as the dialog closes, which may be before it answers: a dropped
             // connection is all that may go wrong with the close. Any other failure (an error
             // status, no Bloom listening) means the close did not happen.
-            await closeProblemDialog(page).catch((error: unknown) => {
+            await closeReactDialogFromNode(page).catch((error: unknown) => {
                 const code = (error as NodeJS.ErrnoException).code;
                 if (
                     code !== "ECONNRESET" &&
@@ -275,7 +276,7 @@ export async function doThroughOneProblemDialog(
             await acted;
             return shown;
         }
-        await closeProblemDialog(page);
+        await closeReactDialogFromNode(page);
         await expect
             .poll(
                 async () =>
