@@ -338,15 +338,14 @@ export async function waitForBookLaidOut(
     await expect
         .poll(
             // A read made while the frame is navigating can fail; expect.poll does not retry a
-            // callback that throws, so such a read counts as "not that book yet".
+            // callback that throws, so such a read counts as "not that book yet". It gives no
+            // address at all: the error's text quotes the frame's selector, which holds the
+            // very book id this waits for.
             () =>
                 frame
                     .locator("body")
                     .evaluate((body) => body.ownerDocument.location.href)
-                    .catch(
-                        (error: unknown) =>
-                            `(the preview could not be read yet: ${error})`,
-                    ),
+                    .catch(() => ""),
             {
                 message: `the preview should hold the document of book ${bookId}`,
                 timeout: 60000,
