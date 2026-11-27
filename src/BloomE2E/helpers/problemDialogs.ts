@@ -77,6 +77,7 @@ export async function clickBookTileThroughOneProblemDialog(
         if (selectError)
             throw new Error(
                 `Selecting the book failed after Bloom's dialog said "${text}": ${String(selectError)}`,
+                { cause: selectError },
             );
         return text;
     } finally {
