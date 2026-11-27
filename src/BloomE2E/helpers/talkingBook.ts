@@ -481,6 +481,20 @@ export function writeSecondSampleNarration(filePath: string): void {
     fs.writeFileSync(filePath, Buffer.concat([sample, sample]));
 }
 
+/**
+ * About `seconds` of silence as mp3 frames in the format of sampleNarrationFile (MPEG-1 Layer III,
+ * 64 kbps, 44.1 kHz, mono), so that it can be joined to that sample's bytes to make a recording
+ * whose sound and silence fall at known times. Each frame is a header and nothing else: it holds
+ * no sound, and lasts 1152 samples.
+ */
+export function silentMp3Frames(seconds: number): Buffer {
+    const frameCount = Math.round((seconds * 44100) / 1152);
+    // 144 * bitrate / sample rate, with no padding byte.
+    const frame = Buffer.alloc(Math.floor((144 * 64000) / 44100));
+    Buffer.from([0xff, 0xfb, 0x50, 0xc0]).copy(frame);
+    return Buffer.concat(Array(frameCount).fill(frame));
+}
+
 /** The narration files in a book's audio folder; empty when the folder does not exist yet. */
 function narrationFilesIn(audioFolder: string): string[] {
     if (!fs.existsSync(audioFolder)) return [];

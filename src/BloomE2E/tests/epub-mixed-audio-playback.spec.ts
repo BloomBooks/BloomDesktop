@@ -9,15 +9,17 @@
 //
 // The case allows "a combo of imported and Bloom-recorded audio on one page (or two imported)".
 // Recording needs a microphone, which a test has not got, so both boxes take theirs through the
-// Talking Book tool's Import Recording, two recordings of different lengths so that one cannot
-// pass for the other. The ePUB is read from the ePUB screen's preview, which shows the very files
-// that Save... zips. "Plays correctly" is a person listening while the sentences light up; what
-// decides it is data the test reads: which file and which part of it the reader plays for each
-// sentence, and when it highlights each one.
+// Talking Book tool's Import Recording: the first box a recording that sounds all through, the
+// second one that is silent for its first part, so that the page's joined audio shows which box's
+// recording comes first. The ePUB is read from the ePUB screen's preview, which shows the very
+// files that Save... zips. "Plays correctly" is a person listening while the sentences light up;
+// what decides it is data the test reads: which recording is where in the page's audio, which part
+// of it the reader plays for each sentence, and when, and how visibly, it highlights each one.
 
 import * as fs from "node:fs";
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
+import { apiGet, apiPost } from "../helpers/api";
 import {
     addPage,
     editablePageFrame,
@@ -30,9 +32,11 @@ import {
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
     epubPreviewHasFile,
+    getEpubPreviewAudioLoudness,
     getEpubPreviewPageReadAloud,
     getEpubPreviewReadAlongHighlights,
     idInEpub,
+    isPaintedColor,
     openEpubPublishScreen,
     playEpubPreviewReadAlong,
     showEpubPreview,
@@ -45,6 +49,7 @@ import {
     narrationFilePath,
     openToolboxWithTalkingBook,
     sampleNarrationFile,
+    silentMp3Frames,
 } from "../helpers/talkingBook";
 
 test.use({
@@ -86,13 +91,25 @@ interface ISplitBox {
     endTimes: string;
 }
 
+/** How long the second box's recording is silent before its sound starts, in seconds. */
+const kSecondBoxSilence = 1.6;
+
 /**
- * Write the suite's sample recording played `times` times over to `path`: a playable mp3 whose
- * length tells it apart from one made with another count.
+ * Write the two boxes' recordings and return their paths: the first is the suite's sample twice
+ * over, which sounds all through; the second is kSecondBoxSilence of silence followed by the
+ * sample.
  */
-function writeRepeatedSample(path: string, times: number): void {
+function writeRecordings(outputPath: (name: string) => string): string[] {
     const sample = fs.readFileSync(sampleNarrationFile);
-    fs.writeFileSync(path, Buffer.concat(Array(times).fill(sample)));
+    const contents = [
+        Buffer.concat([sample, sample]),
+        Buffer.concat([silentMp3Frames(kSecondBoxSilence), sample]),
+    ];
+    return contents.map((bytes, i) => {
+        const path = outputPath(`box-${i + 1}.mp3`);
+        fs.writeFileSync(path, bytes);
+        return path;
+    });
 }
 
 /** The English text boxes of the page being shown, in page order. */
@@ -120,11 +137,7 @@ test("an ePUB plays a page with two boxes' recordings aligned by Adjust Timings 
 }, testInfo) => {
     test.setTimeout(480000);
 
-    const recordings = [2, 3].map((times) => {
-        const path = testInfo.outputPath(`sample-${times}x.mp3`);
-        writeRepeatedSample(path, times);
-        return path;
-    });
+    const recordings = writeRecordings((name) => testInfo.outputPath(name));
 
     const book = await step(
         'Make a Basic Book with an "Image in Middle" page, and type two sentences in each of its two text boxes',
@@ -155,6 +168,22 @@ test("an ePUB plays a page with two boxes' recordings aligned by Adjust Timings 
     const boxes = await step(
         "Import a recording for each text box, and Adjust Timings on both",
         async () => {
+            // Make whole-text-box recording the collection's default first, as choosing that
+            // mode in the tool does. The toolbox tells the tool about the page a second time
+            // 600 ms after opening it (useToolLifecycle.ts), and that second pass takes the
+            // mode from the box, or from this default: a mode chosen in the tool just before it
+            // can be lost. A person, slower than that, is not.
+            await apiPost(
+                page,
+                "talkingBook/defaultAudioRecordingMode",
+                "TextBox",
+                "application/json",
+            );
+            expect(
+                (await apiGet(page, "talkingBook/defaultAudioRecordingMode"))
+                    .body,
+                "test setup: the collection should now record whole text boxes by default",
+            ).toContain("TextBox");
             await openToolboxWithTalkingBook(page);
             for (const [index, recording] of recordings.entries()) {
                 await importNarration(
@@ -270,6 +299,36 @@ test("an ePUB plays a page with two boxes' recordings aligned by Adjust Timings 
                 });
                 offset += endTimes[b][endTimes[b].length - 1];
             });
+
+            // The first box's recording sounds all through, and the second's starts with
+            // silence, so in page order the page's audio sounds, falls silent where the second
+            // box's part starts, and sounds again once that silence is over. Swapped, the
+            // silence would come first.
+            const secondStart = endTimes[0][endTimes[0].length - 1];
+            const [first, secondsSilence, secondsSound] =
+                await getEpubPreviewAudioLoudness(page, pageFile, [
+                    { start: 0.1, end: secondStart - 0.2 },
+                    {
+                        start: secondStart + 0.2,
+                        end: secondStart + kSecondBoxSilence - 0.3,
+                    },
+                    {
+                        start: secondStart + kSecondBoxSilence + 0.3,
+                        end: offset - 0.2,
+                    },
+                ]);
+            const loudness = JSON.stringify({
+                first,
+                secondsSilence,
+                secondsSound,
+            });
+            expect(
+                secondsSilence * 20 < first &&
+                    secondsSilence * 20 < secondsSound,
+                "the page's audio should be the first box's recording, which sounds all through, " +
+                    "then the second's, which starts silent and then sounds (loudness, as root mean " +
+                    `square, of each part: ${loudness})`,
+            ).toBe(true);
             return read;
         },
     );
@@ -282,6 +341,16 @@ test("an ePUB plays a page with two boxes' recordings aligned by Adjust Timings 
                 await getEpubPreviewReadAlongHighlights(page, shown.frame),
                 "before Play, nothing on the page should be highlighted",
             ).toEqual([]);
+            const backgroundsBefore = await Promise.all(
+                clips.map((clip) =>
+                    shown.frame
+                        .locator(`[id="${clip.textId}"]`)
+                        .evaluate(
+                            (element) =>
+                                getComputedStyle(element).backgroundColor,
+                        ),
+                ),
+            );
 
             const events = await playEpubPreviewReadAlong(page, shown.frame);
             const log = JSON.stringify(events);
@@ -329,6 +398,12 @@ test("an ePUB plays a page with two boxes' recordings aligned by Adjust Timings 
                 expect(
                     on.audioPlaying && on.audioUrl === clip.audioUrl,
                     `${which} should be highlighted while its own recording plays. What happened: ${log}`,
+                ).toBe(true);
+                expect(
+                    isPaintedColor(on.background) &&
+                        on.background !== backgroundsBefore[i],
+                    `${which}'s highlight should give it a background that shows, unlike its ` +
+                        `${backgroundsBefore[i]} before Play. What happened: ${log}`,
                 ).toBe(true);
                 expect(
                     on.audioTime,

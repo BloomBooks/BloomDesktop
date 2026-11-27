@@ -739,6 +739,50 @@ export async function getEpubPreviewPageReadAloud(
     );
 }
 
+/**
+ * How loud the audio file at `url` in the staged ePUB (an address getEpubPreviewPageReadAloud gave)
+ * is over each of `spans`, given in seconds from its start: the root mean square of its decoded
+ * samples there, 0 for silence. Throws when a span is not inside the file.
+ */
+export async function getEpubPreviewAudioLoudness(
+    page: Page,
+    url: string,
+    spans: { start: number; end: number }[],
+): Promise<number[]> {
+    return page.evaluate(
+        async ({ address, ranges }) => {
+            const bytes = await (await fetch(address)).arrayBuffer();
+            const audio = await new OfflineAudioContext(
+                1,
+                1,
+                44100,
+            ).decodeAudioData(bytes);
+            const samples = audio.getChannelData(0);
+            return ranges.map(({ start, end }) => {
+                const from = Math.round(start * audio.sampleRate);
+                const to = Math.round(end * audio.sampleRate);
+                if (from < 0 || to <= from || to > samples.length)
+                    throw new Error(
+                        `${start}-${end} s is not inside ${address}, which lasts ${audio.duration} s.`,
+                    );
+                let sum = 0;
+                for (let i = from; i < to; i++) sum += samples[i] * samples[i];
+                return Math.sqrt(sum / (to - from));
+            });
+        },
+        { address: url, ranges: spans },
+    );
+}
+
+/** Whether a CSS color, as getComputedStyle gives it, paints anything: it is not fully transparent. */
+export function isPaintedColor(color: string): boolean {
+    const match = /^rgba?\(([^)]*)\)$/.exec(color.trim());
+    if (!match)
+        throw new Error(`"${color}" is not a color as rgb() or rgba().`);
+    const parts = match[1].split(/[\s,/]+/).filter((part) => part !== "");
+    return parts.length < 4 || Number(parts[3]) > 0;
+}
+
 /** Whether the staged ePUB has a file at this address (one getEpubPreviewPageReadAloud gave). */
 export async function epubPreviewHasFile(
     page: Page,
@@ -938,8 +982,10 @@ export async function playEpubPreviewReadAlong(
                                 e.kind === "unhighlighted" &&
                                 e.id === lastTextId,
                         ) &&
+                    // A stop before the last clip began is the end of an earlier file, not
+                    // of the page.
                     events
-                        .slice(started)
+                        .slice(lastMarked)
                         .some(
                             (e) => e.kind === "pause" || e.kind === "ended",
                         ) &&
