@@ -300,7 +300,8 @@ async function pressRepeatedly(
  * of fonts/names (FontsApi.GetAllFontMetadata), and fonts/metadata answers with the fonts read so
  * far. So before judging a font, this waits until Bloom has read past it: fonts/metadata lists that
  * font or one that comes after it in fonts/names. (A font of which Bloom finds no regular face gets
- * no metadata at all, so "lists that font" alone is not enough.)
+ * no metadata at all, so "lists that font" alone is not enough.) When a minute passes with no font
+ * at or after it listed, Bloom has nothing to give for that font or any after it.
  */
 async function pickEmbeddableFont(
     page: Page,
@@ -314,32 +315,33 @@ async function pickEmbeddableFont(
         (font.determinedSuitability === "ok" ||
             font.determinedSuitability === "unknown") &&
         !!font.variants?.includes("regular");
-    /** fonts/metadata, once Bloom has read past the font at `index` in `names`. */
+    /**
+     * fonts/metadata, once Bloom has read past the font at `index` in `names`; undefined when Bloom
+     * lists no font at or after it within a minute, which leaves no metadata for any of them.
+     */
     const metadataReadPast = async (
         index: number,
-    ): Promise<IFontMetadata[]> => {
+    ): Promise<IFontMetadata[] | undefined> => {
         let fonts: IFontMetadata[] = [];
+        const readPast = () =>
+            fonts.some((font) => names.indexOf(font.name) >= index);
         await expect
             .poll(
                 async () => {
                     fonts = await getFontsMetadata(page);
-                    return fonts.some(
-                        (font) => names.indexOf(font.name) >= index,
-                    );
+                    return readPast();
                 },
-                {
-                    timeout: 60000,
-                    message: `Bloom never finished reading the metadata of the font "${names[index]}".`,
-                },
+                { timeout: 60000 },
             )
-            .toBe(true);
-        return fonts;
+            .toBe(true)
+            .catch(() => undefined);
+        return readPast() ? fonts : undefined;
     };
 
     for (const name of PREFERRED_L3_FONTS) {
         const index = names.indexOf(name);
         if (index < 0) continue;
-        const font = (await metadataReadPast(index)).find(
+        const font = (await metadataReadPast(index))?.find(
             (f) => f.name === name,
         );
         if (font && isEmbeddable(font)) return name;
@@ -347,9 +349,9 @@ async function pickEmbeddableFont(
     // No preferred font: the first embeddable font in the order Bloom reads them. Once one is
     // listed, Bloom has read every font before it, so no earlier one can still appear.
     for (let index = 0; index < names.length; index++) {
-        const font = (await metadataReadPast(index)).find(
-            (f) => f.name === names[index],
-        );
+        const fonts = await metadataReadPast(index);
+        if (!fonts) break;
+        const font = fonts.find((f) => f.name === names[index]);
         if (font && isEmbeddable(font)) return font.name;
     }
     throw new Error(
