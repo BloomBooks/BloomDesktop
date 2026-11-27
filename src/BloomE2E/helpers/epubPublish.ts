@@ -10,6 +10,7 @@
 // test can answer (see AUTOMATION-DEBT.md).
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
+import * as Path from "path";
 import { apiGet, apiGetJson, getUiString } from "./api";
 import { selectPublishDestination } from "./publish";
 
@@ -502,14 +503,43 @@ export async function readEpubPreviewContentFile(
     );
 }
 
+/**
+ * The folder on disk that holds the content of the ePUB the preview is showing: content.opf and the
+ * folders beside it, the files Save... zips. Click Preview first (showEpubPreview).
+ *
+ * Bloom serves a file on disk at its server's address followed by the file's path
+ * (Extensions.ToLocalhost), so the folder is read off the address of the manifest the reader
+ * names, which Bloom writes beside the content folder.
+ */
+export function getEpubPreviewContentFolder(page: Page): string {
+    const prefix = "/bloom/";
+    const manifestPath = new URL(epubPreviewManifestUrl(page)).pathname;
+    if (!manifestPath.startsWith(prefix))
+        throw new Error(
+            `The ePUB reader's manifest is not served from a file: ${manifestPath}`,
+        );
+    const manifestFile = decodeURIComponent(
+        manifestPath.substring(prefix.length),
+    );
+    return Path.join(Path.dirname(manifestFile), "content");
+}
+
 /** Where the package document of the ePUB the preview is showing is served (readEpubPreviewPackage). */
 function epubPreviewPackageUrl(page: Page): string {
+    return new URL(
+        "content/content.opf",
+        epubPreviewManifestUrl(page),
+    ).toString();
+}
+
+/** The address of the manifest.json that the ePUB reader shows, from its "url" parameter. */
+function epubPreviewManifestUrl(page: Page): string {
     const manifest = new URL(readerFrame(page).url()).searchParams.get("url");
     if (!manifest)
         throw new Error(
             `The ePUB reader's address names no manifest: ${readerFrame(page).url()}`,
         );
-    return new URL("content/content.opf", manifest).toString();
+    return manifest;
 }
 
 /** A file of the staged ePUB, as text, fetched the way the reader fetches it. */

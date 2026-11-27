@@ -27,6 +27,8 @@
 // Save... itself opens the operating system's save dialog, which no test can answer.
 
 import { type Page } from "@playwright/test";
+import * as fs from "fs";
+import * as Path from "path";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
@@ -44,6 +46,7 @@ import {
     type ICollectionSettings,
 } from "../helpers/collectionSettings";
 import {
+    getEpubPreviewContentFolder,
     openEpubPublishScreen,
     readEpubPreviewContentFile,
     readEpubPreviewPackage,
@@ -104,17 +107,41 @@ interface IFontFace {
     file: string;
 }
 
-/** A face the ePUB is expected to declare. Its file is checked against the manifest instead. */
-type ExpectedFace = Omit<IFontFace, "file">;
+/**
+ * A face the ePUB is expected to declare, and the font file it must point to. The file is known for
+ * the fonts that ship with Bloom (DistFiles/fonts) and left out for the Language 3 font, whose file
+ * name depends on the machine.
+ */
+type ExpectedFace = Omit<IFontFace, "file"> & { file?: string };
 
 const REGULAR_FACES: ExpectedFace[] = [
-    { family: L1_FONT, weight: "normal", style: "normal" },
-    { family: L2_FONT, weight: "normal", style: "normal" },
+    {
+        family: L1_FONT,
+        weight: "normal",
+        style: "normal",
+        file: "fonts/Andika-Regular.woff2",
+    },
+    {
+        family: L2_FONT,
+        weight: "normal",
+        style: "normal",
+        file: "fonts/ABeeZee-Regular.woff2",
+    },
 ];
 const FACES_WITH_BOLD_AND_ITALIC: ExpectedFace[] = [
     ...REGULAR_FACES,
-    { family: L1_FONT, weight: "bold", style: "normal" },
-    { family: L1_FONT, weight: "normal", style: "italic" },
+    {
+        family: L1_FONT,
+        weight: "bold",
+        style: "normal",
+        file: "fonts/Andika-Bold.woff2",
+    },
+    {
+        family: L1_FONT,
+        weight: "normal",
+        style: "italic",
+        file: "fonts/Andika-Italic.woff2",
+    },
 ];
 
 test("an ePUB embeds the fonts and faces its text uses, and no others [Test Case ID 164]", async ({
@@ -266,17 +293,30 @@ async function pressRepeatedly(
  * regular face: the first of PREFERRED_L3_FONTS that this machine has, otherwise the first such
  * font. Bloom embeds a font whose license it judged fine ("ok") and one it could not judge
  * ("unknown"), and leaves out one it judged unsuitable (PublishHelper.CheckFontsForEmbedding).
- * Bloom scans the machine's fonts in the background at startup, so this asks until it has one.
+ *
+ * Bloom scans the machine's fonts in the background at startup, in alphabetical order
+ * (FontsApi.GetAllFontMetadata), and fonts/metadata answers with the fonts scanned so far. So a
+ * font early in the alphabet can be listed before a preferred one is. This asks until a preferred
+ * font is listed, or until the list has stopped growing for three seconds, which means the scan is
+ * over.
  */
 async function pickEmbeddableFont(
     page: Page,
     exclude: string[],
 ): Promise<string> {
     let candidates: string[] = [];
+    let fontCount = -1;
+    let pollsWithoutGrowth = 0;
     await expect
         .poll(
             async () => {
-                candidates = (await getFontsMetadata(page))
+                const fonts = await getFontsMetadata(page);
+                if (fonts.length === fontCount) pollsWithoutGrowth++;
+                else {
+                    fontCount = fonts.length;
+                    pollsWithoutGrowth = 0;
+                }
+                candidates = fonts
                     .filter(
                         (font) =>
                             font.name &&
@@ -286,16 +326,22 @@ async function pickEmbeddableFont(
                             font.variants?.includes("regular"),
                     )
                     .map((font) => font.name);
-                return candidates.length;
+                if (
+                    PREFERRED_L3_FONTS.some((name) => candidates.includes(name))
+                )
+                    return true;
+                return pollsWithoutGrowth >= 3 && candidates.length > 0;
             },
             {
-                timeout: 30000,
+                intervals: [1000],
+                timeout: 60000,
                 message:
-                    `This machine has no font besides ${exclude.join(" and ")} that Bloom may ` +
-                    "embed in an ePUB, so the test cannot give Language 3 one.",
+                    `Bloom listed no font besides ${exclude.join(" and ")} that it may embed in ` +
+                    "an ePUB, or its list of fonts never stopped growing, so the test cannot " +
+                    "give Language 3 a font.",
             },
         )
-        .toBeGreaterThan(0);
+        .toBe(true);
     return (
         PREFERRED_L3_FONTS.find((name) => candidates.includes(name)) ??
         candidates[0]
@@ -304,8 +350,10 @@ async function pickEmbeddableFont(
 
 /**
  * Make the ePUB (Preview on the ePUB screen) and expect its css/fonts.css to declare exactly the
- * `expected` faces, in any order, and its manifest to list exactly the font files those faces point
- * to. `l3Font` is named in the failure message, since it is the font that must stay out.
+ * `expected` faces, in any order, each pointing to its expected file where one is given; and expect
+ * both the manifest and the staged fonts folder, which Save... zips, to hold exactly the font files
+ * those faces point to. `l3Font` is named in the failure message, since it is the font that must
+ * stay out.
  */
 async function expectEpubFontFaces(
     page: Page,
@@ -323,10 +371,35 @@ async function expectEpubFontFaces(
         "The ePUB's fonts.css should declare these faces and no others; in particular nothing " +
             `in ${l3Font}, which no published text uses. It has: ${JSON.stringify(faces)}.`,
     ).toEqual(expected.map(key).sort());
+    for (const face of expected.filter((f) => f.file))
+        expect(
+            faces.find((f) => key(f) === key(face))?.file,
+            `The ${key(face)} face should point to its own font file.`,
+        ).toBe(face.file);
+    const filesOfFaces = [...new Set(faces.map((f) => f.file))].sort();
     expect(
         await readManifestFontFiles(page),
-        "The ePUB should hold exactly the font files that its fonts.css points to.",
-    ).toEqual([...new Set(faces.map((f) => f.file))].sort());
+        "The ePUB's manifest should list exactly the font files that its fonts.css points to.",
+    ).toEqual(filesOfFaces);
+    expect(
+        readStagedFontFiles(page),
+        "The staged ePUB's fonts folder should hold exactly the font files that its fonts.css " +
+            "points to.",
+    ).toEqual(filesOfFaces);
+}
+
+/**
+ * The files in the fonts folder of the ePUB the preview is showing, as Bloom staged them on disk,
+ * by their paths in the content folder ("fonts/Andika-Regular.woff2"), sorted. None when the ePUB
+ * has no fonts folder.
+ */
+function readStagedFontFiles(page: Page): string[] {
+    const folder = Path.join(getEpubPreviewContentFolder(page), "fonts");
+    if (!fs.existsSync(folder)) return [];
+    return fs
+        .readdirSync(folder)
+        .map((name) => `fonts/${name}`)
+        .sort();
 }
 
 /** The @font-face rules of a fonts.css that EpubMaker.AddFontFace wrote. */
