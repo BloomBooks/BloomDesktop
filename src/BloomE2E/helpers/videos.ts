@@ -26,8 +26,11 @@ import {
     getContentPages,
     goToPage,
     type IBookPage,
+    waitForEditablePage,
+    waitForEditTabSettled,
 } from "./bookMaking";
 import { clickCanvasElementMenuItem } from "./canvasElements";
+import { markEditablePage, waitForEditablePageReload } from "./pageThumbnails";
 import { realClick } from "./realClick";
 import { expectExpandedTool, toolboxFrame } from "./toolbox";
 import { confirmRecycleBox } from "./winformsConfirmRecycle";
@@ -81,6 +84,11 @@ export async function chooseVideoFile(
  * "Choose Video from your Computer..." command of the element's "..." menu, and wait until the box
  * shows it. This is how a person fills a video on a Canvas page, where clicking the box selects
  * the element rather than opening the Sign Language tool.
+ *
+ * Once the box shows the video, Bloom saves the page and rebuilds it (doVideoCommand in
+ * bloomVideo.ts calls saveChangesAndRethinkPage), which replaces the page's document. This waits
+ * for that rebuild to finish, because anything a test holds from the old document (an element
+ * handle, a count taken before a drag) stops working when it goes away.
  */
 export async function chooseVideoFileFromCanvasMenu(
     page: Page,
@@ -89,17 +97,30 @@ export async function chooseVideoFileFromCanvasMenu(
 ): Promise<string> {
     if (!fs.existsSync(filePath))
         throw new Error(`There is no video file at ${filePath}.`);
+    const pageId = await editablePageFrame(page)
+        .locator(".bloom-page")
+        .first()
+        .getAttribute("id");
+    if (!pageId)
+        throw new Error(
+            "The page in the Edit tab has no id, so its rebuild after the import cannot be awaited.",
+        );
     await apiPost(
         page,
         "e2e/nextFileToChoose",
         Path.resolve(filePath),
         "text/plain",
     );
+    await markEditablePage(page);
     await clickCanvasElementMenuItem(
         page,
         "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
     );
-    return waitForVideoInBox(videoBox, filePath);
+    const src = await waitForVideoInBox(videoBox, filePath);
+    await waitForEditablePageReload(page, pageId);
+    await waitForEditTabSettled(page);
+    await waitForEditablePage(page);
+    return src;
 }
 
 /**
