@@ -403,14 +403,18 @@ export async function clickPreviewQuizAnswer(
 /**
  * Start noting every sound Bloom Player plays from here on. Bloom Player plays an activity's sounds
  * through audio elements (playSound in its dragActivityRuntime.ts); this wraps their play() so that
- * each call records the file it was asked to play, then plays it as before. The record lives in the
- * player's document, so it ends when the preview is rebuilt; call this again after that.
+ * each call records the file it was asked to play, then plays it as before, and records how the
+ * play turned out: "playing" once the browser started it, or the error that stopped it (a file
+ * the BloomPUB lacks fails with NotSupportedError). The record lives in the player's document, so
+ * it ends when the preview is rebuilt; call this again after that.
  */
 export async function startRecordingPreviewSounds(
     player: Frame,
 ): Promise<void> {
     await player.evaluate(() => {
-        const w = window as unknown as { e2eSoundsPlayed?: string[] };
+        const w = window as unknown as {
+            e2eSoundsPlayed?: { url: string; outcome: string }[];
+        };
         if (w.e2eSoundsPlayed) {
             w.e2eSoundsPlayed.length = 0;
             return;
@@ -418,10 +422,49 @@ export async function startRecordingPreviewSounds(
         w.e2eSoundsPlayed = [];
         const originalPlay = HTMLMediaElement.prototype.play;
         HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
-            w.e2eSoundsPlayed!.push(this.currentSrc || this.src);
-            return originalPlay.call(this);
+            const record = {
+                url: this.currentSrc || this.src,
+                outcome: "pending",
+            };
+            w.e2eSoundsPlayed!.push(record);
+            const playing = originalPlay.call(this);
+            playing.then(
+                () => (record.outcome = "playing"),
+                (error: Error) => (record.outcome = `failed: ${error.name}`),
+            );
+            return playing;
         };
     });
+}
+
+/** One sound Bloom Player was asked to play: its file name and how the play turned out. */
+interface IPreviewSoundPlay {
+    name: string;
+    /** "pending" until the browser starts or refuses it, then "playing" or "failed: <error>". */
+    outcome: string;
+}
+
+async function getPreviewSoundPlays(
+    player: Frame,
+): Promise<IPreviewSoundPlay[]> {
+    const played = await player.evaluate(
+        () =>
+            (
+                window as unknown as {
+                    e2eSoundsPlayed?: { url: string; outcome: string }[];
+                }
+            ).e2eSoundsPlayed,
+    );
+    if (!played)
+        throw new Error(
+            "Nothing is recording Bloom Player's sounds; call startRecordingPreviewSounds first.",
+        );
+    return played.map(({ url, outcome }) => ({
+        name: decodeURIComponent(
+            Path.posix.basename(new URL(url).pathname),
+        ).replace(/^(right_answer|wrong_answer)-[^.]+\.mp3$/, "$1.mp3"),
+        outcome,
+    }));
 }
 
 /**
@@ -430,27 +473,13 @@ export async function startRecordingPreviewSounds(
  * (right_answer-1a2b3c.mp3); this returns them without it.
  */
 export async function getPreviewSoundsPlayed(player: Frame): Promise<string[]> {
-    const played = await player.evaluate(
-        () =>
-            (window as unknown as { e2eSoundsPlayed?: string[] })
-                .e2eSoundsPlayed,
-    );
-    if (!played)
-        throw new Error(
-            "Nothing is recording Bloom Player's sounds; call startRecordingPreviewSounds first.",
-        );
-    return played.map((url) => {
-        const name = Path.posix.basename(new URL(url).pathname);
-        return decodeURIComponent(name).replace(
-            /^(right_answer|wrong_answer)-[^.]+\.mp3$/,
-            "$1.mp3",
-        );
-    });
+    return (await getPreviewSoundPlays(player)).map((play) => play.name);
 }
 
 /**
  * Wait until Bloom Player has played exactly these sounds since startRecordingPreviewSounds, in
- * this order, by file name (see getPreviewSoundsPlayed).
+ * this order, by file name (see getPreviewSoundsPlayed), and the browser has started each of them:
+ * a sound whose file is missing from the publication fails here.
  */
 export async function expectPreviewSoundsPlayed(
     player: Frame,
@@ -460,6 +489,18 @@ export async function expectPreviewSoundsPlayed(
     await expect
         .poll(() => getPreviewSoundsPlayed(player), { timeout: 15000, message })
         .toEqual(expected);
+    await expect
+        .poll(
+            async () =>
+                (await getPreviewSoundPlays(player))
+                    .filter((play) => play.outcome !== "playing")
+                    .map((play) => `${play.name}: ${play.outcome}`),
+            {
+                timeout: 15000,
+                message: `${message}; the browser should have started every sound`,
+            },
+        )
+        .toEqual([]);
 }
 
 /** Every video on the page Bloom Player is showing. */
