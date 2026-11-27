@@ -90,9 +90,9 @@ function brokenFilesIn(folder: string): string[] {
 
 /**
  * Make the book's .htm unreadable even to a web browser's lenient parser, as the manual case does:
- * <head> becomes <heead> and <body> becomes <boody>.
+ * <head> becomes <heead> and <body> becomes <boody>. Returns what the .htm now holds.
  */
-function corruptHtm(folder: string): void {
+function corruptHtm(folder: string): string {
     const path = bookHtmPath(folder);
     const html = fs.readFileSync(path, "utf8");
     expect(html, "test setup: the .htm has a <head>").toMatch(/<head>/);
@@ -107,6 +107,7 @@ function corruptHtm(folder: string): void {
         fs.readFileSync(path, "utf8"),
         "test setup: the .htm has no <head> or <body> left",
     ).not.toMatch(/<head>|<body[\s>]/);
+    return broken;
 }
 
 /** The size, in CSS pixels, of the page the Edit tab shows. */
@@ -159,6 +160,8 @@ test("a book with an unreadable .htm or a broken basePage.css does not crash Blo
     let pageCount = 0;
     let pageSize = { width: 0, height: 0 };
     let originalCss = "";
+    let backupContent: string[] = [];
+    let corruptedHtml = "";
 
     await step(
         "Make two books, one with pages of text and a picture",
@@ -240,7 +243,25 @@ test("a book with an unreadable .htm or a broken basePage.css does not crash Blo
     // Step 2 of the case: the .htm is unreadable, and the backup is there.
     let current = await step(
         "Quit Bloom, make the book's .htm unreadable, and start Bloom",
-        () => bloomApp.restart(() => corruptHtm(brokenFolder)),
+        () =>
+            bloomApp.restart(() => {
+                const backup = fs.readFileSync(
+                    Path.join(brokenFolder, kBackupFile),
+                    "utf8",
+                );
+                backupContent = [kFirstText, kSecondText, "bird.png"].filter(
+                    (content) => backup.includes(content),
+                );
+                expect(
+                    backupContent,
+                    "test setup: the backup should hold the picture and some of the typed text",
+                ).toContain("bird.png");
+                expect(
+                    backupContent.length,
+                    "test setup: the backup should hold some of the typed text",
+                ).toBeGreaterThan(1);
+                corruptedHtml = corruptHtm(brokenFolder);
+            }),
     );
     if (!current) throw new Error("Bloom did not restart.");
     const restarted = current;
@@ -256,7 +277,7 @@ test("a book with an unreadable .htm or a broken basePage.css does not crash Blo
                 // Bloom reads the book when it is selected, and shows its dialog modally while doing
                 // so, so the selection is not awaited until the dialog has been closed.
                 let selectError: unknown;
-                const selected = selectBook(restarted, brokenFolder).catch(
+                const selected = clickBookTile(restarted, brokenId).catch(
                     (error: unknown) => {
                         selectError = error;
                     },
@@ -296,10 +317,15 @@ test("a book with an unreadable .htm or a broken basePage.css does not crash Blo
             } finally {
                 resumeWatcher();
             }
+            const broken = brokenFilesIn(brokenFolder);
             expect(
-                brokenFilesIn(brokenFolder),
+                broken,
                 "Bloom should keep the unreadable .htm beside the book, under a _broken_ name",
             ).toHaveLength(1);
+            expect(
+                fs.readFileSync(Path.join(brokenFolder, broken[0]), "utf8"),
+                "the file Bloom set aside should be the unreadable .htm, unchanged",
+            ).toBe(corruptedHtml);
             const restored = fs.readFileSync(bookHtmPath(brokenFolder), "utf8");
             expect(
                 restored,
@@ -309,6 +335,12 @@ test("a book with an unreadable .htm or a broken basePage.css does not crash Blo
                 restored,
                 "the restored .htm should have its <body> back",
             ).toMatch(/<body[\s>]/);
+            // The backup's text and picture come back with it.
+            for (const content of backupContent)
+                expect(
+                    restored,
+                    `the restored book should still hold "${content}" from its backup`,
+                ).toContain(content);
         },
     );
 
