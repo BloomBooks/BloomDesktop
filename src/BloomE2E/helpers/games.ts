@@ -545,8 +545,9 @@ export interface IDraggableVideoEvent {
 
 /**
  * Start recording what the videos of `gamePage`'s draggable items do (see IDraggableVideoEvent),
- * from now on. The record lives in the page's document; calling this again clears it. A media
- * element's events do not bubble, so they are caught on their way down.
+ * from now on, and which of them are playing at each release of the mouse button (see
+ * getDraggableVideosPlayingAtEachRelease). The record lives in the page's document; calling this
+ * again clears it. A media element's events do not bubble, so they are caught on their way down.
  */
 export async function startRecordingDraggableVideos(
     gamePage: Locator,
@@ -560,17 +561,45 @@ export async function startRecordingDraggableVideos(
         };
         const w = pageElement.ownerDocument.defaultView as unknown as {
             e2eDraggableVideoEvents?: Recorded[];
+            e2eDraggableVideosPlayingAtRelease?: string[][];
         };
-        if (w.e2eDraggableVideoEvents) {
+        if (w.e2eDraggableVideoEvents && w.e2eDraggableVideosPlayingAtRelease) {
             w.e2eDraggableVideoEvents.length = 0;
+            w.e2eDraggableVideosPlayingAtRelease.length = 0;
             return;
         }
         const events: Recorded[] = [];
+        const playingAtRelease: string[][] = [];
         w.e2eDraggableVideoEvents = events;
+        w.e2eDraggableVideosPlayingAtRelease = playingAtRelease;
         const doc = pageElement.ownerDocument;
         let pressed = false;
         doc.addEventListener("pointerdown", () => (pressed = true), true);
-        doc.addEventListener("pointerup", () => (pressed = false), true);
+        doc.addEventListener(
+            "pointerup",
+            () => {
+                pressed = false;
+                // A video that play() was called on is no longer paused at once, before it
+                // fires "playing", so this sees a start the press made even when the drag was
+                // too quick for "playing" to come before the release. This listener, on the
+                // document's way down, runs before the game's own one on the item.
+                playingAtRelease.push(
+                    Array.from(
+                        doc.querySelectorAll<HTMLVideoElement>(
+                            "[data-draggable-id] video",
+                        ),
+                    )
+                        .filter((v) => !v.paused && !v.muted)
+                        .map(
+                            (v) =>
+                                v
+                                    .closest("[data-draggable-id]")!
+                                    .getAttribute("data-draggable-id")!,
+                        ),
+                );
+            },
+            true,
+        );
         doc.addEventListener("pointercancel", () => (pressed = false), true);
         for (const type of ["playing", "ended"]) {
             doc.addEventListener(
@@ -611,6 +640,29 @@ export async function getDraggableVideoEvents(
             "Nothing is recording the draggable videos; call startRecordingDraggableVideos first.",
         );
     return events;
+}
+
+/**
+ * For each release of the mouse button on the page since startRecordingDraggableVideos, in
+ * order, the data-draggable-ids of the draggable videos that were playing, with their sound on,
+ * at that moment.
+ */
+export async function getDraggableVideosPlayingAtEachRelease(
+    gamePage: Locator,
+): Promise<string[][]> {
+    const releases = await gamePage.evaluate(
+        (pageElement) =>
+            (
+                pageElement.ownerDocument.defaultView as unknown as {
+                    e2eDraggableVideosPlayingAtRelease?: string[][];
+                }
+            ).e2eDraggableVideosPlayingAtRelease,
+    );
+    if (!releases)
+        throw new Error(
+            "Nothing is recording the draggable videos; call startRecordingDraggableVideos first.",
+        );
+    return releases;
 }
 
 /**

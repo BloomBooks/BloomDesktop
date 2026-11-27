@@ -33,6 +33,7 @@ import {
     getDraggableVideoEvents,
     getDraggableVideoFiles,
     getDraggableVideoPlaybackPositions,
+    getDraggableVideosPlayingAtEachRelease,
     makeBookWithGamePage,
     startRecordingDraggableVideos,
     waitForDraggableVideosShown,
@@ -101,6 +102,9 @@ async function dragAndExpectOnlyItsVideoPlayed(
     before: string[],
     where: string,
 ): Promise<string[]> {
+    const releasesBefore = (
+        await getDraggableVideosPlayingAtEachRelease(gamePage)
+    ).length;
     await dragDraggableItemOnto(
         page,
         gamePage,
@@ -132,6 +136,14 @@ async function dragAndExpectOnlyItsVideoPlayed(
               }
             : undefined,
     );
+    // The press, not the release, has to start the clip: it is already playing as the button
+    // comes up, however quick the drag was.
+    expect(
+        (await getDraggableVideosPlayingAtEachRelease(gamePage)).slice(
+            releasesBefore,
+        ),
+        `In ${where}, item ${video.id}'s video, and only it, should be playing when the drag ends`,
+    ).toEqual([[video.id]]);
     const after = [
         ...before,
         `${video.id} playing ${video.seconds}s`,
