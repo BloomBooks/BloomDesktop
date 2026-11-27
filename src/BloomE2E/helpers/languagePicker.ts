@@ -218,6 +218,33 @@ export async function searchForLanguage(
     ).toBeVisible({ timeout: 15000 });
 }
 
+/**
+ * Type `text`, which names no known language, into the chooser's search box, as a person does
+ * before making an unlisted language, and return once the box holds it and no language is
+ * selected (the chooser's customize button then offers "Create Unlisted Language").
+ */
+export async function searchForUnlistedLanguage(
+    page: Page,
+    text: string,
+): Promise<void> {
+    await searchBox(page).fill(text);
+    await expect(searchBox(page)).toHaveValue(text);
+    await expect(
+        languageChooserDialog(page).locator(".selected-option-card-button"),
+        "a language is still selected, so the chooser would customize it",
+    ).toHaveCount(0);
+}
+
+/** Type the name of an unlisted language into the Customize dialog's Name box. */
+export async function typeUnlistedLanguageName(
+    page: Page,
+    name: string,
+): Promise<void> {
+    const box = customizeDialog(page).locator("#unlisted-lang-name-field");
+    await box.fill(name);
+    await expect(box).toHaveValue(name);
+}
+
 /** Clear the search box with the X at its end, and return once it is empty. */
 export async function clearLanguageSearch(page: Page): Promise<void> {
     await realClick(
