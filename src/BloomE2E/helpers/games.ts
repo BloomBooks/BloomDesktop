@@ -537,6 +537,8 @@ export interface IDraggableVideoEvent {
      * reader, so it is left out.
      */
     event: "playing" | "ended";
+    /** How long the video's clip is, in seconds to the tenth: it tells the clips apart. */
+    seconds: number;
     /** True when a mouse button was held down on the page at the time. */
     pressed: boolean;
 }
@@ -550,19 +552,20 @@ export async function startRecordingDraggableVideos(
     gamePage: Locator,
 ): Promise<void> {
     await gamePage.evaluate((pageElement) => {
+        type Recorded = {
+            itemId: string;
+            event: string;
+            seconds: number;
+            pressed: boolean;
+        };
         const w = pageElement.ownerDocument.defaultView as unknown as {
-            e2eDraggableVideoEvents?: {
-                itemId: string;
-                event: string;
-                pressed: boolean;
-            }[];
+            e2eDraggableVideoEvents?: Recorded[];
         };
         if (w.e2eDraggableVideoEvents) {
             w.e2eDraggableVideoEvents.length = 0;
             return;
         }
-        const events: { itemId: string; event: string; pressed: boolean }[] =
-            [];
+        const events: Recorded[] = [];
         w.e2eDraggableVideoEvents = events;
         const doc = pageElement.ownerDocument;
         let pressed = false;
@@ -581,6 +584,7 @@ export async function startRecordingDraggableVideos(
                     events.push({
                         itemId: item.getAttribute("data-draggable-id")!,
                         event: type,
+                        seconds: Math.round(video.duration * 10) / 10,
                         pressed,
                     });
                 },
@@ -640,6 +644,29 @@ export async function waitForDraggableVideosShown(
             },
         )
         .toBe(true);
+}
+
+/**
+ * How far into its clip each draggable item's video on `gamePage` is, in seconds, by
+ * data-draggable-id; a video that has played to its end reads "ended".
+ */
+export async function getDraggableVideoPlaybackPositions(
+    gamePage: Locator,
+): Promise<Record<string, number | "ended">> {
+    return gamePage.evaluate((pageElement) =>
+        Object.fromEntries(
+            Array.from(
+                pageElement.querySelectorAll<HTMLVideoElement>(
+                    "[data-draggable-id] video",
+                ),
+            ).map((v) => [
+                v
+                    .closest("[data-draggable-id]")!
+                    .getAttribute("data-draggable-id")!,
+                v.ended ? "ended" : v.currentTime,
+            ]),
+        ),
+    );
 }
 
 /**
