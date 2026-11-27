@@ -1,7 +1,8 @@
 // Answer the plain Windows dialogs that some of Bloom's commands still show: a message box
 // (MessageBox.Show) and the common Save As dialog (SaveFileDialog). They are native windows, out of
 // CDP's reach, so this goes through Windows UI Automation, which reads and presses their controls
-// with no pointer, keystroke or focus change.
+// with no pointer or focus change. The Save As dialog's file name is typed by posting characters to
+// its box, which needs neither the foreground nor the focus.
 //
 // Both are found by the ids that Windows gives every such dialog's controls, so that nothing
 // depends on the words of Bloom's UI language: 65535 for a message box's text, 1001 for the edit
@@ -39,6 +40,8 @@ public static class Fg {
   [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
   [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
   [DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(IntPtr h, out int p);
+  [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern bool PostMessage(IntPtr h, uint msg, IntPtr w, IntPtr l);
+  public const uint WM_CHAR = 0x0102;
 }
 '@
 function ForegroundPid { $p = 0; [Fg]::GetWindowThreadProcessId([Fg]::GetForegroundWindow(), [ref]$p) | Out-Null; $p }
@@ -235,36 +238,30 @@ $isEdit = New-Object System.Windows.Automation.PropertyCondition($A::ControlType
 function FindSaveAs {
   foreach ($d in (FindDialogs)) {
     # The "File name:" ComboBox holds an Edit of the same id; only the Edit takes a value.
-    $name = $d.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.AndCondition((ById '1001'), $isEdit)))
+    $edit = $d.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.AndCondition((ById '1001'), $isEdit)))
     $save = $d.FindFirst($Scope::Children, (ById '1'))
-    if ($name -and $save) { return @{ dialog = $d; edit = $name; name = $name.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern); save = $save } }
+    if ($edit -and $save) { return @{ edit = $edit; value = $edit.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern); save = $save } }
   }
   return $null
 }
-Add-Type @'
-using System; using System.Runtime.InteropServices;
-public static class Typing {
-  [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern bool PostMessage(IntPtr h, uint msg, IntPtr w, IntPtr l);
-}
-'@
-$WM_CHAR = 0x0102
-# Type $text into the "File name:" box of $found, and check that it holds it. The dialog keeps a
+# Type $text into the "File name:" box of $found, and wait until it holds it. The dialog keeps a
 # name of its own, which follows what is typed in the box but not text that UI Automation puts
 # there (SetValue): on some machines Save then saves under the name that the dialog suggested, in
 # the folder that it opened in. So the box is emptied and the text posted to it a character at a
-# time, as a keyboard delivers it, which needs neither the foreground nor the focus.
+# time, as a keyboard delivers it. It is typed again if the box comes to hold anything but the
+# start of $text.
 function SetName($found, $text) {
   $hwnd = [IntPtr][long]$found.edit.Current.NativeWindowHandle
+  function TypeText {
+    $found.value.SetValue('')
+    foreach ($c in $text.ToCharArray()) { [Fg]::PostMessage($hwnd, [Fg]::WM_CHAR, [IntPtr][int]$c, [IntPtr]1) | Out-Null }
+  }
+  TypeText
   do {
-    $found.name.SetValue('')
-    foreach ($c in $text.ToCharArray()) { [Typing]::PostMessage($hwnd, $WM_CHAR, [IntPtr][int]$c, [IntPtr]1) | Out-Null }
-    $typing = [Diagnostics.Stopwatch]::StartNew()
-    do {
-      $now = $found.name.Current.Value
-      if ($now -eq $text) { return }
-      Start-Sleep -Milliseconds 100
-    } while ($typing.ElapsedMilliseconds -lt 5000)
-    ${kPauseBetweenScans}
+    $now = $found.value.Current.Value
+    if ($now -eq $text) { return }
+    if (-not $text.StartsWith($now, [StringComparison]::Ordinal)) { TypeText }
+${kPauseBetweenScans}
   } while ((Get-Date) -lt $deadline)
   throw ('The "File name:" box did not take ' + $text + '; it holds ' + $now)
 }
@@ -273,7 +270,7 @@ do {
   # its suggested name in it (Bloom always gives one), which would replace a path typed earlier. So
   # the dialog is waited on until its box holds a name.
   $found = FindSaveAs
-  if ($found -and $found.name.Current.Value) {
+  if ($found -and $found.value.Current.Value) {
     SetName $found $env:BLOOM_E2E_FILE
     PressAndWaitForClose $found.save { [bool](FindSaveAs) }
     'saved'
