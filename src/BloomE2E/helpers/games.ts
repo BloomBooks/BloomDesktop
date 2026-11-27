@@ -9,6 +9,7 @@
 
 import { expect, type Locator, type Page } from "@playwright/test";
 import * as fs from "fs";
+import * as path from "path";
 import { bookHtmlPath } from "./bookHtml";
 import {
     addPage,
@@ -26,7 +27,8 @@ import {
 } from "./canvasElements";
 import type { IViewRect } from "./pageView";
 import { realClick, waitForClickToSettle } from "./realClick";
-import { expandToolByHeader } from "./toolbox";
+import { armFileChooser } from "./talkingBook";
+import { expandToolByHeader, toolboxFrame } from "./toolbox";
 export type GameTab = "Start" | "Correct" | "Wrong" | "Play";
 export const kGameTabs: GameTab[] = ["Start", "Correct", "Wrong", "Play"];
 
@@ -437,4 +439,54 @@ export async function getTabItemsCovering(
         }
     }
     return covering;
+}
+
+/** The two sounds a game page sets: the one for a correct answer and the one for a wrong one. */
+export type GameSoundType = "correct" | "wrong";
+
+/**
+ * The sound the page being edited plays for a correct or wrong answer, as the page records it:
+ * the file name in the book's audio folder, "none", or "default" when the page names none
+ * (GameTool.tsx reads it the same way).
+ */
+export async function getGameSound(
+    page: Page,
+    soundType: GameSoundType,
+): Promise<string> {
+    const attribute = await editablePageFrame(page)
+        .locator(".bloom-page")
+        .first()
+        .getAttribute(`data-${soundType}-sound`);
+    return attribute ?? "default";
+}
+
+/**
+ * On a page that the Game tool offers sounds for (a quiz, or a choice game such as "Choose Word
+ * from Image"), with the Game tool open in its Start tab, choose the sound file at `filePath` as
+ * the page's correct or wrong sound: open that sound's menu, choose "Choose...", and answer the
+ * file chooser with `filePath`. Returns once the page names the file, which Bloom has copied into
+ * the book's audio folder by then.
+ */
+export async function chooseGameSoundFile(
+    page: Page,
+    soundType: GameSoundType,
+    filePath: string,
+): Promise<void> {
+    const toolbox = toolboxFrame(page);
+    const control = toolbox.getByTestId(`game-${soundType}-sound`);
+    await expect(
+        control,
+        `The Game tool shows no ${soundType} sound menu for this page.`,
+    ).toBeVisible({ timeout: 30000 });
+    await armFileChooser(page, filePath);
+    await control.locator('[aria-haspopup="listbox"]').click();
+    // The menu's "Choose..." item, found by its value, since its label is localized.
+    await toolbox.locator('[role="listbox"] li[data-value="choose"]').click();
+    const fileName = path.basename(filePath);
+    await expect
+        .poll(() => getGameSound(page, soundType), {
+            timeout: 15000,
+            message: `The page never named ${fileName} as its ${soundType} sound.`,
+        })
+        .toBe(fileName);
 }

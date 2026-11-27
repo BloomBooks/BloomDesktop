@@ -373,6 +373,34 @@ export async function clickPreviewChoice(
 }
 
 /**
+ * Click an answer of the comprehension quiz on the page Bloom Player is showing, the way a reader
+ * taps it: the `index`th answer that the page marks correct (`correct` true) or not, counted among
+ * the answers that have text, which are the ones Bloom Player shows. Returns once Bloom Player has
+ * marked it chosen (SimpleCheckboxQuiz in the bloom-player repository adds wasSelectedAtOnePoint).
+ */
+export async function clickPreviewQuizAnswer(
+    player: Frame,
+    correct: boolean,
+    index = 0,
+): Promise<void> {
+    await dismissBigPlayButton(player);
+    const answer = activePreviewPage(player)
+        .locator(
+            `.checkbox-and-textbox-choice:not(.empty)${correct ? ".correct-answer" : ":not(.correct-answer)"}`,
+        )
+        .nth(index);
+    await expect(
+        answer,
+        "The page Bloom Player is showing has no such quiz answer.",
+    ).toBeVisible({ timeout: 30000 });
+    await answer.click();
+    await expect(
+        answer,
+        `Bloom Player did not mark the ${correct ? "correct" : "wrong"} quiz answer it was clicked.`,
+    ).toHaveClass(/\bwasSelectedAtOnePoint\b/, { timeout: 15000 });
+}
+
+/**
  * Start noting every sound Bloom Player plays from here on. Bloom Player plays an activity's sounds
  * through audio elements (playSound in its dragActivityRuntime.ts); this wraps their play() so that
  * each call records the file it was asked to play, then plays it as before. The record lives in the

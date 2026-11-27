@@ -1546,7 +1546,7 @@ const SoundControls: React.FunctionComponent<{
     onSoundItemChosen: (soundType: SoundType, value: string) => void;
 }> = (props) => {
     return (
-        <div css={playAudioCss}>
+        <div css={playAudioCss} data-testid={`game-${props.soundType}-sound`}>
             <Div
                 css={css`
                     margin-bottom: 5px;
