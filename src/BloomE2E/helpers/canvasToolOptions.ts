@@ -35,17 +35,52 @@ const BACKGROUND_COLOR_BAR =
 const COLOR_PICKER = '[role="dialog"]:has(.color-swatch)';
 const COLOR_SWATCH = ".color-swatch > div:last-child";
 
-/** The Rounded Corners check box, once the Canvas tool is open. */
-export async function roundedCornersBox(page: Page): Promise<Locator> {
+/**
+ * One of the check boxes beside the Element Type choice, once the Canvas tool is open: 0 for Show
+ * Tail, 1 for Rounded Corners.
+ */
+async function elementTypeCheckBox(
+    page: Page,
+    position: 0 | 1,
+): Promise<Locator> {
     const toolbox = await openCanvasTool(page);
     const boxes = toolbox.locator(ELEMENT_TYPE_CHECK_BOXES);
     await expect(
         boxes,
         "The Element Type choice should have two check boxes beside it: Show Tail and Rounded Corners.",
     ).toHaveCount(2, { timeout: 15000 });
-    const box = boxes.nth(1);
+    const box = boxes.nth(position);
     await box.waitFor({ state: "visible", timeout: 15000 });
     return box;
+}
+
+/** The Rounded Corners check box, once the Canvas tool is open. */
+export async function roundedCornersBox(page: Page): Promise<Locator> {
+    return elementTypeCheckBox(page, 1);
+}
+
+/** The Show Tail check box, once the Canvas tool is open. */
+export async function showTailBox(page: Page): Promise<Locator> {
+    return elementTypeCheckBox(page, 0);
+}
+
+/**
+ * Tick or untick Show Tail for the selected element, the way a person does, and wait for the box
+ * to show it. Fails if the box is disabled, which it is for a child bubble or a button.
+ */
+export async function setShowTail(page: Page, show: boolean): Promise<void> {
+    const box = await showTailBox(page);
+    await expect(
+        box,
+        "Show Tail is disabled for the selected element.",
+    ).toBeEnabled({
+        timeout: 15000,
+    });
+    if ((await box.isChecked()) !== show) await box.click();
+    await expect(
+        box,
+        `Clicking Show Tail did not ${show ? "tick" : "untick"} it.`,
+    ).toBeChecked({ checked: show, timeout: 15000 });
 }
 
 /**
@@ -220,6 +255,12 @@ export interface ISavedShape {
      * the alpha of its fill color. 0 when it has no fill.
      */
     fillOpacity: number;
+    /**
+     * The top left corner of the shape's bounding box, in the SVG's units, which are the drawing
+     * surface's pixels, the same as the points of a bubble's data-bubble spec.
+     */
+    x: number;
+    y: number;
     /** The size of the shape's bounding box, in the SVG's units. */
     width: number;
     height: number;
@@ -343,6 +384,8 @@ export async function readSavedCanvasShapes(
                                     shape.getAttribute("stroke") ??
                                     style.stroke,
                                 fillOpacity,
+                                x: Math.round(box.x),
+                                y: Math.round(box.y),
                                 width: Math.round(box.width),
                                 height: Math.round(box.height),
                                 cornersCovered: coveredOf(corners),
@@ -374,6 +417,8 @@ export interface ISavedBubbleSpec {
     style: string;
     /** The background colors as saved, e.g. ["#ff1616"]; empty when it has none. */
     backgroundColors: string[];
+    /** Where each of its tails ends, in the drawing surface's pixels; empty when it has no tail. */
+    tailTips: { x: number; y: number }[];
 }
 
 /**
@@ -408,10 +453,15 @@ export async function readSavedBubbleSpecs(
         const spec = JSON.parse(json.replace(/`/g, '"')) as {
             style?: string;
             backgroundColors?: string[];
+            tails?: { tipX: number; tipY: number }[];
         };
         return {
             style: spec.style ?? "",
             backgroundColors: spec.backgroundColors ?? [],
+            tailTips: (spec.tails ?? []).map((t) => ({
+                x: t.tipX,
+                y: t.tipY,
+            })),
         };
     });
 }
