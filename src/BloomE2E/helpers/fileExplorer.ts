@@ -91,6 +91,54 @@ if ($seen) {
 }
 
 /**
+ * Wait up to `timeoutMs` for File Explorer to show the folder `folder`, as it does when Bloom opens
+ * a folder for the user, then close every Explorer window showing it, and return how many it
+ * closed. Fails when no Explorer window showed the folder in time. Call it before the folder is
+ * deleted: Explorer then moves its window to the folder's parent, where it can no longer be told
+ * apart from a window of the user's own.
+ */
+export async function closeExplorerWindowsOnFolder(
+    folder: string,
+    timeoutMs: number,
+): Promise<number> {
+    const script = `
+$ErrorActionPreference = 'Stop'
+$folder = [IO.Path]::GetFullPath($env:BLOOM_E2E_FOLDER).TrimEnd('\\')
+$shell = New-Object -ComObject Shell.Application
+$deadline = (Get-Date).AddMilliseconds([int]$env:BLOOM_E2E_TIMEOUT_MS)
+do {
+  $closed = 0
+  foreach ($w in @($shell.Windows())) {
+    try { $path = $w.Document.Folder.Self.Path } catch { continue }
+    if ($path -and [string]::Equals($path.TrimEnd('\\'), $folder, [StringComparison]::OrdinalIgnoreCase)) {
+      $w.Quit()
+      $closed++
+    }
+  }
+  if ($closed -gt 0) { $closed; exit 0 }
+  # The pause between scans of a wait that ends as soon as the window shows or the deadline
+  # passes. The window belongs to another process, so there is no event to wait on.
+  $left = ($deadline - (Get-Date)).TotalMilliseconds
+  if ($left -gt 0) { Start-Sleep -Milliseconds ([Math]::Min(250, [int]$left)) }
+} while ((Get-Date) -lt $deadline)
+0`;
+    const output = await runPowerShell(
+        script,
+        {
+            BLOOM_E2E_FOLDER: Path.resolve(folder),
+            BLOOM_E2E_TIMEOUT_MS: String(timeoutMs),
+        },
+        timeoutMs + 60000,
+    );
+    const closed = Number(output);
+    if (!(closed > 0))
+        throw new Error(
+            `No File Explorer window showed ${folder} within ${timeoutMs} ms (PowerShell said "${output}").`,
+        );
+    return closed;
+}
+
+/**
  * Whether the file that was at `filePath` went into the current Windows user's Recycle Bin at or
  * after `since`. Pass a time taken just before the delete, so that a file recycled from the same
  * path by an earlier run does not count.
