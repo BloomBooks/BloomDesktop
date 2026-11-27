@@ -944,3 +944,18 @@ machine it ran on. Fix direction: skip opening the log and the folder when
 `Program.RunningE2eTests` is true, and let `e2e/nextFileToChoose` (or a twin) answer
 `MiscUtils.GetOutputFilePathOutsideCollectionFolder`, so every save command is drivable with no
 native window. (Found 2026-11-26 while automating Test Case ID 660.)
+
+## The fake notices' Report and extra buttons are not pressed
+
+`fake-error-reports.spec.ts` (Test Case ID 52) checks every fake problem's dialog and closes each
+the way its Close button does. It does not press a notice's Report button or its extra buttons
+(Retry, the legacy interface's own Report label), so nothing checks that Report brings up the
+problem report dialog, that Retry runs its action, or that the legacy interface learns its button
+was pressed. Early attempts hung: a click on a notice's button, or a `common/closeReactDialog` sent
+from a page, sometimes never reached Bloom, most likely because every page of Bloom's browser
+shares one small pool of connections to Bloom's server and requests waiting on the UI thread,
+which the modal dialog holds, fill it. Sending the close from Node (`helpers/problemDialogs.ts`)
+ended that for Close. Pressing the other buttons the same way (with `closedByReportButton` or
+`closedByAlternateButton` as the body) is untried, and needs one more change: after those buttons
+Bloom keeps the notice's page until what follows has ended, so "the notice has gone" has to be
+read from its window rather than its page. (Found 2026-11-27 while automating Test Case ID 52.)
