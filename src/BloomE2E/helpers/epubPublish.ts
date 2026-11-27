@@ -369,6 +369,135 @@ function getEpubPreviewPageFrame(page: Page): Frame | undefined {
 }
 
 /**
+ * The address of the ePUB content document (one page of the book) that the preview is showing,
+ * without any fragment, or undefined while it shows none: before the reader has loaded the book,
+ * and between one page and the next.
+ */
+export async function getEpubPreviewPageAddress(
+    page: Page,
+): Promise<string | undefined> {
+    if ((await getIdOfEpubPreviewPage(page)) === undefined) return undefined;
+    return getEpubPreviewPageFrame(page)?.url().split("#")[0];
+}
+
+/** The reader's page-turn arrows, which it draws at its left and right edges. */
+export type EpubPreviewArrow = "left" | "right";
+
+/**
+ * Click the reader's page-turn arrow drawn at its left or right edge, as a person does, and return
+ * the address of the page it turned to (getEpubPreviewPageAddress), once that page has loaded.
+ * Throws when the arrow turned to no other page.
+ *
+ * The arrows are found by where the reader draws them, not by their ids or what they call, since
+ * which way each one turns is what a test of them checks. Only click an arrow that should turn the
+ * page: on the first or last page one of them does nothing, and this would wait for a turn that
+ * never comes.
+ */
+export async function clickEpubPreviewArrow(
+    page: Page,
+    side: EpubPreviewArrow,
+): Promise<string> {
+    let before: string | undefined;
+    await expect
+        .poll(async () => (before = await getEpubPreviewPageAddress(page)), {
+            timeout: 30000,
+            message:
+                "The ePUB preview is not showing a page whose arrows can be clicked.",
+        })
+        .toBeDefined();
+    const arrows = readerFrame(page).locator(".page-switch-overlay-icon");
+    await expect(
+        arrows,
+        "The ePUB reader should draw two page-turn arrows.",
+    ).toHaveCount(2);
+    const boxes = await Promise.all(
+        [0, 1].map((i) => arrows.nth(i).boundingBox()),
+    );
+    if (!boxes[0] || !boxes[1])
+        throw new Error("A page-turn arrow of the ePUB reader is not drawn.");
+    const leftIndex = boxes[0].x < boxes[1].x ? 0 : 1;
+    const arrow = arrows.nth(side === "left" ? leftIndex : 1 - leftIndex);
+    await arrow.click();
+    let after: string | undefined;
+    await expect
+        .poll(
+            async () => {
+                const now = await getEpubPreviewPageAddress(page);
+                if (now === undefined || now === before) return false;
+                after = now;
+                return true;
+            },
+            {
+                timeout: 30000,
+                message: `The ${side} arrow of the ePUB preview did not turn away from ${before}.`,
+            },
+        )
+        .toBe(true);
+    const frame = getEpubPreviewPageFrame(page);
+    if (frame) await waitForEpubPreviewPageToFinishLoading(frame);
+    return after!;
+}
+
+/**
+ * The reading order of the ePUB the preview is showing, as its package's spine gives it to a
+ * reader app: the address of each page in order, and the page-progression-direction the spine
+ * declares ("rtl" or "ltr"), or undefined when it declares none, which the ePUB standard leaves to
+ * the reader (EpubMaker writes "rtl" when the book's first language is right to left).
+ */
+export async function getEpubPreviewSpine(
+    page: Page,
+): Promise<{ direction: string | undefined; pages: string[] }> {
+    const packageUrl = epubPreviewPackageUrl(page);
+    const packageText = await fetchText(page, packageUrl);
+    return page.evaluate(
+        ({ text, packageAddress }) => {
+            const doc = new DOMParser().parseFromString(
+                text,
+                "application/xml",
+            );
+            const spines = doc.getElementsByTagNameNS("*", "spine");
+            if (spines.length !== 1)
+                throw new Error(
+                    `The ePUB package has ${spines.length} <spine> elements, not one.`,
+                );
+            const items = new Map(
+                [...doc.getElementsByTagNameNS("*", "item")].map((item) => [
+                    item.getAttribute("id") ?? "",
+                    item.getAttribute("href") ?? "",
+                ]),
+            );
+            const pages = [
+                ...spines[0].getElementsByTagNameNS("*", "itemref"),
+            ].map((itemref) => {
+                const idref = itemref.getAttribute("idref") ?? "";
+                const href = items.get(idref);
+                if (href === undefined)
+                    throw new Error(
+                        `The ePUB package's spine names "${idref}", which its manifest does not list.`,
+                    );
+                return new URL(href, packageAddress).href;
+            });
+            return {
+                direction:
+                    spines[0].getAttribute("page-progression-direction") ??
+                    undefined,
+                pages,
+            };
+        },
+        { text: packageText, packageAddress: packageUrl },
+    );
+}
+
+/**
+ * Whether the ePUB preview's reader is the one for a book read right to left (Readium's
+ * indexRtl.html, which PublishEpubApi.SetupEpubControlContent picks when the book's first language
+ * is right to left) rather than the one for a book read left to right (index.html).
+ */
+export function isEpubPreviewReaderRightToLeft(page: Page): boolean {
+    return /\/Readium\/indexRtl\.html/.test(readerFrame(page).url());
+}
+
+/**
  * The id of the book page the preview is showing, or undefined while it shows none: before the
  * reader has loaded the book, and between one page and the next.
  */
