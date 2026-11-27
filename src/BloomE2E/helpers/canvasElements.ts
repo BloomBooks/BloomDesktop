@@ -1632,22 +1632,46 @@ export async function typeKeyAndWaitForHeightCheck(
  * the same text gives the same height.
  *
  * Clicks into the element's text box and presses Shift there: a key that types nothing, but whose
- * key-up Bloom answers with a check, as typeKeyAndWaitForHeightCheck describes.
+ * key-up Bloom answers with a check of that box (OverflowChecker.AddOverflowHandlers).
  *
- * The mark that typeKeyAndWaitForHeightCheck watches can also be taken off by the page-wide part
- * of another box's check (CheckPageAncestorOverflow), so its going does not prove that this box
- * was checked. What does: Bloom's key-up handler starts the check with setTimeout(..., 0) while
- * the key-up is being handled, which is before keyboard.up returns, and a zero-delay timer set
- * afterwards in the same frame runs after it. So this then waits for one such timer in the page.
+ * The sign that the check ran is a mark on the box's parent, its translation group, put there
+ * while the key is down: `childOverflowingThis`. A check of a box starts by taking that mark off
+ * every element around the box (AdjustSizeAndMarkSelfOverflow), in the same turn in which it fits
+ * the canvas element's height. Bloom checks only the box each group shows, so in this group only
+ * this box's own check takes the mark off; the page-wide part of another box's check, which can
+ * take off the mark that typeKeyAndWaitForHeightCheck uses, leaves this one alone. The mark is
+ * put back only around a box that runs past its group, so this is for a box that fits in it.
  */
 export async function waitForHeightCheckOfSelectedElement(
     page: Page,
 ): Promise<void> {
-    await realClick(shownTextBoxOfActiveElement(page));
-    await typeKeyAndWaitForHeightCheck(page, "Shift");
-    await editablePageFrame(page).evaluate(
-        () => new Promise<void>((resolve) => setTimeout(resolve, 0)),
+    const kMark = "childOverflowingThis";
+    const box = shownTextBoxOfActiveElement(page);
+    await realClick(box);
+    await expect(
+        box,
+        "The canvas element's text box does not have the focus, so Shift would go elsewhere.",
+    ).toBeFocused({ timeout: 15000 });
+    await page.keyboard.down("Shift");
+    await box.evaluate(
+        (box, mark) => box.parentElement!.classList.add(mark),
+        kMark,
     );
+    await page.keyboard.up("Shift");
+    await expect
+        .poll(
+            () =>
+                box.evaluate(
+                    (box, mark) => box.parentElement!.classList.contains(mark),
+                    kMark,
+                ),
+            {
+                timeout: 15000,
+                message:
+                    "Bloom did not check the canvas element's text box after Shift was pressed in it.",
+            },
+        )
+        .toBe(false);
 }
 
 /** The box that the selected canvas element's text is showing. */
