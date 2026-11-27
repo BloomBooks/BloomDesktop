@@ -472,9 +472,9 @@
         <target xml:lang="fr" state="final">Appareil</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device.Description" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This is automatically applied when publishing to Bloom Reader (Android). It moves front matter pages (other than the cover) to the back.</source>
-        <target xml:lang="fr" state="needs-translation">This is automatically applied when publishing to Bloom Reader (Android). It moves front matter pages (other than the cover) to the back.</target>
+        <target xml:lang="fr" state="final">Ceci s'applique automatiquement lors de la publication sur Bloom Reader (Android). On déplace les pages liminaires (autres que la couverture) vers l'arrière.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true" approved="yes">
@@ -492,9 +492,9 @@
         <target xml:lang="fr" state="final">SIL-PNG</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL PNG.Description" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL PNG.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Has SIL Papua New Guinea customizations, including hiding some fields and changing instructions in others.</source>
-        <target xml:lang="fr" state="needs-translation">Has SIL Papua New Guinea customizations, including hiding some fields and changing instructions in others.</target>
+        <target xml:lang="fr" state="final">Comprend des éléments personnalisés pour SIL Papouasie-Nouvelle-Guinée, y compris le fait de cacher certains champs et des modifications de consignes dans d'autres.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL PNG.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true" approved="yes">
@@ -512,9 +512,9 @@
         <target xml:lang="fr" state="final">Traditionnel</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Like a printed book, this puts the credits on the back side of the title page.</source>
-        <target xml:lang="fr" state="translated">Crédits sur la page de copyright</target>
+        <target xml:lang="fr" state="final">Comme pour un livre imprimé, ceci met les crédits au verso de la page de titre.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true" approved="yes">
@@ -1235,6 +1235,11 @@
         <source xml:lang="en">Info</source>
         <target xml:lang="fr" state="final">Informations</target>
         <note>ID: Common.Info</note>
+      </trans-unit>
+      <trans-unit id="Common.Languages" translate="no">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="fr" state="needs-translation">Languages</target>
+        <note>ID: Common.Languages</note>
       </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Learn More</source>
@@ -2236,6 +2241,11 @@
         <target xml:lang="fr" state="final">Bloom a rencontré un problème avec {0}. Il se peut que le fichier soit corrompu. Veuillez essayer une autre image ou essayez avec Bloom 6.0 ou plus récent.</target>
         <note>ID: EditTab.ImageMetadata.Corrupt</note>
       </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.MoreInfo" sil:dynamic="true" translate="no">
+        <source xml:lang="en">More Information</source>
+        <target xml:lang="fr" state="needs-translation">More Information</target>
+        <note>ID: EditTab.ImageMetadata.MoreInfo</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <target xml:lang="fr" state="final">Modifier les mentions pour les Images, les Droits d'auteur &amp; la Licence</target>
@@ -2380,6 +2390,16 @@
         <source xml:lang="en">This box has more text than will fit</source>
         <target xml:lang="fr" state="final">Cette zone de texte ne peut contenir autant de texte</target>
         <note>ID: EditTab.Overflow</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Overflow.Overflowing" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Overflowing</source>
+        <target xml:lang="fr" state="needs-translation">Overflowing</target>
+        <note>ID: EditTab.Overflow.Overflowing</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Overflow.PageOverflowing" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Page overflowing</source>
+        <target xml:lang="fr" state="needs-translation">Page overflowing</target>
+        <note>ID: EditTab.Overflow.PageOverflowing</note>
       </trans-unit>
       <trans-unit id="EditTab.OverflowContainer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A container on this page is overflowing</source>
@@ -4670,6 +4690,16 @@
         <target xml:lang="fr" state="final">Voici les paramètres nécessaires pour imprimer ce livret :</target>
         <note>ID: PublishTab.PDF.Booklet.HelpHeader</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Layout.Landscape" translate="no">
+        <source xml:lang="en">1. Layout: Landscape</source>
+        <target xml:lang="fr" state="needs-translation">1. Layout: Landscape</target>
+        <note>ID: PublishTab.PDF.Booklet.Layout.Landscape</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Layout.Portrait" translate="no">
+        <source xml:lang="en">1. Layout: Portrait</source>
+        <target xml:lang="fr" state="needs-translation">1. Layout: Portrait</target>
+        <note>ID: PublishTab.PDF.Booklet.Layout.Portrait</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge" approved="yes">
         <source xml:lang="en">2. Print on both sides: "Flip on short edge"</source>
         <target xml:lang="fr" state="final">2. Imprimer sur les deux côtés : "Retourner sur le bord court"</target>
@@ -4689,6 +4719,11 @@
         <source xml:lang="en">3. More settings &gt; Paper size: "Letter"</source>
         <target xml:lang="fr" state="final">3. Plus de paramètres &gt; Format Papier : "Lettre"</target>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.Letter</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize" translate="no">
+        <source xml:lang="en">4. More settings &gt; Scale: "Actual size"</source>
+        <target xml:lang="fr" state="needs-translation">4. More settings &gt; Scale: "Actual size"</target>
+        <note>ID: PublishTab.PDF.Booklet.Scale.ActualSize</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack" approved="yes">
         <source xml:lang="en">This will put two pages on each sheet of paper. Cut horizontally and stack to make one booklet.</source>

@@ -35,6 +35,11 @@
         <target xml:lang="prs" state="needs-translation">Working…</target>
         <note>ID: Common.Working</note>
       </trans-unit>
+      <trans-unit id="Common.ClickHereForHelp" translate="no">
+        <source xml:lang="en">Please click [here] to get help from the Bloom support team.</source>
+        <target xml:lang="prs" state="needs-translation">Please click [here] to get help from the Bloom support team.</target>
+        <note>ID: Common.ClickHereForHelp</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder">
         <source xml:lang="en">App Builder</source>
         <target xml:lang="prs" state="needs-translation">App Builder</target>
@@ -125,6 +130,26 @@
         <target xml:lang="prs" state="needs-translation">Edit Images with AI</target>
         <note>ID: Feature.AiImageEditing</note>
       </trans-unit>
+      <trans-unit id="EditTab.CopyrightThisDerivedVersion" translate="no">
+        <source xml:lang="en">Copyright and license this translated version</source>
+        <target xml:lang="prs" state="needs-translation">Copyright and license this translated version</target>
+        <note>ID: EditTab.CopyrightThisDerivedVersion</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.ImageFailed" translate="no">
+        <source xml:lang="en">Failed to load image</source>
+        <target xml:lang="prs" state="needs-translation">Failed to load image</target>
+        <note>ID: EditTab.Image.ImageFailed</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.CannotEditEmbeddedImage" translate="no">
+        <source xml:lang="en">Bloom can't edit image information for this image because it is embedded data, not a file image.</source>
+        <target xml:lang="prs" state="needs-translation">Bloom can't edit image information for this image because it is embedded data, not a file image.</target>
+        <note>ID: EditTab.ImageMetadata.CannotEditEmbeddedImage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.NoGifOnClipboard" translate="no">
+        <source xml:lang="en">To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element</source>
+        <target xml:lang="prs" state="needs-translation">To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element</target>
+        <note>ID: EditTab.NoGifOnClipboard</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.RotateRight" translate="no">
         <source xml:lang="en">Rotate right</source>
         <target xml:lang="prs" state="needs-translation">Rotate right</target>
@@ -169,6 +194,26 @@
         <source xml:lang="en">Do Not Indent This Paragraph</source>
         <target xml:lang="prs" state="needs-translation">Do Not Indent This Paragraph</target>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.OnePage.Tooltip" translate="no">
+        <source xml:lang="en">Show one page at a time</source>
+        <target xml:lang="prs" state="needs-translation">Show one page at a time</target>
+        <note>ID: EditTab.PageView.OnePage.Tooltip</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.AllPages.Tooltip" translate="no">
+        <source xml:lang="en">Show all pages</source>
+        <target xml:lang="prs" state="needs-translation">Show all pages</target>
+        <note>ID: EditTab.PageView.AllPages.Tooltip</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.BlankPage" translate="no">
+        <source xml:lang="en">Blank page</source>
+        <target xml:lang="prs" state="needs-translation">Blank page</target>
+        <note>ID: EditTab.PageView.BlankPage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.BlankPage.Note" translate="no">
+        <source xml:lang="en">The printed book has an empty page here, so that the inside back cover and the back cover are the two sides of one sheet.</source>
+        <target xml:lang="prs" state="needs-translation">The printed book has an empty page here, so that the inside back cover and the back cover are the two sides of one sheet.</target>
+        <note>ID: EditTab.PageView.BlankPage.Note</note>
       </trans-unit>
       <trans-unit id="EditTab.InlineImage.InsertImage" translate="no">
         <source xml:lang="en">Insert Image</source>

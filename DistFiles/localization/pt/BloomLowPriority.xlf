@@ -12,6 +12,21 @@
         <target xml:lang="pt-PT" state="final">A instalar...</target>
         <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
       </trans-unit>
+      <trans-unit id="Errors.FolderPartlyBlocked" translate="no">
+        <source xml:lang="en">Bloom opened the collection, but books may fail to save, be renamed or open until this is fixed.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom opened the collection, but books may fail to save, be renamed or open until this is fixed.</target>
+        <note>ID: Errors.FolderPartlyBlocked</note>
+      </trans-unit>
+      <trans-unit id="Errors.FolderAntivirusProtection" translate="no">
+        <source xml:lang="en">Antivirus software, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access, may be stopping Bloom. Tell that program that you trust Bloom.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Antivirus software, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access, may be stopping Bloom. Tell that program that you trust Bloom.</target>
+        <note>ID: Errors.FolderAntivirusProtection</note>
+      </trans-unit>
+      <trans-unit id="Errors.FolderNotWritable" translate="no">
+        <source xml:lang="en">You may not have permission to change files there, or the folder may be read-only. Choose a folder you can change, or ask whoever manages this computer or network for permission.</source>
+        <target xml:lang="pt-PT" state="needs-translation">You may not have permission to change files there, or the folder may be read-only. Choose a folder you can change, or ask whoever manages this computer or network for permission.</target>
+        <note>ID: Errors.FolderNotWritable</note>
+      </trans-unit>
       <trans-unit id="Errors.CorruptImageFile" approved="yes">
         <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
         <target xml:lang="pt-PT" state="final">O arquivo de imagem {0} está corrompido e precisa ser substituído. ({1})</target>
@@ -31,6 +46,11 @@
         <source xml:lang="en">Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.</source>
         <target xml:lang="pt-PT" state="needs-translation">Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.</target>
         <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.CouldNotSaveBecauseFileInUse" translate="no">
+        <source xml:lang="en">Bloom could not save the copyright and license information you just entered, because the picture's file was busy. Please wait a moment, then open Copyright and License for this picture again and enter the information again. If this keeps happening, restarting your computer may help. (The picture's file is {0}.)</source>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom could not save the copyright and license information you just entered, because the picture's file was busy. Please wait a moment, then open Copyright and License for this picture again and enter the information again. If this keeps happening, restarting your computer may help. (The picture's file is {0}.)</target>
+        <note>ID: EditTab.ImageMetadata.CouldNotSaveBecauseFileInUse</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed" approved="yes">
         <source xml:lang="en">Conversion file used:</source>
@@ -158,9 +178,9 @@
         <target xml:lang="pt-PT" state="final">Encontrar o 'Número da versão' e toque 7 vezes até que as opções do Desenvolvedor sejam habilitadas.</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions" approved="yes">
         <source xml:lang="en">Go back to Settings and open &apos;Developer options&apos;.</source>
-        <target xml:lang="pt-PT" state="translated">Volte para as Configurações e abra 'Opções de Desenvolvedor'.</target>
+        <target xml:lang="pt-PT" state="final">Volte para as Configurações e abra 'Opções de Desenvolvedor'.</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging" approved="yes">
@@ -309,6 +329,21 @@
         <target xml:lang="pt-PT" state="final">Falha na exportação: {0}</target>
         <note>ID: Spreadsheet.ExportFailed</note>
       </trans-unit>
+      <trans-unit id="Spreadsheet.ImportFailed" translate="no">
+        <source xml:lang="en">Import failed: {0}</source>
+        <target xml:lang="pt-PT" state="needs-translation">Import failed: {0}</target>
+        <note>ID: Spreadsheet.ImportFailed</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ImageSourceComment" translate="no">
+        <source xml:lang="en">A full path like (C:\foo) or a path relative to the location of this spreadsheet like images\foo.png</source>
+        <target xml:lang="pt-PT" state="needs-translation">A full path like (C:\foo) or a path relative to the location of this spreadsheet like images\foo.png</target>
+        <note>ID: Spreadsheet.ImageSourceComment</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ImageThumbnailComment" translate="no">
+        <source xml:lang="en">This is usually just so you can see what the image is. Import is based on the path in a hidden column next to this one.</source>
+        <target xml:lang="pt-PT" state="needs-translation">This is usually just so you can see what the image is. Import is based on the path in a hidden column next to this one.</target>
+        <note>ID: Spreadsheet.ImageThumbnailComment</note>
+      </trans-unit>
       <trans-unit id="Spreadsheet.SpreadsheetLocked" approved="yes">
         <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
         <target xml:lang="pt-PT" state="final">Bloom não pode escrever na planilha porque um outro programa bloqueou a planilha. Está aberta em outro programa?</target>
@@ -364,19 +399,19 @@
         <target xml:lang="pt-PT" state="final">Bloom não conseguiu acessar um microfone.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation" approved="yes">
         <source xml:lang="en">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</source>
-        <target xml:lang="pt-PT" state="translated">Bloom vai abrir o arquivo de sincronização agora para que você possa editá-lo diretamente. Alternativamente, você pode usar o Audacity, importando/exportando este arquivo como um arquivo de etiquetas. Para saber como editar este arquivo usando Audacity, pesquise "Audacity" em docs.bloomlibrary.org. De qualquer forma, você precisará usar o botão "Usar Arquivo de Sincronização..." para aplicar suas alterações.</target>
+        <target xml:lang="pt-PT" state="final">Bloom vai abrir o arquivo de sincronização agora para que você possa editá-lo diretamente. Alternativamente, você pode usar o Audacity, importando/exportando este arquivo como um arquivo de etiquetas. Para saber como editar este arquivo usando Audacity, pesquise "Audacity" em docs.bloomlibrary.org. De qualquer forma, você precisará usar o botão "Usar Arquivo de Sincronização..." para aplicar suas alterações.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile" approved="yes">
         <source xml:lang="en">Current timings file is {0}</source>
-        <target xml:lang="pt-PT" state="translated">O arquivo de sincronização atual é {0}</target>
+        <target xml:lang="pt-PT" state="final">O arquivo de sincronização atual é {0}</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile" approved="yes">
         <source xml:lang="en">Current audio file is {0} (.wav or .mp3)</source>
-        <target xml:lang="pt-PT" state="translated">O arquivo de áudio atual é {0} (.wav ou .mp3)</target>
+        <target xml:lang="pt-PT" state="final">O arquivo de áudio atual é {0} (.wav ou .mp3)</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile</note>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.OneDriveProblem" approved="yes">
@@ -403,6 +438,86 @@
         <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
         <target xml:lang="pt-PT" state="final">Por favor, insira um ou mais e-mails de administradores, separados por vírgula ou espaço.</target>
         <note>ID: TeamCollection.InvalidAdminEmails</note>
+      </trans-unit>
+      <trans-unit id="Common.TryAgainOrRestart" translate="no">
+        <source xml:lang="en">Please try again later. If the problem continues, restart your computer.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Please try again later. If the problem continues, restart your computer.</target>
+        <note>ID: Common.TryAgainOrRestart</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AgentSynchronizing" translate="no">
+        <source xml:lang="en">Some other program may be busy with it. This may just be {0} synchronizing the file.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Some other program may be busy with it. This may just be {0} synchronizing the file.</target>
+        <note>ID: TeamCollection.AgentSynchronizing</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.SomethingSynchronizing" translate="no">
+        <source xml:lang="en">Some other program may be busy with it. This may just be something synchronizing the file.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Some other program may be busy with it. This may just be something synchronizing the file.</target>
+        <note>ID: TeamCollection.SomethingSynchronizing</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.BadZipFile" translate="no">
+        <source xml:lang="en">Bloom was not able to open the zip file, which may be corrupted.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom was not able to open the zip file, which may be corrupted.</target>
+        <note>ID: TeamCollection.BadZipFile</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.BookFileDownloading" translate="no">
+        <source xml:lang="en">The book '{0}' in the Team Collection appears to be downloading. Please wait a few minutes and then click Reload Collection.</source>
+        <target xml:lang="pt-PT" state="needs-translation">The book '{0}' in the Team Collection appears to be downloading. Please wait a few minutes and then click Reload Collection.</target>
+        <note>ID: TeamCollection.BookFileDownloading</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.BookFileDownloadingJoin" translate="no">
+        <source xml:lang="en">Cannot join the Team Collection: the book '{0}' appears to be downloading. Please wait for the download to complete and then double-click the Join file again.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Cannot join the Team Collection: the book '{0}' appears to be downloading. Please wait for the download to complete and then double-click the Join file again.</target>
+        <note>ID: TeamCollection.BookFileDownloadingJoin</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckOutForDelete" translate="no">
+        <source xml:lang="en">Please check out the book before deleting it.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Please check out the book before deleting it.</target>
+        <note>ID: TeamCollection.CheckOutForDelete</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConnectForDelete" translate="no">
+        <source xml:lang="en">Please connect to the Team Collection before deleting books that are part of it.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Please connect to the Team Collection before deleting books that are part of it.</target>
+        <note>ID: TeamCollection.ConnectForDelete</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingEditOrCheckout" translate="no">
+        <source xml:lang="en">Someone else has edited the book {0} or checked it out even though it was being edited here! Local changes have been saved to Lost and Found</source>
+        <target xml:lang="pt-PT" state="needs-translation">Someone else has edited the book {0} or checked it out even though it was being edited here! Local changes have been saved to Lost and Found</target>
+        <note>ID: TeamCollection.ConflictingEditOrCheckout</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConnectToJoin" translate="no">
+        <source xml:lang="en">Bloom cannot currently join this collection.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom cannot currently join this collection.</target>
+        <note>ID: TeamCollection.ConnectToJoin</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.QuitOtherBloom" translate="no">
+        <source xml:lang="en">Please close Bloom before joining a Team Collection</source>
+        <target xml:lang="pt-PT" state="needs-translation">Please close Bloom before joining a Team Collection</target>
+        <note>ID: TeamCollection.QuitOtherBloom</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.DropboxSyncSettingsWarning" translate="no">
+        <source xml:lang="en">Important: synchronization problems can be caused when one or more members of your team have incorrect Dropbox settings. Please ensure all members of your team collection are using the correct settings. See [critical Dropbox settings](https://docs.bloomlibrary.org/critical-dropbox-settings/).</source>
+        <target xml:lang="pt-PT" state="needs-translation">Important: synchronization problems can be caused when one or more members of your team have incorrect Dropbox settings. Please ensure all members of your team collection are using the correct settings. See [critical Dropbox settings](https://docs.bloomlibrary.org/critical-dropbox-settings/).</target>
+        <note>ID: TeamCollection.DropboxSyncSettingsWarning</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MustBeAdmin" translate="no">
+        <source xml:lang="en">You must be an administrator to change collection settings</source>
+        <target xml:lang="pt-PT" state="needs-translation">You must be an administrator to change collection settings</target>
+        <note>ID: TeamCollection.MustBeAdmin</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.NoWriteAccess" translate="no">
+        <source xml:lang="en">Bloom does not have permission to write to the selected folder. The system reported {0}</source>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom does not have permission to write to the selected folder. The system reported {0}</target>
+        <note>ID: TeamCollection.NoWriteAccess</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ProblemLocation" translate="no">
+        <source xml:lang="en">There is a problem with this location</source>
+        <target xml:lang="pt-PT" state="needs-translation">There is a problem with this location</target>
+        <note>ID: TeamCollection.ProblemLocation</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ProblemWithBook" translate="no">
+        <source xml:lang="en">There is a problem with the book "{0}" in the Team Collection system.</source>
+        <target xml:lang="pt-PT" state="needs-translation">There is a problem with the book "{0}" in the Team Collection system.</target>
+        <note>ID: TeamCollection.ProblemWithBook</note>
       </trans-unit>
       <trans-unit id="Common.Preparing" approved="yes">
         <source xml:lang="en">Preparing...</source>
@@ -444,9 +559,9 @@
         <target xml:lang="pt-PT" state="final">Bloom não conseguiu baixar esta imagem. Verifique se este computador está conectado à internet e tente novamente.</target>
         <note>ID: ImageLibrary.CouldNotDownloadImage</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PreviewTooLarge">
+      <trans-unit id="ImageLibrary.PreviewTooLarge" approved="yes">
         <source xml:lang="en">This image is too large to preview here, but you can still use it.</source>
-        <target xml:lang="pt-PT" state="translated">Esta imagem é muito grande para visualização aqui, mas ainda assim pode usá-la.</target>
+        <target xml:lang="pt-PT" state="final">Esta imagem é muito grande para visualização aqui, mas ainda assim pode usá-la.</target>
         <note>ID: ImageLibrary.PreviewTooLarge</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PreviewUnavailable" approved="yes">
@@ -469,14 +584,14 @@
         <target xml:lang="pt-PT" state="final">Título do livro</target>
         <note>ID: EditTab.CustomCover.FieldType.BookTitle</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.FieldType.CoverCredits">
+      <trans-unit id="EditTab.CustomCover.FieldType.CoverCredits" approved="yes">
         <source xml:lang="en">Cover Credits</source>
-        <target xml:lang="pt-PT" state="translated">Créditos da capa</target>
+        <target xml:lang="pt-PT" state="final">Créditos da capa</target>
         <note>ID: EditTab.CustomCover.FieldType.CoverCredits</note>
       </trans-unit>
-      <trans-unit id="ImageUtils.ShrinkingImagesFailed">
+      <trans-unit id="ImageUtils.ShrinkingImagesFailed" approved="yes">
         <source xml:lang="en">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</source>
-        <target xml:lang="pt-PT" state="translated">Bloom não conseguiu reduzir o tamanho das imagens deste livro. Uma nova tentativa será feita na próxima atualização do livro.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não conseguiu reduzir o tamanho das imagens deste livro. Uma nova tentativa será feita na próxima atualização do livro.</target>
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
       </trans-unit>
       <trans-unit id="Shell.SavingBeforeWindowsShutsDown" translate="no">
@@ -624,14 +739,14 @@
         <target xml:lang="pt-PT" state="final">Processando...</target>
         <note>ID: AiImageEditor.Settings.Working</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Slot.ClearImage">
+      <trans-unit id="AiImageEditor.Slot.ClearImage" approved="yes">
         <source xml:lang="en">Clear Image</source>
-        <target xml:lang="pt-PT" state="translated">Esvaziar o espaço</target>
+        <target xml:lang="pt-PT" state="final">Esvaziar o espaço</target>
         <note>ID: AiImageEditor.Slot.ClearImage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Slot.DropImage">
+      <trans-unit id="AiImageEditor.Slot.DropImage" approved="yes">
         <source xml:lang="en">Drop image</source>
-        <target xml:lang="pt-PT" state="translated">Soltar a imagem</target>
+        <target xml:lang="pt-PT" state="final">Soltar a imagem</target>
         <note>ID: AiImageEditor.Slot.DropImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.BookImage" approved="yes">
@@ -644,9 +759,9 @@
         <target xml:lang="pt-PT" state="final">Imagens a editar: {0}</target>
         <note>ID: AiImageEditor.Source.ImagesToEdit</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Source.OriginalBookImage">
+      <trans-unit id="AiImageEditor.Source.OriginalBookImage" approved="yes">
         <source xml:lang="en">The picture this book slot started with</source>
-        <target xml:lang="pt-PT" state="translated">A imagem original que estava neste espaço</target>
+        <target xml:lang="pt-PT" state="final">A imagem original que estava neste espaço</target>
         <note>ID: AiImageEditor.Source.OriginalBookImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.PdfFile" approved="yes">
@@ -679,9 +794,9 @@
         <target xml:lang="pt-PT" state="final">Fixar esta faixa</target>
         <note>ID: AiImageEditor.Strip.Pin</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.ShowInGallery">
+      <trans-unit id="AiImageEditor.Strip.ShowInGallery" approved="yes">
         <source xml:lang="en">Show in full-screen gallery</source>
-        <target xml:lang="pt-PT" state="translated">Visualizar na galeria de tela cheia</target>
+        <target xml:lang="pt-PT" state="final">Visualizar na galeria de tela cheia</target>
         <note>ID: AiImageEditor.Strip.ShowInGallery</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.Unpin" approved="yes">
@@ -689,9 +804,9 @@
         <target xml:lang="pt-PT" state="final">Desafixar esta faixa</target>
         <note>ID: AiImageEditor.Strip.Unpin</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.break_into_pieces.Description">
+      <trans-unit id="AiImageEditor.Tool.break_into_pieces.Description" approved="yes">
         <source xml:lang="en">Extract images that you can use in a game.</source>
-        <target xml:lang="pt-PT" state="translated">Extraia imagens para poder usar em um jogo.</target>
+        <target xml:lang="pt-PT" state="final">Extraia imagens para poder usar em um jogo.</target>
         <note>ID: AiImageEditor.Tool.break_into_pieces.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.break_into_pieces.Param.furtherInstructions.Placeholder">
@@ -714,9 +829,9 @@
         <target xml:lang="pt-PT" state="final">Substitui um texto específico dentro da imagem. Use para adaptar imagens que contêm texto.</target>
         <note>ID: AiImageEditor.Tool.change_text.Description</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.make_gif.Description">
+      <trans-unit id="AiImageEditor.Tool.make_gif.Description" approved="yes">
         <source xml:lang="en">Turn one reference image into a short looping animation sheet and encode it as a GIF.</source>
-        <target xml:lang="pt-PT" state="translated">Transformar uma imagem de referência em uma folha de animação em loop e codificá-la como um GIF.</target>
+        <target xml:lang="pt-PT" state="final">Transformar uma imagem de referência em uma folha de animação em loop e codificá-la como um GIF.</target>
         <note>ID: AiImageEditor.Tool.make_gif.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending" approved="yes">
@@ -754,9 +869,9 @@
         <target xml:lang="pt-PT" state="final">PDF para imagens</target>
         <note>ID: AiImageEditor.Tool.pdf_to_images.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.remove_background.Description">
+      <trans-unit id="AiImageEditor.Tool.remove_background.Description" approved="yes">
         <source xml:lang="en">Replace the background with transparency.</source>
-        <target xml:lang="pt-PT" state="translated">Substituir o fundo por transparência.</target>
+        <target xml:lang="pt-PT" state="final">Substituir o fundo por transparência.</target>
         <note>ID: AiImageEditor.Tool.remove_background.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_background.Title" approved="yes">
@@ -764,9 +879,9 @@
         <target xml:lang="pt-PT" state="final">Remover o fundo</target>
         <note>ID: AiImageEditor.Tool.remove_background.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.remove_object.Description">
+      <trans-unit id="AiImageEditor.Tool.remove_object.Description" approved="yes">
         <source xml:lang="en">Remove unwanted objects or artifacts.</source>
-        <target xml:lang="pt-PT" state="translated">Remover objetos ou defeitos indesejados.</target>
+        <target xml:lang="pt-PT" state="final">Remover objetos ou defeitos indesejados.</target>
         <note>ID: AiImageEditor.Tool.remove_object.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Param.target" approved="yes">
@@ -774,25 +889,15 @@
         <target xml:lang="pt-PT" state="final">Objeto a remover</target>
         <note>ID: AiImageEditor.Tool.remove_object.Param.target</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.remove_object.Param.target.Placeholder">
+      <trans-unit id="AiImageEditor.Tool.remove_object.Param.target.Placeholder" approved="yes">
         <source xml:lang="en">e.g. the red ball, background clutter</source>
-        <target xml:lang="pt-PT" state="translated">ex: a bola vermelha, a bagunça no fundo</target>
+        <target xml:lang="pt-PT" state="final">ex: a bola vermelha, a bagunça no fundo</target>
         <note>ID: AiImageEditor.Tool.remove_object.Param.target.Placeholder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Title" approved="yes">
         <source xml:lang="en">Remove Object</source>
         <target xml:lang="pt-PT" state="final">Remover um objeto</target>
         <note>ID: AiImageEditor.Tool.remove_object.Title</note>
-      </trans-unit>
-      <trans-unit id="Errors.FileAccessCheck.Blocked" translate="no">
-        <source xml:lang="en">Windows is not letting Bloom change files in this collection.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Windows is not letting Bloom change files in this collection.</target>
-        <note>ID: Errors.FileAccessCheck.Blocked</note>
-      </trans-unit>
-      <trans-unit id="Errors.FileAccessCheck.BlockedLonger" translate="no">
-        <source xml:lang="en">Windows is not letting Bloom create, change, rename or delete files in the folder where this collection is stored. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see "{0}".</source>
-        <target xml:lang="pt-PT" state="needs-translation">Windows is not letting Bloom create, change, rename or delete files in the folder where this collection is stored. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see "{0}".</target>
-        <note>ID: Errors.FileAccessCheck.BlockedLonger</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.ABC Reader.Description" sil:dynamic="true">
         <source xml:lang="en">Used by SIL LEAD in the ABC+ Philippines Project, 2020.</source>

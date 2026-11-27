@@ -1236,6 +1236,11 @@
         <target xml:lang="tg" state="needs-translation">Info</target>
         <note>ID: Common.Info</note>
       </trans-unit>
+      <trans-unit id="Common.Languages" translate="no">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="tg" state="needs-translation">Languages</target>
+        <note>ID: Common.Languages</note>
+      </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
         <target xml:lang="tg" state="needs-translation">Learn More</target>
@@ -2236,6 +2241,11 @@
         <target xml:lang="tg" state="needs-translation">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</target>
         <note>ID: EditTab.ImageMetadata.Corrupt</note>
       </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.MoreInfo" sil:dynamic="true" translate="no">
+        <source xml:lang="en">More Information</source>
+        <target xml:lang="tg" state="needs-translation">More Information</target>
+        <note>ID: EditTab.ImageMetadata.MoreInfo</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <target xml:lang="tg" state="needs-translation">Edit image credits, copyright, &amp; license</target>
@@ -2380,6 +2390,16 @@
         <source xml:lang="en">This box has more text than will fit</source>
         <target xml:lang="tg" state="needs-translation">This box has more text than will fit</target>
         <note>ID: EditTab.Overflow</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Overflow.Overflowing" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Overflowing</source>
+        <target xml:lang="tg" state="needs-translation">Overflowing</target>
+        <note>ID: EditTab.Overflow.Overflowing</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Overflow.PageOverflowing" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Page overflowing</source>
+        <target xml:lang="tg" state="needs-translation">Page overflowing</target>
+        <note>ID: EditTab.Overflow.PageOverflowing</note>
       </trans-unit>
       <trans-unit id="EditTab.OverflowContainer" sil:dynamic="true">
         <source xml:lang="en">A container on this page is overflowing</source>
@@ -4670,6 +4690,16 @@
         <target xml:lang="tg" state="needs-translation">Here are the settings you need for printing this booklet:</target>
         <note>ID: PublishTab.PDF.Booklet.HelpHeader</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Layout.Landscape" translate="no">
+        <source xml:lang="en">1. Layout: Landscape</source>
+        <target xml:lang="tg" state="needs-translation">1. Layout: Landscape</target>
+        <note>ID: PublishTab.PDF.Booklet.Layout.Landscape</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Layout.Portrait" translate="no">
+        <source xml:lang="en">1. Layout: Portrait</source>
+        <target xml:lang="tg" state="needs-translation">1. Layout: Portrait</target>
+        <note>ID: PublishTab.PDF.Booklet.Layout.Portrait</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge">
         <source xml:lang="en">2. Print on both sides: "Flip on short edge"</source>
         <target xml:lang="tg" state="needs-translation">2. Print on both sides: "Flip on short edge"</target>
@@ -4689,6 +4719,11 @@
         <source xml:lang="en">3. More settings &gt; Paper size: "Letter"</source>
         <target xml:lang="tg" state="needs-translation">3. More settings &gt; Paper size: "Letter"</target>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.Letter</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize" translate="no">
+        <source xml:lang="en">4. More settings &gt; Scale: "Actual size"</source>
+        <target xml:lang="tg" state="needs-translation">4. More settings &gt; Scale: "Actual size"</target>
+        <note>ID: PublishTab.PDF.Booklet.Scale.ActualSize</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack">
         <source xml:lang="en">This will put two pages on each sheet of paper. Cut horizontally and stack to make one booklet.</source>
