@@ -15,7 +15,6 @@ import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
-import { apiPost } from "../helpers/api";
 import {
     addPage,
     editablePageFrame,
@@ -36,6 +35,7 @@ import {
 } from "../helpers/collection";
 import { wasMovedToRecycleBinSince } from "../helpers/fileExplorer";
 import { chooseImageFile } from "../helpers/images";
+import { clickBookTileThroughOneProblemDialog } from "../helpers/problemDialogs";
 import { setUiStateViaApi } from "../helpers/uiLanguage";
 import { confirmRecycleBox } from "../helpers/winformsConfirmRecycle";
 import { getTabs, switchTab, waitForActiveTab } from "../helpers/workspace";
@@ -134,30 +134,6 @@ async function readShownPageSize(
             const box = element.getBoundingClientRect();
             return { width: box.width, height: box.height };
         });
-}
-
-/** The text of every Bloom notify/problem dialog showing in any page of Bloom's browser. */
-async function readProblemDialogs(page: Page): Promise<string[]> {
-    const browser = page.context().browser();
-    const pages = browser
-        ? browser.contexts().flatMap((c) => c.pages())
-        : page.context().pages();
-    const texts: string[] = [];
-    for (const candidate of pages) {
-        if (candidate.url().startsWith("devtools://")) continue;
-        try {
-            const dialogs = candidate.locator(
-                ".problem-dialog .dialog-content",
-            );
-            for (const text of await dialogs.allInnerTexts())
-                texts.push(text.replace(/\s+/g, " ").trim());
-        } catch (error) {
-            // A page that closed while we asked is not a dialog; any other failure is real.
-            if (candidate.isClosed()) continue;
-            throw error;
-        }
-    }
-    return texts;
 }
 
 test("a book with an unreadable .htm or a broken basePage.css does not crash Bloom [Test Case ID 684]", async ({
@@ -272,53 +248,15 @@ test("a book with an unreadable .htm or a broken basePage.css does not crash Blo
         "Open the broken book: Bloom restores its backup and says so",
         async () => {
             await waitForCollectionReady(restarted);
-            // This step raises Bloom's notice dialog on purpose and closes it itself.
-            const resumeWatcher = await problemDialogWatcher.pause();
-            try {
-                await switchTab(restarted, "collection");
-                // Bloom reads the book when it is selected, and shows its dialog modally while doing
-                // so, so the selection is not awaited until the dialog has been closed.
-                let selectError: unknown;
-                const selected = clickBookTile(restarted, brokenId).catch(
-                    (error: unknown) => {
-                        selectError = error;
-                    },
-                );
-                let shown: string[] = [];
-                await expect
-                    .poll(
-                        async () => {
-                            if (selectError) throw selectError;
-                            shown = await readProblemDialogs(restarted);
-                            return shown.length;
-                        },
-                        {
-                            timeout: 60000,
-                            message:
-                                "Bloom never showed a dialog about the broken book",
-                        },
-                    )
-                    .toBe(1);
-                expect(
-                    shown[0],
-                    "the dialog should say that Bloom restored a backup of the book",
-                ).toContain(kRestoredBackupNotice);
-                await apiPost(restarted, "common/closeReactDialog");
-                await expect
-                    .poll(
-                        async () =>
-                            (await readProblemDialogs(restarted)).length,
-                        {
-                            timeout: 30000,
-                            message: "the dialog never closed",
-                        },
-                    )
-                    .toBe(0);
-                await selected;
-                if (selectError) throw selectError;
-            } finally {
-                resumeWatcher();
-            }
+            await switchTab(restarted, "collection");
+            expect(
+                await clickBookTileThroughOneProblemDialog(
+                    restarted,
+                    problemDialogWatcher,
+                    brokenId,
+                ),
+                "the dialog should say that Bloom restored a backup of the book",
+            ).toContain(kRestoredBackupNotice);
             const broken = brokenFilesIn(brokenFolder);
             expect(
                 broken,
