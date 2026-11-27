@@ -177,9 +177,13 @@ export async function openHelpAndReadTopic(
                 },
             )
             .toBe(true);
-    } finally {
-        await closeHelpWindows(pid);
+    } catch (error) {
+        // Close whatever opened, but report the failure that names the button, not a failure
+        // to close.
+        await closeHelpWindows(pid).catch(() => undefined);
+        throw error;
     }
+    await closeHelpWindows(pid);
     const parsed = parseHelpUrl(shown!.url);
     if (!parsed)
         throw new Error(

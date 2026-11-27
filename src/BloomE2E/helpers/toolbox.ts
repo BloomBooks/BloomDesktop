@@ -304,9 +304,10 @@ export async function expandToolByHeader(
 
 /**
  * Expand a tool (expandToolByHeader) and press the "Help" link at the bottom of its panel, which
- * asks Bloom to open the tool's help topic. The link is the one help link (an anchor to Bloom's
- * help API) showing in the toolbox with the label Common.Help, in the UI's language; the
- * accordion hides every other tool's panel, and a help icon inside a panel has no such label.
+ * asks Bloom to open the tool's help topic. The link is the help link (an anchor to Bloom's help
+ * API) in that tool's own panel (the accordion's div with the tool's data-toolid, so a panel
+ * still closing after the last tool cannot answer) with the label Common.Help, in the UI's
+ * language; a help icon inside a panel has no such label.
  */
 export async function clickToolHelpLink(
     page: Page,
@@ -315,7 +316,8 @@ export async function clickToolHelpLink(
     const frame = await expandToolByHeader(page, tool);
     const label = await getUiString(page, "Common.Help", "Help");
     const link = frame
-        .locator('a[href^="/bloom/api/help?topic="]:visible')
+        .locator(`div[data-toolid="${tool}"]`)
+        .locator('a[href^="/bloom/api/help?topic="]')
         .filter({ hasText: new RegExp(`^\\s*${escapeRegExp(label)}\\s*$`) });
     await expect(
         link,
