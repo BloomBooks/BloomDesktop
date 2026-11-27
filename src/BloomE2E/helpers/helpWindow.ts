@@ -58,6 +58,20 @@ public static class BloomHelpWindows {
     }, IntPtr.Zero);
     return found;
   }
+  [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
+  // Every top-level window of the process pid, as "class|title|visible", for a failure message.
+  public static List<string> Describe(int pid) {
+    var found = new List<string>();
+    EnumWindows((h, l) => {
+      int p; GetWindowThreadProcessId(h, out p);
+      if (p == pid) {
+        var title = new StringBuilder(256); GetWindowText(h, title, 256);
+        found.Add(ClassOf(h) + "|" + title + "|" + (IsWindowVisible(h) ? "visible" : "hidden"));
+      }
+      return true;
+    }, IntPtr.Zero);
+    return found;
+  }
   public static bool IsVisible(IntPtr h) { return IsWindowVisible(h); }
   // The document a help window shows (an IHTMLDocument2), or null while it has none.
   public static object Document(IntPtr h) {
@@ -76,6 +90,10 @@ public static class BloomHelpWindows {
 }
 '@
 $pid_ = [int]$env:BLOOM_E2E_PID
+if ($env:BLOOM_E2E_DESCRIBE -eq '1') {
+  ConvertTo-Json -Compress -InputObject @([BloomHelpWindows]::Describe($pid_))
+  return
+}
 $found = @()
 foreach ($h in [BloomHelpWindows]::Find($pid_)) {
   if ($env:BLOOM_E2E_CLOSE -eq '1') { [BloomHelpWindows]::Close($h); continue }
@@ -116,6 +134,14 @@ function runPowerShell(env: Record<string, string>): Promise<string> {
 export async function listHelpWindows(pid: number): Promise<IHelpWindow[]> {
     const output = await runPowerShell({ BLOOM_E2E_PID: String(pid) });
     return JSON.parse(output) as IHelpWindow[];
+}
+
+/** Every top-level window of the process `pid`, as "class|title|visible", for a failure message. */
+async function describeWindows(pid: number): Promise<string> {
+    return runPowerShell({
+        BLOOM_E2E_PID: String(pid),
+        BLOOM_E2E_DESCRIBE: "1",
+    });
 }
 
 /**
@@ -162,11 +188,13 @@ export async function openHelpAndReadTopic(
     ).toEqual([]);
     await openHelp();
     let shown: IHelpWindow | undefined;
+    let lastSeen: IHelpWindow[] = [];
     try {
         await expect
             .poll(
                 async () => {
-                    shown = (await listHelpWindows(pid)).find(
+                    lastSeen = await listHelpWindows(pid);
+                    shown = lastSeen.find(
                         (w) => w.visible && w.readyState === "complete",
                     );
                     return shown !== undefined;
@@ -178,9 +206,16 @@ export async function openHelpAndReadTopic(
             )
             .toBe(true);
     } catch (error) {
+        // Say what there was instead: a help window whose page had not loaded, or no help window
+        // at all and which windows Bloom had.
+        const seen =
+            lastSeen.length > 0
+                ? `help windows: ${JSON.stringify(lastSeen)}`
+                : `no help window; Bloom's windows: ${await describeWindows(pid).catch((e) => String(e))}`;
         // Close whatever opened, but report the failure that names the button, not a failure
         // to close.
         await closeHelpWindows(pid).catch(() => undefined);
+        (error as Error).message += `\nLast seen: ${seen}`;
         throw error;
     }
     await closeHelpWindows(pid);
