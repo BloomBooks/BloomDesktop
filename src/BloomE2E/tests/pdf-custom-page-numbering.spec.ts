@@ -63,19 +63,44 @@ function inStyle(usualDigits: string): string {
 /**
  * The numbers a page draws written wholly in these digits, each with where it starts. The PDF may
  * draw one number as several runs (a digit from a fallback font is a run of its own), so runs of
- * digits on one baseline are joined, left to right, into one number.
+ * digits on one baseline that follow each other closely are joined, left to right, into one
+ * number. Runs on one baseline with a gap between them stay separate numbers.
  */
 function numbersIn(texts: IPdfTextRun[], digits: string): IPdfTextRun[] {
     const number = new RegExp(`^[${digits}]+$`, "u");
     const runs = texts
         .filter((run) => number.test(run.text.trim()))
-        .sort((a, b) => a.y - b.y || a.x - b.x);
-    const joined: IPdfTextRun[] = [];
+        .map((run) => ({ ...run, text: run.text.trim() }));
+    // Group the runs by baseline first, so that a tiny difference in height cannot put a digit
+    // out of its left-to-right order.
+    const lines: IPdfTextRun[][] = [];
     for (const run of runs) {
-        const last = joined[joined.length - 1];
-        if (last && Math.abs(last.y - run.y) < 0.5)
-            last.text += run.text.trim();
-        else joined.push({ ...run, text: run.text.trim() });
+        const line = lines.find((l) => Math.abs(l[0].y - run.y) < 0.5);
+        if (line) line.push(run);
+        else lines.push([run]);
+    }
+    // A page number's digit is about 2 mm wide; a run that starts more than 4 mm per character
+    // after the previous run's start is not the next digit of the same number.
+    const kMaxMmPerCharacter = 4;
+    const joined: IPdfTextRun[] = [];
+    for (const line of lines) {
+        line.sort((a, b) => a.x - b.x);
+        let current: IPdfTextRun | undefined;
+        let lastRun: IPdfTextRun | undefined;
+        for (const run of line) {
+            if (
+                current &&
+                lastRun &&
+                run.x - lastRun.x <=
+                    kMaxMmPerCharacter * [...lastRun.text].length
+            )
+                current.text += run.text;
+            else {
+                current = { ...run };
+                joined.push(current);
+            }
+            lastRun = run;
+        }
     }
     return joined;
 }
