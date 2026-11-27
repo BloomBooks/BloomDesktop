@@ -504,6 +504,14 @@ export interface IPictureLoad {
     /** The size of the box the browser draws the image in, in CSS pixels. */
     width: number;
     height: number;
+    /** How wide the alternative text is in the image's font, in CSS pixels. */
+    altTextWidth: number;
+    /**
+     * The part of the image's box that is not hidden by an enclosing element whose overflow is not
+     * visible, measured from the box's own top left corner, in CSS pixels. All zero when none of
+     * it shows.
+     */
+    shown: { x: number; y: number; width: number; height: number };
 }
 
 /**
@@ -520,6 +528,33 @@ export async function getPictureLoad(image: Locator): Promise<IPictureLoad> {
                 const report = () => {
                     const box = image.getBoundingClientRect();
                     const src = image.getAttribute("src") ?? "";
+                    const view = image.ownerDocument.defaultView!;
+                    const measurer = image.ownerDocument
+                        .createElement("canvas")
+                        .getContext("2d")!;
+                    measurer.font = view.getComputedStyle(image).font;
+                    const altText = image.getAttribute("alt") ?? "";
+                    let left = box.left;
+                    let top = box.top;
+                    let right = box.right;
+                    let bottom = box.bottom;
+                    for (
+                        let outer = image.parentElement;
+                        outer;
+                        outer = outer.parentElement
+                    ) {
+                        const style = view.getComputedStyle(outer);
+                        const r = outer.getBoundingClientRect();
+                        if (style.overflowX !== "visible") {
+                            left = Math.max(left, r.left);
+                            right = Math.min(right, r.right);
+                        }
+                        if (style.overflowY !== "visible") {
+                            top = Math.max(top, r.top);
+                            bottom = Math.min(bottom, r.bottom);
+                        }
+                    }
+                    const shows = right > left && bottom > top;
                     resolve({
                         fileName: decodeURIComponent(
                             src.split("?")[0].split("/").pop() ?? "",
@@ -528,9 +563,18 @@ export async function getPictureLoad(image: Locator): Promise<IPictureLoad> {
                         markedLoadError: image.classList.contains(
                             "bloom-imageLoadError",
                         ),
-                        alt: image.getAttribute("alt") ?? "",
+                        alt: altText,
                         width: box.width,
                         height: box.height,
+                        altTextWidth: measurer.measureText(altText).width,
+                        shown: shows
+                            ? {
+                                  x: left - box.left,
+                                  y: top - box.top,
+                                  width: right - left,
+                                  height: bottom - top,
+                              }
+                            : { x: 0, y: 0, width: 0, height: 0 },
                     });
                 };
                 if (image.complete) {

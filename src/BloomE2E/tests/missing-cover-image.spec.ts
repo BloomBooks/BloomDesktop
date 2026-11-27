@@ -86,6 +86,10 @@ const kPictureMiddle = { xFraction: 0.5, yFraction: 0.6 };
 // The size, in pixels each way, of the icon the browser draws for a picture it could not load.
 const kBrokenImageIconSize = 16;
 
+// How many pixels of the top and left edges of a broken picture's box may be hidden without hiding
+// its icon.
+const kHiddenEdgeAllowance = 2;
+
 /** The Edit tab's cover picture, the first picture on the page being edited. */
 function editCoverPicture(page: Parameters<typeof editablePageFrame>[0]) {
     return editablePageFrame(page).locator(FIRST_IMAGE).first();
@@ -96,19 +100,53 @@ function coverCanvas(page: Parameters<typeof editablePageFrame>[0]) {
     return pictureCanvasOf(editCoverPicture(page));
 }
 
-/** Check that `load` is a picture the browser drew as its broken-image icon. */
-function expectBrokenPicture(load: IPictureLoad, where: string): void {
+/** The pane of the Edit tab's cover picture: the background canvas element that holds it. */
+function coverPicturePane(page: Parameters<typeof editablePageFrame>[0]) {
+    return editCoverPicture(page).locator(
+        "xpath=ancestor::div[contains(concat(' ', @class, ' '), ' bloom-backgroundImage ')][1]",
+    );
+}
+
+// An image element the browser cannot load is drawn as its broken-image icon (16 pixels square) at
+// the top left of the image's box, with the alt text on its right. Both are cut off by the image's
+// box and by any enclosing element that hides its overflow, so what a person sees is what fits in
+// the part of the box that shows, counted from its top left corner.
+
+/**
+ * Check that `load` is a picture the browser failed to load, and that the part of its box that
+ * shows has room for the broken-image icon, and also for the whole alt text beside it when
+ * `withMessage` is true.
+ */
+function expectBrokenPicture(
+    load: IPictureLoad,
+    where: string,
+    withMessage: boolean,
+): void {
     expect(
         load.loaded,
         `${where}, the browser should have failed to load the deleted picture, but it has it.`,
     ).toBe(false);
-    // An image element the browser cannot load is drawn as its broken-image icon (16 pixels
-    // square), with the alt text beside it, but only in a box with room for them: a zero-sized or
-    // hidden image shows nothing.
+    const shown = load.shown;
+    const describe = `${load.width}x${load.height}, of which ${shown.width}x${shown.height} at (${shown.x}, ${shown.y}) shows`;
+    // The icon has a little blank margin of its own, so a pixel or two of the box's edge may be
+    // hidden (as the preview's picture box hides one on each side) without hiding the icon.
     expect(
-        Math.min(load.width, load.height),
-        `${where}, the broken picture should be drawn in a box with room for its icon, but its box is ${load.width}x${load.height}.`,
+        shown.x <= kHiddenEdgeAllowance && shown.y <= kHiddenEdgeAllowance,
+        `${where}, the top left corner of the broken picture's box, where its icon goes, is hidden (box ${describe}).`,
+    ).toBe(true);
+    expect(
+        shown.y + shown.height,
+        `${where}, too little of the broken picture's box shows for its icon (box ${describe}).`,
     ).toBeGreaterThanOrEqual(kBrokenImageIconSize);
+    const neededWidth = withMessage
+        ? load.altTextWidth + kBrokenImageIconSize
+        : kBrokenImageIconSize;
+    expect(
+        shown.x + shown.width,
+        withMessage
+            ? `${where}, too little of the broken picture's box shows for its icon and the ${load.altTextWidth}-pixel message "${load.alt}" beside it (box ${describe}).`
+            : `${where}, too little of the broken picture's box shows for its icon (box ${describe}).`,
+    ).toBeGreaterThanOrEqual(neededWidth);
 }
 
 /** The size of the box `box` locates, which must be drawn. */
@@ -264,7 +302,9 @@ test("a cover picture whose file is missing shows as a broken picture, with Chan
                 load.fileName,
                 "The preview's cover no longer asks for the deleted picture.",
             ).toBe(pictureFileName);
-            expectBrokenPicture(load, "In the preview");
+            // The case asks only for the icon here; the preview's picture box is too short to
+            // show the message as well.
+            expectBrokenPicture(load, "In the preview", false);
             await expect(
                 picture,
                 "The preview's broken cover picture is not visible.",
@@ -296,7 +336,7 @@ test("a cover picture whose file is missing shows as a broken picture, with Chan
                 load.fileName,
                 "The cover no longer asks for the deleted picture.",
             ).toBe(pictureFileName);
-            expectBrokenPicture(load, "In the Edit tab");
+            expectBrokenPicture(load, "In the Edit tab", true);
             // In Bloom 6.2 a missing picture shrank its whole picture box (BL-14241); the box
             // should keep the size it had while it showed the picture.
             const canvasSize = await getBoxSize(coverCanvas(page));
@@ -308,6 +348,18 @@ test("a cover picture whose file is missing shows as a broken picture, with Chan
                 Math.abs(canvasSize.height - canvasSizeWithPicture.height),
                 `The cover's picture box was ${canvasSizeWithPicture.height} high with its picture, and is ${canvasSize.height} high without it.`,
             ).toBeLessThan(2);
+            // Bloom fits the picture's own pane (the background canvas element) to the box; for a
+            // picture that failed to load it should fill the box (its border may reach a pixel
+            // past each side), leaving room for the message, rather than shrinking.
+            const paneSize = await getBoxSize(coverPicturePane(page));
+            expect(
+                paneSize.width,
+                `The missing picture's pane is ${paneSize.width} wide, in a picture box ${canvasSize.width} wide.`,
+            ).toBeGreaterThan(canvasSize.width - 2);
+            expect(
+                paneSize.height,
+                `The missing picture's pane is ${paneSize.height} high, in a picture box ${canvasSize.height} high.`,
+            ).toBeGreaterThan(canvasSize.height - 2);
             await expect(
                 picture,
                 "The broken cover picture is not visible.",
@@ -332,15 +384,21 @@ test("a cover picture whose file is missing shows as a broken picture, with Chan
                 "The Change Image button does not show over the missing cover picture.",
                 coverCanvas(page),
             );
-            await expect(
-                imageInfoButton(page, coverCanvas(page)),
+            // Bloom adds the button only once its tooltip's translation has come back, so wait for
+            // it to be in the page (expectImageInfoButton checks that) before judging it hidden.
+            await expectImageInfoButton(
+                page,
+                { showing: false },
                 "The copyright button shows over the missing cover picture.",
-            ).toBeHidden({ timeout: 15000 });
+                coverCanvas(page),
+            );
             await movePointerOffPage(page);
-            await expect(
-                imageInfoButton(page, coverCanvas(page)),
+            await expectImageInfoButton(
+                page,
+                { showing: false },
                 "The copyright button shows over the missing cover picture once the pointer has left the page.",
-            ).toBeHidden({ timeout: 15000 });
+                coverCanvas(page),
+            );
         },
     );
 });
