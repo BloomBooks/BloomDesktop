@@ -200,7 +200,7 @@ export async function getPreviewWidgetFrame(
  * bloom-player-core). When it lets go, it makes the arrows reachable with the Tab key by giving
  * them a tabindex, in the same step; that is the only thing in the document that says so.
  */
-async function waitForPreviewToSettle(player: Frame): Promise<void> {
+export async function waitForPreviewToSettle(player: Frame): Promise<void> {
     await expect(
         player.locator(".swiper-button-next[tabindex]").first(),
         "Bloom Player never finished settling on the first page of the book.",
