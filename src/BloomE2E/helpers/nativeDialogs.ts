@@ -40,7 +40,7 @@ public static class Fg {
   [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
   [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
   [DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(IntPtr h, out int p);
-  [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern bool PostMessage(IntPtr h, uint msg, IntPtr w, IntPtr l);
+  [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)] public static extern bool PostMessage(IntPtr h, uint msg, IntPtr w, IntPtr l);
   public const uint WM_CHAR = 0x0102;
 }
 '@
@@ -249,21 +249,28 @@ function FindSaveAs {
 # there (SetValue): on some machines Save then saves under the name that the dialog suggested, in
 # the folder that it opened in. So the box is emptied and the text posted to it a character at a
 # time, as a keyboard delivers it. It is typed again if the box comes to hold anything but the
-# start of $text.
+# start of $text, once it has stopped changing: until then, characters posted earlier may still be
+# on their way, and would land among the new ones.
 function SetName($found, $text) {
   $hwnd = [IntPtr][long]$found.edit.Current.NativeWindowHandle
   function TypeText {
     $found.value.SetValue('')
-    foreach ($c in $text.ToCharArray()) { [Fg]::PostMessage($hwnd, [Fg]::WM_CHAR, [IntPtr][int]$c, [IntPtr]1) | Out-Null }
+    foreach ($c in $text.ToCharArray()) {
+      if (-not [Fg]::PostMessage($hwnd, [Fg]::WM_CHAR, [IntPtr][int]$c, [IntPtr]1)) {
+        throw ('Windows refused a character posted to the "File name:" box (error ' + [Runtime.InteropServices.Marshal]::GetLastWin32Error() + ').')
+      }
+    }
   }
   TypeText
+  $before = $null
   do {
     $now = $found.value.Current.Value
     if ($now -eq $text) { return }
-    if (-not $text.StartsWith($now, [StringComparison]::Ordinal)) { TypeText }
+    if ($now -eq $before -and -not $text.StartsWith($now, [StringComparison]::Ordinal)) { TypeText; $now = $null }
+    $before = $now
 ${kPauseBetweenScans}
   } while ((Get-Date) -lt $deadline)
-  throw ('The "File name:" box did not take ' + $text + '; it holds ' + $now)
+  throw ('The "File name:" box did not take ' + $text + '; it holds ' + $found.value.Current.Value)
 }
 do {
   # The dialog shows before its controls do, and its "File name:" box shows before the dialog puts
