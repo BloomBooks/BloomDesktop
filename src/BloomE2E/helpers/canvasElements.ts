@@ -402,11 +402,26 @@ export async function selectCanvasElementAt(
 ): Promise<Locator> {
     await element.waitFor({ state: "visible", timeout: 30000 });
     await realClick(element);
-    await expect(
+    await expectCanvasElementSelected(
         element,
         `Clicking ${what} did not select it.`,
-    ).toHaveAttribute("data-bloom-active", "true", { timeout: 15000 });
+    );
     return element;
+}
+
+/**
+ * Wait until Bloom marks the canvas element `element` locates as the selected one, and fail with
+ * `message` if it does not.
+ */
+export async function expectCanvasElementSelected(
+    element: Locator,
+    message: string,
+): Promise<void> {
+    await expect(element, message).toHaveAttribute(
+        "data-bloom-active",
+        "true",
+        { timeout: 15000 },
+    );
 }
 
 /** Where on the page a locator is drawn. Throws naming it when it has no on-screen box. */
@@ -963,6 +978,29 @@ export async function duplicateCanvasElement(page: Page): Promise<number> {
         .poll(async () => getCanvasElementCount(page), {
             timeout: 30000,
             message: `Duplicate did not add a canvas element (there are still ${countBefore}).`,
+        })
+        .toBeGreaterThan(countBefore);
+    return countBefore;
+}
+
+/**
+ * Duplicate the selected canvas element with the Duplicate button on its floating toolbar, and wait
+ * until the page has more elements than it did. Returns the index the first new element takes, as
+ * duplicateCanvasElement does.
+ */
+export async function duplicateCanvasElementFromToolbar(
+    page: Page,
+): Promise<number> {
+    const countBefore = await getCanvasElementCount(page);
+    await waitForCanvasElementToolbar(page);
+    await editablePageFrame(page)
+        .locator(`${TOOLBAR}:visible [data-testid="toolbar-duplicate"]`)
+        .first()
+        .click({ timeout: 30000 });
+    await expect
+        .poll(async () => getCanvasElementCount(page), {
+            timeout: 30000,
+            message: `The toolbar's Duplicate button did not add a canvas element (there are still ${countBefore}).`,
         })
         .toBeGreaterThan(countBefore);
     return countBefore;
@@ -1587,6 +1625,55 @@ export async function typeKeyAndWaitForHeightCheck(
         .toBe(false);
 }
 
+/**
+ * Have Bloom check the selected canvas element's height against its text now, and return once it
+ * has, without changing the text. Bloom also checks each box on a timer after it is set up, so a
+ * size read before any check may still change; one read after this does not, since every check of
+ * the same text gives the same height.
+ *
+ * Clicks into the element's text box and presses Shift there: a key that types nothing, but whose
+ * key-up Bloom answers with a check of that box (OverflowChecker.AddOverflowHandlers).
+ *
+ * The sign that the check ran is a mark on the box's parent, its translation group, put there
+ * while the key is down: `childOverflowingThis`. A check of a box starts by taking that mark off
+ * every element around the box (AdjustSizeAndMarkSelfOverflow), in the same turn in which it fits
+ * the canvas element's height. Bloom checks only the box each group shows, so in this group only
+ * this box's own check takes the mark off; the page-wide part of another box's check, which can
+ * take off the mark that typeKeyAndWaitForHeightCheck uses, leaves this one alone. The mark is
+ * put back only around a box that runs past its group, so this is for a box that fits in it.
+ */
+export async function waitForHeightCheckOfSelectedElement(
+    page: Page,
+): Promise<void> {
+    const kMark = "childOverflowingThis";
+    const box = shownTextBoxOfActiveElement(page);
+    await realClick(box);
+    await expect(
+        box,
+        "The canvas element's text box does not have the focus, so Shift would go elsewhere.",
+    ).toBeFocused({ timeout: 15000 });
+    await page.keyboard.down("Shift");
+    await box.evaluate(
+        (box, mark) => box.parentElement!.classList.add(mark),
+        kMark,
+    );
+    await page.keyboard.up("Shift");
+    await expect
+        .poll(
+            () =>
+                box.evaluate(
+                    (box, mark) => box.parentElement!.classList.contains(mark),
+                    kMark,
+                ),
+            {
+                timeout: 15000,
+                message:
+                    "Bloom did not check the canvas element's text box after Shift was pressed in it.",
+            },
+        )
+        .toBe(false);
+}
+
 /** The box that the selected canvas element's text is showing. */
 function shownTextBoxOfActiveElement(page: Page): Locator {
     return activeCanvasElement(page).locator(SHOWN_TEXT_BOX);
@@ -1648,4 +1735,30 @@ export async function setCanvasElementAutoHeight(
             message: `The Auto Height command did not turn Auto Height ${on ? "on" : "off"}.`,
         })
         .toBe(on);
+}
+
+/**
+ * Whether the selected canvas element's "..." menu shows Auto Height as on, the way a person reads
+ * it: the Auto Height command carries a tick, which Bloom shows only while the element's height is
+ * automatic. Opens the menu to read it, and closes it again.
+ */
+export async function getAutoHeightShownInMenu(page: Page): Promise<boolean> {
+    await openCanvasElementMenu(page);
+    const row = editablePageFrame(page)
+        .locator(
+            `${MENU} li[data-testid="EditTab.Toolbox.ComicTool.Options.AutoHeight"]`,
+        )
+        .first();
+    await row.waitFor({ state: "visible", timeout: 30000 });
+    const icons = row.locator("svg");
+    const iconCount = await icons.count();
+    if (iconCount !== 1)
+        throw new Error(
+            `The Auto Height command should have one icon, its tick; it has ${iconCount}.`,
+        );
+    const ticked = await icons
+        .first()
+        .evaluate((svg) => getComputedStyle(svg).visibility === "visible");
+    await closeCanvasElementMenu(page);
+    return ticked;
 }
