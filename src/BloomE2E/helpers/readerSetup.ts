@@ -819,7 +819,8 @@ export const LEVEL_MAXIMUMS: LevelMaximum[] = [
 /**
  * Turn one maximum of the selected level on with this value, or off (null), in the Reader Levels
  * tab of the legacy Leveled Reader setup dialog, as a person does. Turning one on ticks its check
- * box and types the number; turning one off first deletes the number and then unticks the box.
+ * box and types the number; turning one off only unticks the box, leaving any number in it
+ * (deleteLevelMaximumNumber deletes the number first, as some people do).
  * The keys are pressed rather than the value filled in, because the dialog copies a typed number
  * into the level list on keyup, and saves from the list.
  */
@@ -832,15 +833,6 @@ export async function setLevelMaximum(
     const checkBox = frame.locator(`#use-${maximum}`);
     const textBox = frame.locator(`#max-${maximum}`);
     if (value === null) {
-        if (await textBox.isEnabled()) {
-            await textBox.click();
-            await textBox.press("Control+A");
-            await textBox.press("Backspace");
-            await expect(
-                textBox,
-                `Deleting the number of "${maximum}" left text in its box.`,
-            ).toHaveValue("");
-        }
         await checkBox.uncheck();
         await expect(
             textBox,
@@ -861,6 +853,26 @@ export async function setLevelMaximum(
         textBox,
         `The "${maximum}" box did not take the number typed into it.`,
     ).toHaveValue(value.toString());
+}
+
+/**
+ * Delete the number in one ticked maximum's text box with the keyboard, leaving the box ticked, in
+ * the Reader Levels tab of the legacy Leveled Reader setup dialog.
+ */
+export async function deleteLevelMaximumNumber(
+    page: Page,
+    maximum: LevelMaximum,
+): Promise<void> {
+    const textBox = page
+        .frameLocator(LEGACY_SETUP_DIALOG)
+        .locator(`#max-${maximum}`);
+    await textBox.click();
+    await textBox.press("Control+A");
+    await textBox.press("Backspace");
+    await expect(
+        textBox,
+        `Deleting the number of "${maximum}" left text in its box.`,
+    ).toHaveValue("");
 }
 
 /** What the Reader Levels tab shows for one maximum of the selected level. */

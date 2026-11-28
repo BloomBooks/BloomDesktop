@@ -6,8 +6,9 @@
 // showing it.
 //
 // The level starts with two maximums set ("Per Sentence" 5 and "Per Book" 40) and the others off.
-// The test unticks those two, the way the case's longer source (TC314) does: it deletes the number
-// and then unticks the box. It ticks three that were off and types a number into each. After OK it
+// The test unticks those two: "Per Sentence" the way the case's longer source (TC314) does, by
+// deleting the number and then unticking the box, and "Per Book" by unticking the box alone, with
+// its number still in it. It ticks three that were off and types a number into each. After OK it
 // checks what Bloom saved, then reopens the dialog and checks each maximum's check box and text box,
 // and the level list, against what it left. The maximums it did not touch must still be off.
 
@@ -16,6 +17,7 @@ import { makeBookFromTemplate } from "../helpers/bookMaking";
 import {
     acceptLeveledReaderSetup,
     changeSavedReaderSettings,
+    deleteLevelMaximumNumber,
     enableLeveledReaderTool,
     getLevelListMaximums,
     getSavedReaderSettings,
@@ -59,6 +61,9 @@ const CHANGES: Partial<Record<LevelMaximum, number | null>> = {
     "sentences-per-page": 3, // sentences "Per Page", off before
 };
 
+/** The maximums whose number the test deletes before it unticks them. */
+const DELETE_NUMBER_FIRST: LevelMaximum[] = ["words-per-sentence"];
+
 /** Which field of a saved level holds each maximum. */
 const SAVED_FIELD: Record<LevelMaximum, keyof IReaderLevel> = {
     "glyphs-per-word": "maxGlyphsPerWord",
@@ -81,10 +86,16 @@ function expectedValue(maximum: LevelMaximum): number {
     return STARTING_LEVEL[SAVED_FIELD[maximum]] as number;
 }
 
-function savedMaximums(level: IReaderLevel): Record<LevelMaximum, number> {
-    const saved = {} as Record<LevelMaximum, number>;
+/**
+ * A saved level's maximums. The dialog saves "none" as 0 for most maximums, and as null for the
+ * ones it shows in parentheses beside another in the level list, so null is read as 0. Any other
+ * value that is not a number (a missing field, say) is kept as it is, to fail the comparison.
+ */
+function savedMaximums(level: IReaderLevel): Record<LevelMaximum, unknown> {
+    const saved = {} as Record<LevelMaximum, unknown>;
     for (const maximum of LEVEL_MAXIMUMS) {
-        saved[maximum] = (level[SAVED_FIELD[maximum]] as number) || 0;
+        const value: unknown = level[SAVED_FIELD[maximum]];
+        saved[maximum] = value === null ? 0 : value;
     }
     return saved;
 }
@@ -124,6 +135,9 @@ test("maximums ticked and unticked for a level are as left after OK and reopen (
     }
 
     for (const [maximum, value] of Object.entries(CHANGES)) {
+        if (DELETE_NUMBER_FIRST.includes(maximum as LevelMaximum)) {
+            await deleteLevelMaximumNumber(page, maximum as LevelMaximum);
+        }
         await setLevelMaximum(page, maximum as LevelMaximum, value);
     }
     await acceptLeveledReaderSetup(page);
