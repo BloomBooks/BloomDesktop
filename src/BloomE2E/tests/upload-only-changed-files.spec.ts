@@ -6,8 +6,8 @@
 // dev.bloomlibrary.org for real, then re-uploads it four times: after a text change, after changing
 // the picture, after replacing the recording, and after replacing the video. Each time it reads which
 // files Bloom sent from the Upload Progress box (see uploadBookForReal) and checks that only the
-// file that changed went up again, besides the book's .htm and meta.json, which the card allows,
-// and that the text change sent the .htm. A book with a video gets no PDF, as the card notes, so
+// file that changed went up again, besides the files that may change with every upload (the
+// book's .htm, meta.json and the cover thumbnails), and that the text change sent the .htm. A book with a video gets no PDF, as the card notes, so
 // there is no PDF to allow for.
 //
 // The recording is imported through the Talking Book tool's Import Recording button, which needs a
@@ -119,8 +119,9 @@ async function reupload(page: Page): Promise<string[]> {
 /**
  * Check that the upload sent exactly the `changed` media file (nothing, when the change was to the
  * text), besides the files the card allows to go up every time: the book's .htm, which carries any
- * change, and meta.json. `current` are the media files after the change; a replaced picture or
- * video comes in under a new name.
+ * change, meta.json, and the cover thumbnails, which Bloom renders afresh for every upload
+ * (BookUpload.cs), so they go up whenever the rendering differs by a pixel. `current` are the media
+ * files after the change; a replaced picture or video comes in under a new name.
  */
 function expectOnlyChangedFileSent(
     sent: string[],
@@ -129,11 +130,14 @@ function expectOnlyChangedFileSent(
     changed: keyof IMediaFiles | undefined,
     what: string,
 ): void {
-    const allowedEveryTime = [htmFile, "meta.json"];
+    const isAllowedEveryTime = (file: string) =>
+        file === htmFile ||
+        file === "meta.json" ||
+        /^thumbnail(-\d+)?\.png$/.test(file);
     expect(
-        sent.filter((file) => !allowedEveryTime.includes(file)).sort(),
+        sent.filter((file) => !isAllowedEveryTime(file)).sort(),
         `${what}, the upload should have sent ${changed ? `only the new ${changed} (${current[changed]})` : "no file"} ` +
-            `besides ${allowedEveryTime.join(" and ")}. It sent: ${sent.join(", ")}`,
+            `besides ${htmFile}, meta.json and the thumbnails. It sent: ${sent.join(", ")}`,
     ).toEqual(changed ? [current[changed]] : []);
 }
 
