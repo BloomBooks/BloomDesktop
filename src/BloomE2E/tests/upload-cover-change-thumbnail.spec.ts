@@ -121,7 +121,15 @@ async function waitForHarvest(
         await expect
             .poll(
                 async () => {
-                    const books = await findBooksUploadedBy(login!, BOOK_TITLE);
+                    let books: IBookOnServer[];
+                    try {
+                        books = await findBooksUploadedBy(login!, BOOK_TITLE);
+                    } catch (error) {
+                        // The sandbox may answer the next poll; if it never does, this is what
+                        // the timeout reports.
+                        state = `the lookup of the record failed: ${error}`;
+                        return false;
+                    }
                     if (books.length !== 1) {
                         state = `${books.length} records titled "${BOOK_TITLE}"`;
                         return false;
