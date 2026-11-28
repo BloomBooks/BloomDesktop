@@ -783,16 +783,17 @@ export async function readAdjustTimingsRegions(
     let regions: IAdjustTimingsRegion[] = [];
     await expect
         .poll(
+            // The sections' labels, so that a failure shows where the split went wrong.
             async () => {
                 regions = await scanAdjustTimingsRegions(dialog);
-                return regions.length;
+                return regions.map((r) => r.text);
             },
             {
                 message: `The Adjust Timings dialog never showed ${expectedCount} sections over its waveform.`,
                 timeout: 30000,
             },
         )
-        .toBe(expectedCount);
+        .toHaveLength(expectedCount);
     return regions;
 }
 
