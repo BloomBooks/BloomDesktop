@@ -70,11 +70,24 @@ export async function switchTab(
     tab: WorkspaceTabId,
     timeoutMs = 30000,
 ): Promise<void> {
+    await clickTab(page, tab, timeoutMs);
+    await waitForActiveTab(page, tab, timeoutMs);
+}
+
+/**
+ * The first half of switchTab: click a workspace tab, without asking Bloom whether the switch is
+ * done. For a switch that raises a problem dialog (doThroughOneProblemDialog says why); call
+ * waitForActiveTab once the dialog has closed.
+ */
+export async function clickTab(
+    page: Page,
+    tab: WorkspaceTabId,
+    timeoutMs = 30000,
+): Promise<void> {
     await waitForBloomToHavePageAsItIs(page);
     const target = page.getByTestId(tabTestId(tab));
     await target.waitFor({ state: "visible", timeout: timeoutMs });
     await target.click();
-    await waitForActiveTab(page, tab, timeoutMs);
 }
 
 /**

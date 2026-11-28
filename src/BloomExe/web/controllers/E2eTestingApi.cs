@@ -217,6 +217,16 @@ namespace Bloom.web.controllers
                 requiresSync: false
             );
 
+            // GET e2e/lastSuggestedFileName: the file name that the last Save As answered from
+            // e2e/nextFileToChoose would have suggested, which a test cannot read from a dialog
+            // that never showed. Empty before any. Off the UI thread: it only reads a string.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "lastSuggestedFileName",
+                request =>
+                    request.ReplyWithText(MiscUI.E2eDialogAnswer.LastSuggestedFileName ?? ""),
+                false
+            );
+
             // GET e2e/clipboard: what Bloom's clipboard holds. POST: replace it. Under --e2e,
             // BloomClipboard and the page's utils/bloomClipboard.ts use an in-memory clipboard
             // instead of the Windows one, so this is how a test copies something for Bloom to

@@ -188,6 +188,38 @@ export function closeReactDialogFromNode(page: Page): Promise<void> {
     return apiPostFromNode(page, "common/closeReactDialog");
 }
 
+/**
+ * Close the Report a Problem dialog that waitForReportDialogPage found, and wait until it is gone:
+ * its page closed, or the page no longer holds the dialog. A failure to look in a page that is
+ * still open fails at once rather than passing for a closed dialog.
+ */
+export async function closeReportDialog(
+    page: Page,
+    dialogPage: Page,
+): Promise<void> {
+    await closeReactDialogFromNode(page);
+    await expect
+        .poll(
+            async () => {
+                if (dialogPage.isClosed()) return true;
+                const count = await dialogPage
+                    .locator(".problem-dialog")
+                    .count()
+                    .catch((error: unknown) => {
+                        // The page closing while we looked is the dialog going away.
+                        if (dialogPage.isClosed()) return 0;
+                        throw error;
+                    });
+                return count === 0;
+            },
+            {
+                timeout: 30000,
+                message: "the Report a Problem dialog should close",
+            },
+        )
+        .toBe(true);
+}
+
 /** Whether a process with this id is still running. */
 function isProcessRunning(pid: number): boolean {
     try {
@@ -205,6 +237,12 @@ function isProcessRunning(pid: number): boolean {
  * modally on the thread that raised it, which is often the thread that answers the action's
  * request, so the action is started but not awaited until the dialog has gone. The problem dialog
  * watcher is paused meanwhile, since the test raises this dialog on purpose.
+ *
+ * A call that the action makes to Bloom's API from a page (helpers/api.ts) after raising the
+ * dialog may wait for the dialog, holding one of the connections that the dialog needs for its
+ * message (see closeReactDialogFromNode). After a tab switch Bloom's own pages leave only one
+ * connection free, so a dialog raised by a tab switch never gets its message if switchTab's
+ * waitForActiveTab takes it: raise such a dialog with clickTab, and wait for the tab afterwards.
  *
  * `bloomQuitsWithPid` is the process id of a Bloom that is expected to quit once the dialog is
  * closed, as it does after a fatal problem; this then waits for that process to end, and the

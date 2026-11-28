@@ -14,6 +14,12 @@ namespace Bloom.MiscUI
         private static string _nextPathToChoose;
 
         /// <summary>
+        /// The file name that the last Save As answered this way would have suggested to a person,
+        /// so that a test can check it although the dialog never showed.
+        /// </summary>
+        public static string LastSuggestedFileName { get; set; }
+
+        /// <summary>
         /// Arm the next file, folder or Save As dialog to answer with this path, or clear the
         /// armed path with null.
         /// </summary>

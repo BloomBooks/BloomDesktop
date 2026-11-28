@@ -387,6 +387,7 @@ export const LeveledReaderStats: FunctionComponent<{
                     l10nKeySuffix="Total"
                     maxNum={model.maxWordsPerBook()}
                     actualNum={props.bookStats["actualWordCount"]}
+                    actualTestId="leveled-reader-words-in-book"
                 >
                     total
                 </StatsRow>
@@ -420,6 +421,7 @@ export const LeveledReaderStats: FunctionComponent<{
                     maxNum={model.maxAverageWordsPerSentence()}
                     actualNum={props.bookStats["actualAverageWordsPerSentence"]}
                     isAverage={true}
+                    actualTestId="leveled-reader-average-words-per-sentence"
                 >
                     avg per sentence
                 </StatsRow>
@@ -464,6 +466,7 @@ export const LeveledReaderStats: FunctionComponent<{
                     l10nKeySuffix="ThisPageLC"
                     maxNum={model.maxSentencesPerPage()}
                     actualNum={props.bookStats["actualSentencesPerPage"]}
+                    actualTestId="leveled-reader-sentences-this-page"
                 >
                     this page
                 </StatsRow>

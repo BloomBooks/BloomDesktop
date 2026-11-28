@@ -229,7 +229,8 @@ Rules that hold regardless of the final API:
   and Bloom answers with that path instead of showing a dialog. It answers one dialog only, so
   arm it immediately before the click; a path armed and never used would otherwise answer some
   later test's dialog. When Bloom shows a second dialog right after a message box (Save As again
-  after refusing a place), arm it from `readAndCloseBloomMessageBox`'s `beforeClose`. When a
+  after refusing a place), arm it from `readAndCloseBloomMessageBox`'s `beforeClose`. To check the
+  file name that Save As would have suggested, read `e2e/lastSuggestedFileName` after the save. When a
   file dialog the hook does not answer is in the way, add the hook to that dialog in Bloom ("Native file dialogs and automated tests" in the
   root `AGENTS.md`). `winformsUia.ps1` in the `run-bloom` skill is for reading a message box
   over UI Automation, not for answering a file dialog.

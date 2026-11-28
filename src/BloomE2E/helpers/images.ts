@@ -608,6 +608,10 @@ export interface IPixelSize {
  * is a colour gradient with soft blobs of colour across it, so that it compresses, and shrinks
  * when scaled down, the way a photo does. It is drawn by the browser in `page`, because Node has no JPEG
  * encoder; nothing is added to Bloom or the book.
+ *
+ * The file's size in bytes depends on the machine: Chromium dithers the gradients only when it
+ * draws on a GPU. Drawn without one, as on the nightly runner, the picture compresses to about
+ * 40 bytes per thousand pixels, little more than half what a GPU machine writes.
  */
 export async function makeJpegFile(
     page: Page,

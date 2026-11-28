@@ -10,8 +10,14 @@
 import { expect, type Frame, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as Path from "node:path";
-import { apiGet } from "./api";
-import { makeBookFromTemplate } from "./bookMaking";
+import { apiGet, apiPost } from "./api";
+import { bookHtmlPath } from "./bookHtml";
+import {
+    editablePageFrame,
+    makeBookFromTemplate,
+    waitForEditablePage,
+    waitForEditTabSettled,
+} from "./bookMaking";
 import { enableToolForBook, expandTool, toolboxFrame } from "./toolbox";
 
 /** The two reader tools, by the `data-toolid` their toolbox headers carry. */
@@ -246,4 +252,243 @@ export async function expectReaderToolToShow(
             message,
         })
         .toBe(expected);
+}
+
+/** The ways the Decodable Reader tool can sort the words of a stage. */
+export type DecodableSort = "alphabetic" | "by-length" | "by-frequency";
+
+/** The string id of each sort button's tip, in Bloom's localization files, and its English. */
+export const kDecodableSortTips: Record<
+    DecodableSort,
+    { id: string; english: string }
+> = {
+    alphabetic: {
+        id: "EditTab.Toolbox.DecodableReaderTool.SortAlphabetically",
+        english: "Sort alphabetically",
+    },
+    "by-length": {
+        id: "EditTab.Toolbox.DecodableReaderTool.SortByWordLength",
+        english: "Sort by word length",
+    },
+    "by-frequency": {
+        id: "EditTab.Toolbox.DecodableReaderTool.SortByFrequency",
+        english: "Sort by frequency",
+    },
+};
+
+function sortButton(frame: Frame, sort: DecodableSort) {
+    return frame.getByTestId(`decodable-reader-sort-${sort}`);
+}
+
+/**
+ * The words the Decodable Reader's panel lists under "Sample words in this stage", in the order
+ * it shows them. The panel has to be showing; see expandReaderTool.
+ */
+export async function getDecodableStageWords(page: Page): Promise<string[]> {
+    return toolboxFrame(page)
+        .getByTestId("decodable-reader-stage-word")
+        .evaluateAll((words) =>
+            words.map((word) => (word.textContent ?? "").trim()),
+        );
+}
+
+/** Click one of the Decodable Reader's sort buttons, the way a person does. */
+export async function clickDecodableSortButton(
+    page: Page,
+    sort: DecodableSort,
+): Promise<void> {
+    await sortButton(toolboxFrame(page), sort).click();
+}
+
+/**
+ * Hover one of the Decodable Reader's sort buttons, return the tip that appears, and move the
+ * mouse away again until the tip has gone, so that the next tip read is the only one showing.
+ */
+export async function readDecodableSortButtonTip(
+    page: Page,
+    sort: DecodableSort,
+): Promise<string> {
+    const frame = toolboxFrame(page);
+    const tip = frame.getByRole("tooltip");
+    await sortButton(frame, sort).hover();
+    await tip.waitFor({ state: "visible", timeout: 15000 });
+    const text = (await tip.textContent())?.trim() ?? "";
+    await frame.locator(SWITCH.decodableReader).hover();
+    await expect(tip, "The sort button's tip did not go away.").toHaveCount(0, {
+        timeout: 15000,
+    });
+    return text;
+}
+
+/**
+ * The words of the page being edited that the Decodable Reader marks as not decodable at the
+ * stage it is on, sorted. The tool paints them with a CSS highlight over the text rather than
+ * changing the text, so this reads the highlight's ranges.
+ */
+export async function getWordsMarkedNotDecodable(
+    page: Page,
+): Promise<string[]> {
+    const words = await editablePageFrame(page).evaluate(() => {
+        const ranges = (
+            CSS as unknown as {
+                highlights?: Map<string, Iterable<Range>>;
+            }
+        ).highlights?.get("bloom-reader-word-not-decodable");
+        return ranges ? [...ranges].map((range) => range.toString()) : [];
+    });
+    return words.sort();
+}
+
+/**
+ * Start timing how long the Decodable Reader takes, after its switch is next clicked, to mark
+ * `word` as not decodable on the page being edited. Call it while the word is not marked, before
+ * the click; the returned function reads both moments once the test has seen the mark.
+ *
+ * Both moments are taken inside Bloom's own browser, on its one clock: the click by a listener on
+ * the toolbox's document, the mark by a check of the page's highlight every 10 ms. So the time
+ * leaves out how long the panel takes to redraw and how often the test polls. `markedAt` is the
+ * first check that found the mark.
+ */
+export async function startTimingDecodableMark(
+    page: Page,
+    word: string,
+): Promise<() => Promise<{ clickedAt?: number; markedAt?: number }>> {
+    const key = `__e2eDecodableMarkTiming${Date.now()}`;
+    const readMoment = (frame: Frame) =>
+        frame.evaluate(
+            (key) =>
+                (window as unknown as Record<string, number | undefined>)[key],
+            key,
+        );
+    await toolboxFrame(page).evaluate(
+        ({ key, selector }) => {
+            const w = window as unknown as Record<string, number | undefined>;
+            document.addEventListener(
+                "click",
+                (event) => {
+                    const target = event.target as Element | null;
+                    if (w[key] === undefined && target?.closest?.(selector))
+                        w[key] = Date.now();
+                },
+                true,
+            );
+        },
+        { key, selector: SWITCH.decodableReader },
+    );
+    await editablePageFrame(page).evaluate(
+        ({ key, word }) => {
+            const w = window as unknown as Record<string, number | undefined>;
+            const timer = window.setInterval(() => {
+                const ranges = (
+                    CSS as unknown as {
+                        highlights?: Map<string, Iterable<Range>>;
+                    }
+                ).highlights?.get("bloom-reader-word-not-decodable");
+                if (
+                    ranges &&
+                    [...ranges].some((range) => range.toString() === word)
+                ) {
+                    w[key] = Date.now();
+                    window.clearInterval(timer);
+                }
+            }, 10);
+        },
+        { key, word },
+    );
+    return async () => ({
+        clickedAt: await readMoment(toolboxFrame(page)),
+        markedAt: await readMoment(editablePageFrame(page)),
+    });
+}
+
+/**
+ * Press the Decodable Reader's "Generate Report" button and wait until Bloom has written the report
+ * ("Decodable Books Letters and Words.txt" in the collection's folder). Bloom answers the button's
+ * request only after it has written the file. It then opens the report in the program the machine
+ * opens .txt files with, which takes the foreground even under --dont-disturb.
+ */
+export async function generateDecodableReport(page: Page): Promise<void> {
+    const button = toolboxFrame(page).getByTestId(
+        "EditTab.Toolbox.DecodableReaderTool.GenerateReport",
+    );
+    await button.scrollIntoViewIfNeeded({ timeout: 30000 });
+    const written = page.waitForResponse(
+        (response) =>
+            response.url().includes("readers/ui/makeLetterAndWordList"),
+        { timeout: 30000 },
+    );
+    // If the click fails, nothing awaits this wait, and its timeout must not surface later as an
+    // error of its own.
+    written.catch(() => undefined);
+    await button.click();
+    const response = await written;
+    expect(
+        response.ok(),
+        `Bloom failed to write the report: ${response.status()}`,
+    ).toBe(true);
+}
+
+/**
+ * Whether a reader tool's "This book is decodable" / "This book is leveled" switch is on. The
+ * tool's panel has to be expanded (see expandTool); this does not turn the switch on.
+ */
+export async function isReaderSwitchOn(
+    page: Page,
+    tool: ReaderTool,
+): Promise<boolean> {
+    return toolboxFrame(page).locator(SWITCH[tool]).isChecked();
+}
+
+/**
+ * Wait until Bloom has written the Leveled Reader's level onto the book, and has finished loading
+ * the page again afterwards.
+ *
+ * In a new book, the tool saves the level it restores, and the book's body does not have that
+ * level yet, so Bloom saves the book with it and reloads the page (EditingModel.
+ * EnsureLevelAttrCorrect). That happens about half a second after the tool shows the level, and
+ * typing or clicking in the text while the page reloads is lost. Bloom writes the book before it
+ * reloads the page, so once the saved book has the level, the reload has been asked for, and
+ * waiting for the Edit tab to settle waits it out.
+ *
+ * Bloom puts the level on the body only of a book that is already a leveled reader (Book.
+ * LevelToRecordOnBody), so the book must be one before the tool restores its level; see
+ * makeBookLeveled.
+ */
+export async function waitForLevelToBeRecordedInTheBook(
+    page: Page,
+    bookFolder: string,
+) {
+    const level = await getReaderPhase(page, "leveledReader");
+    await expect
+        .poll(
+            () =>
+                /<body[^>]*\sdata-leveledreaderlevel="(\d+)"/.exec(
+                    fs.readFileSync(bookHtmlPath(bookFolder), "utf8"),
+                )?.[1],
+            {
+                timeout: 15000,
+                message: `Bloom never saved the book with the Leveled Reader's level (${level}) on its body.`,
+            },
+        )
+        .toBe(String(level));
+    await waitForEditTabSettled(page);
+    await waitForEditablePage(page);
+}
+
+/**
+ * Make the book being edited a leveled reader, as the Leveled Reader's "This book is leveled"
+ * switch does, before the tool is turned on and has restored a level.
+ *
+ * Clicking the switch instead races the tool's restore: the restore starts when the tool is
+ * expanded, which is also when the switch can first be clicked. When the restore's level reaches
+ * Bloom first, the book is not leveled yet, so Bloom keeps 0 on its body and does not reload the
+ * page; the switch then puts the level on the body in memory only, to be written at the next save
+ * (ToolboxApi, BL-13502). Nothing in this setup saves the book again, so the level that
+ * waitForLevelToBeRecordedInTheBook waits for never reaches the file. That is what happened on the
+ * nightly CI runner (BL-17112). With the book leveled first, the panel comes up with the switch
+ * already on, and the restore's level always goes through the save and reload that the wait
+ * expects.
+ */
+export async function makeBookLeveled(page: Page) {
+    await apiPost(page, "toolbox/leveled", "true", "application/json");
 }

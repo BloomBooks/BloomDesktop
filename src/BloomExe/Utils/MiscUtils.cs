@@ -435,7 +435,10 @@ namespace Bloom.Utils
             do
             {
                 if (MiscUI.E2eDialogAnswer.TryTakeNextPathToChoose(out var armedPath))
+                {
+                    MiscUI.E2eDialogAnswer.LastSuggestedFileName = initialFilename;
                     destFileName = CheckSavePathArmedForE2eTests(armedPath, filter);
+                }
                 else
                     destFileName = ShowSaveAsDialog(
                         initialFolder,

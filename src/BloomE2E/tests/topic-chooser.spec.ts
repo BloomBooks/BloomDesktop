@@ -63,16 +63,25 @@ async function boldTopics(page: Page): Promise<string[]> {
         );
 }
 
-function topicBox(page: Page): Locator {
+function frontCover(page: Page): Locator {
     return editablePageFrame(page)
-        .locator(".bloom-page.outsideFrontCover .coverBottomBookTopic")
+        .locator(".bloom-page.outsideFrontCover")
         .first();
 }
 
-/** Click the front cover's "Choose topic" link and wait for the dialog. */
+function topicBox(page: Page): Locator {
+    return frontCover(page).locator(".coverBottomBookTopic").first();
+}
+
+/**
+ * Click the front cover's "Choose topic" link and wait for the dialog. The link's bubble shows
+ * while the mouse is over the cover page (editMode.less). Hovering the topic box itself does not
+ * work: while the box is empty, the tip of its own bubble lies over the middle of it and takes
+ * the pointer.
+ */
 async function openTopicChooser(page: Page): Promise<void> {
     await waitForEditablePage(page);
-    await topicBox(page).hover();
+    await frontCover(page).hover();
     const link = editablePageFrame(page)
         .locator(".qtip a[href*='showEditViewTopicChooserDialog']")
         .first();

@@ -23,25 +23,21 @@
 // changing says the pass is over.
 
 import { expect, test } from "../fixtures/bloomTest";
-import { apiPost } from "../helpers/api";
 import {
     addPage,
     clickInGroup,
     getContentPages,
     goToPage,
     makeBookFromTemplate,
-    waitForEditablePage,
-    waitForEditTabSettled,
 } from "../helpers/bookMaking";
-import { bookHtmlPath } from "../helpers/bookHtml";
 import {
     expandReaderTool,
-    getReaderPhase,
+    makeBookLeveled,
+    waitForLevelToBeRecordedInTheBook,
     waitForReaderToolToRestore,
 } from "../helpers/readerTools";
 import { enableToolForBook, toolboxFrame } from "../helpers/toolbox";
 import type { Locator, Page } from "@playwright/test";
-import * as fs from "node:fs";
 
 test.use({
     collectionSpec: { name: "reader-tool-keeps-caret", languages: ["en"] },
@@ -56,60 +52,6 @@ async function waitForWordsOnPage(page: Page, count: number, why: string) {
         toolboxFrame(page).getByTestId("leveled-reader-words-this-page"),
         `The Leveled Reader never counted ${count} words on the page ${why}.`,
     ).toHaveText(String(count), { timeout: 15000 });
-}
-
-/**
- * Wait until Bloom has written the Leveled Reader's level onto the book, and has finished loading
- * the page again afterwards.
- *
- * In a new book, the tool saves the level it restores, and the book's body does not have that
- * level yet, so Bloom saves the book with it and reloads the page (EditingModel.
- * EnsureLevelAttrCorrect). That happens about half a second after the tool shows the level, and
- * typing or clicking in the text while the page reloads is lost. Bloom writes the book before it
- * reloads the page, so once the saved book has the level, the reload has been asked for, and
- * waiting for the Edit tab to settle waits it out.
- *
- * Bloom puts the level on the body only of a book that is already a leveled reader (Book.
- * LevelToRecordOnBody), so the book must be one before the tool restores its level; see
- * makeBookLeveled.
- */
-async function waitForLevelToBeRecordedInTheBook(
-    page: Page,
-    bookFolder: string,
-) {
-    const level = await getReaderPhase(page, "leveledReader");
-    await expect
-        .poll(
-            () =>
-                /<body[^>]*\sdata-leveledreaderlevel="(\d+)"/.exec(
-                    fs.readFileSync(bookHtmlPath(bookFolder), "utf8"),
-                )?.[1],
-            {
-                timeout: 15000,
-                message: `Bloom never saved the book with the Leveled Reader's level (${level}) on its body.`,
-            },
-        )
-        .toBe(String(level));
-    await waitForEditTabSettled(page);
-    await waitForEditablePage(page);
-}
-
-/**
- * Make the book being edited a leveled reader, as the Leveled Reader's "This book is leveled"
- * switch does, before the tool is turned on and has restored a level.
- *
- * Clicking the switch instead races the tool's restore: the restore starts when the tool is
- * expanded, which is also when the switch can first be clicked. When the restore's level reaches
- * Bloom first, the book is not leveled yet, so Bloom keeps 0 on its body and does not reload the
- * page; the switch then puts the level on the body in memory only, to be written at the next save
- * (ToolboxApi, BL-13502). Nothing in this setup saves the book again, so the level that
- * waitForLevelToBeRecordedInTheBook waits for never reaches the file. That is what happened on the
- * nightly CI runner (BL-17112). With the book leveled first, the panel comes up with the switch
- * already on, and the restore's level always goes through the save and reload that the wait
- * expects.
- */
-async function makeBookLeveled(page: Page) {
-    await apiPost(page, "toolbox/leveled", "true", "application/json");
 }
 
 /** How many characters of the box's text come before the caret; -1 if the caret is not in it. */

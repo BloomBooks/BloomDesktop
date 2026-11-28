@@ -27,6 +27,7 @@ namespace BloomTests.MiscUI
         {
             // Set, not Take: Take leaves the path alone when Bloom is not in e2e mode.
             E2eDialogAnswer.SetNextPathToChoose(null);
+            E2eDialogAnswer.LastSuggestedFileName = null;
             Program.ParseStartupPortArguments(Array.Empty<string>(), out _);
         }
 
@@ -111,6 +112,11 @@ namespace BloomTests.MiscUI
                     E2eDialogAnswer.TryTakeNextPathToChoose(out _),
                     Is.False,
                     "The answer is for one dialog only; the next one must show a dialog."
+                );
+                Assert.That(
+                    E2eDialogAnswer.LastSuggestedFileName,
+                    Is.EqualTo("suggested.pdf"),
+                    "A test reads the name that the dialog would have suggested from here."
                 );
             }
         }

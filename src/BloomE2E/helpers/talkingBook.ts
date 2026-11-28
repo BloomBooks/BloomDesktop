@@ -219,20 +219,29 @@ export async function getCurrentAudioSegmentText(page: Page): Promise<string> {
 
 /**
  * The Talking Book tool's recording mode that is chosen, as the English label of its radio (see
- * setRecordingMode), or undefined when neither radio is checked. Opens the tool's Advanced
- * section, where the radios are.
+ * setRecordingMode). Opens the tool's Advanced section, where the radios are, and waits until one
+ * of them is checked: the tool shows the radios with neither checked (RecordingMode.Unknown) until
+ * it has settled the page's mode in handleNewPageReady.
  */
 export async function getRecordingMode(
     page: Page,
-): Promise<"By Sentence" | "By Whole Text Box" | undefined> {
+): Promise<RecordingModeLabel> {
     await openAdvancedSection(page);
-    // The radios' values are RecordingModes (recordingMode.ts); their labels are localized.
-    const radio = (value: string) =>
-        toolboxFrame(page).locator(`input[type="radio"][value="${value}"]`);
-    await radio("Sentence").waitFor({ state: "visible", timeout: 30000 });
-    if (await radio("Sentence").isChecked()) return "By Sentence";
-    if (await radio("TextBox").isChecked()) return "By Whole Text Box";
-    return undefined;
+    const values = Object.values(RECORDING_MODE_VALUE)
+        .map((value) => `[value="${value}"]`)
+        .join(",");
+    const value = await toolboxFrame(page)
+        .locator(`input[type="radio"]:is(${values}):checked`)
+        .getAttribute("value", { timeout: 30000 });
+    const mode = (
+        Object.keys(RECORDING_MODE_VALUE) as RecordingModeLabel[]
+    ).find((label) => RECORDING_MODE_VALUE[label] === value);
+    if (!mode)
+        throw new Error(
+            `The Talking Book tool has the recording mode "${value}" checked, which is none of ` +
+                `${Object.values(RECORDING_MODE_VALUE).join(", ")}.`,
+        );
+    return mode;
 }
 
 /**
@@ -515,7 +524,7 @@ function narrationFilesIn(audioFolder: string): string[] {
  */
 export async function setRecordingMode(
     page: Page,
-    mode: "By Sentence" | "By Whole Text Box",
+    mode: RecordingModeLabel,
 ): Promise<void> {
     await openAdvancedSection(page);
     const radio = recordingModeRadio(page, mode);
@@ -535,7 +544,7 @@ export async function setRecordingMode(
  */
 export async function isRecordingModeEnabled(
     page: Page,
-    mode: "By Sentence" | "By Whole Text Box",
+    mode: RecordingModeLabel,
 ): Promise<boolean> {
     await openAdvancedSection(page);
     const radio = recordingModeRadio(page, mode);
@@ -552,7 +561,7 @@ export async function isRecordingModeEnabled(
  */
 export async function expectRecordingModeTooltip(
     page: Page,
-    mode: "By Sentence" | "By Whole Text Box",
+    mode: RecordingModeLabel,
     expected: string,
     message: string,
 ): Promise<void> {
@@ -622,13 +631,23 @@ export async function clickClearRecording(page: Page): Promise<void> {
     await button.locator("img").click();
 }
 
+/** A recording mode, as the English label of its radio. */
+type RecordingModeLabel = "By Sentence" | "By Whole Text Box";
+
+/**
+ * Each recording-mode radio's value, a RecordingMode (recordingMode.ts), by the English label of
+ * the radio. The labels are localized, so the helpers find the radios by value.
+ */
+const RECORDING_MODE_VALUE: Record<RecordingModeLabel, string> = {
+    "By Sentence": "Sentence",
+    "By Whole Text Box": "TextBox",
+};
+
 /** One of the recording-mode radios, found by its value (a RecordingMode, recordingMode.ts). */
-function recordingModeRadio(
-    page: Page,
-    mode: "By Sentence" | "By Whole Text Box",
-): Locator {
-    const value = mode === "By Sentence" ? "Sentence" : "TextBox";
-    return toolboxFrame(page).locator(`input[type="radio"][value="${value}"]`);
+function recordingModeRadio(page: Page, mode: RecordingModeLabel): Locator {
+    return toolboxFrame(page).locator(
+        `input[type="radio"][value="${RECORDING_MODE_VALUE[mode]}"]`,
+    );
 }
 
 /**
