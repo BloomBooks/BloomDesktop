@@ -217,9 +217,11 @@ namespace Bloom.web.controllers
                 requiresSync: false
             );
 
-            // GET e2e/lastSuggestedFileName: the file name that the last Save As answered from
-            // e2e/nextFileToChoose would have suggested, which a test cannot read from a dialog
-            // that never showed. Empty before any. Off the UI thread: it only reads a string.
+            // GET e2e/lastSuggestedFileName: the file name that the Save As answered by the last
+            // path armed through e2e/nextFileToChoose would have suggested, which a test cannot
+            // read from a dialog that never showed. Empty from each arming until a Save As takes
+            // that path, so a test polls it after the save starts. Off the UI thread: it only
+            // reads a string.
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "lastSuggestedFileName",
                 request =>

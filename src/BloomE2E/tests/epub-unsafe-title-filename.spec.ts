@@ -188,11 +188,19 @@ test("An ePUB of a book with an unsafe title gets a safe file name and keeps the
                 (await answered).ok(),
                 "Bloom should have finished saving the ePUB.",
             ).toBe(true);
-            // The dialog never shows; Bloom keeps the name that it would have suggested.
-            expect(
-                (await apiGet(page, "e2e/lastSuggestedFileName")).body,
-                "Save As should suggest the book's folder name.",
-            ).toBe(`${bookFolderName}.epub`);
+            // The dialog never shows; Bloom keeps the name that it would have suggested once it
+            // reaches Save As, which is after it answers the save request.
+            await expect
+                .poll(
+                    async () =>
+                        (await apiGet(page, "e2e/lastSuggestedFileName")).body,
+                    {
+                        timeout: 60000,
+                        message:
+                            "Save As should suggest the book's folder name.",
+                    },
+                )
+                .toBe(`${bookFolderName}.epub`);
             // Bloom answers the save request before it asks where to save, and writes the file
             // after. A zip's central directory is the last thing written, so the file is whole
             // once readZip can read it. The last read's error is kept, so that a timeout says
