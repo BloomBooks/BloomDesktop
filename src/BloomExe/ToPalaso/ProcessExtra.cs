@@ -145,9 +145,10 @@ namespace Bloom.ToPalaso
             LogDebugInfo($"DEBUG ShowFileInExplorerInFront(\"{path}\")");
             var processList = Process.GetProcesses();
             var windowMap = GetAllWindows();
-            PathUtilities.SelectFileInExplorer(path);
+            // Before the request, so that it can tell the window that the request opens from the others.
             if (Platform.IsWindows)
-                EnsureSelectedInExplorer(path, new HashSet<IntPtr>(windowMap.Keys));
+                EnsureSelectedInExplorer(path);
+            PathUtilities.SelectFileInExplorer(path);
             // The rest of this happens on a timeout, so that we don't have to sleep and hold things up
             // Windows explorer doesn't show up in the processlist, but the path appears in the window
             // title, so we can use that to find the window.
@@ -161,27 +162,33 @@ namespace Bloom.ToPalaso
         // How long to look for the File Explorer window that shows the item's folder.
         private static readonly TimeSpan kExplorerWindowWait = TimeSpan.FromSeconds(10);
 
+        // How long Show in Folder waits for EnsureSelectedInExplorer to list the windows that already
+        // show the folder.
+        private static readonly TimeSpan kExplorerWindowListWait = TimeSpan.FromSeconds(2);
+
         /// <summary>
         /// Make sure that a File Explorer window showing the folder that holds <paramref name="path"/>
-        /// has that item selected, selecting it in the window that was just opened if not.
+        /// has that item selected. Call it just before asking Explorer to show the item: it returns once
+        /// it has listed the Explorer windows that already show the folder.
         ///
         /// SHOpenFolderAndSelectItems selects the item when the folder is already open in a window. When
         /// it has to open a new window, current versions of Windows 11 (seen on 25H2 and on the GitHub
-        /// Actions runners) open the folder and select nothing, so the user has to look for the file.
-        /// So, on a thread of its own, this waits for the window to show the folder and
-        /// selects the item through the window's own view. The window belongs to Explorer, so there is no
-        /// event to wait on, and this checks every 100 ms until the item is selected or
-        /// kExplorerWindowWait passes. It never changes the selection in a window that was open before
-        /// (<paramref name="windowsBefore"/>, the top-level windows that existed before the request):
-        /// that may be the user's own, with a selection they want to keep.
+        /// Actions runners) open the folder and select nothing; where Explorer opens folders in new
+        /// tabs, the new tab is in the same state. So a thread of its own checks every 100 ms, for up
+        /// to kExplorerWindowWait, and selects the item through the new window's view. It never
+        /// changes the selection in a window that showed the folder before the request, which may be
+        /// the user's own. It knows those by HWND, which every tab of a window shares, so a new tab in
+        /// a window that showed another folder still counts as new.
         /// </summary>
-        private static void EnsureSelectedInExplorer(string path, HashSet<IntPtr> windowsBefore)
+        private static void EnsureSelectedInExplorer(string path)
         {
             var fullPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar);
             var name = Path.GetFileName(fullPath);
             if (string.IsNullOrEmpty(name))
                 return; // a drive's root has no folder to show it in
             var folder = Path.GetDirectoryName(fullPath)!.TrimEnd(Path.DirectorySeparatorChar);
+            // Not disposed: the thread may still set it after this method stops waiting.
+            var listed = new ManualResetEventSlim();
             var thread = new Thread(() =>
             {
                 try
@@ -189,6 +196,8 @@ namespace Bloom.ToPalaso
                     dynamic shell = Activator.CreateInstance(
                         Type.GetTypeFromProgID("Shell.Application", true)
                     );
+                    HashSet<long> windowsBefore = WindowsShowingFolder(shell, folder);
+                    listed.Set();
                     var deadline = DateTime.UtcNow + kExplorerWindowWait;
                     do
                     {
@@ -212,45 +221,79 @@ namespace Bloom.ToPalaso
                     // Explorer still shows the folder; only the selection is missing.
                     Logger.WriteError($"EnsureSelectedInExplorer(\"{fullPath}\") failed", e);
                 }
+                finally
+                {
+                    listed.Set(); // also when listing the windows failed
+                }
             });
             // Shell.Application and the views it hands out are apartment-threaded.
             thread.SetApartmentState(ApartmentState.STA);
             thread.IsBackground = true;
             thread.Start();
+            listed.Wait(kExplorerWindowListWait);
         }
 
         /// <summary>
-        /// Look through the open File Explorer windows for ones showing <paramref name="folder"/>.
-        /// Returns true when one of them has <paramref name="name"/> (at <paramref name="fullPath"/>)
-        /// selected; otherwise asks each such window that is not one of
-        /// <paramref name="windowsBefore"/> to select it, which a later call sees. A window that throws
-        /// (still loading, or closed meanwhile) is left for the next call.
+        /// The HWNDs of the File Explorer windows that show <paramref name="folder"/> in one of their tabs.
+        /// </summary>
+        private static HashSet<long> WindowsShowingFolder(dynamic shell, string folder)
+        {
+            var windows = new HashSet<long>();
+            foreach (dynamic window in shell.Windows())
+            {
+                try
+                {
+                    if (FolderViewShowing(window, folder) != null)
+                        windows.Add((long)window.HWND);
+                }
+                catch (Exception)
+                {
+                    // not a folder view (Internet Explorer, say), or closed meanwhile
+                }
+            }
+            return windows;
+        }
+
+        /// <summary>
+        /// The folder view of the File Explorer window (or tab) <paramref name="window"/> when it shows
+        /// <paramref name="folder"/>, otherwise null. Throws when the window is not a folder view, is
+        /// still loading, or has closed.
+        /// </summary>
+        private static dynamic FolderViewShowing(dynamic window, string folder)
+        {
+            dynamic view = window.Document;
+            string windowFolder = view.Folder.Self.Path;
+            var showsFolder = string.Equals(
+                windowFolder?.TrimEnd(Path.DirectorySeparatorChar),
+                folder,
+                StringComparison.OrdinalIgnoreCase
+            );
+            return showsFolder ? view : null;
+        }
+
+        /// <summary>
+        /// True when a File Explorer window showing <paramref name="folder"/> has <paramref name="name"/>
+        /// (at <paramref name="fullPath"/>) selected; otherwise selects it in each such window that is not
+        /// one of <paramref name="windowsBefore"/>, which a later call sees.
         /// </summary>
         private static bool SelectInOpenExplorerWindow(
             dynamic shell,
             string folder,
             string name,
             string fullPath,
-            HashSet<IntPtr> windowsBefore
+            HashSet<long> windowsBefore
         )
         {
             foreach (dynamic window in shell.Windows())
             {
                 try
                 {
-                    dynamic view = window.Document;
-                    string windowFolder = view.Folder.Self.Path;
-                    if (
-                        !string.Equals(
-                            windowFolder?.TrimEnd(Path.DirectorySeparatorChar),
-                            folder,
-                            StringComparison.OrdinalIgnoreCase
-                        )
-                    )
+                    dynamic view = FolderViewShowing(window, folder);
+                    if (view == null)
                         continue;
                     if (IsSelectedInView(view, fullPath))
                         return true;
-                    if (windowsBefore.Contains(new IntPtr((long)window.HWND)))
+                    if (windowsBefore.Contains((long)window.HWND))
                         continue;
                     dynamic item = view.Folder.ParseName(name);
                     if (item != null) // null until the view has listed the item
