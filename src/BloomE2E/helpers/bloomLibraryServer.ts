@@ -241,6 +241,66 @@ export async function getBookshelvesOfUploadedBook(
 }
 
 /**
+ * The subscription the uploaded copy of a book was made under, e.g. "Test" or "Default": the
+ * brandingProjectName of the meta.json Bloom uploaded with it (BookMetaData.SubscriptionDescriptor).
+ */
+export async function getSubscriptionOfUploadedBook(
+    baseUrl: string,
+): Promise<string | undefined> {
+    const meta = JSON.parse(
+        await fetchUploadedBookFile(baseUrl, "meta.json", "meta.json"),
+    ) as { brandingProjectName?: string };
+    return meta.brandingProjectName;
+}
+
+/**
+ * Where the latest upload of `book` put its files, as a baseUrl in the form Bloom writes it. Each
+ * upload goes to a new folder, `<bucket>/<record id>/<upload time>/<book folder>/`, and the record's
+ * own baseUrl can point at an older upload's folder once the harvester has written a stale record
+ * back (BL-16921). So this lists the record's folders in the sandbox's bucket, which is public-read,
+ * and takes the one with the latest upload time.
+ */
+export async function getLatestUploadBaseUrl(
+    book: IBookOnServer,
+): Promise<string> {
+    const match = /^(https:\/\/s3\.amazonaws\.com\/[^/]+\/)(.+)$/.exec(
+        book.baseUrl,
+    );
+    if (!match)
+        throw new Error(
+            `The record of "${book.title}" has a baseUrl that is not on S3: ${book.baseUrl}`,
+        );
+    const [, bucketUrl, encodedPrefix] = match;
+    const recordFolder = decodeBaseUrl(encodedPrefix).split("/")[0];
+    /** The folders directly inside `prefix` in the bucket, each ending with "/". */
+    const listFolders = async (prefix: string): Promise<string[]> => {
+        const url = `${bucketUrl}?list-type=2&delimiter=/&prefix=${encodeURIComponent(prefix)}`;
+        const response = await fetch(url);
+        if (!response.ok)
+            throw new Error(`S3 answered ${response.status} to listing ${url}`);
+        return [
+            ...(await response.text()).matchAll(
+                /<CommonPrefixes><Prefix>([^<]+)<\/Prefix><\/CommonPrefixes>/g,
+            ),
+        ].map(([, folder]) => folder.replace(/&amp;/g, "&"));
+    };
+    const uploads = (await listFolders(`${recordFolder}/`)).sort(
+        (a, b) => Number(a.split("/")[1]) - Number(b.split("/")[1]),
+    );
+    if (uploads.length === 0)
+        throw new Error(
+            `The sandbox's bucket has no uploads of "${book.title}" under ${bucketUrl}${recordFolder}/.`,
+        );
+    const latest = uploads[uploads.length - 1];
+    const bookFolders = await listFolders(latest);
+    if (bookFolders.length !== 1)
+        throw new Error(
+            `The latest upload of "${book.title}" (${latest}) holds ${bookFolders.length} book folders: ${bookFolders.join(", ")}`,
+        );
+    return bucketUrl + encodeURIComponent(bookFolders[0]);
+}
+
+/**
  * The front/back matter pack the uploaded copy of a book carries (see xmatterPackInBookHtml): how
  * a test sees that an upload sent the book with the collection's current pack.
  */

@@ -322,10 +322,14 @@ export async function getBookSummary(page: Page): Promise<string> {
  * sends (BloomS3Client.PutFileOnS3); the server copies the others from the previous upload. The box
  * is cleared when Upload Book is clicked, so it holds this upload's lines only. The line names the
  * file without its folder, so "audio/x.mp3" comes back as "x.mp3".
+ *
+ * `onSameBookChosen`, when given, runs once "Yes, I want to update this book" is chosen and before
+ * Upload is clicked, with the dialog: a test checks or answers there what else the dialog asks.
  */
 export async function uploadBookForReal(
     page: Page,
     timeoutMs = 300000,
+    onSameBookChosen?: (dialog: Locator) => Promise<void>,
 ): Promise<string[]> {
     const steps = page.getByTestId("publish-to-web-steps");
     // The last step's "View on Bloom Library" link, which is the screen's sign that the upload
@@ -357,32 +361,41 @@ export async function uploadBookForReal(
     const errorLines = progressLog.locator(
         '[data-progress-severity="error"], [data-progress-severity="fatal"]',
     );
-    let answered = false;
-    let outcome = "waiting";
-    try {
-        await expect
-            .poll(
-                async () => {
-                    if (!answered && (await sameBook.isVisible())) {
-                        await sameBook.check();
-                        await page
-                            .getByRole("dialog")
-                            .getByRole("button", {
-                                name: uploadLabel,
-                                exact: true,
-                            })
-                            .click();
-                        answered = true;
-                    }
-                    if (await doneLink.isVisible()) outcome = "done";
-                    else if ((await errorLines.count()) > 0) outcome = "error";
-                    return outcome;
-                },
-                { timeout: timeoutMs, intervals: [1000] },
-            )
-            .not.toBe("waiting");
-    } catch {
-        // The poll timed out; outcome is still "waiting".
+    const deadline = Date.now() + timeoutMs;
+    /** Wait for the upload to finish or fail, or, while `askable`, for the question. */
+    const waitForOutcome = async (askable: boolean): Promise<string> => {
+        let outcome = "waiting";
+        try {
+            await expect
+                .poll(
+                    async () => {
+                        if (await doneLink.isVisible()) outcome = "done";
+                        else if ((await errorLines.count()) > 0)
+                            outcome = "error";
+                        else if (askable && (await sameBook.isVisible()))
+                            outcome = "asked";
+                        return outcome;
+                    },
+                    {
+                        timeout: Math.max(deadline - Date.now(), 1000),
+                        intervals: [1000],
+                    },
+                )
+                .not.toBe("waiting");
+        } catch {
+            // The poll timed out; outcome is still "waiting".
+        }
+        return outcome;
+    };
+    let outcome = await waitForOutcome(true);
+    if (outcome === "asked") {
+        const dialog = page.getByRole("dialog");
+        await sameBook.check();
+        if (onSameBookChosen) await onSameBookChosen(dialog);
+        await dialog
+            .getByRole("button", { name: uploadLabel, exact: true })
+            .click();
+        outcome = await waitForOutcome(false);
     }
     if (outcome !== "done")
         throw new Error(
