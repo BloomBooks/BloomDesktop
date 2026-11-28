@@ -179,7 +179,7 @@ export async function openBookSettings(
 
 /**
  * Show one page of the open Book and Page Settings dialog by clicking its name in the list on the
- * left, e.g. "Theme & Layout". Fails naming the pages the dialog offers when there is no such page.
+ * left, e.g. "Theme & Layout". Fails naming the pages the dialog offers when no such page shows.
  */
 export async function showBookSettingsPage(
     page: Page,
@@ -196,7 +196,7 @@ export async function showBookSettingsPage(
             .getByRole("tab")
             .allInnerTexts();
         throw new Error(
-            `The Book and Page Settings dialog has no page "${pageName}"; it offers: ${offered.join(", ")}.`,
+            `The Book and Page Settings dialog showed no page "${pageName}" within 10 seconds; it now offers: ${offered.join(", ")}.`,
         );
     }
     await realClick(tab);
