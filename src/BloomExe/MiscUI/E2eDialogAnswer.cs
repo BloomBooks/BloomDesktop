@@ -14,10 +14,11 @@ namespace Bloom.MiscUI
         private static string _nextPathToChoose;
 
         /// <summary>
-        /// The file name that the last Save As answered this way would have suggested to a person,
-        /// so that a test can check it although the dialog never showed.
+        /// The file name that the Save As answered by the last armed path would have suggested to a
+        /// person, so that a test can check it although the dialog never showed. Null until a Save
+        /// As takes the armed path.
         /// </summary>
-        public static string LastSuggestedFileName { get; set; }
+        public static string LastSuggestedFileName { get; private set; }
 
         /// <summary>
         /// Arm the next file, folder or Save As dialog to answer with this path, or clear the
@@ -26,14 +27,16 @@ namespace Bloom.MiscUI
         public static void SetNextPathToChoose(string path)
         {
             _nextPathToChoose = path;
+            LastSuggestedFileName = null;
         }
 
         /// <summary>
         /// Take the armed path, clearing it, if there is one and this is an e2e run; otherwise
         /// return false. Honoured only under --e2e, so a normal run always shows its dialog even
-        /// if something managed to set the path.
+        /// if something managed to set the path. A Save As passes the file name it would have
+        /// suggested, which is kept in LastSuggestedFileName.
         /// </summary>
-        public static bool TryTakeNextPathToChoose(out string path)
+        public static bool TryTakeNextPathToChoose(out string path, string suggestedFileName = null)
         {
             path = _nextPathToChoose;
             if (!Program.RunningE2eTests || string.IsNullOrEmpty(path))
@@ -42,6 +45,7 @@ namespace Bloom.MiscUI
                 return false;
             }
             _nextPathToChoose = null;
+            LastSuggestedFileName = suggestedFileName;
             return true;
         }
     }

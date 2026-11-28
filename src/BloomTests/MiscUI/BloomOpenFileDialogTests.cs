@@ -27,7 +27,6 @@ namespace BloomTests.MiscUI
         {
             // Set, not Take: Take leaves the path alone when Bloom is not in e2e mode.
             E2eDialogAnswer.SetNextPathToChoose(null);
-            E2eDialogAnswer.LastSuggestedFileName = null;
             Program.ParseStartupPortArguments(Array.Empty<string>(), out _);
         }
 

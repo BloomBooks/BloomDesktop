@@ -16,6 +16,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "../fixtures/bloomTest";
+import { apiGet } from "../helpers/api";
 import {
     getPages,
     goToPage,
@@ -32,7 +33,6 @@ import {
 } from "../helpers/epubPublish";
 import { chooseImageFile, getImagePlacement } from "../helpers/images";
 import { setUiStateViaApi } from "../helpers/uiLanguage";
-import { apiGet } from "../helpers/api";
 import { armFileChooser } from "../helpers/nativeDialogs";
 import {
     closePublishProgressDialog,

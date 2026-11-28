@@ -434,11 +434,13 @@ namespace Bloom.Utils
             var repeat = false;
             do
             {
-                if (MiscUI.E2eDialogAnswer.TryTakeNextPathToChoose(out var armedPath))
-                {
-                    MiscUI.E2eDialogAnswer.LastSuggestedFileName = initialFilename;
+                if (
+                    MiscUI.E2eDialogAnswer.TryTakeNextPathToChoose(
+                        out var armedPath,
+                        initialFilename
+                    )
+                )
                     destFileName = CheckSavePathArmedForE2eTests(armedPath, filter);
-                }
                 else
                     destFileName = ShowSaveAsDialog(
                         initialFolder,
