@@ -42,7 +42,6 @@ import {
     type StepFunction,
 } from "../helpers/caption";
 import { applyRequestedViewport } from "./viewport";
-import { apiGet } from "../helpers/api";
 
 /** What every launched Bloom gives a test, whichever mode it started in. */
 interface IBloomAppBase {
@@ -327,8 +326,14 @@ async function findShellPage(
                 .catch(() => false);
             if (!hasTopBar) continue;
             if (!markerOnlyMatch) markerOnlyMatch = page;
-            const drivenUrl = await apiGet(page, SHELL_URL_ENDPOINT)
-                .then((answer) => answer.body)
+            // Asked from inside the candidate page, not with helpers/api.ts. Asked from Node at this
+            // point, the test's worker process crashed (exit code 0xC0000409) just after a launch in
+            // about one run in four of problem-report-reader-folders.spec.ts; why is not known.
+            const drivenUrl = await page
+                .evaluate(async (endpoint) => {
+                    const response = await fetch(`/bloom/api/${endpoint}`);
+                    return response.ok ? await response.text() : "";
+                }, SHELL_URL_ENDPOINT)
                 .catch(() => "");
             if (!drivenUrl) continue;
             hookEverAnswered = true;
