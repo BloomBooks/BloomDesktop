@@ -257,7 +257,7 @@ describe("UndoStack", () => {
         });
 
         it("does not treat later typing as an undo when an earlier listener cancelled the undo command", () => {
-            // The inline image Ctrl+Z handler cancels CKEditor's undo command at priority 1.
+            // A listener that runs earlier cancels CKEditor's undo command.
             editor.on(
                 "beforeCommandExec",
                 (evt) => {

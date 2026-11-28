@@ -59,8 +59,6 @@ import {
     getInlineImage,
     getInlineImageInEditable,
     getInlineImages,
-    inlineImageCanUndo,
-    inlineImageUndo,
     insertInlineImage,
     kInlineImageBottomClass,
     kInlineImageLeftClass,
@@ -123,6 +121,16 @@ import { resetChangeOrderForTests } from "../undo/changeOrder";
 import BloomField from "../bloomField/BloomField";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { theOneUndoStack } from "../undo/UndoStack";
+import { installUndoKeys } from "../undo/undoKeys";
+
+/** Undo the stack's next entry, after checking that it is an entry of the stack's own. */
+function undoNextEntry(): void {
+    expect(
+        theOneUndoStack.getEntryForNextUndo(),
+        "The next Undo should be an entry on the stack, not a legacy mechanism's.",
+    ).toBeDefined();
+    void theOneUndoStack.undo();
+}
 
 // jsdom reports every element's box as empty, so these tests cannot check where a drag put the
 // image. The calculations that decide that are in exported functions with no side effects,
@@ -984,11 +992,11 @@ describe("inlineImageInteractions", () => {
                 ).toBe(true),
             );
 
-            expect(inlineImageCanUndo()).toBe(true);
+            expect(theOneUndoStack.getEntryForNextUndo()).toBeDefined();
 
             // This throws if the entry was recorded before the change was copied to the other
             // language, because the entry checks that every copy is as it left it.
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
 
             // The undo has to take back the transparency, and leave the insert that put the
             // picture there. The commands come from the canvas element registry, which knows
@@ -1066,7 +1074,7 @@ describe("inlineImageInteractions", () => {
                 ),
             );
 
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
 
             const restored = getInlineImage(group);
             expect(
@@ -1163,7 +1171,7 @@ describe("inlineImageInteractions", () => {
         });
 
         // Undo does not need a selected picture or the caret in the block: the delete is the
-        // newest entry on the one undo stack, and that is all inlineImageCanUndo asks.
+        // newest entry on the one undo stack, and that is all Ctrl+Z asks.
         it("Delete can be undone with nothing selected", () => {
             const group = makeSimpleGroup();
             const wrapper = insertInlineImage(group);
@@ -1180,9 +1188,9 @@ describe("inlineImageInteractions", () => {
             expect(
                 document.querySelector("." + kInlineImageSelectedClass),
             ).toBeNull();
-            expect(inlineImageCanUndo()).toBe(true);
+            expect(theOneUndoStack.getEntryForNextUndo()).toBeDefined();
 
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
 
             expect(
                 document.querySelectorAll(`[${kInlineImageIdAttr}="${id}"]`)
@@ -1318,7 +1326,7 @@ describe("inlineImageInteractions", () => {
             syncInlineImagesFromEditable(editableFor(group, "en"));
             commitPendingInlineImageUndo(group);
 
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
 
             // Undo rebuilds the wrapper from saved markup, so this is a new element.
             const restored = getInlineImageInEditable(editableFor(group, "en"));
@@ -1345,7 +1353,7 @@ describe("inlineImageInteractions", () => {
             setInlineImageDock(wrapper, kInlineImageBottomClass);
             syncInlineImagesFromEditable(editableFor(group, "en"));
             commitPendingInlineImageUndo(group);
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
             const afterUndo = getInlineImageInEditable(
                 editableFor(group, "en"),
             );
@@ -1385,7 +1393,7 @@ describe("inlineImageInteractions", () => {
             // Sanity check: selecting the picture showed the toolbar.
             expect(barBuiltForTheOldWrapper).not.toBeNull();
 
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
 
             const bar = document.getElementById(kInlineImageContextControlsId);
             expect(bar, "expected the toolbar to still be up").not.toBeNull();
@@ -1403,7 +1411,7 @@ describe("inlineImageInteractions", () => {
                 document.getElementById(kInlineImageContextControlsId),
             ).not.toBeNull();
 
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
 
             expect(getInlineImages(group).length).toBe(0);
             expect(
@@ -1551,7 +1559,7 @@ describe("inlineImageInteractions", () => {
             insertInlineImage(group);
             BloomField.ManageField(english);
             runMenuCommand(getInlineImageInEditable(english)!, "Common.Delete");
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
             // Sanity check: the undo brought the picture back.
             expect(getInlineImageInEditable(english)).not.toBeNull();
 
@@ -1567,6 +1575,10 @@ describe("inlineImageInteractions", () => {
     // CKEditor claims Ctrl+Z and Ctrl+Y inside a text block, and does nothing with them when it
     // has nothing of its own to undo or redo, so the page takes them first for picture changes.
     describe("Ctrl+Z and Ctrl+Y", () => {
+        // The page installs these keys as it sets up undo (pageUndo.ts); installing again on the
+        // same document does nothing.
+        beforeEach(() => installUndoKeys(document));
+
         const pressKey = (
             target: HTMLElement,
             key: string,
@@ -1650,17 +1662,6 @@ describe("inlineImageInteractions", () => {
 
             expect(event.defaultPrevented).toBe(false);
             expect(widthIn(group, "fr")).toBe("60%");
-        });
-
-        it("leaves Ctrl+Z alone when the next undo is not a picture change", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
-            // Sanity check: nothing on the stack.
-            expect(inlineImageCanUndo()).toBe(false);
-
-            const event = pressKey(editableFor(group, "en"), "z");
-
-            expect(event.defaultPrevented).toBe(false);
         });
 
         it("Ctrl+Y and Ctrl+Shift+Z redo the picture change Ctrl+Z took back", () => {
@@ -1759,7 +1760,7 @@ describe("inlineImageInteractions", () => {
             resizeTo(group, "60%");
             const english = editableFor(group, "en");
             // Sanity check: without the reader tools, Ctrl+Z would be taken.
-            expect(inlineImageCanUndo()).toBe(true);
+            expect(theOneUndoStack.getEntryForNextUndo()).toBeDefined();
             toolboxStub.readerToolsHandleUndoKeys = true;
             try {
                 const undoEvent = pressKey(english, "z");
@@ -1942,7 +1943,7 @@ describe("inlineImageInteractions", () => {
             insertInlineImage(group);
             const undoManagers = attachFakeEditors(group);
 
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
 
             // Sanity check: the undo took the picture out.
             expect(getInlineImages(group).length).toBe(0);
@@ -2001,7 +2002,7 @@ describe("inlineImageInteractions", () => {
             insertInlineImage(group);
             const undoManagers = attachFakeEditors(group);
 
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
 
             undoManagers.forEach((undoManager) =>
                 expect(
@@ -2016,7 +2017,7 @@ describe("inlineImageInteractions", () => {
             insertInlineImage(group);
             const undoManagers = attachFakeEditors(group, false);
 
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
 
             undoManagers.forEach((undoManager) =>
                 expect(undoManager.reset).not.toHaveBeenCalled(),
@@ -2550,7 +2551,7 @@ describe("inlineImageInteractions", () => {
                 ),
             ).toEqual(crop(10, 5, 30, 20));
 
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
 
             expect(getInlineImageCrop(getInlineImage(group)!)).toEqual(
                 crop(10, 20, 30, 5),
@@ -2678,7 +2679,7 @@ describe("inlineImageInteractions", () => {
             const french = getInlineImageInEditable(editableFor(group, "fr"))!;
             expect(getInlineImageCrop(french)).toEqual(crop(0, 25, 0, 0));
 
-            expect(inlineImageUndo()).toBe(true);
+            undoNextEntry();
 
             const restored = getInlineImage(group)!;
             expect(getInlineImageCrop(restored)).toEqual(kNoInlineImageCrop);
@@ -2702,8 +2703,8 @@ describe("inlineImageInteractions", () => {
 
             expect(getInlineImageCrop(wrapper)).toEqual(kNoInlineImageCrop);
             // Nor does the press start a drag of the image.
-            expect(inlineImageCanUndo()).toBe(true); // the insert
-            expect(inlineImageUndo()).toBe(true);
+            expect(theOneUndoStack.getEntryForNextUndo()).toBeDefined(); // the insert
+            undoNextEntry();
             expect(getInlineImage(group)).toBeNull();
         });
     });

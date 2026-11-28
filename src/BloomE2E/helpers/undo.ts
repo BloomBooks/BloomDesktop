@@ -109,8 +109,8 @@ export async function watchUndoMechanisms(page: Page): Promise<void> {
             "updateMarkupAfterUndoOrRedo",
             "readerMarkupRepaint",
         );
-        // The one undo stack lives in the page frame, and its Ctrl+Y binding redoes through the
-        // page bundle's handleRedo.
+        // The one undo stack lives in the page frame, and the page's Ctrl+Y (undo/undoKeys.ts in
+        // BloomBrowserUI) redoes through the page bundle's handleRedo.
         count(pageExports, "handleRedo", "stackRedo");
     });
     await editablePageFrame(page).evaluate(() => {
@@ -243,7 +243,7 @@ export async function canUndo(page: Page): Promise<boolean> {
 
 /**
  * True when the one undo stack has something Ctrl+Y would redo. There is no Redo button, so this
- * is the only way to see that state; the page bundle's canRedo is what the Ctrl+Y binding asks.
+ * is the only way to see that state; the page bundle's canRedo asks the stack.
  */
 export async function canRedo(page: Page): Promise<boolean> {
     return page.evaluate(() =>

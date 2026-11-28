@@ -164,7 +164,7 @@ export class UndoStack {
         if (!provider.lastChangeOrder || this.currentIndex < 0) {
             return true;
         }
-        return this.entryOrders[this.currentIndex] < provider.lastChangeOrder();
+        return this.getNewestEntryOrder() < provider.lastChangeOrder();
     }
 
     /**
@@ -172,7 +172,7 @@ export class UndoStack {
      * the next undo or our newest entry is not available just now.
      *
      * For a key handler that has to decide, before CKEditor acts on Ctrl+Z, whether the keystroke
-     * belongs to an entry on this stack (inline images do this; see inlineImageCanUndo). Like
+     * belongs to an entry on this stack (see undoKeys.ts). Like
      * {@link canUndo}, it believes a provider that says it can undo, so it answers undefined when
      * CKEditor claims an undo it then finds nothing for.
      */
@@ -183,6 +183,24 @@ export class UndoStack {
         return this.ownEntryCanUndo()
             ? this.entries[this.currentIndex]
             : undefined;
+    }
+
+    /**
+     * The name of the legacy provider that the next undo would go to first, or undefined when none
+     * has the turn (our own newest entry, or nothing, comes next). For the key handler, which
+     * leaves Ctrl+Z to CKEditor only when CKEditor would undo the box that has the focus.
+     */
+    public getLegacyProviderForNextUndo(): string | undefined {
+        return this.legacyProviders.find((p) => this.providerHasTheNextUndo(p))
+            ?.name;
+    }
+
+    /**
+     * When the entry the next undo would apply was recorded, on the sequence in changeOrder.ts; 0
+     * when there is none. For the CKEditor provider, which must not undo typing older than it.
+     */
+    public getNewestEntryOrder(): number {
+        return this.entryOrders[this.currentIndex] ?? 0;
     }
 
     /** Whether our own newest entry can be undone just now. */
@@ -196,10 +214,10 @@ export class UndoStack {
      *
      * Unlike {@link canUndo}, this does not ask the legacy providers, because none of them redoes
      * through the stack. Each mechanism that has a redo (origami, the reader tools, CKEditor)
-     * handles Ctrl+Y in its own key handler, and there is no Redo button. The only caller is the
-     * last-resort Ctrl+Y binding (redoKeyBinding.ts), which must act only for entries on this
-     * stack. Saying yes on a legacy mechanism's behalf would make that binding swallow the
-     * keystroke and call {@link redo}, which has nothing of its own to redo.
+     * handles Ctrl+Y in its own key handler, and there is no Redo button. The caller that matters
+     * is the page's Ctrl+Y (undoKeys.ts), which must act only for entries on this stack. Saying
+     * yes on a legacy mechanism's behalf would make it swallow the keystroke and call
+     * {@link redo}, which has nothing of its own to redo.
      */
     public canRedo(): boolean {
         const next = this.entries[this.currentIndex + 1];

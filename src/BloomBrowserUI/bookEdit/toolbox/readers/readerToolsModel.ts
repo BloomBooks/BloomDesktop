@@ -59,7 +59,6 @@ export const MarkupType = {
 export class DRTState {
     public stage: number = 1;
     public level: number = 1;
-    public markupType: number = MarkupType.Decodable;
 }
 
 /**
@@ -1731,8 +1730,6 @@ export class ReaderToolsModel {
         if (!isToolboxUiMounted()) return;
 
         const state = new DRTState();
-
-        if (!this.currentMarkupType) this.currentMarkupType = state.markupType;
 
         if (this.hasBeenGivenAPhase) {
             // Something has already said which stage and level to show -- the user working
