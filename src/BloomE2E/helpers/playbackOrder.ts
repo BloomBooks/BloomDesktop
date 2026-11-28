@@ -113,13 +113,16 @@ export async function getPlaybackOrderNumber(
 
 /**
  * Click the + (later) or - (earlier) button beside the playback order number of the group that
- * `groupSelector` picks, the way a person does.
+ * `groupSelector` picks, the way a person does, and wait until Bloom shows the group one place
+ * later or earlier.
  */
 export async function clickPlaybackOrderButton(
     page: Page,
     groupSelector: string,
     which: "later" | "earlier",
 ): Promise<void> {
+    const before = await getPlaybackOrderNumber(page, groupSelector);
+    const after = which === "later" ? before + 1 : before - 1;
     // The controls are the - button, the number, then the + button.
     const buttons = playbackOrderControls(page, groupSelector).locator(
         "button.playbackOrderButton",
@@ -134,6 +137,27 @@ export async function clickPlaybackOrderButton(
         `The playback order "${which === "later" ? "+" : "-"}" button of "${groupSelector}" is disabled.`,
     ).toBeEnabled();
     await button.click();
+    await expect
+        .poll(() => getPlaybackOrderNumber(page, groupSelector), {
+            timeout: 30000,
+            message: `After its playback order "${which === "later" ? "+" : "-"}" button was clicked, the group "${groupSelector}" should be number ${after}.`,
+        })
+        .toBe(after);
+}
+
+/**
+ * The playback order that the page shown in the Edit tab has set: the positive tabindex values of
+ * its translation groups, in document order. Empty when nobody has set an order on the page, so
+ * that it plays in document order (audioRecording.ts isPlaybackOrderSpecified).
+ */
+export async function getPlaybackOrderSetOnPage(page: Page): Promise<number[]> {
+    return editablePageFrame(page)
+        .locator(".bloom-translationGroup")
+        .evaluateAll((groups) =>
+            groups
+                .map((group) => Number(group.getAttribute("tabindex")))
+                .filter((value) => value > 0),
+        );
 }
 
 /**

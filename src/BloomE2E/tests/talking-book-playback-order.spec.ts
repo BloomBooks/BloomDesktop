@@ -11,16 +11,17 @@
 //
 // Recording needs a microphone, which a test has not got: addNarration puts a recording under each
 // id the Talking Book tool gave a sentence, where Bloom's own recording would go. So the case's
-// "Check" of each recording is not repeated here. The ePUB is read from the ePUB screen's preview,
+// "Check" of each recording is not repeated here. The two recordings sound different (the
+// description's starts silent), so the test also checks that each sentence plays its own. The ePUB is read from the ePUB screen's preview,
 // which shows the very files that Save... zips.
 
+import * as fs from "node:fs";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
-    editablePageFrame,
     getContentPages,
     goToPage,
     makeBookFromTemplate,
@@ -28,6 +29,7 @@ import {
 } from "../helpers/bookMaking";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
+    getEpubPreviewAudioLoudness,
     getEpubPreviewPageReadAloud,
     idInEpub,
     openEpubPublishScreen,
@@ -44,10 +46,17 @@ import {
     clickPlaybackOrderButton,
     getGroupsInDocumentOrder,
     getPlaybackOrderNumber,
+    getPlaybackOrderSetOnPage,
     isTalkingBookSwitchOn,
     showPlaybackOrderButtons,
 } from "../helpers/playbackOrder";
-import { addNarration, waitForSentencesMarked } from "../helpers/talkingBook";
+import {
+    addNarration,
+    narrationFilePath,
+    sampleNarrationFile,
+    silentMp3Frames,
+    waitForSentencesMarked,
+} from "../helpers/talkingBook";
 import { enableToolForBook, expandToolByHeader } from "../helpers/toolbox";
 import { switchTab } from "../helpers/workspace";
 
@@ -72,6 +81,8 @@ const PICTURE = Path.resolve(
 const PAGE_TEXT = "This is a car.";
 const DESCRIPTION = "This is a car image.";
 const TEXT_GROUP = `.bloom-translationGroup:not(${kImageDescriptionGroup})`;
+/** Seconds of silence at the start of the description's recording, which the text's has not. */
+const DESCRIPTION_SILENCE = 1.2;
 
 test("changing the playback order, with an image description, changes the order the page plays in [Test Case ID 253]", async ({
     page,
@@ -107,7 +118,27 @@ test("changing the playback order, with an image description, changes the order 
                 [...narrated].sort(),
                 "test setup: the page's recordings should be the text's and the description's",
             ).toEqual([...textIds, ...descriptionIds].sort());
-            return { pageId: contentPage.id, textIds, descriptionIds };
+            // The two recordings must sound different, or audio played under the wrong text would
+            // go unnoticed: the text's sounds from its start, the description's starts silent.
+            expect(
+                [textIds.length, descriptionIds.length],
+                "test setup: the text and the description should each be one sentence",
+            ).toEqual([1, 1]);
+            fs.writeFileSync(
+                narrationFilePath(bookFolder, descriptionIds[0]),
+                Buffer.concat([
+                    silentMp3Frames(DESCRIPTION_SILENCE),
+                    fs.readFileSync(sampleNarrationFile),
+                ]),
+            );
+            return {
+                pageId: contentPage.id,
+                text: { id: textIds[0], recording: "text" as const },
+                description: {
+                    id: descriptionIds[0],
+                    recording: "description" as const,
+                },
+            };
         },
     );
     if (!book) throw new Error("The book was not made.");
@@ -126,13 +157,7 @@ test("changing the playback order, with an image description, changes the order 
         "Check that, with no playback order set, the ePUB reads the page in document order: the description, then the text",
         async () => {
             expect(
-                await editablePageFrame(page)
-                    .locator(".bloom-translationGroup")
-                    .evaluateAll((groups) =>
-                        groups
-                            .map((group) => group.getAttribute("tabindex"))
-                            .filter((value) => Number(value) > 0),
-                    ),
+                await getPlaybackOrderSetOnPage(page),
                 "test setup: no group on the page should have a playback order yet",
             ).toEqual([]);
             expect(
@@ -145,7 +170,7 @@ test("changing the playback order, with an image description, changes the order 
             await expectEpubToRead(
                 page,
                 book.pageId,
-                [...book.descriptionIds, ...book.textIds],
+                [book.description, book.text],
                 "with no playback order set, the description then the text",
             );
         },
@@ -177,16 +202,10 @@ test("changing the playback order, with an image description, changes the order 
                 kImageDescriptionGroup,
                 "later",
             );
-            await expect
-                .poll(
-                    () => getPlaybackOrderNumber(page, kImageDescriptionGroup),
-                    {
-                        timeout: 30000,
-                        message:
-                            "after its + was clicked, the image description should be second in the playback order",
-                    },
-                )
-                .toBe(2);
+            expect(
+                await getPlaybackOrderNumber(page, kImageDescriptionGroup),
+                "after its + was clicked, the image description should be second in the playback order",
+            ).toBe(2);
             expect(
                 await getPlaybackOrderNumber(page, TEXT_GROUP),
                 "after the description's + was clicked, the text should be first in the playback order",
@@ -200,34 +219,81 @@ test("changing the playback order, with an image description, changes the order 
             await expectEpubToRead(
                 page,
                 book.pageId,
-                [...book.textIds, ...book.descriptionIds],
+                [book.text, book.description],
                 "after the change, the text then the description",
             );
         },
     );
 });
 
+/** One recorded sentence of the page: Bloom's id for it in the Edit tab, and whose recording it has. */
+interface IRecordedSentence {
+    id: string;
+    recording: "text" | "description";
+}
+
 /**
  * Open the ePUB screen's preview of the book, show the page `pageId`, and check that the page's
- * read-aloud lists the sentences `expectedIds` (Bloom's ids for them in the Edit tab) in that order,
+ * read-aloud lists the sentences `expectedOrder` in that order, each playing its own recording,
  * and that clicking the reader's Play reads them aloud in that order.
  */
 async function expectEpubToRead(
     page: Page,
     pageId: string,
-    expectedIds: string[],
+    expectedOrder: IRecordedSentence[],
     order: string,
 ): Promise<void> {
     await openEpubPublishScreen(page);
     await showEpubPreview(page);
     const { frame } = await showEpubPreviewPage(page, pageId);
-    const expected = expectedIds.map(idInEpub);
+    const expected = expectedOrder.map((sentence) => idInEpub(sentence.id));
 
     const clips = await getEpubPreviewPageReadAloud(page, frame);
     expect(
         clips.map((clip) => clip.textId),
         `the ePUB's read-aloud of the page should list ${order}`,
     ).toEqual(expected);
+
+    // Bloom joins the page's recordings into one file, in the order it reads them. The text's
+    // recording sounds from its start; the description's is silent for DESCRIPTION_SILENCE and
+    // then sounds. So each clip's opening is loud or silent as its own recording is, and a file
+    // joined in another order than the read-aloud lists would put silence under the text.
+    const loudness: Record<string, { opening: number; rest?: number }> = {};
+    for (const [i, clip] of clips.entries()) {
+        const { recording } = expectedOrder[i];
+        const spans = [
+            {
+                start: clip.clipBegin + 0.2,
+                end: clip.clipBegin + DESCRIPTION_SILENCE - 0.3,
+            },
+        ];
+        if (recording === "description")
+            spans.push({
+                start: clip.clipBegin + DESCRIPTION_SILENCE + 0.3,
+                end: clip.clipEnd - 0.2,
+            });
+        const [opening, rest] = await getEpubPreviewAudioLoudness(
+            page,
+            clip.audioUrl,
+            spans,
+        );
+        loudness[recording] = { opening, rest };
+    }
+    const measured = `loudness, as root mean square, in the order read: ${JSON.stringify(
+        clips.map((clip, i) => ({
+            textId: clip.textId,
+            ...loudness[expectedOrder[i].recording],
+        })),
+    )}`;
+    const { text, description } = loudness;
+    expect(
+        description.rest! > description.opening * 20,
+        `the description's clip should play its recording, which starts silent and then sounds (${measured})`,
+    ).toBe(true);
+    expect(
+        text.opening > description.opening * 20,
+        `the text's clip should play its recording, which sounds from its start (${measured})`,
+    ).toBe(true);
 
     const events = await playEpubPreviewReadAlong(page, frame);
     const read: string[] = [];
