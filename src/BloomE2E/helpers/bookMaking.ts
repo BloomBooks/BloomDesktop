@@ -894,6 +894,28 @@ export async function clickInGroup(
 }
 
 /**
+ * How many characters of a text box's text come before the caret, or -1 when there is no caret in
+ * the box: when the selection is elsewhere, or is a stretch of selected text rather than a caret.
+ * `box` is a box on the page being edited, such as the one clickInGroup returns.
+ */
+export async function getCaretOffset(box: Locator): Promise<number> {
+    return box.evaluate((element) => {
+        const selection = element.ownerDocument.getSelection();
+        if (
+            !selection ||
+            selection.rangeCount === 0 ||
+            !selection.isCollapsed ||
+            !element.contains(selection.focusNode)
+        )
+            return -1;
+        const range = element.ownerDocument.createRange();
+        range.selectNodeContents(element);
+        range.setEnd(selection.focusNode!, selection.focusOffset);
+        return range.toString().length;
+    });
+}
+
+/**
  * Wait until the page being shown has finished what it does by itself after loading, and Bloom has
  * received the page as it then stands. Use it where a test visits a page and moves on, and the
  * page's saved form matters.
