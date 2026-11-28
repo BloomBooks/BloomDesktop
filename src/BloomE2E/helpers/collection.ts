@@ -1003,13 +1003,10 @@ export async function readBookInfoIndicator(
                     // element (the path is a link) that is itself drawn.
                     const value = Array.from(p.childNodes)
                         .filter((node) => node !== headingElement)
-                        .map((node) =>
-                            node instanceof Element
-                                ? drawn(node)
-                                    ? (node.textContent ?? "")
-                                    : ""
-                                : (node.textContent ?? ""),
+                        .filter(
+                            (node) => !(node instanceof Element) || drawn(node),
                         )
+                        .map((node) => node.textContent ?? "")
                         .join("")
                         .trim();
                     return { heading, value };
