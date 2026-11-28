@@ -13,6 +13,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiGetJson, apiPost, getUiString } from "./api";
+import { isPreviewOnLastPage, waitForPreviewTurnToFinish } from "./bloomPlayer";
 import { readImageFileSize, type IPixelSize } from "./images";
 import { waitForLanguageChooser } from "./languageChooser";
 import { switchTab } from "./workspace";
@@ -92,6 +93,36 @@ export async function selectPublishDestination(
     const target = page.getByRole("tab", { name: destination, exact: true });
     await target.waitFor({ state: "visible", timeout: 30000 });
     await target.click();
+}
+
+/**
+ * Close the progress dialog that the ePUB and BloomPUB screens show while they save, once it offers
+ * its Close button (PublishProgressDialogInner.tsx), if it has not gone by itself. Its Close button
+ * is its only filled button; its label is localized, so it is found by how it is drawn.
+ */
+export async function closePublishProgressDialog(
+    page: Page,
+    destination: PublishDestination,
+): Promise<void> {
+    const dialog = page.locator(".MuiDialog-root.progress-dialog");
+    const close = dialog.locator(
+        ".MuiDialogActions-root button.MuiButton-contained",
+    );
+    await expect
+        .poll(
+            async () =>
+                (await dialog.count()) === 0 || (await close.isVisible()),
+            {
+                timeout: 60000,
+                message: `The ${destination} progress dialog neither went away nor offered its Close button.`,
+            },
+        )
+        .toBe(true);
+    if ((await dialog.count()) > 0) await close.click();
+    await expect(
+        dialog,
+        `The ${destination} progress dialog should be gone.`,
+    ).toHaveCount(0, { timeout: 30000 });
 }
 
 /**
@@ -412,26 +443,10 @@ export async function showPreviewPage(
             .locator(".swiper-slide-active .bloom-page")
             .first()
             .getAttribute("id");
-    // A second turn asked for while the first is still sliding lands on a slide that bloom-player
-    // never fills in (BL-17188), so each turn waits for the slide to stop. Swiper keeps its
-    // instance on its container element and says there whether it is animating.
-    const turnHasFinished = async () =>
-        player.evaluate(
-            () =>
-                (
-                    document.querySelector(".swiper-container") as
-                        | (Element & { swiper?: { animating: boolean } })
-                        | null
-                )?.swiper?.animating === false,
-        );
     // A book has far fewer pages than this; the bound only stops a preview that is not turning.
     for (let turns = 0; turns < 500; turns++) {
         if ((await shown.count()) > 0) return shown;
-        if (
-            await next.evaluate((button) =>
-                button.classList.contains("swiper-button-disabled"),
-            )
-        )
+        if (await isPreviewOnLastPage(player))
             throw new Error(
                 `The BloomPUB preview reached its last page without showing page "${pageId}".`,
             );
@@ -444,13 +459,9 @@ export async function showPreviewPage(
                     "The BloomPUB preview's next-page button did not turn the page.",
             })
             .not.toBe(before);
-        await expect
-            .poll(turnHasFinished, {
-                timeout: 30000,
-                message:
-                    "The BloomPUB preview's page turn never finished sliding.",
-            })
-            .toBe(true);
+        // A second turn asked for while the first is still sliding goes wrong
+        // (waitForPreviewTurnToFinish says how).
+        await waitForPreviewTurnToFinish(player);
     }
     throw new Error(
         `The BloomPUB preview never showed page "${pageId}", after 500 page turns.`,

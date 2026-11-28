@@ -19,6 +19,7 @@
 
 import { expect, type Locator, type Page } from "@playwright/test";
 import { clickInGroup, editablePageFrame } from "./bookMaking";
+import type { IRect } from "./geometry";
 
 // How long to wait for a scroll bar to come or go: Bloom checks a box a second after a key is
 // released, and rebuilds the page's scroll bars a fifth of a second after that.
@@ -151,6 +152,54 @@ export async function getScrollBarOf(box: Locator): Promise<ITextBoxScrollBar> {
     });
 }
 
+/** Where a text box's scroll bar is drawn, and where the box itself is. */
+export interface IScrollBarPlacement {
+    /** The scroll bar's rail, the strip that holds the handle. */
+    rail: IRect;
+    /** The text box, border included. */
+    box: IRect;
+}
+
+/**
+ * Where the vertical scroll bar nearest the text box `box` locates is drawn, and where the box is,
+ * or undefined when no scroll bar shows in the box's document. Unlike getScrollBarOf this takes
+ * the rail wherever it is drawn, so that a test can say what is wrong with a rail that has
+ * wandered away from its box: niceScroll places the rail itself, and has to move it whenever the
+ * box moves or changes size.
+ */
+export async function getScrollBarPlacementOf(
+    box: Locator,
+): Promise<IScrollBarPlacement | undefined> {
+    return box.evaluate((element) => {
+        const toRect = (r: DOMRect) => ({
+            x: r.left,
+            y: r.top,
+            width: r.width,
+            height: r.height,
+        });
+        const boxRect = element.getBoundingClientRect();
+        let nearest: { rail: DOMRect; distance: number } | undefined;
+        for (const rail of Array.from(
+            element.ownerDocument.querySelectorAll<HTMLElement>(
+                ".nicescroll-rails",
+            ),
+        )) {
+            if (getComputedStyle(rail).display === "none") continue;
+            const railRect = rail.getBoundingClientRect();
+            // The vertical rail is a narrow strip.
+            if (railRect.height <= railRect.width) continue;
+            const distance =
+                Math.abs(railRect.right - boxRect.right) +
+                Math.abs(railRect.top - boxRect.top);
+            if (!nearest || distance < nearest.distance)
+                nearest = { rail: railRect, distance };
+        }
+        return nearest
+            ? { rail: toRect(nearest.rail), box: toRect(boxRect) }
+            : undefined;
+    });
+}
+
 /**
  * Wait until a text box has a scroll bar (`showing` true) or has none (false), and return it as
  * it then is.
@@ -240,6 +289,33 @@ export async function waitForShorterScrollBarHandle(
         )
         .toBeLessThan(than.handleHeight);
     return scrollBar;
+}
+
+/** Where the last line of a text box's text is drawn, and where the box ends. */
+export interface ILastLine {
+    /** The bottom of the last line of the box's last paragraph, on screen. */
+    lineBottom: number;
+    /** The bottom of the box, on screen. Text below it is out of sight. */
+    boxBottom: number;
+}
+
+/**
+ * Where the last line of the text box `box` locates is drawn, so that a test can tell whether a
+ * reader who scrolled the box to its end sees that line whole.
+ */
+export async function getLastLineOf(box: Locator): Promise<ILastLine> {
+    return box.evaluate((element) => {
+        const paragraphs = element.querySelectorAll("p");
+        if (paragraphs.length === 0)
+            throw new Error("The text box has no paragraph.");
+        const range = element.ownerDocument.createRange();
+        range.selectNodeContents(paragraphs[paragraphs.length - 1]);
+        const lines = range.getClientRects();
+        return {
+            lineBottom: lines[lines.length - 1].bottom,
+            boxBottom: element.getBoundingClientRect().bottom,
+        };
+    });
 }
 
 /** How much of a text box's text is out of sight above and below what the box shows. */

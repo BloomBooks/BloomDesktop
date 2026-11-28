@@ -179,19 +179,24 @@ export async function openBookSettings(
 
 /**
  * Show one page of the open Book and Page Settings dialog by clicking its name in the list on the
- * left, e.g. "Theme & Layout". Fails naming the pages the dialog offers when there is no such page.
+ * left, e.g. "Theme & Layout". Fails naming the pages the dialog offers when no such page shows.
  */
 export async function showBookSettingsPage(
     page: Page,
     pageName: string,
 ): Promise<void> {
     const tab = bookSettingsTab(page, pageName);
-    if ((await tab.count()) !== 1) {
+    // A page's name can change after the dialog shows its pages: each name is localized
+    // asynchronously, and until its translation arrives the tab shows the English given in the
+    // code, which can differ (the BloomPUB page shows "eBooks" until then). So wait for the name.
+    try {
+        await expect(tab).toHaveCount(1, { timeout: 10000 });
+    } catch {
         const offered = await bookSettingsDialog(page)
             .getByRole("tab")
             .allInnerTexts();
         throw new Error(
-            `The Book and Page Settings dialog has no page "${pageName}"; it offers: ${offered.join(", ")}.`,
+            `The Book and Page Settings dialog showed no page "${pageName}" within 10 seconds; it now offers: ${offered.join(", ")}.`,
         );
     }
     await realClick(tab);

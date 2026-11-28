@@ -634,3 +634,24 @@ export async function expectMouseMovesLeaveSourceBubbles(
         await check(stop.over);
     }
 }
+
+/**
+ * How many pictures the shown source bubble of a group holds, counting every img element in it
+ * apart from the bubble's own buttons. A source bubble is for reading another language's text, so
+ * a picture that is part of that text, such as an inline image, must not come along into it. The
+ * bubble must be showing (getSourceBubble reports that).
+ */
+export async function countPicturesInSourceBubble(
+    page: Page,
+    groupSelector: string,
+    groupIndex = 0,
+): Promise<number> {
+    const bubbleId = await editablePageFrame(page)
+        .locator(groupSelector)
+        .nth(groupIndex)
+        .getAttribute("aria-describedby");
+    if (!bubbleId) throw new Error("The group has no source bubble.");
+    return editablePageFrame(page)
+        .locator(`[id="${bubbleId}"] .source-text img`)
+        .count();
+}

@@ -10,6 +10,7 @@
 // test can answer (see AUTOMATION-DEBT.md).
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
+import * as Path from "path";
 import { apiGet, apiGetJson, getUiString } from "./api";
 import { selectPublishDestination } from "./publish";
 
@@ -369,6 +370,139 @@ function getEpubPreviewPageFrame(page: Page): Frame | undefined {
 }
 
 /**
+ * The address of the ePUB content document (one page of the book) that the preview is showing,
+ * without any fragment, or undefined while it shows none: before the reader has loaded the book,
+ * and between one page and the next.
+ */
+export async function getEpubPreviewPageAddress(
+    page: Page,
+): Promise<string | undefined> {
+    if ((await getIdOfEpubPreviewPage(page)) === undefined) return undefined;
+    return getEpubPreviewPageFrame(page)?.url().split("#")[0];
+}
+
+/** The reader's page-turn arrows, which it draws at its left and right edges. */
+export type EpubPreviewArrow = "left" | "right";
+
+/**
+ * Click the reader's page-turn arrow drawn at its left or right edge, as a person does, and return
+ * the address of the page it turned to (getEpubPreviewPageAddress), once that page has loaded.
+ * Throws when the arrow turned to no other page.
+ *
+ * The arrows are found by where the reader draws them, not by their ids or what they call, since
+ * which way each one turns is what a test of them checks. Only click an arrow that should turn the
+ * page: on the first or last page one of them does nothing, and this would wait for a turn that
+ * never comes.
+ */
+export async function clickEpubPreviewArrow(
+    page: Page,
+    side: EpubPreviewArrow,
+): Promise<string> {
+    let before: string | undefined;
+    await expect
+        .poll(async () => (before = await getEpubPreviewPageAddress(page)), {
+            timeout: 30000,
+            message:
+                "The ePUB preview is not showing a page whose arrows can be clicked.",
+        })
+        .toBeDefined();
+    const arrows = readerFrame(page).locator(".page-switch-overlay-icon");
+    await expect(
+        arrows,
+        "The ePUB reader should draw two page-turn arrows.",
+    ).toHaveCount(2);
+    const boxes = await Promise.all(
+        [0, 1].map((i) => arrows.nth(i).boundingBox()),
+    );
+    if (!boxes[0] || !boxes[1])
+        throw new Error("A page-turn arrow of the ePUB reader is not drawn.");
+    const leftIndex = boxes[0].x < boxes[1].x ? 0 : 1;
+    const arrow = arrows.nth(side === "left" ? leftIndex : 1 - leftIndex);
+    await arrow.click();
+    let after: string | undefined;
+    await expect
+        .poll(
+            async () => {
+                const now = await getEpubPreviewPageAddress(page);
+                if (now === undefined || now === before) return false;
+                after = now;
+                return true;
+            },
+            {
+                timeout: 30000,
+                message: `The ${side} arrow of the ePUB preview did not turn away from ${before}.`,
+            },
+        )
+        .toBe(true);
+    const frame = getEpubPreviewPageFrame(page);
+    if (!frame)
+        throw new Error(
+            `The ePUB preview's page went away right after the ${side} arrow turned to ${after}.`,
+        );
+    await waitForEpubPreviewPageToFinishLoading(frame);
+    return after!;
+}
+
+/**
+ * The reading order of the ePUB the preview is showing, as its package's spine gives it to a
+ * reader app: the address of each page in order, and the page-progression-direction the spine
+ * declares ("rtl" or "ltr"), or undefined when it declares none, which the ePUB standard leaves to
+ * the reader (EpubMaker writes "rtl" when the book's first language is right to left).
+ */
+export async function getEpubPreviewSpine(
+    page: Page,
+): Promise<{ direction: string | undefined; pages: string[] }> {
+    const packageUrl = epubPreviewPackageUrl(page);
+    const packageText = await fetchText(page, packageUrl);
+    return page.evaluate(
+        ({ text, packageAddress }) => {
+            const doc = new DOMParser().parseFromString(
+                text,
+                "application/xml",
+            );
+            const spines = doc.getElementsByTagNameNS("*", "spine");
+            if (spines.length !== 1)
+                throw new Error(
+                    `The ePUB package has ${spines.length} <spine> elements, not one.`,
+                );
+            const items = new Map(
+                [...doc.getElementsByTagNameNS("*", "item")].map((item) => [
+                    item.getAttribute("id") ?? "",
+                    item.getAttribute("href") ?? "",
+                ]),
+            );
+            const pages = [
+                ...spines[0].getElementsByTagNameNS("*", "itemref"),
+            ].map((itemref) => {
+                const idref = itemref.getAttribute("idref") ?? "";
+                const href = items.get(idref);
+                if (href === undefined)
+                    throw new Error(
+                        `The ePUB package's spine names "${idref}", which its manifest does not list.`,
+                    );
+                return new URL(href, packageAddress).href;
+            });
+            return {
+                direction:
+                    spines[0].getAttribute("page-progression-direction") ??
+                    undefined,
+                pages,
+            };
+        },
+        { text: packageText, packageAddress: packageUrl },
+    );
+}
+
+/**
+ * Whether the ePUB preview's reader is the one for a book read right to left (Readium's
+ * indexRtl.html, which PublishEpubApi.SetupEpubControlContent picks when the book's first language
+ * is right to left) rather than the one for a book read left to right (index.html).
+ */
+export function isEpubPreviewReaderRightToLeft(page: Page): boolean {
+    return /\/Readium\/indexRtl\.html/.test(readerFrame(page).url());
+}
+
+/**
  * The id of the book page the preview is showing, or undefined while it shows none: before the
  * reader has loaded the book, and between one page and the next.
  */
@@ -487,14 +621,66 @@ export async function readEpubPreviewPackage(page: Page): Promise<string> {
     return fetchText(page, epubPreviewPackageUrl(page));
 }
 
+/**
+ * A file of the ePUB the preview is showing, as text, by its path inside the ePUB's content folder,
+ * the folder that holds content.opf: "css/fonts.css", for example. Click Preview first
+ * (showEpubPreview).
+ */
+export async function readEpubPreviewContentFile(
+    page: Page,
+    pathInContent: string,
+): Promise<string> {
+    return fetchText(
+        page,
+        new URL(pathInContent, epubPreviewPackageUrl(page)).toString(),
+    );
+}
+
+/**
+ * The folder on disk that holds the content of the ePUB the preview is showing: content.opf and the
+ * folders beside it, the files Save... zips. Click Preview first (showEpubPreview).
+ *
+ * Bloom serves a file on disk at its server's address followed by the file's path
+ * (Extensions.ToLocalhost), so the folder is read off the address of the manifest the reader
+ * names, which Bloom writes beside the content folder.
+ */
+export function getEpubPreviewContentFolder(page: Page): string {
+    const prefix = "/bloom/";
+    const manifestPath = new URL(epubPreviewManifestUrl(page)).pathname;
+    if (!manifestPath.startsWith(prefix))
+        throw new Error(
+            `The ePUB reader's manifest is not served from a file: ${manifestPath}`,
+        );
+    // Decode only what is a percent-encoding. A folder whose name holds a percent sign can reach
+    // here with that sign left as it is, and decodeURIComponent would refuse the whole path.
+    const manifestFile = manifestPath
+        .substring(prefix.length)
+        .replace(/(%[0-9A-Fa-f]{2})+/g, (encoded) => {
+            try {
+                return decodeURIComponent(encoded);
+            } catch {
+                return encoded;
+            }
+        });
+    return Path.join(Path.dirname(manifestFile), "content");
+}
+
 /** Where the package document of the ePUB the preview is showing is served (readEpubPreviewPackage). */
 function epubPreviewPackageUrl(page: Page): string {
+    return new URL(
+        "content/content.opf",
+        epubPreviewManifestUrl(page),
+    ).toString();
+}
+
+/** The address of the manifest.json that the ePUB reader shows, from its "url" parameter. */
+function epubPreviewManifestUrl(page: Page): string {
     const manifest = new URL(readerFrame(page).url()).searchParams.get("url");
     if (!manifest)
         throw new Error(
             `The ePUB reader's address names no manifest: ${readerFrame(page).url()}`,
         );
-    return new URL("content/content.opf", manifest).toString();
+    return manifest;
 }
 
 /** A file of the staged ePUB, as text, fetched the way the reader fetches it. */
@@ -606,6 +792,50 @@ export async function getEpubPreviewPageReadAloud(
     );
 }
 
+/**
+ * How loud the audio file at `url` in the staged ePUB (an address getEpubPreviewPageReadAloud gave)
+ * is over each of `spans`, given in seconds from its start: the root mean square of its decoded
+ * samples there, 0 for silence. Throws when a span is not inside the file.
+ */
+export async function getEpubPreviewAudioLoudness(
+    page: Page,
+    url: string,
+    spans: { start: number; end: number }[],
+): Promise<number[]> {
+    return page.evaluate(
+        async ({ address, ranges }) => {
+            const bytes = await (await fetch(address)).arrayBuffer();
+            const audio = await new OfflineAudioContext(
+                1,
+                1,
+                44100,
+            ).decodeAudioData(bytes);
+            const samples = audio.getChannelData(0);
+            return ranges.map(({ start, end }) => {
+                const from = Math.round(start * audio.sampleRate);
+                const to = Math.round(end * audio.sampleRate);
+                if (from < 0 || to <= from || to > samples.length)
+                    throw new Error(
+                        `${start}-${end} s is not inside ${address}, which lasts ${audio.duration} s.`,
+                    );
+                let sum = 0;
+                for (let i = from; i < to; i++) sum += samples[i] * samples[i];
+                return Math.sqrt(sum / (to - from));
+            });
+        },
+        { address: url, ranges: spans },
+    );
+}
+
+/** Whether a CSS color, as getComputedStyle gives it, paints anything: it is not fully transparent. */
+export function isPaintedColor(color: string): boolean {
+    const match = /^rgba?\(([^)]*)\)$/.exec(color.trim());
+    if (!match)
+        throw new Error(`"${color}" is not a color as rgb() or rgba().`);
+    const parts = match[1].split(/[\s,/]+/).filter((part) => part !== "");
+    return parts.length < 4 || Number(parts[3]) > 0;
+}
+
 /** Whether the staged ePUB has a file at this address (one getEpubPreviewPageReadAloud gave). */
 export async function epubPreviewHasFile(
     page: Page,
@@ -654,8 +884,9 @@ export type EpubReadAlongEvent =
           id: string;
           /** The element's background color right after it was marked ("" when unmarked). */
           background: string;
-          /** Whether the reader's audio was playing at that moment, and where in it. */
+          /** Whether the reader's audio was playing at that moment, which file, and where in it. */
           audioPlaying: boolean;
+          audioUrl: string;
           audioTime: number;
       }
     | {
@@ -691,6 +922,8 @@ export async function getEpubPreviewReadAlongHighlights(
  * (getEpubPreviewReadAlongClass) while it plays that clip. It takes the class off and puts it back
  * on every frame; an element counts as unmarked only once it is left without the class. It is
  * told not to turn the page by itself (Readium/index.html), so it stops at the end of the page.
+ * A page whose clips play from more than one file pauses between files, so the end of the page is
+ * known by the page's last clip: its text marked, then unmarked.
  *
  * Play does nothing until the reader has loaded the page's first clip into its audio element,
  * which it does by itself after showing the page; so this waits for that before clicking.
@@ -764,6 +997,7 @@ export async function playEpubPreviewReadAlong(
                         ? getComputedStyle(element).backgroundColor
                         : "",
                     audioPlaying: !!audio && !audio.paused && !audio.ended,
+                    audioUrl: audio?.currentSrc ?? "",
                     audioTime: audio?.currentTime ?? 0,
                 });
             }
@@ -781,16 +1015,30 @@ export async function playEpubPreviewReadAlong(
                     .e2eReadAlong,
         );
     await reader.locator(PLAY_BUTTON).click();
+    const lastTextId = clips[clips.length - 1].textId;
     let events: EpubReadAlongEvent[] = [];
     await expect
         .poll(
             async () => {
                 events = await readLog();
                 const started = events.findIndex((e) => e.kind === "playing");
+                const lastMarked = events.findIndex(
+                    (e) => e.kind === "highlighted" && e.id === lastTextId,
+                );
                 return (
                     started >= 0 &&
+                    lastMarked >= 0 &&
                     events
-                        .slice(started)
+                        .slice(lastMarked)
+                        .some(
+                            (e) =>
+                                e.kind === "unhighlighted" &&
+                                e.id === lastTextId,
+                        ) &&
+                    // A stop before the last clip began is the end of an earlier file, not
+                    // of the page.
+                    events
+                        .slice(lastMarked)
                         .some(
                             (e) => e.kind === "pause" || e.kind === "ended",
                         ) &&
@@ -964,4 +1212,59 @@ export async function getEpubPackageDublinCore(
         },
         { text: packageText, localName: name },
     );
+}
+
+/**
+ * The reading order of an ePUB package document: the href of each manifest item that its <spine>
+ * lists, in order, relative to the package. Throws when the spine names an item the manifest lacks.
+ */
+export async function getEpubPackageSpineHrefs(
+    page: Page,
+    packageText: string,
+): Promise<string[]> {
+    return page.evaluate((text) => {
+        const doc = new DOMParser().parseFromString(text, "application/xml");
+        const error = doc.querySelector("parsererror");
+        if (error)
+            throw new Error(
+                `The ePUB package is not well-formed XML: ${error.textContent}`,
+            );
+        const opf = "http://www.idpf.org/2007/opf";
+        const items = new Map(
+            [...doc.getElementsByTagNameNS(opf, "item")].map((item) => [
+                item.getAttribute("id") ?? "",
+                item.getAttribute("href") ?? "",
+            ]),
+        );
+        return [...doc.getElementsByTagNameNS(opf, "itemref")].map(
+            (itemref) => {
+                const idref = itemref.getAttribute("idref") ?? "";
+                const href = items.get(idref);
+                if (!href)
+                    throw new Error(
+                        `The ePUB spine names "${idref}", which the manifest lacks.`,
+                    );
+                return href;
+            },
+        );
+    }, packageText);
+}
+
+/** The text that an XHTML page of an ePUB shows, its body's text with spaces collapsed. */
+export async function getEpubXhtmlText(
+    page: Page,
+    xhtml: string,
+): Promise<string> {
+    return page.evaluate((text) => {
+        const doc = new DOMParser().parseFromString(
+            text,
+            "application/xhtml+xml",
+        );
+        const error = doc.querySelector("parsererror");
+        if (error)
+            throw new Error(
+                `The ePUB page is not well-formed XHTML: ${error.textContent}`,
+            );
+        return (doc.body?.textContent ?? "").replace(/\s+/g, " ");
+    }, xhtml);
 }

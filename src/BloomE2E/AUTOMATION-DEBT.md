@@ -900,19 +900,6 @@ the labels they came with, and does not check a label typed by the template's au
 direction: fix BL-17185, then have that test type a label of its own on each page. (Found
 2026-11-25 while automating Test Case ID 79.)
 
-## Make All BloomPUBs opens File Explorer
-
-When Publish: BloomPUB's "Make All BloomPUBs from Collection" finishes, Bloom opens the folder it
-made the files in, `%TEMP%\BloomPubs`, in File Explorer (`ProcessExtra.SafeStartInFront` at the end
-of `BulkBloomPubCreator.PublishAllBooksAsync`), and it does so under `--e2e` too. Playwright drives
-only Bloom's WebView2, so the test cannot close the window, and every run of
-`bulk-bloompub-bundle.spec.ts` (Test Case ID 194) leaves one Explorer window open on the machine it
-ran on. The test reads the folder's path from the progress box and checks the files there, so
-nothing it checks depends on the window. Cost: a stray window per run on a developer's desktop or
-the runner. Fix direction: skip opening the folder when `Program.RunningE2eTests` is true, or route
-it through a hook a test can read, as the file choosers are. (Found 2026-11-25 while automating Test
-Case ID 194.)
-
 ## Export to Spreadsheet opens the spreadsheet
 
 When More > Export to Spreadsheet... finishes, Bloom opens the spreadsheet in the program the
@@ -944,3 +931,18 @@ machine it ran on. Fix direction: skip opening the log and the folder when
 `Program.RunningE2eTests` is true, and let `e2e/nextFileToChoose` (or a twin) answer
 `MiscUtils.GetOutputFilePathOutsideCollectionFolder`, so every save command is drivable with no
 native window. (Found 2026-11-26 while automating Test Case ID 660.)
+
+## The fake notices' Report and extra buttons are not pressed
+
+`fake-error-reports.spec.ts` (Test Case ID 52) checks every fake problem's dialog and closes each
+the way its Close button does. It does not press a notice's Report button or its extra buttons
+(Retry, the legacy interface's own Report label), so nothing checks that Report brings up the
+problem report dialog, that Retry runs its action, or that the legacy interface learns its button
+was pressed. Early attempts hung: a click on a notice's button, or a `common/closeReactDialog` sent
+from a page, sometimes never reached Bloom, most likely because every page of Bloom's browser
+shares one small pool of connections to Bloom's server and requests waiting on the UI thread,
+which the modal dialog holds, fill it. Sending the close from Node (`helpers/problemDialogs.ts`)
+ended that for Close. Pressing the other buttons the same way (with `closedByReportButton` or
+`closedByAlternateButton` as the body) is untried, and needs one more change: after those buttons
+Bloom keeps the notice's page until what follows has ended, so "the notice has gone" has to be
+read from its window rather than its page. (Found 2026-11-27 while automating Test Case ID 52.)
