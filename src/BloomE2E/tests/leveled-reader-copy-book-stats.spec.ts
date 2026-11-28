@@ -22,6 +22,7 @@ import {
     getReaderPhase,
     leveledReaderStat,
     makeLeveledBookWithTextPage,
+    setReaderPhase,
 } from "../helpers/readerTools";
 import { toolboxFrame } from "../helpers/toolbox";
 
@@ -34,6 +35,7 @@ test.use({
 
 const GROUP = ".bloom-translationGroup";
 const LANG = "en";
+const LEVEL = 2;
 
 // 9 words in 2 sentences; the longest word is "away" (4 letters), the longest sentence 6 words.
 const FIRST_PAGE_TEXT = "The cat sat. The big dog ran far away.";
@@ -61,7 +63,13 @@ test("COPY BOOK STATS puts the book's leveled reader statistics on the clipboard
     page,
 }) => {
     const bookFolder = await makeLeveledBookWithTextPage(page);
-    const level = await getReaderPhase(page, "leveledReader");
+    // A level other than the one a new book starts at, so that a copy that always said the
+    // starting level would be caught.
+    expect(
+        await getReaderPhase(page, "leveledReader"),
+        "test setup: a new leveled book should start at level 1",
+    ).toBe(1);
+    await setReaderPhase(page, "leveledReader", LEVEL);
     await pasteTextInGroup(page, GROUP, LANG, FIRST_PAGE_TEXT);
 
     const [firstPage] = await getContentPages(page);
@@ -125,7 +133,7 @@ test("COPY BOOK STATS puts the book's leveled reader statistics on the clipboard
     // title and the level, so that a spreadsheet takes each as text.
     expect(copiedStats).toEqual({
         "Book Title": `"${Path.basename(bookFolder)}"`,
-        Level: `"Level ${level}"`,
+        Level: `"Level ${LEVEL}"`,
         ...Object.fromEntries(EXPECTED_FIGURES),
     });
     expect(headers, "Bloom copies the columns in this order.").toEqual([
