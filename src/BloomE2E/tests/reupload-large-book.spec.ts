@@ -16,6 +16,7 @@
 // - the re-upload sends none of the .mp3 files, and nothing but the new picture and the files that
 //   change with the new page (the book's .htm and PDF) or may change with every upload (meta.json
 //   and the cover thumbnails, as upload-only-changed-files.spec.ts allows);
+// - the re-uploaded .htm shows the new picture and still holds every recorded sentence;
 // - the re-uploaded copy on the server holds every recording, so the server did copy the files
 //   that Bloom skipped.
 //
@@ -54,6 +55,7 @@ import {
 } from "../helpers/bloomLibraryAccount";
 import {
     deleteBooksUploadedBy,
+    fetchUploadedBookHtml,
     findBooksUploadedBy,
     getLatestUploadBaseUrl,
     type IBloomLibraryLogin,
@@ -236,13 +238,31 @@ test.describe("re-uploading a large book to dev.bloomlibrary.org", () => {
             `The re-upload should have sent only the new picture (${picture}) besides ${htmFile}, ` +
                 `${pdfFile}, meta.json and the thumbnails. It sent: ${second.sent.join(", ")}`,
         ).toEqual([picture]);
+        expect(
+            second.sent,
+            `The re-upload should have sent ${htmFile}, which holds the new page.`,
+        ).toContain(htmFile);
 
         // ---- The re-uploaded copy has every recording, which the server copied ---------------------
         const [onServer] = await findBooksUploadedBy(login, BOOK_TITLE);
         expect(onServer, `"${BOOK_TITLE}" is not on the sandbox.`).toBeTruthy();
-        const uploadedFiles = await listUploadedBookFiles(
-            await getLatestUploadBaseUrl(onServer),
-        );
+        const latestBaseUrl = await getLatestUploadBaseUrl(onServer);
+        const uploadedFiles = await listUploadedBookFiles(latestBaseUrl);
+        // The uploaded book's pages are the new ones: the picture page and every recorded sentence.
+        const uploadedHtml = await fetchUploadedBookHtml(latestBaseUrl);
+        expect(
+            uploadedHtml,
+            `The re-uploaded ${htmFile} should show the new picture (${picture}).`,
+        ).toContain(`src="${picture}"`);
+        expect(
+            recordings.filter(
+                (file) =>
+                    !uploadedHtml.includes(
+                        `id="${file.replace(/\.mp3$/, "")}"`,
+                    ),
+            ),
+            `The re-uploaded ${htmFile} should still hold all ${recordings.length} recorded sentences.`,
+        ).toEqual([]);
         expect(
             recordings.filter(
                 (file) => !uploadedFiles.includes(`audio/${file}`),
