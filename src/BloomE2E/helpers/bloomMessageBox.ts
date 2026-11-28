@@ -2,7 +2,7 @@
 // instead of a Windows MessageBox. Its page is one of Bloom's browser's pages, so CDP reads it.
 
 import { expect, type Page } from "@playwright/test";
-import { closeReactDialogFromNode } from "./problemDialogs";
+import { closeReactDialog } from "./api";
 
 /** Every page of Bloom's browser but DevTools. */
 function bloomPages(page: Page): Page[] {
@@ -66,7 +66,7 @@ export async function readAndCloseBloomMessageBox(
             },
         )
         .toBe(1);
-    await closeReactDialogFromNode(page);
+    await closeReactDialog(page);
     await expect
         .poll(async () => (await readBloomMessageBoxes(page)).length, {
             timeout: 30000,

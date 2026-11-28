@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import type { IProblemDialogWatcher } from "../fixtures/problemDialogWatcher";
-import * as http from "node:http";
+import { closeReactDialog, isDroppedConnection } from "./api";
 import { clickBookTile } from "./collection";
 
 /** Every page of Bloom's browser but DevTools, which is where a problem dialog may show. */
@@ -179,48 +179,6 @@ export async function readProblemDialogsShown(
 }
 
 /**
- * Close the React dialog (ReactDialog.cs) showing now, such as a problem dialog or a Bloom message
- * box, the way its own Close button does, with common/closeReactDialog, which never submits a
- * report. `page` is any of Bloom's pages, for the port. The request goes from Node rather than
- * through a page (helpers/api.ts): every page of Bloom's browser shares one small pool of
- * connections to Bloom's server, and while the modal dialog holds Bloom's UI thread, requests
- * waiting on that thread can fill the pool, so a close sent from a page may never leave the
- * browser. Bloom accepts the request because its Host is localhost.
- */
-export function closeReactDialogFromNode(page: Page): Promise<void> {
-    const port = Number(new URL(page.url()).port);
-    return new Promise((resolve, reject) => {
-        const req = http.request(
-            {
-                host: "localhost",
-                port,
-                path: "/bloom/api/common/closeReactDialog",
-                method: "POST",
-                headers: { "Content-Length": 0 },
-                timeout: 30000,
-            },
-            (res) => {
-                res.resume();
-                res.on("end", () =>
-                    res.statusCode && res.statusCode < 400
-                        ? resolve()
-                        : reject(
-                              new Error(
-                                  `common/closeReactDialog answered ${res.statusCode}`,
-                              ),
-                          ),
-                );
-            },
-        );
-        req.on("timeout", () =>
-            req.destroy(new Error("common/closeReactDialog got no answer")),
-        );
-        req.on("error", reject);
-        req.end();
-    });
-}
-
-/**
  * Close the Report a Problem dialog that waitForReportDialogPage found, and wait until it is gone:
  * its page closed, or the page no longer holds the dialog. A failure to look in a page that is
  * still open fails at once rather than passing for a closed dialog.
@@ -229,7 +187,7 @@ export async function closeReportDialog(
     page: Page,
     dialogPage: Page,
 ): Promise<void> {
-    await closeReactDialogFromNode(page);
+    await closeReactDialog(page);
     await expect
         .poll(
             async () => {
@@ -270,11 +228,11 @@ function isProcessRunning(pid: number): boolean {
  * request, so the action is started but not awaited until the dialog has gone. The problem dialog
  * watcher is paused meanwhile, since the test raises this dialog on purpose.
  *
- * A call that the action makes to Bloom's API from a page (helpers/api.ts) after raising the
- * dialog may wait for the dialog, holding one of the connections that the dialog needs for its
- * message (see closeReactDialogFromNode). After a tab switch Bloom's own pages leave only one
- * connection free, so a dialog raised by a tab switch never gets its message if switchTab's
- * waitForActiveTab takes it: raise such a dialog with clickTab, and wait for the tab afterwards.
+ * A request that a page of Bloom's browser makes after the dialog is raised may wait for the
+ * dialog, holding one of the connections that the dialog needs for its message (see
+ * helpers/api.ts). After a tab switch Bloom's own pages leave only one connection free, so a
+ * dialog raised by a tab switch may never get its message: raise such a dialog with clickTab, and
+ * wait for the tab afterwards.
  *
  * `bloomQuitsWithPid` is the process id of a Bloom that is expected to quit once the dialog is
  * closed, as it does after a fatal problem; this then waits for that process to end, and the
@@ -329,13 +287,8 @@ export async function doThroughOneProblemDialog(
             // Bloom quits as soon as the dialog closes, which may be before it answers: a dropped
             // connection is all that may go wrong with the close. Any other failure (an error
             // status, no Bloom listening) means the close did not happen.
-            await closeReactDialogFromNode(page).catch((error: unknown) => {
-                const code = (error as NodeJS.ErrnoException).code;
-                if (
-                    code !== "ECONNRESET" &&
-                    !/socket hang up/i.test(String(error))
-                )
-                    throw error;
+            await closeReactDialog(page).catch((error: unknown) => {
+                if (!isDroppedConnection(error)) throw error;
             });
             await expect
                 .poll(() => isProcessRunning(bloomQuitsWithPid), {
@@ -346,7 +299,7 @@ export async function doThroughOneProblemDialog(
             await acted;
             return shown;
         }
-        await closeReactDialogFromNode(page);
+        await closeReactDialog(page);
         await expect
             .poll(
                 async () =>

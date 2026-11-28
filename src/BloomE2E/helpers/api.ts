@@ -1,16 +1,17 @@
 // Call Bloom's HTTP API from a test.
 //
-// The calls go THROUGH THE PAGE (page.evaluate + fetch with a relative URL) rather than straight
-// from Node, and that is not incidental. Two constraints pull in opposite directions:
+// Every call goes straight from Node to http://localhost:<httpPort>/bloom/api/..., the port taken
+// from the Bloom page the caller passes. Two things make that the way:
 //
-//  - Bloom's HTTP server validates the Host header and accepts only "localhost". A fetch from Node
-//    to http://127.0.0.1:<httpPort>/bloom/api/... comes back 400 with a generic HTML error page,
-//    and Host is a forbidden header, so you cannot override it.
-//  - Our CDP connection has to use 127.0.0.1, because WebView2's debugging port does not answer on
-//    ::1, which is what "localhost" resolves to first on Windows.
-//
-// Issuing the request from inside the page satisfies both: the page's own origin is
-// http://localhost:<httpPort>, so the Host header is right, while the Node-to-CDP link stays IPv4.
+//  - Bloom's HTTP server validates the Host header and accepts only "localhost": a request to
+//    http://127.0.0.1:<httpPort>/... comes back 400 with a generic HTML error page. So the
+//    address here is always "localhost". (The CDP connection is the other way round: WebView2's
+//    debugging port answers only on 127.0.0.1; see fixtures/bloomTest.ts.)
+//  - A request sent from inside one of Bloom's pages (page.evaluate + fetch) can fail to leave the
+//    browser: every page of Bloom's browser shares one small pool of connections to Bloom's
+//    server, and while a modal dialog holds Bloom's UI thread, requests waiting on that thread can
+//    fill the pool. A request from Node has connections of its own. It also outlives a reload of
+//    the page it was given the port by.
 //
 // Per the UI-vs-API policy in README.md, use these for setup, navigation, and assertions. The
 // behavior a test measures is always driven through the real UI.
@@ -25,7 +26,8 @@ export interface IApiResponse {
 
 /**
  * GET a Bloom API endpoint, e.g. apiGet(page, "workspace/tabs"). `endpoint` is the part after
- * /bloom/api/. Throws when Bloom answers with an error status.
+ * /bloom/api/, and `page` is any page that the Bloom serves, for its port. Throws when Bloom
+ * answers with an error status.
  */
 export async function apiGet(
     page: Page,
@@ -46,6 +48,19 @@ export async function apiPost(
     contentType?: string,
 ): Promise<IApiResponse> {
     return request(page, endpoint, { method: "POST", body, contentType });
+}
+
+/**
+ * Close the React dialog (ReactDialog.cs) showing now, such as a problem dialog or a Bloom message
+ * box, the way its own Close button does, with common/closeReactDialog, which never submits a
+ * report. `page` is any of Bloom's pages, for the port. Fails when Bloom has not answered in 30
+ * seconds.
+ */
+export async function closeReactDialog(page: Page): Promise<void> {
+    await request(page, "common/closeReactDialog", {
+        method: "POST",
+        timeoutMs: 30000,
+    });
 }
 
 /** Read a Bloom API endpoint that replies with JSON, parsed into T. */
@@ -72,6 +87,24 @@ export async function getUiString(
     return answer.text;
 }
 
+/**
+ * The port of the Bloom that serves `page`, from its address. A closed page is refused, as any
+ * other use of it would be: a test still holding the shell page that Bloom replaced has lost track
+ * of Bloom, even though the replacement serves on the same port.
+ */
+function bloomPort(page: Page): number {
+    if (page.isClosed())
+        throw new Error(
+            `Cannot call Bloom through a closed page (${page.url()}); use the page that replaced it.`,
+        );
+    const url = new URL(page.url());
+    if (url.hostname !== "localhost" || !url.port)
+        throw new Error(
+            `Cannot tell which Bloom to call: ${page.url()} is not a page that Bloom serves.`,
+        );
+    return Number(url.port);
+}
+
 // The pages whose Bloom has been seen to answer app/runningE2eTests with "true".
 const pagesOnE2eBlooms = new WeakSet<Page>();
 
@@ -85,8 +118,6 @@ const pagesOnE2eBlooms = new WeakSet<Page>();
  */
 async function requireE2eBloom(page: Page): Promise<void> {
     if (pagesOnE2eBlooms.has(page)) return;
-    // Through request(), so a reload of the shell mid-question is retried like any GET, whatever
-    // the method of the e2e/ call that asked.
     const answer = await request(page, "app/runningE2eTests", {
         method: "GET",
     });
@@ -101,61 +132,57 @@ async function requireE2eBloom(page: Page): Promise<void> {
 async function request(
     page: Page,
     endpoint: string,
-    options: { method: string; body?: string; contentType?: string },
+    options: {
+        method: string;
+        body?: string;
+        contentType?: string;
+        timeoutMs?: number;
+    },
 ): Promise<IApiResponse> {
-    // Bloom reloads the shell document when it switches workspace tabs (and rebuilds it
-    // entirely for things like a UI language change), so a call that is in flight at that
-    // moment dies - as "Execution context was destroyed" when the evaluate loses the race, or
-    // as the fetch's own "TypeError: Failed to fetch" when the navigation aborts the request.
-    // Both are transients of the reload, so GETs retry briefly (a genuinely dead server also
-    // reads "Failed to fetch"; the deadline keeps that from hiding long). POSTs never retry
-    // here: the server may have processed the request before the reload killed the reply, and
-    // repeating a non-idempotent action would, say, make a second book - a call site that
-    // knowingly races a reload tolerates the lost reply itself and confirms the effect
-    // instead (see makeBookFromTemplate). A CLOSED page stays closed - not retried.
     if (endpoint.startsWith("e2e/")) await requireE2eBloom(page);
-    const deadline = Date.now() + 15000;
-    for (;;) {
-        try {
-            return await attemptRequest(page, endpoint, options);
-        } catch (error) {
-            if (
-                options.method !== "GET" ||
-                !/Execution context was destroyed|Failed to fetch/i.test(
-                    String(error),
-                ) ||
-                Date.now() > deadline
-            )
-                throw error;
-            await new Promise((resolve) => setTimeout(resolve, 250));
-        }
+    const url = `http://localhost:${bloomPort(page)}/bloom/api/${endpoint}`;
+    let result: IApiResponse;
+    try {
+        const response = await fetch(url, {
+            method: options.method,
+            headers: options.contentType
+                ? { "Content-Type": options.contentType }
+                : undefined,
+            body: options.body,
+            signal:
+                options.timeoutMs === undefined
+                    ? undefined
+                    : AbortSignal.timeout(options.timeoutMs),
+        });
+        result = { status: response.status, body: await response.text() };
+    } catch (error) {
+        throw new NoAnswerError(
+            `Bloom's ${options.method} /bloom/api/${endpoint} got no answer: ${String(error)}`,
+            { cause: error },
+        );
     }
-}
-
-async function attemptRequest(
-    page: Page,
-    endpoint: string,
-    options: { method: string; body?: string; contentType?: string },
-): Promise<IApiResponse> {
-    const result = await page.evaluate(
-        async (call) => {
-            const response = await fetch(`/bloom/api/${call.endpoint}`, {
-                method: call.method,
-                headers: call.contentType
-                    ? { "Content-Type": call.contentType }
-                    : undefined,
-                body: call.body,
-            });
-            return { status: response.status, body: await response.text() };
-        },
-        { endpoint, ...options },
-    );
     if (result.status >= 400)
         throw new Error(
             `Bloom's ${options.method} /bloom/api/${endpoint} returned ${result.status}. ` +
                 `Body: ${result.body.slice(0, 500)}`,
         );
     return result;
+}
+
+class NoAnswerError extends Error {}
+
+/**
+ * Whether `error`, thrown by apiGet or apiPost, says that Bloom closed the connection before it
+ * had answered in full, as a Bloom that quits while answering does. A refused connection (no
+ * Bloom listening) or a timeout is not that.
+ */
+export function isDroppedConnection(error: unknown): boolean {
+    if (!(error instanceof NoAnswerError)) return false;
+    for (let cause = error.cause; cause; cause = (cause as Error).cause) {
+        const code = (cause as NodeJS.ErrnoException).code;
+        if (code === "ECONNRESET" || code === "UND_ERR_SOCKET") return true;
+    }
+    return false;
 }
 
 /** Some of Bloom's answers to its own front end, held back until `release` is called. */
