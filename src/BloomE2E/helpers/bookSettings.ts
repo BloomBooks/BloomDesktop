@@ -186,7 +186,12 @@ export async function showBookSettingsPage(
     pageName: string,
 ): Promise<void> {
     const tab = bookSettingsTab(page, pageName);
-    if ((await tab.count()) !== 1) {
+    // A page's name can change after the dialog shows its pages: each name is localized
+    // asynchronously, and until its translation arrives the tab shows the English given in the
+    // code, which can differ (the BloomPUB page shows "eBooks" until then). So wait for the name.
+    try {
+        await expect(tab).toHaveCount(1, { timeout: 10000 });
+    } catch {
         const offered = await bookSettingsDialog(page)
             .getByRole("tab")
             .allInnerTexts();
