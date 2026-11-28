@@ -551,10 +551,38 @@ export async function expectMouseMovesLeaveSourceBubbles(
             },
             { selector: kTargets, index },
         );
-        if (scrolledOver)
+        if (scrolledOver) {
+            // qTip slides a bubble to its new place over 200 ms after a scroll (the effect in
+            // jquery.qtip.js's position defaults), so wait until every bubble holds still.
+            let last = "";
+            await expect
+                .poll(
+                    async () => {
+                        const now = await frame.evaluate(() =>
+                            JSON.stringify(
+                                Array.from(
+                                    document.querySelectorAll(".qtip"),
+                                ).map((bubble) => {
+                                    const r = bubble.getBoundingClientRect();
+                                    return [r.left, r.top, r.width, r.height];
+                                }),
+                            ),
+                        );
+                        const steady = now === last;
+                        last = now;
+                        return steady;
+                    },
+                    {
+                        timeout: 15000,
+                        intervals: [100],
+                        message: `The source bubbles never held still after the page scrolled ${scrolledOver} into view.`,
+                    },
+                )
+                .toBe(true);
             await checkAfter(
                 `Once the page scrolled ${scrolledOver} into view, before the pointer moved`,
             );
+        }
         const target = await frame.evaluate(
             ({ selector, index }) => {
                 const element = document.querySelectorAll(selector)[index];
