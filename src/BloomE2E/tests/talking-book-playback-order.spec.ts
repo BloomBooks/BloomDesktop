@@ -261,6 +261,16 @@ async function expectEpubToRead(
     const loudness: Record<string, { opening: number; rest?: number }> = {};
     for (const [i, clip] of clips.entries()) {
         const { recording } = expectedOrder[i];
+        // Every stretch measured lies inside the clip, so only audio the reader plays for this
+        // sentence counts.
+        expect(
+            clip.clipEnd - clip.clipBegin,
+            `clip ${i + 1} of the page should last longer than the stretches measured in it`,
+        ).toBeGreaterThan(
+            recording === "description"
+                ? DESCRIPTION_SILENCE + 0.6
+                : DESCRIPTION_SILENCE,
+        );
         const spans = [
             {
                 start: clip.clipBegin + 0.2,
