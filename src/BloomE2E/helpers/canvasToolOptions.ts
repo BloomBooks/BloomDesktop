@@ -238,6 +238,20 @@ export async function typeCanvasElementBackgroundColor(
 }
 
 /**
+ * The text the Canvas tool shows over its Background Color bar for the selected element, such as
+ * "50% Transparent" for a partly transparent background; "" when it shows none, as for an opaque
+ * one.
+ */
+export async function getCanvasElementBackgroundColorBarText(
+    page: Page,
+): Promise<string> {
+    const toolbox = await openCanvasTool(page);
+    const bar = toolbox.locator(BACKGROUND_COLOR_BAR).first();
+    await bar.waitFor({ state: "visible", timeout: 15000 });
+    return ((await bar.textContent()) ?? "").trim();
+}
+
+/**
  * Give the selected element's text a color by typing it: open the color picker from the Canvas
  * tool's Text Color bar, type `color` ("#rrggbb") into its hex box, and OK it. Bloom gives the
  * text of every bubble in the element's family that color.
