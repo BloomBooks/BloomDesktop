@@ -894,8 +894,9 @@ export async function clickInGroup(
 }
 
 /**
- * How many characters of a text box's text come before the caret, or -1 when the caret is not in
- * the box. `box` is a box on the page being edited, such as the one clickInGroup returns.
+ * How many characters of a text box's text come before the caret, or -1 when there is no caret in
+ * the box: when the selection is elsewhere, or is a stretch of selected text rather than a caret.
+ * `box` is a box on the page being edited, such as the one clickInGroup returns.
  */
 export async function getCaretOffset(box: Locator): Promise<number> {
     return box.evaluate((element) => {
@@ -903,6 +904,7 @@ export async function getCaretOffset(box: Locator): Promise<number> {
         if (
             !selection ||
             selection.rangeCount === 0 ||
+            !selection.isCollapsed ||
             !element.contains(selection.focusNode)
         )
             return -1;
