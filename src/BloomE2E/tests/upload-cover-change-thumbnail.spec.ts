@@ -117,6 +117,9 @@ async function waitForHarvest(
 ): Promise<IBookOnServer> {
     let record: IBookOnServer | undefined;
     let state = "no record yet";
+    // A lookup that throws ends the poll at once, and its own error, with the sandbox's answer, is
+    // what the test reports.
+    let lookupFailed = false;
     try {
         await expect
             .poll(
@@ -125,10 +128,8 @@ async function waitForHarvest(
                     try {
                         books = await findBooksUploadedBy(login!, BOOK_TITLE);
                     } catch (error) {
-                        // The sandbox may answer the next poll; if it never does, this is what
-                        // the timeout reports.
-                        state = `the lookup of the record failed: ${error}`;
-                        return false;
+                        lookupFailed = true;
+                        throw error;
                     }
                     if (books.length !== 1) {
                         state = `${books.length} records titled "${BOOK_TITLE}"`;
@@ -145,7 +146,8 @@ async function waitForHarvest(
                 { timeout: HARVEST_TIMEOUT_MS, intervals: [10000] },
             )
             .toBe(true);
-    } catch {
+    } catch (error) {
+        if (lookupFailed) throw error;
         // The poll timed out. A message given to the poll itself would be fixed before the first
         // poll; this one says what the last poll saw.
         throw new Error(
