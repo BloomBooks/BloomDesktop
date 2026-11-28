@@ -55,6 +55,7 @@ import {
     kDecodableSortTips,
     readDecodableSortButtonTip,
     setReaderPhase,
+    startTimingDecodableMark,
     waitForReaderToolToRestore,
 } from "../helpers/readerTools";
 import { expectExpandedTool } from "../helpers/toolbox";
@@ -271,21 +272,32 @@ test("a Spanish decodable reader built from scratch marks, sorts and remembers i
             "With the book no longer decodable, no word should be marked.",
         );
 
-        // Timed from just before the click, which setBookIsDecodable makes before it waits for the
-        // panel to redraw, to when the test sees the mark: an upper bound on how long the mark
-        // took to come back.
-        const clicked = Date.now();
+        // Timed inside Bloom, from the click on the switch to the first moment the page shows the
+        // mark, so neither the panel's redraw nor the test's polling counts against Bloom.
+        const readMarkTiming = await startTimingDecodableMark(page, "pato");
         await setBookIsDecodable(page, true);
         await expectMarkedNotDecodable(
             page,
             ["pato"],
             "Turning the book decodable again should put the mark on pato back.",
-            3000,
         );
+        const { clickedAt, markedAt } = await readMarkTiming();
         expect(
-            Date.now() - clicked,
+            clickedAt,
+            "The test did not see its click on the switch reach the toolbox.",
+        ).toBeDefined();
+        expect(
+            markedAt,
+            "The page's own check never saw the mark on pato come back.",
+        ).toBeDefined();
+        expect(
+            markedAt! - clickedAt!,
             "The mark on pato should be back within three seconds of turning the book decodable.",
         ).toBeLessThanOrEqual(3000);
+        expect(
+            markedAt!,
+            "The mark on pato was there before the switch was clicked.",
+        ).toBeGreaterThanOrEqual(clickedAt!);
     });
 
     await test.step("the marks follow edits inside a word, pastes and replaced words", async () => {

@@ -334,6 +334,68 @@ export async function getWordsMarkedNotDecodable(
 }
 
 /**
+ * Start timing how long the Decodable Reader takes, after its switch is next clicked, to mark
+ * `word` as not decodable on the page being edited. Call it while the word is not marked, before
+ * the click; the returned function reads both moments once the test has seen the mark.
+ *
+ * Both moments are taken inside Bloom's own browser, on its one clock: the click by a listener on
+ * the toolbox's document, the mark by a check of the page's highlight every 10 ms. So the time
+ * leaves out how long the panel takes to redraw and how often the test polls. `markedAt` is the
+ * first check that found the mark.
+ */
+export async function startTimingDecodableMark(
+    page: Page,
+    word: string,
+): Promise<() => Promise<{ clickedAt?: number; markedAt?: number }>> {
+    const key = `__e2eDecodableMarkTiming${Date.now()}`;
+    const readMoment = (frame: Frame) =>
+        frame.evaluate(
+            (key) =>
+                (window as unknown as Record<string, number | undefined>)[key],
+            key,
+        );
+    await toolboxFrame(page).evaluate(
+        ({ key, selector }) => {
+            const w = window as unknown as Record<string, number | undefined>;
+            document.addEventListener(
+                "click",
+                (event) => {
+                    const target = event.target as Element | null;
+                    if (w[key] === undefined && target?.closest?.(selector))
+                        w[key] = Date.now();
+                },
+                true,
+            );
+        },
+        { key, selector: SWITCH.decodableReader },
+    );
+    await editablePageFrame(page).evaluate(
+        ({ key, word }) => {
+            const w = window as unknown as Record<string, number | undefined>;
+            const timer = window.setInterval(() => {
+                const ranges = (
+                    CSS as unknown as {
+                        highlights?: Map<string, Iterable<Range>>;
+                    }
+                ).highlights?.get("bloom-reader-word-not-decodable");
+                if (
+                    ranges &&
+                    [...ranges].some((range) => range.toString() === word)
+                ) {
+                    w[key] = Date.now();
+                    window.clearInterval(timer);
+                }
+            }, 10);
+        },
+        { key, word },
+    );
+    return async () => ({
+        clickedAt: await readMoment(toolboxFrame(page)),
+        markedAt: await readMoment(editablePageFrame(page)),
+    });
+}
+
+/**
  * Press the Decodable Reader's "Generate Report" button and wait until Bloom has written the report
  * ("Decodable Books Letters and Words.txt" in the collection's folder). Bloom answers the button's
  * request only after it has written the file. It then opens the report in the program the machine

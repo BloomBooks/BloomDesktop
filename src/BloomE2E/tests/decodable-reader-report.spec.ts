@@ -22,6 +22,7 @@ import {
 import {
     expandReaderTool,
     generateDecodableReport,
+    getDecodableStageWords,
 } from "../helpers/readerTools";
 import { getUiStrings } from "../helpers/uiLanguage";
 import { switchTab } from "../helpers/workspace";
@@ -147,6 +148,16 @@ test("Generate Report lists each stage's letters, sight words, new decodable wor
     await switchTab(page, "collection");
     await switchTab(page, "edit");
     await expandReaderTool(page, "decodableReader");
+    // The report lists the words the toolbox has taken from the sample texts, and the button works
+    // before they arrive. The toolbox adds every sample text's words at once and only then lists
+    // them in the panel, so a sample word in the panel means all of them are in.
+    await expect
+        .poll(async () => getDecodableStageWords(page), {
+            timeout: 30000,
+            message:
+                "The Decodable Reader never listed mesa, so it has not loaded the sample texts.",
+        })
+        .toContain("mesa");
 
     const reportPath = Path.join(bloomApp.collectionDir, kReportName);
     fs.rmSync(reportPath, { force: true });
