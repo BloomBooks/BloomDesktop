@@ -410,6 +410,61 @@ export async function dragTailMidpoint(
 }
 
 /**
+ * Drag the selected bubble's tail tip handle by (dx, dy) in the drawing surface's coordinates,
+ * pressing on the handle and moving in small steps, as a person does. Every kind of tail has a tip
+ * handle (a straight tail has no midpoint handle). Returns the tail once ComicalJS has saved a tip
+ * that moved at least half the way asked.
+ */
+export async function dragTailTip(
+    page: Page,
+    element: Locator,
+    dx: number,
+    dy: number,
+): Promise<ITailSpec> {
+    const before = await readTail(element);
+    const start = await drawingPointOnScreen(page, before.tipX, before.tipY);
+    const end = await drawingPointOnScreen(
+        page,
+        before.tipX + dx,
+        before.tipY + dy,
+    );
+    const steps = 10;
+    await page.mouse.move(start.x, start.y);
+    try {
+        await page.mouse.down();
+        for (let i = 1; i <= steps; i++) {
+            await page.mouse.move(
+                start.x + ((end.x - start.x) * i) / steps,
+                start.y + ((end.y - start.y) * i) / steps,
+            );
+        }
+    } finally {
+        await page.mouse.up();
+    }
+    await expect
+        .poll(
+            async () => {
+                const tail = await readTail(element);
+                return (
+                    Math.hypot(
+                        tail.tipX - before.tipX,
+                        tail.tipY - before.tipY,
+                    ) >=
+                    Math.hypot(dx, dy) / 2
+                );
+            },
+            {
+                timeout: 15000,
+                message:
+                    "Dragging the tail's tip handle did not move the tip in the bubble's data-bubble " +
+                    `(the tail was ${JSON.stringify(before)}).`,
+            },
+        )
+        .toBe(true);
+    return readTail(element);
+}
+
+/**
  * Double-click the selected bubble's tail midpoint handle where its data-bubble says it is.
  */
 export async function doubleClickTailMidpoint(

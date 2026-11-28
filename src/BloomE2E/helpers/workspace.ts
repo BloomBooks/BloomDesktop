@@ -7,7 +7,7 @@
 // finished the switch rather than merely started it.
 
 import { expect, type Page, type Response } from "@playwright/test";
-import { apiGetJson, apiPost } from "./api";
+import { apiGetJson, apiPost, getUiString } from "./api";
 import { editablePageFrame, waitForBloomToHavePageAsItIs } from "./bookMaking";
 import { pageListFrame } from "./pageList";
 import { toolboxFrame } from "./toolbox";
@@ -70,11 +70,63 @@ export async function switchTab(
     tab: WorkspaceTabId,
     timeoutMs = 30000,
 ): Promise<void> {
+    await clickTab(page, tab, timeoutMs);
+    await waitForActiveTab(page, tab, timeoutMs);
+}
+
+/**
+ * The first half of switchTab: click a workspace tab, without asking Bloom whether the switch is
+ * done. For a switch that raises a problem dialog (doThroughOneProblemDialog says why); call
+ * waitForActiveTab once the dialog has closed.
+ */
+export async function clickTab(
+    page: Page,
+    tab: WorkspaceTabId,
+    timeoutMs = 30000,
+): Promise<void> {
     await waitForBloomToHavePageAsItIs(page);
     const target = page.getByTestId(tabTestId(tab));
     await target.waitFor({ state: "visible", timeout: timeoutMs });
     await target.click();
-    await waitForActiveTab(page, tab, timeoutMs);
+}
+
+/**
+ * Open the top bar's help menu (the "?" at its right end) and choose "Help...", which asks Bloom
+ * to open its help file at the topic for the tab showing. The entry is found by its label in the
+ * UI's language (HelpMenu.DocumentationMenuItem); the menu closes as the entry is chosen.
+ */
+export async function chooseHelpFromHelpMenu(page: Page): Promise<void> {
+    const label = await getUiString(
+        page,
+        "HelpMenu.DocumentationMenuItem",
+        "Help...",
+    );
+    await page.locator("#helpMenuButton").click();
+    const entry = page.getByRole("menuitem", { name: label, exact: true });
+    await entry.click();
+    await expect(entry, "the help menu stayed open after Help...").toBeHidden();
+}
+
+/**
+ * Open the top bar's help menu and choose "Report a Problem...", which asks Bloom to show its
+ * report dialog (waitForReportDialogPage in problemDialogs.ts finds it). The entry is found by its
+ * label in the UI's language (HelpMenu.ReportAProblemToolStripMenuItem).
+ */
+export async function chooseReportAProblemFromHelpMenu(
+    page: Page,
+): Promise<void> {
+    const label = await getUiString(
+        page,
+        "HelpMenu.ReportAProblemToolStripMenuItem",
+        "Report a Problem...",
+    );
+    await page.locator("#helpMenuButton").click();
+    const entry = page.getByRole("menuitem", { name: label, exact: true });
+    await entry.click();
+    await expect(
+        entry,
+        "the help menu stayed open after Report a Problem...",
+    ).toBeHidden();
 }
 
 /** What GET workspace/zoom replies with: the Edit tab's zoom, as a percentage. */

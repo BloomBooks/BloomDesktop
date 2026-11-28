@@ -42,10 +42,11 @@ test.use({
     collectionSpec: { name: "file-meddler-large-image", languages: ["en"] },
 });
 
-// A photo of this size is several megabytes, and larger than anything Bloom keeps in a book, so
-// Bloom shrinks it while the meddler holds the files it writes.
-const LARGE_WIDTH = 6000;
-const LARGE_HEIGHT = 3375;
+// A photo of this size is larger than anything Bloom keeps in a book, so Bloom shrinks it while
+// the meddler holds the files it writes. It is also over a megabyte even when makeJpegFile draws
+// it without a GPU, as on the nightly runner.
+const LARGE_WIDTH = 8000;
+const LARGE_HEIGHT = 4500;
 const PASTE_IMAGE_COMMAND = "EditTab.Image.PasteImage";
 const PLACEHOLDER = "placeHolder.png";
 // The error codes Node gives for opening a file that another process holds open without sharing.
@@ -360,7 +361,7 @@ for (const titled of [false, true]) {
         await makeJpegFile(page, largePicture, LARGE_WIDTH, LARGE_HEIGHT);
         expect(
             fs.statSync(largePicture).size,
-            "test setup: the large picture is several megabytes",
+            "test setup: the large picture is over a megabyte",
         ).toBeGreaterThan(1000000);
 
         await startMeddling(page, bloomApp.collectionDir);

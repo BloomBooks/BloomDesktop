@@ -8,7 +8,7 @@
 // is fetched after the screen mounts and re-fetched whenever the copyright is saved.
 
 import { expect, type Locator, type Page } from "@playwright/test";
-import { apiGetJson, apiPost } from "./api";
+import { apiGetJson, apiPost, getUiString } from "./api";
 import { selectPublishDestination } from "./publish";
 
 /** The two things a book must have before Bloom will let it be uploaded. */
@@ -306,4 +306,110 @@ export async function getBookSummary(page: Page): Promise<string> {
             )
         ).summary ?? ""
     );
+}
+
+/**
+ * Upload the book Publish: Web is showing, for real, and wait until Bloom says it is on Bloom
+ * Library. Returns the names of the files the upload sent, in the order it sent them.
+ *
+ * The user must be signed in for real (helpers/bloomLibraryAccount.ts) and the agreements ticked.
+ * When the book is already on Bloom Library, as it is for every upload after the first, Bloom asks
+ * whether the two are the same book; this answers "Yes, I want to update this book", which is what
+ * a person re-uploading their own book does.
+ *
+ * Which files were sent comes from the Upload Progress box: Bloom asks the server which of the
+ * book's files are new or changed, and writes "Uploading <file name>" there for each one it then
+ * sends (BloomS3Client.PutFileOnS3); the server copies the others from the previous upload. The box
+ * is cleared when Upload Book is clicked, so it holds this upload's lines only. The line names the
+ * file without its folder, so "audio/x.mp3" comes back as "x.mp3".
+ *
+ * `onSameBookChosen`, when given, runs once "Yes, I want to update this book" is chosen and before
+ * Upload is clicked, with the dialog: a test checks or answers there what else the dialog asks.
+ */
+export async function uploadBookForReal(
+    page: Page,
+    timeoutMs = 300000,
+    onSameBookChosen?: (dialog: Locator) => Promise<void>,
+): Promise<string[]> {
+    const steps = page.getByTestId("publish-to-web-steps");
+    // The last step's "View on Bloom Library" link, which is the screen's sign that the upload
+    // finished. Its href is the book's page; after an earlier upload it keeps that, but the step is
+    // collapsed (hidden) from the moment a new upload starts until that one finishes.
+    const doneLink = steps.locator('a[href*="/book/"]').first();
+    const progressLog = page.getByTestId("progress-box-log");
+    const uploadingFormat = await getUiString(
+        page,
+        "PublishTab.Upload.UploadingStatus",
+        "Uploading {0}",
+    );
+    const [before, after] = uploadingFormat.split("{0}");
+
+    await clickUploadBook(page);
+    await expect(
+        doneLink,
+        "The previous upload's link stayed showing after Upload Book was clicked.",
+    ).toBeHidden({ timeout: 30000 });
+
+    // A re-upload asks the "same book?" question once Bloom has found the copy on the server, which
+    // takes a round trip after "Checking for existing copy on server..." shows; a first upload goes
+    // straight on. So answer the question whenever it comes, until the upload is done.
+    const sameBook = page.getByRole("radio", {
+        name: "Same book radio button",
+    });
+    const uploadLabel = await getUiString(page, "Common.Upload", "Upload");
+    // When Bloom refuses or fails the upload it writes an error line, and no success ever follows.
+    const errorLines = progressLog.locator(
+        '[data-progress-severity="error"], [data-progress-severity="fatal"]',
+    );
+    const deadline = Date.now() + timeoutMs;
+    /** Wait for the upload to finish or fail, or, while `askable`, for the question. */
+    const waitForOutcome = async (askable: boolean): Promise<string> => {
+        let outcome = "waiting";
+        try {
+            await expect
+                .poll(
+                    async () => {
+                        if (await doneLink.isVisible()) outcome = "done";
+                        else if ((await errorLines.count()) > 0)
+                            outcome = "error";
+                        else if (askable && (await sameBook.isVisible()))
+                            outcome = "asked";
+                        return outcome;
+                    },
+                    {
+                        timeout: Math.max(deadline - Date.now(), 1000),
+                        intervals: [1000],
+                    },
+                )
+                .not.toBe("waiting");
+        } catch {
+            // The poll timed out; outcome is still "waiting".
+        }
+        return outcome;
+    };
+    let outcome = await waitForOutcome(true);
+    if (outcome === "asked") {
+        const dialog = page.getByRole("dialog");
+        await sameBook.check();
+        if (onSameBookChosen) await onSameBookChosen(dialog);
+        await dialog
+            .getByRole("button", { name: uploadLabel, exact: true })
+            .click();
+        outcome = await waitForOutcome(false);
+    }
+    if (outcome !== "done")
+        throw new Error(
+            (outcome === "error"
+                ? "Bloom reported an error during the upload."
+                : `The upload did not finish within ${Math.round(timeoutMs / 1000)}s.`) +
+                ` Upload Progress said:\n${await progressLog.innerText()}`,
+        );
+
+    return (await progressLog.innerText())
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.startsWith(before) && line.endsWith(after))
+        .map((line) =>
+            line.substring(before.length, line.length - after.length),
+        );
 }

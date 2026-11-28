@@ -47,6 +47,23 @@ export interface IBookOnServer {
      * with the slashes as %2f and spaces as +. Ends with the book folder's name.
      */
     baseUrl: string;
+    /** When the record was made, which is when the book was first uploaded (ISO 8601). */
+    createdAt: string;
+    /**
+     * The subscription the record names (its brandingProjectName), e.g. "Test", or undefined while
+     * it names none. Uploads do not set it; the harvester does, from the uploaded meta.json, when it
+     * finishes processing an upload (BL-17234).
+     */
+    subscription: string | undefined;
+    /**
+     * Where the harvester is with the book, e.g. "New" or "Updated" (waiting), "InProgress", or
+     * "Done", or undefined while the record has none.
+     */
+    harvestState: string | undefined;
+    /** When the harvester last started on the book (ISO 8601), or undefined if it never has. */
+    harvestStartedAt: string | undefined;
+    /** When the record last changed (ISO 8601). */
+    updatedAt: string;
 }
 
 const parseHeaders = {
@@ -66,7 +83,7 @@ async function queryBooksOnDevServer(
 ): Promise<IBookOnServer[]> {
     const url =
         `${DEV_PARSE_SERVER_URL}/classes/books?where=${encodeURIComponent(JSON.stringify(where))}` +
-        `&include=uploader&keys=title,bookInstanceId,tags,uploader,baseUrl&limit=1000`;
+        `&include=uploader&keys=title,bookInstanceId,tags,uploader,baseUrl,createdAt,brandingProjectName,harvestState,harvestStartedAt,updatedAt&limit=1000`;
     const headers = login
         ? { ...parseHeaders, "X-Parse-Session-Token": login.sessionToken }
         : parseHeaders;
@@ -83,6 +100,11 @@ async function queryBooksOnDevServer(
             tags?: string[];
             uploader?: { email?: string };
             baseUrl: string;
+            createdAt: string;
+            brandingProjectName?: string;
+            harvestState?: string;
+            harvestStartedAt?: { iso: string };
+            updatedAt: string;
         }[];
     };
     const bookshelfPrefix = "bookshelf:";
@@ -96,6 +118,11 @@ async function queryBooksOnDevServer(
             .map((tag) => tag.substring(bookshelfPrefix.length)),
         uploaderEmail: r.uploader?.email,
         baseUrl: r.baseUrl,
+        createdAt: r.createdAt,
+        subscription: r.brandingProjectName || undefined,
+        harvestState: r.harvestState || undefined,
+        harvestStartedAt: r.harvestStartedAt?.iso,
+        updatedAt: r.updatedAt,
     }));
 }
 
@@ -138,14 +165,20 @@ export async function countBooksInLanguageOnDevServer(
 }
 
 /**
- * Every book the signed-in account has on the sandbox, whatever a test named them. Cleanup uses
- * this so a run can delete not only the books it just uploaded but any a crashed earlier run left
- * behind, which is safe because the account exists only for these tests.
+ * The books the signed-in account has on the sandbox whose titles start with `titlePrefix`. Cleanup
+ * uses this so a run can delete not only the books it just uploaded but any a crashed earlier run
+ * of the same test left behind.
+ *
+ * Every real-upload test signs in as the same account, and the nightly runs its shards at the same
+ * time, so two such tests can have books on the account at once. Each test therefore gives its
+ * books titles with a prefix of its own and reads and deletes only those: a test that counted or
+ * deleted all the account's books would break whichever other one was running.
  */
 export async function findBooksUploadedBy(
     login: IBloomLibraryLogin,
+    titlePrefix: string,
 ): Promise<IBookOnServer[]> {
-    return queryBooksOnDevServer(
+    const books = await queryBooksOnDevServer(
         {
             uploader: {
                 __type: "Pointer",
@@ -156,6 +189,7 @@ export async function findBooksUploadedBy(
         "the account's books",
         login,
     );
+    return books.filter((book) => book.title.startsWith(titlePrefix));
 }
 
 /**
@@ -230,6 +264,180 @@ export async function getBookshelvesOfUploadedBook(
 }
 
 /**
+ * The subscription the uploaded copy of a book was made under, e.g. "Test" or "Default": the
+ * brandingProjectName of the meta.json Bloom uploaded with it (BookMetaData.SubscriptionDescriptor).
+ */
+export async function getSubscriptionOfUploadedBook(
+    baseUrl: string,
+): Promise<string | undefined> {
+    const meta = JSON.parse(
+        await fetchUploadedBookFile(baseUrl, "meta.json", "meta.json"),
+    ) as { brandingProjectName?: string };
+    return meta.brandingProjectName;
+}
+
+/**
+ * The features the uploaded copy of a book claims, such as "video" or "signLanguage:ase": the
+ * `features` of the meta.json Bloom uploaded with it (BookInfo.Features), which Bloom works out
+ * afresh for each upload from the book and the choices on the Web screen.
+ */
+export async function getFeaturesOfUploadedBook(
+    baseUrl: string,
+): Promise<string[]> {
+    const meta = JSON.parse(
+        await fetchUploadedBookFile(baseUrl, "meta.json", "meta.json"),
+    ) as { features?: string[] };
+    return meta.features ?? [];
+}
+
+/**
+ * Where the latest upload of `book` put its files, as a baseUrl in the form Bloom writes it. Each
+ * upload goes to a new folder, `<bucket>/<record id>/<upload time>/<book folder>/`, and the record's
+ * own baseUrl can point at an older upload's folder once the harvester has written a stale record
+ * back (BL-16921). So this lists the record's folders in the sandbox's bucket, which is public-read,
+ * and takes the one with the latest upload time.
+ */
+export async function getLatestUploadBaseUrl(
+    book: IBookOnServer,
+): Promise<string> {
+    const match = /^(https:\/\/s3\.amazonaws\.com\/[^/]+\/)(.+)$/.exec(
+        book.baseUrl,
+    );
+    if (!match)
+        throw new Error(
+            `The record of "${book.title}" has a baseUrl that is not on S3: ${book.baseUrl}`,
+        );
+    const [, bucketUrl, encodedPrefix] = match;
+    const recordFolder = decodeBaseUrl(encodedPrefix).split("/")[0];
+    /** The folders directly inside `prefix` in the bucket, each ending with "/". */
+    const listFolders = async (prefix: string): Promise<string[]> => {
+        const url = `${bucketUrl}?list-type=2&delimiter=/&prefix=${encodeURIComponent(prefix)}`;
+        const response = await fetch(url);
+        if (!response.ok)
+            throw new Error(`S3 answered ${response.status} to listing ${url}`);
+        return [
+            ...(await response.text()).matchAll(
+                /<CommonPrefixes><Prefix>([^<]+)<\/Prefix><\/CommonPrefixes>/g,
+            ),
+        ].map(([, folder]) => folder.replace(/&amp;/g, "&"));
+    };
+    const uploads = (await listFolders(`${recordFolder}/`)).sort(
+        (a, b) => Number(a.split("/")[1]) - Number(b.split("/")[1]),
+    );
+    if (uploads.length === 0)
+        throw new Error(
+            `The sandbox's bucket has no uploads of "${book.title}" under ${bucketUrl}${recordFolder}/.`,
+        );
+    const latest = uploads[uploads.length - 1];
+    const bookFolders = await listFolders(latest);
+    if (bookFolders.length !== 1)
+        throw new Error(
+            `The latest upload of "${book.title}" (${latest}) holds ${bookFolders.length} book folders: ${bookFolders.join(", ")}`,
+        );
+    return bucketUrl + encodeURIComponent(bookFolders[0]);
+}
+
+/** Undo the five XML escapes S3 uses in a listing. */
+function unescapeXml(text: string): string {
+    return text
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&amp;/g, "&");
+}
+
+/**
+ * Every file an upload wrote, as paths inside its book folder (e.g. "audio/x.mp3"), read by listing
+ * the sandbox's public bucket. `baseUrl` is the upload's folder in the form Bloom writes it, such as
+ * getLatestUploadBaseUrl returns. S3 lists at most 1000 keys per answer, so this follows the
+ * continuation tokens until the listing is complete.
+ */
+export async function listUploadedBookFiles(
+    baseUrl: string,
+): Promise<string[]> {
+    const match = /^(https:\/\/s3\.amazonaws\.com\/[^/]+\/)(.+)$/.exec(
+        decodeBaseUrl(baseUrl),
+    );
+    if (!match) throw new Error(`The baseUrl is not on S3: ${baseUrl}`);
+    const [, bucketUrl, folder] = match;
+    const prefix = folder.endsWith("/") ? folder : `${folder}/`;
+    const files: string[] = [];
+    let continuationToken: string | undefined;
+    do {
+        const url =
+            `${bucketUrl}?list-type=2&prefix=${encodeURIComponent(prefix)}` +
+            (continuationToken
+                ? `&continuation-token=${encodeURIComponent(continuationToken)}`
+                : "");
+        const response = await fetch(url);
+        if (!response.ok)
+            throw new Error(`S3 answered ${response.status} to listing ${url}`);
+        const listing = await response.text();
+        for (const [, key] of listing.matchAll(/<Key>([^<]+)<\/Key>/g))
+            files.push(unescapeXml(key).substring(prefix.length));
+        continuationToken = /<IsTruncated>true<\/IsTruncated>/.test(listing)
+            ? unescapeXml(
+                  /<NextContinuationToken>([^<]+)<\/NextContinuationToken>/.exec(
+                      listing,
+                  )?.[1] ?? "",
+              ) || undefined
+            : undefined;
+        if (
+            /<IsTruncated>true<\/IsTruncated>/.test(listing) &&
+            !continuationToken
+        )
+            throw new Error(
+                `S3's listing of ${url} is truncated but gives no continuation token.`,
+            );
+    } while (continuationToken);
+    return files;
+}
+
+/**
+ * The address of the thumbnail that Bloom Library's pages show for `book`, worked out from its
+ * record the way the website does (BloomLibrary2's Book.getThumbnailUrl, at size 256). Once the
+ * harvester is done with the book, that is the thumbnail the harvester made, in the harvester's
+ * bucket beside the upload's folder (getHarvesterBaseUrlFromBaseUrl). Before that, it is the
+ * thumbnail-256.png that Bloom uploaded, in the folder the record's baseUrl names. Either way the
+ * website adds the record's updatedAt, so that a browser fetches it afresh after a change.
+ */
+export function thumbnailUrlBloomLibraryShows(book: IBookOnServer): string {
+    const version = `?version=${book.updatedAt}`;
+    const harvested =
+        book.harvestState === "Done" &&
+        book.harvestStartedAt !== undefined &&
+        // The website trusts no harvester thumbnail older than this (February 12, 2020, 11:00).
+        new Date(book.harvestStartedAt) >= new Date(2020, 1, 11, 11);
+    if (harvested) {
+        const folder = book.baseUrl.endsWith("%2f")
+            ? book.baseUrl.substring(0, book.baseUrl.length - 3)
+            : book.baseUrl;
+        const lastSlash = folder.lastIndexOf("%2f");
+        if (lastSlash >= 0)
+            return (
+                folder
+                    .substring(0, lastSlash)
+                    .replace(
+                        "BloomLibraryBooks-Sandbox",
+                        "bloomharvest-sandbox",
+                    )
+                    .replace("BloomLibraryBooks", "bloomharvest") +
+                `/thumbnails/thumbnail-256.png${version}`
+            );
+    }
+    return `${book.baseUrl}thumbnail-256.png${version}`;
+}
+
+/** The bytes of a file on the sandbox's S3 buckets, such as a thumbnail. */
+export async function fetchSandboxFile(url: string): Promise<Buffer> {
+    const response = await fetch(url);
+    if (!response.ok)
+        throw new Error(`S3 answered ${response.status} to fetching ${url}`);
+    return Buffer.from(await response.arrayBuffer());
+}
+
+/**
  * The front/back matter pack the uploaded copy of a book carries (see xmatterPackInBookHtml): how
  * a test sees that an upload sent the book with the collection's current pack.
  */
@@ -240,14 +448,27 @@ export async function getXmatterPackOfUploadedBook(
 }
 
 /**
- * Delete every book the signed-in account has on the sandbox, and return how many. The safety net a
- * real-upload test calls in cleanup, so nothing it uploaded (or a crashed run uploaded before it)
- * is left on dev.bloomlibrary.org.
+ * Delete every book the signed-in account has on the sandbox whose title starts with
+ * `titlePrefix`, and return how many. The safety net a real-upload test calls in cleanup, so
+ * nothing it uploaded (or a crashed run of it uploaded before) is left on dev.bloomlibrary.org.
+ * See findBooksUploadedBy for why it takes a prefix.
+ *
+ * With `olderThanMinutes`, only books first uploaded at least that long ago are deleted: a run
+ * clearing up after crashed runs must not delete the book of another run of the same test that is
+ * going on now (the nightly and a bot's verification run can overlap).
  */
-export async function deleteAllBooksUploadedBy(
+export async function deleteBooksUploadedBy(
     login: IBloomLibraryLogin,
+    titlePrefix: string,
+    olderThanMinutes?: number,
 ): Promise<number> {
-    const books = await findBooksUploadedBy(login);
+    const cutoff =
+        olderThanMinutes === undefined
+            ? Infinity
+            : Date.now() - olderThanMinutes * 60000;
+    const books = (await findBooksUploadedBy(login, titlePrefix)).filter(
+        (book) => Date.parse(book.createdAt) <= cutoff,
+    );
     for (const book of books) await deleteBookFromDevServer(book, login);
     return books.length;
 }

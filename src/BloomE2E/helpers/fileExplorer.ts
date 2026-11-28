@@ -90,6 +90,66 @@ if ($seen) {
     return { folder: window.folder, selected };
 }
 
+/** The window handles of the File Explorer windows open now, to tell later windows from them. */
+export async function listExplorerWindowHandles(): Promise<string[]> {
+    const output = await runPowerShell(
+        `$ErrorActionPreference = 'Stop'
+$shell = New-Object -ComObject Shell.Application
+foreach ($w in @($shell.Windows())) { try { [string]$w.HWND } catch {} }`,
+        {},
+        60000,
+    );
+    return output.split(/\s+/).filter((handle) => handle !== "");
+}
+
+/**
+ * Clean up after Bloom opens the folder `folder` in File Explorer for the user: wait up to
+ * `timeoutMs` for an Explorer window showing it that is not one of `windowsBefore` (from
+ * listExplorerWindowHandles, read before the command that opens it), close every such window, and
+ * return how many it closed. A window that was already open, such as the user's own, is left alone,
+ * and finding none (Windows opened the folder in another file manager, say) is not an error. Call
+ * it before the folder is deleted: Explorer then moves its window to the folder's parent.
+ */
+export async function closeNewExplorerWindowsOnFolder(
+    folder: string,
+    windowsBefore: string[],
+    timeoutMs: number,
+): Promise<number> {
+    const script = `
+$ErrorActionPreference = 'Stop'
+$folder = [IO.Path]::GetFullPath($env:BLOOM_E2E_FOLDER).TrimEnd('\\')
+$before = @($env:BLOOM_E2E_WINDOWS_BEFORE -split ' ' | Where-Object { $_ })
+$shell = New-Object -ComObject Shell.Application
+$deadline = (Get-Date).AddMilliseconds([int]$env:BLOOM_E2E_TIMEOUT_MS)
+do {
+  $closed = 0
+  foreach ($w in @($shell.Windows())) {
+    try { $path = $w.Document.Folder.Self.Path; $handle = [string]$w.HWND } catch { continue }
+    if ($before -contains $handle) { continue }
+    if ($path -and [string]::Equals($path.TrimEnd('\\'), $folder, [StringComparison]::OrdinalIgnoreCase)) {
+      $w.Quit()
+      $closed++
+    }
+  }
+  if ($closed -gt 0) { $closed; exit 0 }
+  # The pause between scans of a wait that ends as soon as the window shows or the deadline
+  # passes. The window belongs to another process, so there is no event to wait on.
+  $left = ($deadline - (Get-Date)).TotalMilliseconds
+  if ($left -gt 0) { Start-Sleep -Milliseconds ([Math]::Min(250, [int]$left)) }
+} while ((Get-Date) -lt $deadline)
+0`;
+    const output = await runPowerShell(
+        script,
+        {
+            BLOOM_E2E_FOLDER: Path.resolve(folder),
+            BLOOM_E2E_WINDOWS_BEFORE: windowsBefore.join(" "),
+            BLOOM_E2E_TIMEOUT_MS: String(timeoutMs),
+        },
+        timeoutMs + 60000,
+    );
+    return Number(output) || 0;
+}
+
 /**
  * Whether the file that was at `filePath` went into the current Windows user's Recycle Bin at or
  * after `since`. Pass a time taken just before the delete, so that a file recycled from the same
