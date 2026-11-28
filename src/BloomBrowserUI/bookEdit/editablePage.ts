@@ -6,7 +6,11 @@
 // Currently that is done using a regular script tag in the HTML, not via an import here.
 
 import $ from "jquery";
-import { bootstrap, IImageInfo } from "./js/bloomEditing";
+import {
+    bootstrap,
+    IImageInfo,
+    isLongPressAttachedTo,
+} from "./js/bloomEditing";
 import { EditableDivUtils } from "./js/editableDivUtils";
 import "../lib/long-press/jquery.longpress.js";
 import "../lib/jquery.i18n.custom"; // side-effect: adds .localize() to $.fn (kept via sideEffects allow-list)
@@ -136,6 +140,8 @@ export interface IPageFrameExports {
     notePageContentMayHaveChanged(): void;
     // See pageSnapshot.ts. For the e2e suite.
     isSnapshotStreamIdle(): boolean;
+    // See bloomEditing.ts. For the e2e suite.
+    isLongPressAttachedTo(element: Element): boolean;
     copySelection(): void;
     cutSelection(): void;
     pasteClipboard(): void;
@@ -252,6 +258,7 @@ export {
     pageUnloading,
     notePageContentMayHaveChanged,
     isSnapshotStreamIdle,
+    isLongPressAttachedTo,
     topBarButtonClick,
     copySelection,
     cutSelection,
@@ -615,6 +622,7 @@ interface EditablePageBundleApi {
     e2eOverrideCanExpandToFillSpace: typeof e2eOverrideCanExpandToFillSpace;
     e2eClearCanExpandToFillSpaceOverride: typeof e2eClearCanExpandToFillSpaceOverride;
     isSnapshotStreamIdle: typeof isSnapshotStreamIdle;
+    isLongPressAttachedTo: typeof isLongPressAttachedTo;
     SayHello: typeof SayHello;
     renderDragActivityTabControl: typeof renderDragActivityTabControl;
     showGamePromptDialog: typeof showGamePromptDialog;
@@ -707,6 +715,7 @@ window.editablePageBundle = {
     e2eOverrideCanExpandToFillSpace,
     e2eClearCanExpandToFillSpaceOverride,
     isSnapshotStreamIdle,
+    isLongPressAttachedTo,
     SayHello,
     renderDragActivityTabControl,
     showGamePromptDialog,

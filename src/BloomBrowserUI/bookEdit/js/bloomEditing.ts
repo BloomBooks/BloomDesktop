@@ -2142,6 +2142,17 @@ export function activateLongPressFor(jQuerySetOfMatchedElements) {
         .catch((e) => console.log("useLongpress query failed:" + e));
 }
 
+/**
+ * True when long-press is attached to this text box, so that holding a letter down in it offers
+ * the letter's special characters. activateLongPressFor attaches it only after Bloom has answered
+ * two requests, and nothing on the page shows when it has. For the e2e suite, which waits on this
+ * before it holds a key down.
+ */
+export function isLongPressAttachedTo(element: Element): boolean {
+    // The name the plugin keeps its instance under: "plugin_" + pluginName in jquery.longpress.js.
+    return $.data(element, "plugin_longPress") !== undefined;
+}
+
 export function IsPageXMatter($target: JQuery): boolean {
     return (
         typeof $target.closest(".bloom-frontMatter")[0] !== "undefined" ||
