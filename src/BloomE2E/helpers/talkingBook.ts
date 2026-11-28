@@ -778,7 +778,11 @@ export interface IAdjustTimingsRegion {
 export async function readAdjustTimingsRegions(
     dialog: Locator,
 ): Promise<IAdjustTimingsRegion[]> {
-    return dialog.locator("#waveform").evaluate((waveform) => {
+    return dialog.locator("#waveform").evaluate(async (waveform) => {
+        // The regions plugin starts following the scroll for each region in a zero-delay timer
+        // of its own, queued when the dialog drew the regions (virtualAppend). A zero-delay timer
+        // queued now runs after all of those, so once it has run, every region follows the scroll.
+        await new Promise((resolve) => setTimeout(resolve, 0));
         const root = (waveform.firstElementChild as HTMLElement | null)
             ?.shadowRoot;
         const scroller = root?.querySelector<HTMLElement>('[part~="scroll"]');
