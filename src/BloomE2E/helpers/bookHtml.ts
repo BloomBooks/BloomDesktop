@@ -348,6 +348,47 @@ export async function readPagesOnDisk(
     }, html);
 }
 
+/** The picture files one saved page shows, each as its file name, by where they are. */
+export interface ISavedPagePictures {
+    /** Pictures on the page's game buttons and page-turn buttons. */
+    onButtons: string[];
+    /** Pictures anywhere else on the page. */
+    elsewhere: string[];
+}
+
+/**
+ * The pictures (<img> elements) that one page of the book saved in `bookFolder` shows, as their
+ * file names, URL-decoded, split by whether they sit on a game button or page-turn button.
+ * `page` is used only as a DOM parser. Throws if the file has no page with that id.
+ */
+export async function readSavedPagePictures(
+    page: Page,
+    bookFolder: string,
+    pageId: string,
+): Promise<ISavedPagePictures> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate(
+        ({ source, id }) => {
+            const dom = new DOMParser().parseFromString(source, "text/html");
+            const pageDiv = dom.getElementById(id);
+            if (!pageDiv)
+                throw new Error(`The saved book has no page with id ${id}.`);
+            const fileOf = (img: Element) =>
+                decodeURIComponent(
+                    (img.getAttribute("src") ?? "").split("?")[0],
+                );
+            const all = Array.from(pageDiv.querySelectorAll("img"));
+            const onButton = (img: Element) =>
+                !!img.closest("button.game-button, button.page-turn-button");
+            return {
+                onButtons: all.filter(onButton).map(fileOf),
+                elsewhere: all.filter((img) => !onButton(img)).map(fileOf),
+            };
+        },
+        { source: html, id: pageId },
+    );
+}
+
 /**
  * The side of the printed spread each page of the saved book falls on, by page id, as Bloom marks
  * it (side-left or side-right; see UpdateSideClass in HtmlDom.cs). The PDF takes each page's margins

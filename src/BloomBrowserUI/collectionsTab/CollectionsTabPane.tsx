@@ -617,6 +617,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                     }}
                 >
                     <div
+                        data-testid="collections-tab-collections-pane"
                         css={css`
                             margin: 10px;
                         `}

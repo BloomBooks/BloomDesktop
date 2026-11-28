@@ -155,6 +155,12 @@ export interface ICollectionSpec {
      * user cannot reach); a test whose subject is the sign language says which it wants.
      */
     signLanguage?: string;
+    /**
+     * The Default Font of Language1, Language2 and Language3, in that order, as the Languages page
+     * of the Settings dialog sets it, e.g. ["Andika", "ABeeZee"]. A language this leaves out gets
+     * Andika.
+     */
+    fonts?: string[];
 }
 
 /** Options for launchBloom. Give exactly one of collectionName and collectionSpec. */
@@ -729,6 +735,8 @@ export interface ICollectionXmlExtras {
      * against. Left out, the file says nothing and Bloom uses its default.
      */
     booksOnWebGoal?: number;
+    /** See ICollectionSpec.fonts. */
+    fonts?: string[];
 }
 
 /**
@@ -764,7 +772,7 @@ export function makeCollectionXml(
                 `  <Language${index + 1}Name>${nameForTag(tag)}</Language${index + 1}Name>\n` +
                 `  <Language${index + 1}IsCustomName>false</Language${index + 1}IsCustomName>\n` +
                 `  <Language${index + 1}Iso639Code>${tag}</Language${index + 1}Iso639Code>\n` +
-                `  <DefaultLanguage${index + 1}FontName>Andika</DefaultLanguage${index + 1}FontName>` +
+                `  <DefaultLanguage${index + 1}FontName>${escapeXmlText(extras.fonts?.[index] ?? "Andika")}</DefaultLanguage${index + 1}FontName>` +
                 (extras.rightToLeftLanguages?.includes(tag)
                     ? `\n  <IsLanguage${index + 1}Rtl>true</IsLanguage${index + 1}Rtl>`
                     : ""),
@@ -811,6 +819,14 @@ function nameForTag(tag: string): string {
         ar: "Arabic",
     };
     return names[tag] ?? tag;
+}
+
+/** Text escaped for an XML element's content, e.g. a font name such as "Fira Sans & Co". */
+function escapeXmlText(text: string): string {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 }
 
 /** Find the .bloomCollection file in a collection folder. Throws if the folder has none. */

@@ -18,7 +18,9 @@ import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     cancelAiImageEditor,
+    declineOpenRouterWelcome,
     dismissLookAroundNotice,
+    launchAiImageEditorWithoutOpenRouterKey,
     lookAroundNotice,
     openAiImageEditorFromPicture,
     selectAiImageTool,
@@ -225,9 +227,12 @@ test.describe("a Playground book [Test Case ID 833]", () => {
         page,
     }) => {
         test.setTimeout(600000);
+        await launchAiImageEditorWithoutOpenRouterKey(page);
         // An ordinary book: no look-around notice, and a tool that needs no OpenRouter can run.
+        // With no OpenRouter key the editor first offers to connect to it.
         await makeBook(page, ORDINARY_TEMPLATE);
         await openAiImageEditorFromPicture(page);
+        await declineOpenRouterWelcome(page);
         await showAllAiImageTools(page);
         const ordinaryRun = await selectAiImageTool(page, BROWSER_TOOL);
         await expect(

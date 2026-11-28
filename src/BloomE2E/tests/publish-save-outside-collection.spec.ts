@@ -24,6 +24,7 @@ import {
 } from "../helpers/nativeDialogs";
 import { choosePdfMode } from "../helpers/pdfPrint";
 import {
+    closePublishProgressDialog,
     selectPublishDestination,
     type PublishDestination,
 } from "../helpers/publish";
@@ -97,36 +98,6 @@ function documentsFolder(): string {
             `Windows gave "${folder}" as the Documents folder, which is not a folder on this machine.`,
         );
     return folder;
-}
-
-/**
- * Close the progress dialog that the ePUB and BloomPUB screens show while they save, once it offers
- * its Close button (PublishProgressDialogInner.tsx), if it has not gone by itself. Its Close button
- * is its only filled button; its label is localized, so it is found by how it is drawn.
- */
-async function closeProgressDialog(
-    page: Page,
-    destination: PublishDestination,
-): Promise<void> {
-    const dialog = page.locator(".MuiDialog-root.progress-dialog");
-    const close = dialog.locator(
-        ".MuiDialogActions-root button.MuiButton-contained",
-    );
-    await expect
-        .poll(
-            async () =>
-                (await dialog.count()) === 0 || (await close.isVisible()),
-            {
-                timeout: 60000,
-                message: `The ${destination} progress dialog neither went away nor offered its Close button.`,
-            },
-        )
-        .toBe(true);
-    if ((await dialog.count()) > 0) await close.click();
-    await expect(
-        dialog,
-        `The ${destination} progress dialog should be gone.`,
-    ).toHaveCount(0, { timeout: 30000 });
 }
 
 /** Text with paths in it, as Windows compares paths: separators made one kind, letters one case. */
@@ -263,7 +234,7 @@ test("Bloom refuses to save a published file inside the collection folder, and s
                         fs.existsSync(refusedPath),
                         `Bloom should have written nothing to ${refusedPath}`,
                     ).toBe(false);
-                    await closeProgressDialog(page, format.destination);
+                    await closePublishProgressDialog(page, format.destination);
                 },
             );
         }
