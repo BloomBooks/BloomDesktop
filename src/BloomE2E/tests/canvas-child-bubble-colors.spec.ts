@@ -212,9 +212,16 @@ async function sideOfBubble(
           };
 }
 
-/** The color ComicalJS fills a bubble with, read solidly inside it at `inside`. */
-async function readFillColor(page: Page, inside: IScreenPoint): Promise<Rgba> {
-    return (await findOpaqueDrawingPointNear(page, inside)).color;
+/**
+ * The color ComicalJS fills a bubble with, read solidly inside it at `inside`, or at the nearest
+ * solid screen pixel within `radius` pixels of it.
+ */
+async function readFillColor(
+    page: Page,
+    inside: IScreenPoint,
+    radius?: number,
+): Promise<Rgba> {
+    return (await findOpaqueDrawingPointNear(page, inside, radius)).color;
 }
 
 /**
@@ -842,13 +849,18 @@ test("Child bubbles merge with their parent and share its colors [Test Case ID 3
                         `(${JSON.stringify(newChildBox)}), so its own fill cannot be read apart ` +
                         `from theirs.`,
                 );
+            // Read the screen pixel at the clear point itself: a search around it could reach
+            // another bubble's shape, which is what the clearance keeps out.
             await expect
-                .poll(async () => describe(await readFillColor(page, clear)), {
-                    timeout: 15000,
-                    message:
-                        "A child added to the family should be filled with its background " +
-                        `color, ${kChildChoice.background}.`,
-                })
+                .poll(
+                    async () => describe(await readFillColor(page, clear, 0)),
+                    {
+                        timeout: 15000,
+                        message:
+                            "A child added to the family should be filled with its background " +
+                            `color, ${kChildChoice.background}.`,
+                    },
+                )
                 .toBe(`${kChildChoice.background}/255`);
             // The new child may lie over the others, so its fill is read from the saved drawing,
             // where it is a shape of its own.
