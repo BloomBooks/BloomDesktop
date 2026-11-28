@@ -121,6 +121,29 @@ async function readUploadedCopy(): Promise<IUploadedCopy> {
     };
 }
 
+/**
+ * Wait for the book's record on the sandbox to name the Test subscription. The "same book?" dialog
+ * compares the book's subscription with the one on the record, which an upload does not set: only
+ * the harvester does, once it has processed an upload (BL-17234). Until then the dialog sees no
+ * subscription on Bloom Library and never shows its acknowledgement box, so each update waits for
+ * the record to name one, as it would by the time a person makes another change.
+ */
+async function waitForRecordToNameSubscription(): Promise<void> {
+    await expect
+        .poll(
+            async () =>
+                (await findBooksUploadedBy(login!, BOOK_TITLE))[0]
+                    ?.subscription,
+            {
+                timeout: 300000,
+                intervals: [5000],
+                message:
+                    "The book's record on the sandbox never named the Test subscription; has the sandbox's harvester stopped? (BL-17234)",
+            },
+        )
+        .toBe(TEST_SUBSCRIPTION);
+}
+
 /** Add a "Just Text" page after the current one and type `text` on it. */
 async function addTextPage(page: Page, text: string): Promise<void> {
     await switchTab(page, "edit");
@@ -207,6 +230,8 @@ test.describe("updating a branded book on dev.bloomlibrary.org", () => {
 
         // ---- A page added, uploaded as an update: the branding stays -------------------------------
         await addTextPage(page, FIRST_NEW_PAGE_TEXT);
+        // Without it the dialog would show no acknowledgement box whatever the subscriptions.
+        await waitForRecordToNameSubscription();
         await openPublishToWeb(page);
         await acceptAllAgreements(page);
         let askedSameBook = false;
@@ -241,23 +266,7 @@ test.describe("updating a branded book on dev.bloomlibrary.org", () => {
         // Clearing the code changes the branding, which needs a restart; this fails if OK does not
         // offer one.
         const reopened = await restartFromCollectionSettings(bloomApp);
-        // The dialog compares the book's subscription with the one on the book's record, which an
-        // upload does not set: only the harvester does, once it has processed an upload (BL-17234).
-        // Until then the dialog sees no subscription on Bloom Library and asks nothing, so wait for
-        // the record to name one, as it would by the time a person makes another change.
-        await expect
-            .poll(
-                async () =>
-                    (await findBooksUploadedBy(login!, BOOK_TITLE))[0]
-                        ?.subscription,
-                {
-                    timeout: 300000,
-                    intervals: [5000],
-                    message:
-                        "The book's record on the sandbox never named the Test subscription; has the sandbox's harvester stopped? (BL-17234)",
-                },
-            )
-            .toBe(TEST_SUBSCRIPTION);
+        await waitForRecordToNameSubscription();
         await selectBook(reopened, bookFolder);
         await openPublishToWeb(reopened);
         await acceptAllAgreements(reopened);
