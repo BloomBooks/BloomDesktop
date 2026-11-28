@@ -35,6 +35,8 @@ import { BloomTooltip } from "../../../../react_components/BloomToolTip";
 const DecodableGrid: FunctionComponent<{
     direction: "row" | "column";
     words: DataWord[] | string[];
+    // Put on each shown word, for the e2e tests.
+    itemTestId?: string;
 }> = (props) => {
     const measureRef = useRef<HTMLDivElement>(null);
     const gridRef = useRef<HTMLDivElement>(null);
@@ -118,6 +120,7 @@ const DecodableGrid: FunctionComponent<{
                     <div
                         key={index}
                         className="lang1InATool"
+                        data-testid={props.itemTestId}
                         css={css`
                             line-height: 1.3;
                             padding-bottom: 0.2em;
@@ -175,6 +178,11 @@ const SortButton: FunctionComponent<{
     let tipInsert: string;
     let unicodeIcon: string;
     let shouldHighlight: boolean = false;
+    const testId = [
+        "decodable-reader-sort-alphabetic",
+        "decodable-reader-sort-by-length",
+        "decodable-reader-sort-by-frequency",
+    ][props.sortType];
     switch (props.sortType) {
         case 0:
             keyInsert = "Alphabetically";
@@ -212,6 +220,7 @@ const SortButton: FunctionComponent<{
             <BloomButton
                 l10nKey="already-localized"
                 alreadyLocalized={true}
+                data-testid={testId}
                 variant="text"
                 enabled={true}
                 hasText={true}
@@ -315,6 +324,7 @@ const SortedStageWords: FunctionComponent<{
             </div>
             <DecodableGrid
                 direction="column"
+                itemTestId="decodable-reader-stage-word"
                 words={
                     model.synphony?.source.useAllowedWords === 1
                         ? model.getAllowedWordsSorted(model.stageNumber)

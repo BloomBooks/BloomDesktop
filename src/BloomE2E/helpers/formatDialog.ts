@@ -155,7 +155,9 @@ export async function getFormatGearInsetFromTextBox(
  * The point in the shell page's coordinates that the page frame's client origin (0, 0) maps to,
  * so a point measured inside the frame can be clicked with the mouse.
  */
-async function pageFrameOrigin(page: Page): Promise<{ x: number; y: number }> {
+export async function pageFrameOrigin(
+    page: Page,
+): Promise<{ x: number; y: number }> {
     const iframe = await editablePageFrame(page).frameElement();
     const box = await iframe.boundingBox();
     if (!box)
@@ -171,7 +173,7 @@ async function pageFrameOrigin(page: Page): Promise<{ x: number; y: number }> {
 }
 
 /** Click, with a real mouse press and release, at a point given in the page frame's coordinates. */
-async function clickInPageFrameAt(
+export async function clickInPageFrameAt(
     page: Page,
     x: number,
     y: number,

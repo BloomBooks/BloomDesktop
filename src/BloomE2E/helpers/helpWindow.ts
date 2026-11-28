@@ -2,13 +2,15 @@
 // HTML Help viewer (HelpLauncher.cs), which runs inside Bloom's own process in a native window of
 // the class "HH Parent". That window is outside WebView2, so CDP cannot see it; it is read here
 // through Win32 from PowerShell. Inside it the topic is an Internet Explorer document, which
-// answers WM_HTML_GETOBJECT with its IHTMLDocument2: its URL names the help file and the topic,
-// as "mk:@MSITStore:<folder>\Bloom.chm::/<topic>", and its title is the topic's own title.
+// answers WM_HTML_GETOBJECT with its IHTMLDocument2, whose properties are read through IDispatch:
+// its URL names the help file and the topic, as "mk:@MSITStore:<folder>\Bloom.chm::/<topic>",
+// and its title is the topic's own title.
 //
 // Opening help takes the foreground, so a test that uses this skips under launchWithDontDisturb().
 
 import { execFile } from "node:child_process";
 import { expect } from "@playwright/test";
+import { listTopLevelWindows } from "./windowStacking";
 
 /** A help window of Bloom's, with the topic it shows. */
 export interface IHelpWindow {
@@ -20,6 +22,8 @@ export interface IHelpWindow {
     url: string;
     /** The topic's title, as the help file gives it in the page's <title>. */
     title: string;
+    /** Why the document could not be read (no document yet, a property that failed), or "". */
+    problem: string;
 }
 
 /** A topic as Bloom's help window showed it. */
@@ -36,6 +40,17 @@ const kReadHelpWindows = `
 $ErrorActionPreference = 'Stop'
 Add-Type @'
 using System; using System.Collections.Generic; using System.Runtime.InteropServices; using System.Text;
+using DISPPARAMS = System.Runtime.InteropServices.ComTypes.DISPPARAMS;
+// IDispatch, called directly: the document is asked for as IHTMLDocument2 and its properties are
+// looked up by name. PowerShell's COM binder reads them on a developer's machine that has the
+// Microsoft.mshtml interop assembly, but on the CI runner it reads every property as empty.
+[ComImport, Guid("00020400-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+public interface IBloomDispatch {
+  [PreserveSig] int GetTypeInfoCount(out uint count);
+  [PreserveSig] int GetTypeInfo(uint index, int lcid, out IntPtr typeInfo);
+  [PreserveSig] int GetIDsOfNames(ref Guid riid, [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.LPWStr)] string[] names, int count, int lcid, [Out, MarshalAs(UnmanagedType.LPArray)] int[] ids);
+  [PreserveSig] int Invoke(int id, ref Guid riid, int lcid, ushort flags, ref DISPPARAMS parameters, out object result, IntPtr exceptionInfo, IntPtr argumentError);
+}
 public static class BloomHelpWindows {
   delegate bool EnumProc(IntPtr h, IntPtr l);
   [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc f, IntPtr l);
@@ -46,7 +61,7 @@ public static class BloomHelpWindows {
   [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetClassName(IntPtr h, StringBuilder s, int n);
   [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern uint RegisterWindowMessage(string s);
   [DllImport("user32.dll")] static extern IntPtr SendMessageTimeout(IntPtr h, uint msg, IntPtr w, IntPtr l, uint flags, uint timeout, out IntPtr result);
-  [DllImport("oleacc.dll")] static extern int ObjectFromLresult(IntPtr lresult, ref Guid iid, IntPtr w, [MarshalAs(UnmanagedType.IDispatch)] out object o);
+  [DllImport("oleacc.dll")] static extern int ObjectFromLresult(IntPtr lresult, ref Guid iid, IntPtr w, out IntPtr o);
   static string ClassOf(IntPtr h) { var s = new StringBuilder(256); GetClassName(h, s, 256); return s.ToString(); }
   // The help windows (class "HH Parent") of the process pid.
   public static List<IntPtr> Find(int pid) {
@@ -59,17 +74,50 @@ public static class BloomHelpWindows {
     return found;
   }
   public static bool IsVisible(IntPtr h) { return IsWindowVisible(h); }
-  // The document a help window shows (an IHTMLDocument2), or null while it has none.
-  public static object Document(IntPtr h) {
+  // What a help window shows: its document's readyState, URL and title, and why the document
+  // could not be read ("" when it could).
+  public static string[] Read(IntPtr h) {
+    string problem;
+    var document = Document(h, out problem);
+    if (document == null) return new[] { "", "", "", problem };
+    try {
+      var readyState = Property(document, "readyState", ref problem);
+      var url = Property(document, "url", ref problem);
+      var title = Property(document, "title", ref problem);
+      return new[] { readyState, url, title, problem };
+    } finally { Marshal.ReleaseComObject(document); }
+  }
+  // The document a help window shows, or null (and why) while it has none.
+  static IBloomDispatch Document(IntPtr h, out string problem) {
     IntPtr ie = IntPtr.Zero;
     EnumChildWindows(h, (c, l) => { if (ClassOf(c) == "Internet Explorer_Server") { ie = c; return false; } return true; }, IntPtr.Zero);
-    if (ie == IntPtr.Zero) return null;
+    if (ie == IntPtr.Zero) { problem = "no Internet Explorer_Server window yet"; return null; }
     IntPtr result;
     // SMTO_ABORTIFHUNG, five seconds.
-    if (SendMessageTimeout(ie, RegisterWindowMessage("WM_HTML_GETOBJECT"), IntPtr.Zero, IntPtr.Zero, 2, 5000, out result) == IntPtr.Zero) return null;
-    var iid = new Guid("626FC520-A41E-11CF-A731-00A0C9082637"); // IHTMLDocument
-    object document;
-    return ObjectFromLresult(result, ref iid, IntPtr.Zero, out document) == 0 ? document : null;
+    if (SendMessageTimeout(ie, RegisterWindowMessage("WM_HTML_GETOBJECT"), IntPtr.Zero, IntPtr.Zero, 2, 5000, out result) == IntPtr.Zero || result == IntPtr.Zero) {
+      problem = "no answer to WM_HTML_GETOBJECT";
+      return null;
+    }
+    var iid = new Guid("332C4425-26CB-11D0-B483-00C04FD90119"); // IHTMLDocument2
+    IntPtr pointer;
+    var hr = ObjectFromLresult(result, ref iid, IntPtr.Zero, out pointer);
+    if (hr != 0) { problem = "ObjectFromLresult failed, 0x" + hr.ToString("X8"); return null; }
+    try { problem = ""; return (IBloomDispatch)Marshal.GetObjectForIUnknown(pointer); }
+    finally { Marshal.Release(pointer); }
+  }
+  // A property of the document, read through its IDispatch, or "" (and why) when it cannot be read.
+  static string Property(IBloomDispatch document, string name, ref string problem) {
+    var none = Guid.Empty;
+    var ids = new int[1];
+    var hr = document.GetIDsOfNames(ref none, new[] { name }, 1, 0, ids);
+    if (hr == 0) {
+      var noArguments = new DISPPARAMS();
+      object value;
+      hr = document.Invoke(ids[0], ref none, 0, 2 /* DISPATCH_PROPERTYGET */, ref noArguments, out value, IntPtr.Zero, IntPtr.Zero);
+      if (hr == 0) return value == null ? "" : value.ToString();
+    }
+    problem += (problem.Length > 0 ? "; " : "") + "could not read " + name + ", 0x" + hr.ToString("X8");
+    return "";
   }
   // Ask a help window to close, as its close box does (WM_CLOSE).
   public static void Close(IntPtr h) { PostMessage(h, 0x10, IntPtr.Zero, IntPtr.Zero); }
@@ -79,15 +127,14 @@ $pid_ = [int]$env:BLOOM_E2E_PID
 $found = @()
 foreach ($h in [BloomHelpWindows]::Find($pid_)) {
   if ($env:BLOOM_E2E_CLOSE -eq '1') { [BloomHelpWindows]::Close($h); continue }
-  # The document's properties are read here, through PowerShell's own COM binder: late binding
-  # from the compiled C# answers DISP_E_UNKNOWNNAME for them.
-  $document = [BloomHelpWindows]::Document($h)
+  $shown = [BloomHelpWindows]::Read($h)
   $found += [pscustomobject]@{
     hwnd = $h.ToInt64()
     visible = [BloomHelpWindows]::IsVisible($h)
-    readyState = if ($document) { [string]$document.readyState } else { '' }
-    url = if ($document) { [string]$document.url } else { '' }
-    title = if ($document) { [string]$document.title } else { '' }
+    readyState = $shown[0]
+    url = $shown[1]
+    title = $shown[2]
+    problem = $shown[3]
   }
 }
 ConvertTo-Json -Compress -InputObject @($found)
@@ -161,15 +208,17 @@ export async function openHelpAndReadTopic(
         `a help window was already open before ${whatWasClicked}`,
     ).toEqual([]);
     await openHelp();
-    let shown: IHelpWindow | undefined;
+    // A window whose URL or title could not be read is not taken as loaded, so that the failure
+    // below gives the reason instead of a check of an empty URL or title.
+    const isLoaded = (w: IHelpWindow) =>
+        w.visible && w.readyState === "complete" && w.problem === "";
+    let lastSeen: IHelpWindow[] = [];
     try {
         await expect
             .poll(
                 async () => {
-                    shown = (await listHelpWindows(pid)).find(
-                        (w) => w.visible && w.readyState === "complete",
-                    );
-                    return shown !== undefined;
+                    lastSeen = await listHelpWindows(pid);
+                    return lastSeen.some(isLoaded);
                 },
                 {
                     message: `${whatWasClicked} did not open Bloom's help window on a loaded page`,
@@ -178,16 +227,29 @@ export async function openHelpAndReadTopic(
             )
             .toBe(true);
     } catch (error) {
+        // Say what there was instead: the help windows that were found, each with why its
+        // document could not be read, and Bloom's visible windows, where an error box beside the
+        // help window would show.
+        const bloomWindows = await listTopLevelWindows(pid)
+            .then((windows) =>
+                JSON.stringify(
+                    windows.filter((w) => w.visible).map((w) => w.title),
+                ),
+            )
+            .catch((e) => String(e));
+        const seen = `help windows: ${JSON.stringify(lastSeen)}; Bloom's visible windows: ${bloomWindows}`;
         // Close whatever opened, but report the failure that names the button, not a failure
         // to close.
         await closeHelpWindows(pid).catch(() => undefined);
+        (error as Error).message += `\nLast seen: ${seen}`;
         throw error;
     }
     await closeHelpWindows(pid);
-    const parsed = parseHelpUrl(shown!.url);
+    const shown = lastSeen.find(isLoaded)!;
+    const parsed = parseHelpUrl(shown.url);
     if (!parsed)
         throw new Error(
-            `${whatWasClicked} opened a help window that shows "${shown!.url}" (titled "${shown!.title}"), not a page of a help file`,
+            `${whatWasClicked} opened a help window that shows "${shown.url}" (titled "${shown.title}"), not a page of a help file`,
         );
-    return { ...parsed, title: shown!.title };
+    return { ...parsed, title: shown.title };
 }

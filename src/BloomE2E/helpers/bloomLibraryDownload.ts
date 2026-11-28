@@ -1,5 +1,6 @@
-// Fetch a public book's files from Bloom Library (bloomlibrary.org itself, not the sandbox) so a
-// test can work on a real book that people made. Nothing here talks to Bloom, and nothing here
+// Fetch a public book's files from Bloom Library (bloomlibrary.org itself, or its sandbox,
+// dev.bloomlibrary.org, where testers keep the books that manual test cases use) so a test can work
+// on a real book that people made. Nothing here talks to Bloom, and nothing here
 // writes to Bloom Library: it reads the book's record and then its files, as anyone may.
 //
 // A person gets such a book with the website's "Download into Bloom Editor" button, which goes
@@ -11,6 +12,10 @@
 
 import * as fs from "node:fs";
 import * as Path from "node:path";
+import {
+    DEV_PARSE_APPLICATION_ID,
+    DEV_PARSE_SERVER_URL,
+} from "./bloomLibraryServer";
 
 /** Bloom Library's parse-server, where the book records live. */
 const PARSE_SERVER_URL = "https://server.bloomlibrary.org/parse";
@@ -58,15 +63,22 @@ async function fetchOk(
  * Copy the files of the Bloom Library book with this id (the id in its link,
  * https://bloomlibrary.org/book/<id>) into a new folder inside `parentFolder`, named as the
  * uploader's book folder is, and return that folder. Fails when the folder is already there.
+ * `library` says which Bloom Library holds the book: "sandbox" for one on dev.bloomlibrary.org
+ * (https://dev.bloomlibrary.org/book/<id>).
  */
 export async function downloadBookFromBloomLibrary(
     bookId: string,
     parentFolder: string,
+    library: "production" | "sandbox" = "production",
 ): Promise<string> {
+    const [parseServerUrl, parseApplicationId] =
+        library === "sandbox"
+            ? [DEV_PARSE_SERVER_URL, DEV_PARSE_APPLICATION_ID]
+            : [PARSE_SERVER_URL, PARSE_APPLICATION_ID];
     const record = (await (
         await fetchOk(
-            `${PARSE_SERVER_URL}/classes/books/${encodeURIComponent(bookId)}?keys=baseUrl`,
-            { "X-Parse-Application-Id": PARSE_APPLICATION_ID },
+            `${parseServerUrl}/classes/books/${encodeURIComponent(bookId)}?keys=baseUrl`,
+            { "X-Parse-Application-Id": parseApplicationId },
         )
     ).json()) as { baseUrl?: string };
     // e.g. https://s3.amazonaws.com/BloomLibraryBooks/<uploader>%2f<guid>%2f<book folder>%2f

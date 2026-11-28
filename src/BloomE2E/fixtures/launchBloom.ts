@@ -105,6 +105,16 @@ export interface IRelaunchChanges {
      * experiment turned off.
      */
     experimentalFeatures?: string[];
+    /**
+     * The web proxy that the restarted Bloom sends its own internet traffic through, as a URL
+     * such as "http://127.0.0.1:5123", or "" for whatever the test runner's environment says.
+     * A test that needs Bloom offline points this at a proxy it runs itself and that refuses
+     * every request (helpers/refusingProxy.ts): Bloom then fails to reach the internet just as
+     * it does with no connection, and the test sees what Bloom tried to reach. Given to Bloom as
+     * HTTP_PROXY and HTTPS_PROXY, which .NET's HttpClient reads at startup, with NO_PROXY keeping
+     * Bloom's own localhost server out of it. Bloom's browser (WebView2) does not read them.
+     */
+    proxy?: string;
 }
 
 /**
@@ -145,6 +155,12 @@ export interface ICollectionSpec {
      * user cannot reach); a test whose subject is the sign language says which it wants.
      */
     signLanguage?: string;
+    /**
+     * The Default Font of Language1, Language2 and Language3, in that order, as the Languages page
+     * of the Settings dialog sets it, e.g. ["Andika", "ABeeZee"]. A language this leaves out gets
+     * Andika.
+     */
+    fonts?: string[];
 }
 
 /** Options for launchBloom. Give exactly one of collectionName and collectionSpec. */
@@ -719,6 +735,8 @@ export interface ICollectionXmlExtras {
      * against. Left out, the file says nothing and Bloom uses its default.
      */
     booksOnWebGoal?: number;
+    /** See ICollectionSpec.fonts. */
+    fonts?: string[];
 }
 
 /**
@@ -754,7 +772,7 @@ export function makeCollectionXml(
                 `  <Language${index + 1}Name>${nameForTag(tag)}</Language${index + 1}Name>\n` +
                 `  <Language${index + 1}IsCustomName>false</Language${index + 1}IsCustomName>\n` +
                 `  <Language${index + 1}Iso639Code>${tag}</Language${index + 1}Iso639Code>\n` +
-                `  <DefaultLanguage${index + 1}FontName>Andika</DefaultLanguage${index + 1}FontName>` +
+                `  <DefaultLanguage${index + 1}FontName>${escapeXmlText(extras.fonts?.[index] ?? "Andika")}</DefaultLanguage${index + 1}FontName>` +
                 (extras.rightToLeftLanguages?.includes(tag)
                     ? `\n  <IsLanguage${index + 1}Rtl>true</IsLanguage${index + 1}Rtl>`
                     : ""),
@@ -801,6 +819,14 @@ function nameForTag(tag: string): string {
         ar: "Arabic",
     };
     return names[tag] ?? tag;
+}
+
+/** Text escaped for an XML element's content, e.g. a font name such as "Fira Sans & Co". */
+function escapeXmlText(text: string): string {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 }
 
 /** Find the .bloomCollection file in a collection folder. Throws if the folder has none. */
@@ -1015,6 +1041,7 @@ async function startBloomOn(
     readyTimeoutMs: number,
     experimentalFeatures?: string[],
     fakeCamera?: boolean,
+    proxy?: string,
 ): Promise<IRunningBloom> {
     const exe = findBloomExe();
     // findBloomExe takes the newest build in any configuration, so say which one this run uses:
@@ -1061,6 +1088,13 @@ async function startBloomOn(
     // never reaches a Bloom that did not ask for it.
     const env = environmentForBloom();
     env.BLOOM_E2E_FAKE_CAMERA = fakeCamera ? "1" : "";
+    // The proxy for Bloom's own internet traffic (IRelaunchChanges.proxy).
+    if (proxy) {
+        env.HTTP_PROXY = proxy;
+        env.HTTPS_PROXY = proxy;
+        env.ALL_PROXY = proxy;
+        env.NO_PROXY = "localhost,127.0.0.1,::1";
+    }
     const bloomProcess: ChildProcess = execFile(exe, args, { env });
     let exitStatus: { code: number | null; signal: string | null } | undefined;
     bloomProcess.stdout?.on("data", (d) => recordOutput(String(d)));
@@ -1369,6 +1403,8 @@ export async function launchBloom(
     // The experimental features the Bloom running now was given. A restart may replace them
     // (ILaunchedBloom.restart), so this is a variable rather than a read of the options.
     let experimentalFeatures = options.experimentalFeatures;
+    // Likewise the proxy for Bloom's own internet traffic, which only a restart sets.
+    let proxy: string | undefined;
 
     // The Bloom running right now. restart() replaces it, so everything that kills or reports on
     // Bloom reads this variable rather than capturing the first launch.
@@ -1413,12 +1449,14 @@ export async function launchBloom(
             if (betweenStopAndStart) await betweenStopAndStart();
             if (changes?.experimentalFeatures)
                 experimentalFeatures = changes.experimentalFeatures;
+            if (changes?.proxy !== undefined) proxy = changes.proxy;
             running = await startBloomOn(
                 collectionDir,
                 userSettingsDir,
                 readyTimeoutMs,
                 experimentalFeatures,
                 options.fakeCamera,
+                proxy,
             );
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;
@@ -1448,6 +1486,7 @@ export async function launchBloom(
                 readyTimeoutMs,
                 experimentalFeatures,
                 options.fakeCamera,
+                proxy,
             );
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;

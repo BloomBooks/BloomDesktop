@@ -47,6 +47,8 @@ export interface ICollectionSettings {
     signLanguage?: string;
     /** The progress bar's goal of books on Bloom Library; see ICollectionXmlExtras.booksOnWebGoal. */
     booksOnWebGoal?: number;
+    /** Each language's Default Font; see ICollectionSpec.fonts. Left out, Andika for all. */
+    fonts?: string[];
 }
 
 /**
@@ -322,6 +324,129 @@ export async function typeSubscriptionCode(
     const box = subscriptionCodeBox(page);
     await box.fill(code);
     await expect(box).toHaveValue(code);
+}
+
+/**
+ * The drawn labels that the Subscription page of the Collection Settings dialog, which must be
+ * showing, gives under the Subscription Code box about the code typed there (StatusText in
+ * subscriptionCodeControl.tsx): a message such as "That code has expired.", or for a good code the
+ * "Tier:" and "Expires:" captions.
+ */
+export async function getSubscriptionCodeMessages(
+    page: Page,
+): Promise<string[]> {
+    const box = subscriptionCodeBox(page);
+    await expect(
+        box,
+        "the Collection Settings dialog is not showing its Subscription page",
+    ).toHaveCount(1);
+    const messages = await box.evaluate((input) => {
+        // The box's row holds its caption, the box and the Copy and Paste buttons; the messages
+        // are labels in the element that follows that row, which is there even when it is empty.
+        let row: Element | null = input.parentElement;
+        while (row && !row.querySelector("button")) row = row.parentElement;
+        const container = row?.nextElementSibling;
+        if (!container) return undefined;
+        return Array.from(container.querySelectorAll("label"))
+            .filter((label) =>
+                label.checkVisibility({
+                    opacityProperty: true,
+                    visibilityProperty: true,
+                }),
+            )
+            .map((label) =>
+                (label.textContent ?? "").replace(/\s+/g, " ").trim(),
+            );
+    });
+    if (messages === undefined)
+        throw new Error(
+            "could not find where the Subscription page shows its messages about the code: no element follows the row of the Subscription Code box",
+        );
+    return messages;
+}
+
+/** A box in which Bloom warns that the collection's subscription has expired or soon will. */
+export interface ISubscriptionExpiryNotice {
+    /** "expired" when the box shows the expired icon (a cross), "expiring" for the warning icon. */
+    kind: "expired" | "expiring";
+    /** The box's text, with runs of white space made single spaces. */
+    text: string;
+    /** Where the box's links go. */
+    links: string[];
+}
+
+/**
+ * The drawn boxes inside `scope` in which Bloom warns that a subscription has expired or soon will
+ * (SubscriptionStatus.tsx): the Collections tab shows one above the collection's books, and the
+ * Subscription page of the Collection Settings dialog shows one under the code. Each such box asks
+ * the person to renew by email, which is how this tells them from Bloom's other warning boxes.
+ */
+export async function readSubscriptionExpiryNotices(
+    scope: Locator,
+): Promise<ISubscriptionExpiryNotice[]> {
+    return scope.evaluate((root) => {
+        const notices: {
+            kind: "expired" | "expiring";
+            text: string;
+            links: string[];
+        }[] = [];
+        const drawn = (element: Element) => {
+            const rect = element.getBoundingClientRect();
+            return (
+                element.checkVisibility({
+                    opacityProperty: true,
+                    visibilityProperty: true,
+                }) &&
+                rect.width > 0 &&
+                rect.height > 0
+            );
+        };
+        const icons = root.querySelectorAll(
+            "svg[data-testid='CancelIcon'], svg[data-testid='WarningIcon']",
+        );
+        for (const icon of Array.from(icons)) {
+            // A box counts only with its icon drawn, since the icon is what tells expired from
+            // expiring.
+            if (!drawn(icon)) continue;
+            // The box is the nearest ancestor of the icon that also holds a renewal email link.
+            let box: Element | null = icon.parentElement;
+            while (
+                box &&
+                box !== root.parentElement &&
+                !box.querySelector("a[href^='mailto:']")
+            ) {
+                box = box.parentElement;
+            }
+            if (!box || box === root.parentElement) continue;
+            if (!drawn(box)) continue;
+            notices.push({
+                kind:
+                    icon.getAttribute("data-testid") === "CancelIcon"
+                        ? "expired"
+                        : "expiring",
+                text: ((box as HTMLElement).innerText ?? "")
+                    .replace(/\s+/g, " ")
+                    .trim(),
+                links: Array.from(box.querySelectorAll("a")).map(
+                    (link) => link.getAttribute("href") ?? "",
+                ),
+            });
+        }
+        return notices;
+    });
+}
+
+/**
+ * The left part of the Collections tab, which lists the collections and their books, with the
+ * collection's subscription status above them.
+ */
+export function collectionsTabCollectionsPane(page: Page): Locator {
+    return page.getByTestId("collections-tab-collections-pane");
+}
+
+/** The Collection Settings dialog, for reading what its showing page shows. */
+export function getCollectionSettingsDialog(page: Page): Locator {
+    return collectionSettingsDialog(page);
 }
 
 /**
