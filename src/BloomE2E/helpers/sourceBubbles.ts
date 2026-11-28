@@ -497,7 +497,8 @@ export async function clickOutsidePage(page: Page): Promise<void> {
  * source bubble of the page, at a spot of it that nothing else covers, and checks that the
  * element is then under the pointer (`:hover`). An element that lies beyond the edge of the page
  * frame, as a source bubble can when the window is small, is first scrolled into view, the way a
- * person would scroll to it. An element with a size that the pointer still cannot reach fails the
+ * person would scroll to it, and the bubbles are checked after the scroll as well as after the
+ * move. An element with a size that the pointer still cannot reach fails the
  * check, and so does a page with no translation group that has a size, since the pointer then
  * never moves over a text box. Then it goes to the frame's corners and out to the left and right
  * sides of the window, beyond the page frame. At every stop, once the page has drawn whatever the
@@ -511,15 +512,17 @@ export async function expectMouseMovesLeaveSourceBubbles(
     const kTargets = ".bloom-translationGroup, .bloom-canvas, .qtip";
     const frame = editablePageFrame(page);
     const before = await getSourceBubbleStates(page);
-    const check = async (over: string) => {
+    // `when` says what had just happened, such as "With the pointer over qtip 3".
+    const checkAfter = async (when: string) => {
         await waitForClickToSettle(frame);
         const now = await getSourceBubbleStates(page);
         expect(
             now,
-            `${message} With the pointer over ${over}, the groups' bubbles went from ` +
+            `${message} ${when}, the groups' bubbles went from ` +
                 `[${before.join(", ")}] to [${now.join(", ")}].`,
         ).toEqual(before);
     };
+    const check = (over: string) => checkAfter(`With the pointer over ${over}`);
 
     const count = await frame.evaluate(
         (selector) => document.querySelectorAll(selector).length,
@@ -527,27 +530,40 @@ export async function expectMouseMovesLeaveSourceBubbles(
     );
     let groupsHovered = 0;
     for (let index = 0; index < count; index++) {
+        // Scroll the element into view first, when it lies beyond the edge of the frame, and
+        // check the bubbles after the scroll on its own: qTip moves its bubbles when the page
+        // scrolls, and a change that the scroll caused must not be blamed on the pointer.
+        const scrolledOver = await frame.evaluate(
+            ({ selector, index }) => {
+                const element = document.querySelectorAll(selector)[index];
+                if (!element) return undefined;
+                const rect = element.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0) return undefined;
+                if (
+                    rect.left >= 0 &&
+                    rect.top >= 0 &&
+                    rect.right <= document.documentElement.clientWidth &&
+                    rect.bottom <= document.documentElement.clientHeight
+                )
+                    return undefined;
+                element.scrollIntoView({ block: "nearest", inline: "nearest" });
+                return `${element.className.toString().split(" ")[0]} ${index + 1}`;
+            },
+            { selector: kTargets, index },
+        );
+        if (scrolledOver)
+            await checkAfter(
+                `Once the page scrolled ${scrolledOver} into view, before the pointer moved`,
+            );
         const target = await frame.evaluate(
             ({ selector, index }) => {
                 const element = document.querySelectorAll(selector)[index];
                 if (!element) return { sized: false as const };
                 const width = document.documentElement.clientWidth;
                 const height = document.documentElement.clientHeight;
-                let rect = element.getBoundingClientRect();
+                const rect = element.getBoundingClientRect();
                 if (rect.width === 0 || rect.height === 0)
                     return { sized: false as const };
-                if (
-                    rect.left < 0 ||
-                    rect.top < 0 ||
-                    rect.right > width ||
-                    rect.bottom > height
-                ) {
-                    element.scrollIntoView({
-                        block: "nearest",
-                        inline: "nearest",
-                    });
-                    rect = element.getBoundingClientRect();
-                }
                 const over = `${element.className.toString().split(" ")[0]} ${index + 1}`;
                 // The picture's own spots are the ones where no text, canvas element holding
                 // text, or source bubble lies over it, which the picture contains as well.
