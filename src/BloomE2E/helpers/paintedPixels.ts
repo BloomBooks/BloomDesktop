@@ -107,6 +107,100 @@ export async function makeSolidColorPng(
     fs.writeFileSync(filePath, Buffer.from(base64, "base64"));
 }
 
+/**
+ * Write a PNG of `width` by `height` pixels to `filePath` that looks to Bloom like a photograph
+ * saved as a PNG: opaque, a smooth gradient of colour with fine grain over it, as a camera's
+ * picture has. Grain is what PNG compresses worst and JPEG best, so the file is several times
+ * larger than a JPEG of the same picture, and Bloom shows and publishes it as a JPEG
+ * (ImageUtils.TryChangeFormatToJpegIfHelpful). The pixels are written exactly
+ * (putImageData, with a fixed sequence of grain), so the file is the same on every machine.
+ */
+export async function makePhotoLikePng(
+    page: Page,
+    filePath: string,
+    width: number,
+    height: number,
+): Promise<void> {
+    const base64 = await page.evaluate(
+        async ({ width, height }) => {
+            const pixels = new ImageData(width, height);
+            let seed = 266;
+            const grain = () => {
+                seed = (Math.imul(seed, 1103515245) + 12345) >>> 0;
+                return (seed / 4294967296 - 0.5) * 16;
+            };
+            for (let y = 0; y < height; y++)
+                for (let x = 0; x < width; x++) {
+                    const i = (y * width + x) * 4;
+                    pixels.data[i] = 90 + (120 * x) / width + grain();
+                    pixels.data[i + 1] = 60 + (140 * y) / height + grain();
+                    pixels.data[i + 2] =
+                        200 - (120 * (x + y)) / (width + height) + grain();
+                    pixels.data[i + 3] = 255;
+                }
+            const canvas = new OffscreenCanvas(width, height);
+            canvas.getContext("2d")!.putImageData(pixels, 0, 0);
+            const blob = await canvas.convertToBlob({ type: "image/png" });
+            const bytes = new Uint8Array(await blob.arrayBuffer());
+            let binary = "";
+            for (let i = 0; i < bytes.length; i += 0x8000)
+                binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+            return btoa(binary);
+        },
+        { width, height },
+    );
+    fs.mkdirSync(Path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, Buffer.from(base64, "base64"));
+}
+
+/**
+ * How two encoded pictures (PNG or JPEG bytes) compare once decoded: the size of each, and, when
+ * the sizes match, the mean difference of their red, green and blue channels over every pixel (0
+ * for the same pixels, up to 255). A picture re-encoded as a high-quality JPEG differs from its
+ * source by a few levels; a different picture by tens.
+ */
+export async function compareEncodedPictures(
+    page: Page,
+    first: Buffer,
+    second: Buffer,
+): Promise<{
+    firstSize: { width: number; height: number };
+    secondSize: { width: number; height: number };
+    meanChannelDifference: number | undefined;
+}> {
+    return page.evaluate(
+        async ({ first, second }) => {
+            const decode = async (base64: string) => {
+                const binary = atob(base64);
+                const data = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++)
+                    data[i] = binary.charCodeAt(i);
+                const bitmap = await createImageBitmap(new Blob([data]));
+                const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+                const context = canvas.getContext("2d")!;
+                context.drawImage(bitmap, 0, 0);
+                return context.getImageData(0, 0, bitmap.width, bitmap.height);
+            };
+            const a = await decode(first);
+            const b = await decode(second);
+            let meanChannelDifference: number | undefined;
+            if (a.width === b.width && a.height === b.height) {
+                let total = 0;
+                for (let i = 0; i < a.data.length; i += 4)
+                    for (let c = 0; c < 3; c++)
+                        total += Math.abs(a.data[i + c] - b.data[i + c]);
+                meanChannelDifference = total / ((a.data.length / 4) * 3);
+            }
+            return {
+                firstSize: { width: a.width, height: a.height },
+                secondSize: { width: b.width, height: b.height },
+                meanChannelDifference,
+            };
+        },
+        { first: first.toString("base64"), second: second.toString("base64") },
+    );
+}
+
 /** The colours of a PNG or JPEG file's pixels at each of `points`. */
 export async function readImageFileColors(
     page: Page,
