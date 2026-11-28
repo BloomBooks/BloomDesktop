@@ -1213,3 +1213,58 @@ export async function getEpubPackageDublinCore(
         { text: packageText, localName: name },
     );
 }
+
+/**
+ * The reading order of an ePUB package document: the href of each manifest item that its <spine>
+ * lists, in order, relative to the package. Throws when the spine names an item the manifest lacks.
+ */
+export async function getEpubPackageSpineHrefs(
+    page: Page,
+    packageText: string,
+): Promise<string[]> {
+    return page.evaluate((text) => {
+        const doc = new DOMParser().parseFromString(text, "application/xml");
+        const error = doc.querySelector("parsererror");
+        if (error)
+            throw new Error(
+                `The ePUB package is not well-formed XML: ${error.textContent}`,
+            );
+        const opf = "http://www.idpf.org/2007/opf";
+        const items = new Map(
+            [...doc.getElementsByTagNameNS(opf, "item")].map((item) => [
+                item.getAttribute("id") ?? "",
+                item.getAttribute("href") ?? "",
+            ]),
+        );
+        return [...doc.getElementsByTagNameNS(opf, "itemref")].map(
+            (itemref) => {
+                const idref = itemref.getAttribute("idref") ?? "";
+                const href = items.get(idref);
+                if (!href)
+                    throw new Error(
+                        `The ePUB spine names "${idref}", which the manifest lacks.`,
+                    );
+                return href;
+            },
+        );
+    }, packageText);
+}
+
+/** The text that an XHTML page of an ePUB shows, its body's text with spaces collapsed. */
+export async function getEpubXhtmlText(
+    page: Page,
+    xhtml: string,
+): Promise<string> {
+    return page.evaluate((text) => {
+        const doc = new DOMParser().parseFromString(
+            text,
+            "application/xhtml+xml",
+        );
+        const error = doc.querySelector("parsererror");
+        if (error)
+            throw new Error(
+                `The ePUB page is not well-formed XHTML: ${error.textContent}`,
+            );
+        return (doc.body?.textContent ?? "").replace(/\s+/g, " ");
+    }, xhtml);
+}

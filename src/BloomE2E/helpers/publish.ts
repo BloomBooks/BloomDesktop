@@ -96,6 +96,36 @@ export async function selectPublishDestination(
 }
 
 /**
+ * Close the progress dialog that the ePUB and BloomPUB screens show while they save, once it offers
+ * its Close button (PublishProgressDialogInner.tsx), if it has not gone by itself. Its Close button
+ * is its only filled button; its label is localized, so it is found by how it is drawn.
+ */
+export async function closePublishProgressDialog(
+    page: Page,
+    destination: PublishDestination,
+): Promise<void> {
+    const dialog = page.locator(".MuiDialog-root.progress-dialog");
+    const close = dialog.locator(
+        ".MuiDialogActions-root button.MuiButton-contained",
+    );
+    await expect
+        .poll(
+            async () =>
+                (await dialog.count()) === 0 || (await close.isVisible()),
+            {
+                timeout: 60000,
+                message: `The ${destination} progress dialog neither went away nor offered its Close button.`,
+            },
+        )
+        .toBe(true);
+    if ((await dialog.count()) > 0) await close.click();
+    await expect(
+        dialog,
+        `The ${destination} progress dialog should be gone.`,
+    ).toHaveCount(0, { timeout: 30000 });
+}
+
+/**
  * Go to the Publish tab, open one of its destinations, and wait for its Text Languages list. A
  * book must already be selected. Use this for the screens whose subject is those lists; the Web
  * screen has its own opener in helpers/libraryPublish.ts.
