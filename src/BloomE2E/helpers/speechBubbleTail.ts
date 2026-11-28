@@ -476,3 +476,66 @@ export async function doubleClickTailMidpoint(
     await page.mouse.move(at.x, at.y);
     await page.mouse.dblclick(at.x, at.y);
 }
+
+/** One pixel of ComicalJS's drawing, where it is on the screen and the colour drawn there. */
+export interface IDrawingPixel extends IScreenPoint {
+    color: { r: number; g: number; b: number; a: number };
+}
+
+/**
+ * The pixels of ComicalJS's drawing along the straight line from the screen point `from` to `to`,
+ * one for each screen pixel of the line's length, as the drawing last painted them (a pixel the
+ * drawing leaves empty has alpha 0). Each is the drawing's backing pixel under that point, so
+ * nothing in front of the drawing (text, handles' frame) affects it.
+ */
+export async function readDrawingAlong(
+    page: Page,
+    from: IScreenPoint,
+    to: IScreenPoint,
+): Promise<IDrawingPixel[]> {
+    const drawing = comicalDrawing(page);
+    const box = await drawing.boundingBox({ timeout: 15000 });
+    if (!box)
+        throw new Error(
+            "The bubble drawing surface (canvas.comical-editing) has no on-screen box.",
+        );
+    return drawing.evaluate(
+        (c, args) => {
+            const surface = c as HTMLCanvasElement;
+            const scale = args.box.width / surface.offsetWidth;
+            const ratio = surface.width / surface.offsetWidth;
+            const context = surface.getContext("2d")!;
+            const steps = Math.max(
+                1,
+                Math.ceil(
+                    Math.hypot(
+                        args.to.x - args.from.x,
+                        args.to.y - args.from.y,
+                    ),
+                ),
+            );
+            const pixels: {
+                x: number;
+                y: number;
+                color: { r: number; g: number; b: number; a: number };
+            }[] = [];
+            for (let i = 0; i <= steps; i++) {
+                const x = args.from.x + ((args.to.x - args.from.x) * i) / steps;
+                const y = args.from.y + ((args.to.y - args.from.y) * i) / steps;
+                const d = context.getImageData(
+                    Math.floor(((x - args.box.x) / scale) * ratio),
+                    Math.floor(((y - args.box.y) / scale) * ratio),
+                    1,
+                    1,
+                ).data;
+                pixels.push({
+                    x,
+                    y,
+                    color: { r: d[0], g: d[1], b: d[2], a: d[3] },
+                });
+            }
+            return pixels;
+        },
+        { from, to, box },
+    );
+}
