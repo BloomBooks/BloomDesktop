@@ -138,14 +138,20 @@ export async function countBooksInLanguageOnDevServer(
 }
 
 /**
- * Every book the signed-in account has on the sandbox, whatever a test named them. Cleanup uses
- * this so a run can delete not only the books it just uploaded but any a crashed earlier run left
- * behind, which is safe because the account exists only for these tests.
+ * The books the signed-in account has on the sandbox whose titles start with `titlePrefix`. Cleanup
+ * uses this so a run can delete not only the books it just uploaded but any a crashed earlier run
+ * of the same test left behind.
+ *
+ * Every real-upload test signs in as the same account, and the nightly runs its shards at the same
+ * time, so two such tests can have books on the account at once. Each test therefore gives its
+ * books titles with a prefix of its own and reads and deletes only those: a test that counted or
+ * deleted all the account's books would break whichever other one was running.
  */
 export async function findBooksUploadedBy(
     login: IBloomLibraryLogin,
+    titlePrefix: string,
 ): Promise<IBookOnServer[]> {
-    return queryBooksOnDevServer(
+    const books = await queryBooksOnDevServer(
         {
             uploader: {
                 __type: "Pointer",
@@ -156,6 +162,7 @@ export async function findBooksUploadedBy(
         "the account's books",
         login,
     );
+    return books.filter((book) => book.title.startsWith(titlePrefix));
 }
 
 /**
@@ -240,14 +247,16 @@ export async function getXmatterPackOfUploadedBook(
 }
 
 /**
- * Delete every book the signed-in account has on the sandbox, and return how many. The safety net a
- * real-upload test calls in cleanup, so nothing it uploaded (or a crashed run uploaded before it)
- * is left on dev.bloomlibrary.org.
+ * Delete every book the signed-in account has on the sandbox whose title starts with
+ * `titlePrefix`, and return how many. The safety net a real-upload test calls in cleanup, so
+ * nothing it uploaded (or a crashed run of it uploaded before) is left on dev.bloomlibrary.org.
+ * See findBooksUploadedBy for why it takes a prefix.
  */
-export async function deleteAllBooksUploadedBy(
+export async function deleteBooksUploadedBy(
     login: IBloomLibraryLogin,
+    titlePrefix: string,
 ): Promise<number> {
-    const books = await findBooksUploadedBy(login);
+    const books = await findBooksUploadedBy(login, titlePrefix);
     for (const book of books) await deleteBookFromDevServer(book, login);
     return books.length;
 }

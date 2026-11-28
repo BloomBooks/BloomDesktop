@@ -9,8 +9,8 @@
 // do so because a test's Bloom keeps its login in a settings folder of its own (bloomApp.userSettingsDir),
 // so the sign-in, and the upload's child Bloom that reads it back, never touch the developer's own
 // Bloom. Everything goes to the sandbox, dev.bloomlibrary.org; Bloom refuses under --e2e to upload
-// to production at all. The test deletes what it uploads, and any the account had left from before,
-// in an afterAll — see helpers/bloomLibraryServer.ts.
+// to production at all. The test deletes what it uploads, and any of its books a crashed earlier run
+// left, in an afterAll — see helpers/bloomLibraryServer.ts.
 //
 // What is NOT covered here, and stays on a manual portion of the card: confirming each uploaded
 // book on the website against the screenshot on its front cover, which is a human visual check.
@@ -52,7 +52,7 @@ import {
     TEST_ACCOUNT_EMAIL,
 } from "../helpers/bloomLibraryAccount";
 import {
-    deleteAllBooksUploadedBy,
+    deleteBooksUploadedBy,
     findBooksUploadedBy,
     folderNameOfUploadedBook,
     getBookshelvesOfUploadedBook,
@@ -78,13 +78,11 @@ test.use({
 test.describe.configure({ mode: "serial" });
 
 // Four books, as the manual test uses. Each title is distinctive so the server records are easy to
-// tell apart in a failure message.
-const BOOK_TITLES = [
-    "Bulk Upload Quick Test Book 1",
-    "Bulk Upload Quick Test Book 2",
-    "Bulk Upload Quick Test Book 3",
-    "Bulk Upload Quick Test Book 4",
-];
+// tell apart in a failure message. They share a prefix that no other test's books have, because
+// the account is shared with the other real-upload tests, which may be running on another shard at
+// the same time: this test counts and deletes only the account's books with this prefix.
+const BOOK_TITLE_PREFIX = "Bulk Upload Quick Test Book";
+const BOOK_TITLES = [1, 2, 3, 4].map((n) => `${BOOK_TITLE_PREFIX} ${n}`);
 const COPYRIGHT_HOLDER = "Bloom Automated Test";
 // The collection goes on the first shelf, then moves to the second.
 const [FIRST_BOOKSHELF, SECOND_BOOKSHELF] = kTestBookshelves;
@@ -163,7 +161,7 @@ async function expectBooksOnServer(
     bookshelf: string,
     xmatterPack: string,
 ): Promise<void> {
-    const onServer = await findBooksUploadedBy(account);
+    const onServer = await findBooksUploadedBy(account, BOOK_TITLE_PREFIX);
     expect(
         onServer.map((b) => b.title).sort(),
         `dev.bloomlibrary.org should list the four uploaded books for ${TEST_ACCOUNT_EMAIL}.`,
@@ -196,9 +194,9 @@ async function expectBooksOnServer(
 
 test.describe("bulk uploading a collection to dev.bloomlibrary.org", () => {
     test.afterAll(async () => {
-        // Delete everything the account has on the sandbox, whether this run uploaded it or a
-        // crashed earlier run did, so dev.bloomlibrary.org is left clean.
-        if (login) await deleteAllBooksUploadedBy(login);
+        // Delete this test's books from the sandbox, whether this run uploaded them or a crashed
+        // earlier run did, so dev.bloomlibrary.org is left clean.
+        if (login) await deleteBooksUploadedBy(login, BOOK_TITLE_PREFIX);
     });
 
     test("bulk upload: refused without a bookshelf, then new / skipped / updated / moved to another bookshelf [Test Case ID 211]", async ({
@@ -214,10 +212,11 @@ test.describe("bulk uploading a collection to dev.bloomlibrary.org", () => {
         // nightly.
         test.setTimeout(1200000);
 
-        // Clean the account first, so a crashed earlier run's books do not turn this run's "4 new"
-        // into "some updated", and get the login this test signs in and cleans up with.
+        // Clear this test's books off the account first, so a crashed earlier run's books do not
+        // turn this run's "4 new" into "some updated", and get the login this test signs in and
+        // cleans up with.
         login = await signBloomIntoLibraryForReal(page);
-        await deleteAllBooksUploadedBy(login);
+        await deleteBooksUploadedBy(login, BOOK_TITLE_PREFIX);
 
         // ---- Four uploadable books --------------------------------------------------------------
         for (const title of BOOK_TITLES)
