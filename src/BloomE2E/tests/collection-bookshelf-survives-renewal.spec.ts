@@ -29,6 +29,7 @@ import {
     showCollectionSettingsPage,
     typeSubscriptionCode,
 } from "../helpers/collectionSettings";
+import { setUiStateViaApi } from "../helpers/uiLanguage";
 
 // An earlier code of the same Test subscription as kEnterpriseSubscriptionCode (same descriptor,
 // valid checksum). Its date is in the year 3000, which Bloom treats as a retired never-ending code
@@ -48,13 +49,17 @@ test.use({
 });
 
 test("a collection's bookshelf survives its subscription expiring and being renewed [Test Case ID 713]", async ({
-    page,
     bloomApp,
     step,
 }) => {
+    // The Settings helpers find controls by their English labels, and a fresh Bloom's UI language
+    // follows the operating system's. It is a user setting, so it holds across every restart below.
+    await setUiStateViaApi(bloomApp, "en", false);
+
     await step(
         "In a collection with a valid subscription, select a bookshelf",
         async () => {
+            const page = bloomApp.page;
             await openCollectionSettings(page);
             await showCollectionSettingsPage(page, "Bloom Library");
             // Polled: the list stays disabled until the bookshelves have come from Contentful.
@@ -91,6 +96,12 @@ test("a collection's bookshelf survives its subscription expiring and being rene
                 (await getFeatureStatus(bloomApp.page, "Spreadsheet")).enabled,
                 "Sanity check: the expired code should leave the collection without its subscription",
             ).toBe(false);
+            // Bloom shows None while the code is expired, but the file must keep the bookshelf so
+            // that renewing can bring it back.
+            expect(
+                readSavedBookshelf(bloomApp.collectionDir),
+                "the .bloomCollection should still name the bookshelf while the code is expired",
+            ).toBe(kBookshelf);
         },
     );
 
