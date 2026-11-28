@@ -31,7 +31,7 @@ import {
     withBloomOfflineForReports,
 } from "../helpers/offlineProblemReport";
 import {
-    closeReactDialogFromNode,
+    closeReportDialog,
     waitForReportDialogPage,
 } from "../helpers/problemDialogs";
 import { changeSavedReaderSettings } from "../helpers/readerSetup";
@@ -92,7 +92,7 @@ async function readDiagnosticReport(dialogPage: Page): Promise<string> {
     return text;
 }
 
-test("TC-447: a problem report keeps the collection's Allowed Words and Sample Texts in their folders", async ({
+test("a problem report keeps the collection's Allowed Words and Sample Texts in their folders [Test Case ID 447]", async ({
     bloomApp,
     problemDialogWatcher,
 }) => {
@@ -101,21 +101,26 @@ test("TC-447: a problem report keeps the collection's Allowed Words and Sample T
         const page = offline.page;
         const collectionDir = bloomApp.collectionDir;
 
-        await test.step("make a decodable reader whose stages come from allowed-word lists", async () => {
-            await makeBookFromTemplate(page, "Decodable Reader");
-            writeReaderFiles(collectionDir);
-            await changeSavedReaderSettings(page, (settings) => {
-                settings.useAllowedWords = 1;
-                settings.stages = Object.keys(
-                    kReaderFiles["Allowed Words"],
-                ).map((file, index) => ({
-                    name: String(index + 1),
-                    letters: "",
-                    sightWords: "",
-                    allowedWordsFile: file,
-                }));
+        const bookFolder =
+            await test.step("make a decodable reader whose stages come from allowed-word lists", async () => {
+                const folder = await makeBookFromTemplate(
+                    page,
+                    "Decodable Reader",
+                );
+                writeReaderFiles(collectionDir);
+                await changeSavedReaderSettings(page, (settings) => {
+                    settings.useAllowedWords = 1;
+                    settings.stages = Object.keys(
+                        kReaderFiles["Allowed Words"],
+                    ).map((file, index) => ({
+                        name: String(index + 1),
+                        letters: "",
+                        sightWords: "",
+                        allowedWordsFile: file,
+                    }));
+                });
+                return folder;
             });
-        });
 
         await test.step("add a Just Text page and type on it", async () => {
             await addPage(page, "Just Text");
@@ -184,6 +189,19 @@ test("TC-447: a problem report keeps the collection's Allowed Words and Sample T
                         ).toBe(text);
                     }
                 }
+                // The book itself: its folder, with the page typed on above.
+                const bookFolderName = Path.basename(bookFolder);
+                const bookHtml = bookEntries.find(
+                    (e) => e.name === `${bookFolderName}/${bookFolderName}.htm`,
+                );
+                expect(
+                    bookHtml,
+                    `the zipped book should hold the book's ${bookFolderName}.htm; it holds ${names.join(", ")}`,
+                ).toBeDefined();
+                expect(
+                    bookHtml!.content.toString("utf8"),
+                    "the zipped book should have the text typed on its Just Text page",
+                ).toContain("The Greek king Midas did a good deed");
                 const flattened = names.filter((name) =>
                     Object.values(kReaderFiles).some((files) => name in files),
                 );
@@ -193,20 +211,8 @@ test("TC-447: a problem report keeps the collection's Allowed Words and Sample T
                 ).toEqual([]);
             });
 
-            await test.step("close the dialog", async () => {
-                await closeReactDialogFromNode(page);
-                await expect
-                    .poll(
-                        async () =>
-                            dialogPage.isClosed() ||
-                            (await dialogPage
-                                .locator(".problem-dialog")
-                                .count()
-                                .catch(() => 0)) === 0,
-                        { timeout: 30000 },
-                    )
-                    .toBe(true);
-            });
+            await test.step("close the dialog", () =>
+                closeReportDialog(page, dialogPage));
         } finally {
             resumeWatcher();
         }

@@ -14,7 +14,7 @@ import {
     withBloomOfflineForReports,
 } from "../helpers/offlineProblemReport";
 import {
-    closeReactDialogFromNode,
+    closeReportDialog,
     waitForReportDialogPage,
 } from "../helpers/problemDialogs";
 import { chooseReportAProblemFromHelpMenu } from "../helpers/workspace";
@@ -70,20 +70,8 @@ test("TC-49: a report submitted offline is offered as a zip to email", async ({
                 expect(text).toContain(email.split("@")[0]);
             });
 
-            await test.step("close the dialog", async () => {
-                await closeReactDialogFromNode(page);
-                await expect
-                    .poll(
-                        async () =>
-                            dialogPage.isClosed() ||
-                            (await dialogPage
-                                .locator(".problem-dialog")
-                                .count()
-                                .catch(() => 0)) === 0,
-                        { timeout: 30000 },
-                    )
-                    .toBe(true);
-            });
+            await test.step("close the dialog", () =>
+                closeReportDialog(page, dialogPage));
         } finally {
             resumeWatcher();
         }
