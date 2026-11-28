@@ -62,27 +62,16 @@ test("Paste Image Credits credits a game page's pictures once, without the Pixab
         },
     );
 
-    let credits: string[] = [];
-    let creditsMarkup = "";
-    await step(
-        'Go to the title page and click "Paste Image Credits"',
-        async () => {
-            await goToTitlePage(page);
-            expect(
-                await getOriginalContributions(page),
-                "The title page's contributions box should start empty.",
-            ).toEqual([]);
-            await pasteImageCredits(page);
-            credits = await getOriginalContributions(page);
-            creditsMarkup = await originalContributionsBox(page).innerHTML();
-        },
-    );
+    await step("Go to the title page", async () => {
+        await goToTitlePage(page);
+    });
 
     // Bloom credits the pictures that the book's pages show, as the book holds them
     // (ImageApi.GetWhichImagesAreUsedOnWhichPages reads the book's markup), and skips a picture
     // whose file is not in the book folder. So the saved game page must show the GIFs, and the
     // button pictures on its buttons, with their files in the folder, for the check below to test
-    // how Bloom treats them. Leaving the game page for the title page saved it.
+    // how Bloom treats them. Leaving the game page for the title page saved it. Checked before the
+    // paste, so that a missing picture is named here rather than showing up as an empty paste.
     const savedGamePage = await readSavedPagePictures(
         page,
         bookFolder,
@@ -104,6 +93,18 @@ test("Paste Image Credits credits a game page's pictures once, without the Pixab
         ),
         "Sanity check: the game page should have brought its pictures into the book folder.",
     ).toEqual([]);
+
+    let credits: string[] = [];
+    let creditsMarkup = "";
+    await step('Click "Paste Image Credits"', async () => {
+        expect(
+            await getOriginalContributions(page),
+            "The title page's contributions box should start empty.",
+        ).toEqual([]);
+        await pasteImageCredits(page);
+        credits = await getOriginalContributions(page);
+        creditsMarkup = await originalContributionsBox(page).innerHTML();
+    });
 
     await step(
         "Check that the only credit is the game pictures', without the Pixabay link",
