@@ -117,29 +117,33 @@ async function waitForHarvest(
 ): Promise<IBookOnServer> {
     let record: IBookOnServer | undefined;
     let state = "no record yet";
-    await expect
-        .poll(
-            async () => {
-                const books = await findBooksUploadedBy(login!, BOOK_TITLE);
-                if (books.length !== 1) {
-                    state = `${books.length} records titled "${BOOK_TITLE}"`;
-                    return false;
-                }
-                record = books[0];
-                state = `harvestState ${record.harvestState}, harvestStartedAt ${record.harvestStartedAt}`;
-                return (
-                    record.harvestState === "Done" &&
-                    record.harvestStartedAt !== undefined &&
-                    record.harvestStartedAt !== previousHarvestStartedAt
-                );
-            },
-            {
-                timeout: HARVEST_TIMEOUT_MS,
-                intervals: [10000],
-                message: `The sandbox's harvester never finished with the upload of "${BOOK_TITLE}"; has it stopped? Last seen: ${state}`,
-            },
-        )
-        .toBe(true);
+    try {
+        await expect
+            .poll(
+                async () => {
+                    const books = await findBooksUploadedBy(login!, BOOK_TITLE);
+                    if (books.length !== 1) {
+                        state = `${books.length} records titled "${BOOK_TITLE}"`;
+                        return false;
+                    }
+                    record = books[0];
+                    state = `harvestState ${record.harvestState}, harvestStartedAt ${record.harvestStartedAt}`;
+                    return (
+                        record.harvestState === "Done" &&
+                        record.harvestStartedAt !== undefined &&
+                        record.harvestStartedAt !== previousHarvestStartedAt
+                    );
+                },
+                { timeout: HARVEST_TIMEOUT_MS, intervals: [10000] },
+            )
+            .toBe(true);
+    } catch {
+        // The poll timed out. A message given to the poll itself would be fixed before the first
+        // poll; this one says what the last poll saw.
+        throw new Error(
+            `The sandbox's harvester never finished with the upload of "${BOOK_TITLE}"; has it stopped? Last seen: ${state}`,
+        );
+    }
     return record!;
 }
 
@@ -219,6 +223,10 @@ test.describe("changing the cover of a book on dev.bloomlibrary.org", () => {
         const secondHarvest = await waitForHarvest(
             firstHarvest.harvestStartedAt,
         );
+        expect(
+            secondHarvest.objectId,
+            "Uploading the book again should update its record on Bloom Library, not replace it with a new one.",
+        ).toBe(firstHarvest.objectId);
         await expectThumbnailShowsCover(
             page,
             secondHarvest,
