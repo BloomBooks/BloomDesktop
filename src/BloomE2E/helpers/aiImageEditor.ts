@@ -34,21 +34,78 @@ export async function openAiImageEditorFromPicture(page: Page): Promise<void> {
     await realRightClick(
         editablePageFrame(page).locator(".bloom-imageContainer img").first(),
     );
-    const command = (await getCanvasElementMenuItems(page)).find(
-        (item) => item.id === kEditWithAiCommand,
-    );
-    if (!command)
-        throw new Error(
-            `The picture's menu has no "Edit with AI..." command (${kEditWithAiCommand}).`,
-        );
+    // The menu leaves "Edit with AI..." out until Bloom has answered whether the AI Image Editing
+    // feature is on, and it asks only once the menu's page has loaded, so a menu opened soon
+    // after a new book shows can lack the command for a moment.
+    let command: { id: string; enabled: boolean } | undefined;
+    await expect
+        .poll(
+            async () => {
+                command = (await getCanvasElementMenuItems(page)).find(
+                    (item) => item.id === kEditWithAiCommand,
+                );
+                return command !== undefined;
+            },
+            {
+                timeout: 30000,
+                message: `The picture's menu has no "Edit with AI..." command (${kEditWithAiCommand}).`,
+            },
+        )
+        .toBe(true);
     expect(
-        command.enabled,
+        command?.enabled,
         'The picture\'s "Edit with AI..." command is not enabled.',
     ).toBe(true);
     await clickCanvasElementMenuItem(page, kEditWithAiCommand);
     await aiImageEditorFrame(page)
         .getByTestId("thumbnail-strip-bookImages")
         .waitFor({ state: "visible", timeout: 60000 });
+}
+
+/**
+ * Make every later launch of the editor in this page start as it does for a user who has not
+ * connected Bloom to OpenRouter, whatever key the Windows user running the test has stored.
+ * Bloom hands the editor the stored key in its launch reply, and that store belongs to the Windows
+ * user, not to the test's collection or settings folder, so without this the editor would start
+ * connected on a developer's machine and unconnected on the nightly runner.
+ */
+export async function launchAiImageEditorWithoutOpenRouterKey(
+    page: Page,
+): Promise<void> {
+    await page.route("**/api/aiImageEditor/launch", async (route) => {
+        const response = await route.fetch();
+        const launchData = await response.json();
+        await route.fulfill({
+            response,
+            json: { ...launchData, apiKey: null },
+        });
+    });
+}
+
+/**
+ * The button of the welcome the editor puts up as it opens for a user with no OpenRouter
+ * connection, which closes it without connecting. The welcome has no test id, so its button is
+ * found by its English label.
+ */
+function justLookAroundButton(page: Page): Locator {
+    return aiImageEditorFrame(page).getByRole("button", {
+        name: "I just want to look around",
+    });
+}
+
+/**
+ * Close the welcome that offers to connect the editor to OpenRouter, the way a person who only
+ * wants to look around does, and wait until it has gone. The editor puts it up once its state has
+ * loaded, which can be after its book pictures show.
+ */
+export async function declineOpenRouterWelcome(page: Page): Promise<void> {
+    const button = justLookAroundButton(page);
+    await expect(
+        button,
+        "The AI image editor did not offer to connect to OpenRouter, though it had no key.",
+    ).toBeVisible({ timeout: 30000 });
+    await button.click();
+    await expect(button).toBeHidden({ timeout: 30000 });
 }
 
 /**
