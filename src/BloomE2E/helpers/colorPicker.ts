@@ -160,7 +160,7 @@ export async function hasAlphaSlider(frame: Frame): Promise<boolean> {
 
 /**
  * How opaque each swatch of the open color picker's palette is, from 0 (the transparent swatch) to
- * 1, in palette order. A gradient swatch counts as 1: the palette's gradients are all opaque.
+ * 1, in palette order. A gradient swatch is as opaque as its least opaque stop.
  */
 export async function getPaletteSwatchOpacities(
     frame: Frame,
@@ -178,9 +178,16 @@ export async function getPaletteSwatchOpacities(
             };
         }),
     );
-    return backgrounds.map((b) =>
-        b.image !== "none" ? 1 : parseCssRgba(b.color).a,
-    );
+    return backgrounds.map((b) => {
+        if (b.image === "none") return parseCssRgba(b.color).a;
+        // The browser reports a gradient's stops as rgb() or rgba() colors.
+        const stops = b.image.match(/rgba?\([^)]*\)/g);
+        if (!stops)
+            throw new Error(
+                `A palette swatch has a background image with no colors this helper reads: ${b.image}`,
+            );
+        return Math.min(...stops.map((stop) => parseCssRgba(stop).a));
+    });
 }
 
 /** The open color picker's hex box. */
