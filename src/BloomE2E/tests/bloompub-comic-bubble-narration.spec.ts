@@ -279,6 +279,24 @@ async function expectPageToPlayItsRecordings(
                 .map((e) => `${e.event}: ${e.highlighted.join(" | ")}`),
             `"${recording.text}" should be the sentence highlighted while its recording starts and ends`,
         ).toEqual([`play: ${recording.text}`, `ended: ${recording.text}`]);
+    // Every change in what Bloom Player highlights is noted, so none between a recording's start
+    // and its end means its sentence stayed highlighted all the while it played.
+    for (const recording of recordings) {
+        const name = `${recording.id}.mp3`;
+        const start = events.findIndex(
+            (e) => e.event === "play" && e.name === name,
+        );
+        const end = events.findIndex(
+            (e) => e.event === "ended" && e.name === name,
+        );
+        expect(
+            events
+                .slice(start + 1, end)
+                .filter((e) => e.event === "highlight")
+                .map((e) => e.highlighted.join(" | ")),
+            `"${recording.text}" should stay highlighted, and nothing else be highlighted, while its recording plays`,
+        ).toEqual([]);
+    }
 }
 
 test("recorded speech bubbles, and a recorded text box beside one, all play in the BloomPUB [Test Case ID 321]", async ({
@@ -454,15 +472,21 @@ test("recorded speech bubbles, and a recorded text box beside one, all play in t
                     "text/html",
                 );
                 return Array.from(dom.querySelectorAll(".audio-sentence[id]"))
-                    .map((e) => `${e.id}: ${(e.textContent ?? "").trim()}`)
+                    .map(
+                        (e) =>
+                            `page ${e.closest(".bloom-page")?.id}: ${e.id}: ${(e.textContent ?? "").trim()}`,
+                    )
                     .sort();
             }, html);
             expect(
                 sentences,
-                "the BloomPUB's book should mark each recorded sentence, and only those, with the id of its recording",
+                "the BloomPUB's book should mark each recorded sentence, and only those, on its own page, with the id of its recording",
             ).toEqual(
-                [...firstPage, ...secondPage]
-                    .map((r) => `${r.id}: ${r.text}`)
+                [
+                    ...firstPage.map((r) => ({ ...r, page: book.imagePageId })),
+                    ...secondPage.map((r) => ({ ...r, page: book.textPageId })),
+                ]
+                    .map((r) => `page ${r.page}: ${r.id}: ${r.text}`)
                     .sort(),
             );
         },
