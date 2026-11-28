@@ -56,16 +56,16 @@ test("the preview's info icon shows the book's path, id and theme [Test Case ID 
 
     for (const [index, book] of books.entries()) {
         await step(
-            `Select book ${index + 1} (${book.theme} theme) and click the info icon of its preview`,
+            `Select book ${index + 1} (${book.theme} theme) and point at the info icon of its preview`,
             async () => {
                 await clickBookTile(page, book.id);
-                const info = await readBookInfoIndicator(page);
+                // Waits until the tip shows this book's id, and fails if it never does.
+                const info = await readBookInfoIndicator(page, book.id);
                 const folder = findBookFolderById(
                     bloomApp.collectionDir,
                     book.id,
                 );
                 expectSameFolder(info.path, folder, "the path on disk");
-                expect(info.id, "the book id shown").toBe(book.id);
                 expect(
                     readBookId(info.path),
                     "the id shown should be the one in the shown folder's meta.json",
