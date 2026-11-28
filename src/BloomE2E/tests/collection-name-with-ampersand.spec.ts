@@ -17,6 +17,7 @@ import { expect, test } from "../fixtures/bloomTest";
 import { bookHtmlPath } from "../helpers/bookHtml";
 import {
     editablePageFrame,
+    getPages,
     editBook,
     makeBookFromTemplate,
 } from "../helpers/bookMaking";
@@ -193,25 +194,43 @@ test("a collection named with an ampersand, in a place named with ampersands, sa
     await step(
         "Publish the second book as a PDF, and check its title page prints the places",
         async () => {
+            // A Simple PDF prints every page of the book, in the book's order.
+            const bookPages = await getPages(shell);
+            const titlePageIndex = bookPages.findIndex(
+                (p) => !p.isContentPage && /title page/i.test(p.caption),
+            );
+            expect(
+                titlePageIndex,
+                "sanity check: the book has a title page",
+            ).toBeGreaterThanOrEqual(0);
             await switchTab(shell, "publish");
             await choosePdfMode(shell, "Simple");
-            const pageTexts: string[] = [];
             const count = await getPdfPreviewPageCount(shell);
+            expect(
+                count,
+                "the PDF should have a page per page of the book",
+            ).toBe(bookPages.length);
+            const pageTexts: string[] = [];
             for (let i = 0; i < count; i++)
                 pageTexts.push(
                     linesOf(
                         (await getPdfPreviewPageDrawing(shell, i)).texts,
                     ).join("\n"),
                 );
-            expect(
-                pageTexts.filter((text) =>
+            const pagesWithLocation = pageTexts
+                .map((text, index) => ({ text, index }))
+                .filter(({ text }) =>
                     text
                         .split("\n")
                         .map(withoutSpaces)
                         .includes(withoutSpaces(kLocation)),
-                ),
-                `the PDF's pages:\n${pageTexts.join("\n----\n")}`,
-            ).toHaveLength(1);
+                )
+                .map(({ index }) => index);
+            expect(
+                pagesWithLocation,
+                `the PDF pages that print the places, by index (the title page is ${titlePageIndex}):\n` +
+                    pageTexts.join("\n----\n"),
+            ).toEqual([titlePageIndex]);
             expect(bloomApp.takeNonFatalProblems()).toEqual([]);
         },
     );
@@ -224,21 +243,38 @@ test("a collection named with an ampersand, in a place named with ampersands, sa
             await openEpubPublishScreen(shell);
             await showEpubPreview(shell);
             const packageText = await readEpubPreviewPackage(shell);
-            const pageTexts: string[] = [];
+            const pages: {
+                href: string;
+                text: string;
+                isTitlePage: boolean;
+            }[] = [];
             for (const href of await getEpubPackageSpineHrefs(
                 shell,
                 packageText,
-            ))
-                pageTexts.push(
-                    await getEpubXhtmlText(
-                        shell,
-                        await readEpubPreviewContentFile(shell, href),
-                    ),
-                );
+            )) {
+                const xhtml = await readEpubPreviewContentFile(shell, href);
+                pages.push({
+                    href,
+                    text: await getEpubXhtmlText(shell, xhtml),
+                    // Bloom marks the title page's div epub:type="titlepage"
+                    // (EpubMaker.AddEpubTypeAttributes).
+                    isTitlePage: /epub:type="titlepage"/.test(xhtml),
+                });
+            }
+            const titlePages = pages
+                .filter((p) => p.isTitlePage)
+                .map((p) => p.href);
             expect(
-                pageTexts.filter((text) => text.includes(kLocation)),
-                `the ePUB's pages:\n${pageTexts.join("\n----\n")}`,
+                titlePages,
+                "the ePUB should have one title page",
             ).toHaveLength(1);
+            expect(
+                pages
+                    .filter((p) => p.text.includes(kLocation))
+                    .map((p) => p.href),
+                `the ePUB pages that show the places:\n` +
+                    pages.map((p) => `${p.href}: ${p.text}`).join("\n----\n"),
+            ).toEqual(titlePages);
             expect(bloomApp.takeNonFatalProblems()).toEqual([]);
         },
     );
