@@ -47,11 +47,14 @@ async function readBloomMessageBoxes(page: Page): Promise<string[]> {
 
 /**
  * Wait for Bloom to show exactly one message box, read its message, and close it the way its
- * button does. Returns the message, its lines joined by single spaces.
+ * button does. Returns the message, its lines joined by single spaces. `beforeClose`, if given,
+ * runs once the box shows and before it is closed: for work that must be done while Bloom is
+ * still waiting on the box, such as arming the dialog that Bloom shows as soon as it closes.
  */
 export async function readAndCloseBloomMessageBox(
     page: Page,
     timeoutMs = 60000,
+    beforeClose?: () => Promise<void>,
 ): Promise<string> {
     let shown: string[] = [];
     await expect
@@ -66,6 +69,7 @@ export async function readAndCloseBloomMessageBox(
             },
         )
         .toBe(1);
+    if (beforeClose) await beforeClose();
     await closeReactDialogFromNode(page);
     await expect
         .poll(async () => (await readBloomMessageBoxes(page)).length, {

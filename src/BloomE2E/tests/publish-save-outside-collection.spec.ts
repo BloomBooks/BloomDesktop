@@ -13,20 +13,16 @@ import * as Path from "node:path";
 import { execFileSync } from "node:child_process";
 import { type Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
-import { launchWithDontDisturb } from "../fixtures/launchBloom";
 import { apiPost } from "../helpers/api";
 import { makeBookFromTemplate } from "../helpers/bookMaking";
 import { readAndCloseBloomMessageBox } from "../helpers/bloomMessageBox";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
-import {
-    answerSaveAsDialog,
-    getForegroundWindow,
-} from "../helpers/nativeDialogs";
 import { choosePdfMode } from "../helpers/pdfPrint";
 import {
     selectPublishDestination,
     type PublishDestination,
 } from "../helpers/publish";
+import { armFileChooser } from "../helpers/nativeDialogs";
 import { setUiStateViaApi } from "../helpers/uiLanguage";
 
 test.use({
@@ -139,11 +135,6 @@ test("Bloom refuses to save a published file inside the collection folder, and s
     bloomApp,
     step,
 }, testInfo) => {
-    test.skip(
-        launchWithDontDisturb(),
-        "Save As takes the foreground, so this runs only where Bloom may take the foreground: on " +
-            "CI, or with BLOOM_E2E_DONT_DISTURB=0.",
-    );
     test.setTimeout(600000);
 
     const collectionDir = bloomApp.collectionDir;
@@ -202,7 +193,6 @@ test("Bloom refuses to save a published file inside the collection folder, and s
                         `The ${format.destination} screen's save button should be enabled.`,
                     ).toBeEnabled({ timeout: 180000 });
 
-                    const foregroundBefore = await getForegroundWindow();
                     const answered = page.waitForResponse(
                         (response) =>
                             response.request().method() === "POST" &&
@@ -211,15 +201,18 @@ test("Bloom refuses to save a published file inside the collection folder, and s
                             ),
                         { timeout: 300000 },
                     );
+                    await armFileChooser(page, refusedPath);
                     await save.click();
-                    await answerSaveAsDialog(
-                        bloomApp.bloomPid,
-                        refusedPath,
-                        60000,
-                        foregroundBefore,
-                    );
 
-                    const message = await readAndCloseBloomMessageBox(page);
+                    // Bloom shows the Save As dialog again as soon as its message closes, so the
+                    // place that is allowed is armed while the message still shows. Armed any
+                    // earlier, it could replace the first answer before Bloom took it.
+                    savedFiles.push(allowedPath);
+                    const message = await readAndCloseBloomMessageBox(
+                        page,
+                        60000,
+                        () => armFileChooser(page, allowedPath),
+                    );
                     // Checked by the paths it names, which read the same in every UI language. The
                     // place chosen holds the collection folder's path, so the collection folder is
                     // looked for in what is left once the place chosen is taken out.
@@ -234,14 +227,6 @@ test("Bloom refuses to save a published file inside the collection folder, and s
                         `Bloom's message should name the collection folder ${collectionDir}, besides the place chosen: "${message}"`,
                     ).toBe(true);
 
-                    // Bloom shows the Save As dialog again; this time the place is allowed.
-                    savedFiles.push(allowedPath);
-                    await answerSaveAsDialog(
-                        bloomApp.bloomPid,
-                        allowedPath,
-                        60000,
-                        foregroundBefore,
-                    );
                     const response = await answered;
                     expect(
                         response.ok(),

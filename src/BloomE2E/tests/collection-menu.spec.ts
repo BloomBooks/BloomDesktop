@@ -9,13 +9,12 @@
 //
 // Automates the manual test "Collection Dropdown Menu" (Test Case ID 660).
 //
-// Several of these commands still show plain Windows dialogs (a message box at the end of each
-// Troubleshooting command, Save As for a Bloom Pack), which helpers/nativeDialogs.ts answers over
-// UI Automation. The commands that save a file or open a log are in a test of their own: Windows
-// gives Bloom's Save As dialog the foreground whatever --dont-disturb says, and Bloom opens the
-// log in Notepad and the Bloom Pack in File Explorer, so that test does not run where it would
-// take a developer's keyboard; see "Collection menu commands open Notepad and File Explorer" in
-// AUTOMATION-DEBT.md.
+// Each Troubleshooting command still ends with a plain Windows message box, which
+// helpers/nativeDialogs.ts reads and closes over UI Automation. Save As for a Bloom Pack is
+// answered by arming it (armFileChooser), so it never shows. The commands that save a file or open
+// a log are in a test of their own: Bloom opens the log in Notepad and the Bloom Pack in File
+// Explorer, so that test does not run where it would take a developer's keyboard; see "Collection
+// menu commands open Notepad and File Explorer" in AUTOMATION-DEBT.md.
 
 import { createHash, randomUUID } from "node:crypto";
 import * as fs from "node:fs";
@@ -39,12 +38,11 @@ import {
 } from "../helpers/collection";
 import { chooseImageFile, getImagePlacement } from "../helpers/images";
 import {
-    answerSaveAsDialog,
+    armFileChooser,
     getForegroundWindow,
     readAndCloseMessageBox,
 } from "../helpers/nativeDialogs";
 import { writeZip } from "../helpers/spreadsheetEditing";
-import { armFileChooser } from "../helpers/talkingBook";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
@@ -96,25 +94,22 @@ async function makeTitledBook(page: Page, title: string): Promise<string> {
 }
 
 /**
- * Run `act`, which starts a command of the collection menu and answers whatever native dialogs it
+ * Run `act`, which starts a command of the collection menu and answers whatever message box it
  * shows, and wait until Bloom has finished the command, which is when it answers the menu's request
- * for `endpoint`: Bloom answers only once its dialogs are closed. `act` is given the window that had
- * the foreground before the command started, for the dialog helpers to give it back to. Returns
- * what `act` returned.
+ * for `endpoint`: Bloom answers only once its dialogs are closed. Returns what `act` returned.
  */
 async function runCollectionCommand<T>(
     page: Page,
     endpoint: string,
-    act: (foregroundBefore: string) => Promise<T>,
+    act: () => Promise<T>,
 ): Promise<T> {
-    const foregroundBefore = await getForegroundWindow();
     const answered = page.waitForResponse(
         (response) =>
             response.request().method() === "POST" &&
             new URL(response.url()).pathname.endsWith(`/${endpoint}`),
         { timeout: 180000 },
     );
-    const result = await act(foregroundBefore);
+    const result = await act();
     const response = await answered;
     expect(response.ok(), `Bloom should have done ${endpoint}`).toBe(true);
     return result;
@@ -125,7 +120,8 @@ function doChecksOfAllBooks(page: Page, bloomPid: number): Promise<string> {
     return runCollectionCommand(
         page,
         "collections/doChecksOfAllBooks",
-        async (foregroundBefore) => {
+        async () => {
+            const foregroundBefore = await getForegroundWindow();
             await chooseFromCollectionMenu(page, [kTroubleshooting, kDoChecks]);
             return readAndCloseMessageBox(bloomPid, 120000, foregroundBefore);
         },
@@ -327,7 +323,7 @@ test("The collection menu's commands that save a Bloom Pack or open a log do the
 }, testInfo) => {
     test.skip(
         launchWithDontDisturb(),
-        "Save As takes the foreground, and Bloom opens Notepad and File Explorer, so this runs only " +
+        "Bloom opens Notepad and File Explorer, so this runs only " +
             "where Bloom may take the foreground: on CI, or with BLOOM_E2E_DONT_DISTURB=0.",
     );
     let bookFolder = "";
@@ -350,18 +346,11 @@ test("The collection menu's commands that save a Bloom Pack or open a log do the
         async () => {
             const packPath = testInfo.outputPath("Shell books.BloomPack");
             fs.mkdirSync(Path.dirname(packPath), { recursive: true });
+            await armFileChooser(page, packPath);
             await runCollectionCommand(
                 page,
                 "collections/makeShellBooksBloompack",
-                async (foregroundBefore) => {
-                    await chooseFromCollectionMenu(page, [kMakeShellBloomPack]);
-                    return answerSaveAsDialog(
-                        bloomApp.bloomPid,
-                        packPath,
-                        60000,
-                        foregroundBefore,
-                    );
-                },
+                () => chooseFromCollectionMenu(page, [kMakeShellBloomPack]),
             );
             const pack = readBloomPack(packPath);
             const meta = bloomPackMetaJson(pack, bookFolder);
@@ -407,18 +396,9 @@ test("The collection menu's commands that save a Bloom Pack or open a log do the
             ).toBeDisabled();
             await checkbox.check();
             await expect(save).toBeEnabled();
-            await runCollectionCommand(
-                page,
-                "collections/makeBloompack",
-                async (foregroundBefore) => {
-                    await save.click();
-                    await answerSaveAsDialog(
-                        bloomApp.bloomPid,
-                        packPath,
-                        60000,
-                        foregroundBefore,
-                    );
-                },
+            await armFileChooser(page, packPath);
+            await runCollectionCommand(page, "collections/makeBloompack", () =>
+                save.click(),
             );
             const meta = bloomPackMetaJson(readBloomPack(packPath), bookFolder);
             expect(meta.suitableForMakingShells).toBe(true);
@@ -459,7 +439,8 @@ test("The collection menu's commands that save a Bloom Pack or open a log do the
             const message = await runCollectionCommand(
                 page,
                 "collections/rescueMissingImages",
-                async (foregroundBefore) => {
+                async () => {
+                    const foregroundBefore = await getForegroundWindow();
                     await chooseFromCollectionMenu(page, [
                         kTroubleshooting,
                         kRescueMissingImages,

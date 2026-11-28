@@ -14,7 +14,7 @@
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { editablePageFrame } from "./bookMaking";
-import { armFileChooser } from "./talkingBook";
+import { armFileChooser } from "./nativeDialogs";
 
 const kOpenFileLabel = "Open File...";
 const kUseThisImageLabel = "Use this image";

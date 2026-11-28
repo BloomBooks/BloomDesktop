@@ -67,6 +67,21 @@ hyphen and zero-width space. Tests must not assume English either; see `src/Bloo
   Details, including what to do if the vitest suite seems to hang, are in
   `src/BloomBrowserUI/AGENTS.md`.
 
+# Native file dialogs and automated tests
+
+An automated test answers a native file dialog by telling Bloom the path in advance: it POSTs the
+path to `e2e/nextFileToChoose` (`armFileChooser` in `src/BloomE2E/helpers/nativeDialogs.ts`), and
+the next dialog returns that path without opening. `BloomOpenFileDialog`, `BloomFolderChooser`
+and the Save As in `MiscUtils.GetOutputFilePathOutsideCollectionFolder` do this, through
+`E2eDialogAnswer.TryTakeNextPathToChoose`.
+
+- **Product code** opens a file, folder or Save As dialog only through those, or through a wrapper
+  that calls `E2eDialogAnswer.TryTakeNextPathToChoose` before `ShowDialog()`.
+- **A test that meets a dialog the hook does not answer** gets the hook added to that dialog in
+  Bloom, in the same PR. Typing into the real dialog through UI Automation or posted
+  keystrokes depends on how Windows' dialog behaves on each machine, and broke on the CI runner
+  (BL-17232).
+
 # Preflight checks
 
 Checks the `preflight` skill runs on this repo, in addition to its own.

@@ -197,19 +197,24 @@ namespace Bloom.web.controllers
             // .bloomCollection instead; see kEnterpriseSubscriptionCode in BloomE2E.
 
             // POST body is the full path of a file or folder, and it makes the NEXT file or folder
-            // chooser Bloom would open answer with that path instead of showing a native dialog,
-            // which hangs a run (see AUTOMATION-DEBT.md, "Native OS dialogs hang automation").
-            // Every one of Bloom's choosers goes through BloomOpenFileDialog or
-            // BloomFolderChooser, and both consume the same armed path, so this covers choosing a
-            // video, an image file, a spreadsheet, a reader file or a folder alike. Arming the
+            // chooser, or Save As dialog, that Bloom would open answer with that path instead of
+            // showing a native dialog, which hangs a run (see AUTOMATION-DEBT.md, "Native OS
+            // dialogs hang automation"). Every one of Bloom's choosers goes through
+            // BloomOpenFileDialog or BloomFolderChooser, and every Save As through
+            // MiscUtils.GetOutputFilePathOutsideCollectionFolder, and all three take the same
+            // armed path (E2eDialogAnswer), so this covers choosing a video, an image file, a spreadsheet, a reader
+            // file or a folder, and saving a PDF, an ePUB or a Bloom Pack, alike. Arming the
             // answer rather than short-circuiting the feature means the test still drives the real
             // UI and Bloom still runs all of its post-dialog code: for a video, the copy into the
             // book folder, the ffmpeg re-encode, the progress dialog and the update of the video
-            // container. Off the UI thread: it only stores a string.
+            // container. Off the UI thread and outside the server's lock: it only stores a string,
+            // and a test arms the second Save As of a refused save while the request that showed
+            // the refusal still holds that lock (as common/closeReactDialog does to close it).
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "nextFileToChoose",
                 HandleSetNextFileToChoose,
-                false // does not need the UI thread
+                false, // does not need the UI thread
+                requiresSync: false
             );
 
             // GET e2e/clipboard: what Bloom's clipboard holds. POST: replace it. Under --e2e,
@@ -252,12 +257,12 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// POST e2e/nextFileToChoose: answer the next file or folder chooser with this path rather
+        /// POST e2e/nextFileToChoose: answer the next file or folder chooser, or Save As, with this path rather
         /// than opening a dialog (see the registration above).
         /// </summary>
         private void HandleSetNextFileToChoose(ApiRequest request)
         {
-            MiscUI.BloomOpenFileDialog.SetNextPathToChooseInE2eTests(request.RequiredPostString());
+            MiscUI.E2eDialogAnswer.SetNextPathToChoose(request.RequiredPostString());
             request.PostSucceeded();
         }
 

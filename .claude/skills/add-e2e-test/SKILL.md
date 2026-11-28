@@ -68,10 +68,11 @@ automation (no stable selector, a native dialog, a WinForms surface):
 
 1. Check `src/BloomE2E/AUTOMATION-DEBT.md` — it may already be known, with a
    workaround or a decision.
-   For a WinForms button or tab, or an OS dialog, first see whether UI Automation reaches it
-   (`winformsUia.ps1`, "Driving WinForms and OS dialogs" in the `run-bloom` skill); it
-   does for the Settings dialog's tabs and OK/Cancel and for the file picker, but not for the
-   Settings dialog's web content under `--e2e`.
+   A native file or folder dialog is answered by the `e2e/nextFileToChoose` hook, added to
+   that dialog in Bloom if it lacks it (step 2). For a WinForms button or tab, first see
+   whether UI Automation reaches it (`winformsUia.ps1`, "Driving WinForms and OS dialogs" in
+   the `run-bloom` skill); it does for the Settings dialog's tabs and OK/Cancel, but not for
+   the Settings dialog's web content under `--e2e`.
 2. Prefer fixing Bloom: add a `data-testid` in the React code, or add a hook to
    `src/BloomExe/web/controllers/E2eTestingApi.cs` (registered only under `--e2e`).
    Ship that fix in the same PR as the test. That is a change to Bloom's production code,
@@ -223,13 +224,15 @@ Rules that hold regardless of the final API:
   `Input.dispatchMouseEvent` inside a test.
 - NEVER let a native OS dialog open unprepared (video capture, the file and folder choosers):
   Playwright cannot see or dismiss it, so the run hangs. The one exception is the "choose
-  a file" or "choose a folder" dialog: arm `armFileChooser` (helpers/talkingBook.ts, over the
-  `e2e/nextFileToChoose` hook) with the path you want BEFORE the click that opens it, and Bloom
-  answers with that path instead of showing a dialog. It answers one dialog only, so arm it
-  immediately before the click; a path armed and never used would otherwise answer some later
-  test's chooser. When a dialog the hook does not cover has to be driven, or a run has to read
-  an unexpected message box, `winformsUia.ps1` in the `run-bloom` skill does it over UI
-  Automation (proven on Bloom's image picker); arming is still the first choice in a test.
+  a file", "choose a folder" or Save As dialog: arm `armFileChooser` (helpers/nativeDialogs.ts,
+  over the `e2e/nextFileToChoose` hook) with the path you want BEFORE the click that opens it,
+  and Bloom answers with that path instead of showing a dialog. It answers one dialog only, so
+  arm it immediately before the click; a path armed and never used would otherwise answer some
+  later test's dialog. When Bloom shows a second dialog right after a message box (Save As again
+  after refusing a place), arm it from `readAndCloseBloomMessageBox`'s `beforeClose`. When a
+  file dialog the hook does not answer is in the way, add the hook to that dialog in Bloom ("Native file dialogs and automated tests" in the
+  root `AGENTS.md`). `winformsUia.ps1` in the `run-bloom` skill is for reading a message box
+  over UI Automation, not for answering a file dialog.
 - NEVER put anything on the Windows clipboard or read it. Under `--e2e` Bloom uses an in-memory
   clipboard instead, so a test cannot disturb the developer's clipboard or another run's. Set it
   with `copyToClipboard`, read it with `getClipboard`, and paste with `pasteFromClipboard`

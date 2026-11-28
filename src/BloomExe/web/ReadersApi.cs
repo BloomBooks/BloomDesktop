@@ -630,7 +630,7 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// The SaveFileDialog must run on a STA thread.
+        /// Write a report of the decodable stages' letters and words, and open it.
         /// </summary>
         private void MakeLetterAndWordList(string jsonSettings, string allWords)
         {

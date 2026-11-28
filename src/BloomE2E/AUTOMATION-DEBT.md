@@ -118,15 +118,11 @@ through the dialog. What stays on this entry is the other `WireUpForWinforms` mo
 File pickers and video capture open native windows that Playwright cannot see or dismiss; a
 test that triggers one unprepared hangs the run. (The WinForms Image Toolbox this entry used
 to name is gone: choosing an image is a web dialog now, and only its "Open File..." button
-under "This Computer", and changing a GIF, reach a native file picker.) Since 2026-09-16 the
-picker itself is no longer undrivable: `.claude/skills/run-bloom/winformsUia.ps1`
-fills its "File name:" box and presses Open over UI Automation, proven against Bloom's own
-image picker. A test should still prefer `e2e/nextFileToChoose` (below), which never shows
-the dialog; UIA is the fallback for whatever that hook does not cover, and for reading a
-message box a test did not expect. Tests must avoid them (the
-`add-e2e-test` skill forbids it). Fix direction: `--e2e`-mode alternatives via
-`E2eTestingApi` for the common cases (choose image file, choose video), so journeys
-that need them become automatable.
+under "This Computer", and changing a GIF, reach a native file picker.) A test answers a file,
+folder or Save As dialog with `e2e/nextFileToChoose` (below), which never shows the dialog; a
+dialog that the hook does not cover gets the hook added in Bloom (see "Native file dialogs and
+automated tests" in the root `AGENTS.md`). Video capture has no such answer, and a test must not
+open it (the `add-e2e-test` skill forbids it).
 
 seen again 2026-09-01 (Test Case ID 349, `duplicate-page.spec.ts`): the manual test puts a
 picture, a recording, and a video on a page. The picture has a route: the image chooser is a
@@ -143,8 +139,10 @@ and `helpers/videos.ts`): a test can now pre-answer the next native "choose a fi
 folder" dialog, so a UI path that opens one is drivable instead of hanging. POST
 `e2e/nextFileToChoose` with the path as the body arms a single answer; `BloomOpenFileDialog` and
 `BloomFolderChooser`, which every chooser in Bloom goes through, answer with it in place of
-showing the dialog, and Bloom goes back to showing the real one afterwards.
-`helpers/talkingBook.ts` (`armFileChooser`) is the wrapper. `FileIOApi.SelectFileUsingDialog`
+showing the dialog, and Bloom goes back to showing the real one afterwards. Since BL-17232 the
+Save As in `MiscUtils.GetOutputFilePathOutsideCollectionFolder`, which every save goes through,
+answers with it too.
+`helpers/nativeDialogs.ts` (`armFileChooser`) is the wrapper. `FileIOApi.SelectFileUsingDialog`
 deliberately does NOT remember the chosen folder in `FilePathMemory` under `--e2e`, which is
 machine-wide settings shared with the developer's own Bloom.
 
@@ -920,17 +918,13 @@ another program, under `--e2e` and `--dont-disturb` too: Troubleshooting > Do Ch
 when it finds a problem, and Rescue Missing Images, always, open their log in the program the
 machine opens `.txt` files with (`ProcessExtra.SafeStartInFront`, in `CollectionModel`), and Make
 Bloom Pack of Shell Books and Make Reader Template Bloom Pack show the new Bloom Pack in File
-Explorer (`ProcessExtra.ShowFileInExplorerInFront`, in `CollectionModel.MakeBloomPackWithUI`). The
-Bloom Packs are also named in Windows' own Save As dialog, which `helpers/nativeDialogs.ts` answers
-over UI Automation, and which Windows brings to the front whatever `--dont-disturb` says. So the
-test of those commands in `collection-menu.spec.ts` (Test Case ID 660) skips itself under
+Explorer (`ProcessExtra.ShowFileInExplorerInFront`, in `CollectionModel.MakeBloomPackWithUI`). So
+the test of those commands in `collection-menu.spec.ts` (Test Case ID 660) skips itself under
 `--dont-disturb` and runs only where Bloom may take the foreground: on CI, or with
 `BLOOM_E2E_DONT_DISTURB=0`. It reads the Bloom Packs and the book folder from disk, so nothing it
 checks depends on those windows. Cost: no unattended local run, and windows left open on the
 machine it ran on. Fix direction: skip opening the log and the folder when
-`Program.RunningE2eTests` is true, and let `e2e/nextFileToChoose` (or a twin) answer
-`MiscUtils.GetOutputFilePathOutsideCollectionFolder`, so every save command is drivable with no
-native window. (Found 2026-11-26 while automating Test Case ID 660.)
+`Program.RunningE2eTests` is true. (Found 2026-11-26 while automating Test Case ID 660.)
 
 ## The fake notices' Report and extra buttons are not pressed
 

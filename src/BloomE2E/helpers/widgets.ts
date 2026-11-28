@@ -11,7 +11,7 @@ import {
     goToPage,
     waitForEditTabSettled,
 } from "./bookMaking";
-import { armFileChooser } from "./talkingBook";
+import { armFileChooser } from "./nativeDialogs";
 
 const kWidgetTextId = "widget-text";
 
