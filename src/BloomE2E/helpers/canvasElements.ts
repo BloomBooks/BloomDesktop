@@ -17,7 +17,7 @@ import { editablePageFrame, waitForBloomToHaveTyping } from "./bookMaking";
 import { type IRect } from "./geometry";
 import { realClick, realClickAt } from "./realClick";
 import { waitForScrollBarOf } from "./textBoxScrollBars";
-import { showToolbox, toolboxFrame } from "./toolbox";
+import { expandToolByHeader, showToolbox, toolboxFrame } from "./toolbox";
 
 /**
  * The palette items the Canvas tool offers, named by the canvas element type each one makes, which
@@ -275,6 +275,11 @@ export async function dispatchPaletteDrag(
  * `at` places the drop within the canvas, as a fraction of its width and height, so it is
  * independent of how large the window is. It defaults to the middle. Two elements dropped at the
  * same place would sit on top of each other, so a test that wants two should say where each goes.
+ *
+ * `onto`, a selector in the page, drops the item on another canvas instead, such as the picture box
+ * of an ordinary page (".bloom-canvas"), where a person puts a speech bubble on a picture. Such a
+ * canvas does not open the Canvas tool when clicked, so the tool is opened from its header in the
+ * toolbox, as a person does; the book must offer the tool (see enableToolForBook).
  */
 export async function dragPaletteItemOntoCanvas(
     page: Page,
@@ -283,8 +288,16 @@ export async function dragPaletteItemOntoCanvas(
         xFraction: 0.5,
         yFraction: 0.5,
     },
+    onto?: string,
 ): Promise<number> {
-    const toolbox = await openCanvasTool(page);
+    let toolbox: Frame;
+    if (onto) {
+        toolbox = await expandToolByHeader(page, "canvas");
+        await toolbox
+            .locator(CANVAS_TOOL_CONTROLS)
+            .first()
+            .waitFor({ state: "visible", timeout: 30000 });
+    } else toolbox = await openCanvasTool(page);
     const source = toolbox.locator(`[data-testid="palette-${item}"]:visible`);
     // Wait rather than count once: an item that is behind a subscription tier or an experiment
     // appears only once the palette has heard back from features/status, so it is missing for a
@@ -306,9 +319,17 @@ export async function dragPaletteItemOntoCanvas(
                 `subscription tier the collection does not have, is simply absent.`,
         );
     }
-    await canvas(page).waitFor({ state: "visible", timeout: 30000 });
+    await (
+        onto ? editablePageFrame(page).locator(onto).first() : canvas(page)
+    ).waitFor({ state: "visible", timeout: 30000 });
     const countBefore = await getCanvasElementCount(page);
-    await dispatchPaletteDrag(page, item, at);
+    await dispatchPaletteDrag(
+        page,
+        item,
+        at,
+        CANVAS_TOOL_CONTROLS,
+        onto ?? CANVAS_SELECTOR,
+    );
 
     await expect
         .poll(async () => getCanvasElementCount(page), {
