@@ -232,7 +232,11 @@ export async function readPageLayouts(
             const known = size ? kSizes[size[1]] : undefined;
             const pageRect = p.getBoundingClientRect();
             let mmWide = pageRect.width;
-            if (known) mmWide = size![2] === "Portrait" ? known[0] : known[1];
+            if (known && size![2] === "Portrait") {
+                mmWide = known[0];
+            } else if (known) {
+                mmWide = known[1];
+            }
             const scale = mmWide / pageRect.width;
             const shown = (e: Element) => {
                 const r = e.getBoundingClientRect();
@@ -335,23 +339,44 @@ export async function waitForBookLaidOut(
     bookId: string,
     pageCount: number,
 ): Promise<void> {
-    await expect
-        .poll(
-            // A read made while the frame is navigating can fail; expect.poll does not retry a
-            // callback that throws, so such a read counts as "not that book yet". It gives no
-            // address at all: the error's text quotes the frame's selector, which holds the
-            // very book id this waits for.
-            () =>
-                frame
-                    .locator("body")
-                    .evaluate((body) => body.ownerDocument.location.href)
-                    .catch(() => ""),
-            {
-                message: `the preview should hold the document of book ${bookId}`,
-                timeout: 60000,
-            },
-        )
-        .toContain(`dummy=${bookId}`);
+    // The error of the latest read, when that read failed; the timeout's message quotes it.
+    let lastReadError: string | undefined;
+    try {
+        await expect
+            .poll(
+                // A read made while the frame is navigating can fail; expect.poll does not retry
+                // a callback that throws, so such a read counts as "not that book yet". It gives
+                // no address at all: the error's text quotes the frame's selector, which holds
+                // the very book id this waits for.
+                () =>
+                    frame
+                        .locator("body")
+                        .evaluate((body) => body.ownerDocument.location.href)
+                        .then((href) => {
+                            lastReadError = undefined;
+                            return href;
+                        })
+                        .catch((error: unknown) => {
+                            lastReadError =
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error);
+                            return "";
+                        }),
+                {
+                    message: `the preview should hold the document of book ${bookId}`,
+                    timeout: 60000,
+                },
+            )
+            .toContain(`dummy=${bookId}`);
+    } catch (error) {
+        if (lastReadError === undefined) throw error;
+        throw new Error(
+            `${error instanceof Error ? error.message : String(error)}\n` +
+                `The last read of the preview failed: ${lastReadError}`,
+            { cause: error },
+        );
+    }
     await frame
         .locator(".bloom-page")
         .nth(pageCount - 1)
