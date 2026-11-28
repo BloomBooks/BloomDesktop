@@ -62,24 +62,39 @@ async function getWidgetPageOnPage(page: Page): Promise<string> {
 
 /**
  * Check that a replacing widget's frame `src` (URL-encoded) is a folder of the book's activities
- * that Bloom named from the widget's shortened name, with something added to keep it apart from
- * the folder of the widget it replaced.
+ * that Bloom named from the widget's shortened name, with digits added to keep it apart from the
+ * folder of the widget it replaced, and not from the widget's full name.
  */
 function expectInShortenedNameFolder(src: string): void {
     const widgetPage = decodeURI(src);
     expect(widgetPage).toMatch(/^activities\/[^/]+\/index\.html$/);
     const folder = widgetPage.split("/")[1];
     expect(
-        folder.startsWith(kShortWidgetName) && folder !== kShortWidgetName,
-        `The new widget's folder, ${folder}, should start with the shortened name "${kShortWidgetName}" and not be the replaced widget's folder.`,
+        folder.startsWith(kShortWidgetName) &&
+            /^\d+$/.test(folder.slice(kShortWidgetName.length)),
+        `The new widget's folder, "${folder}", should be the shortened name "${kShortWidgetName}" with digits added.`,
     ).toBe(true);
 }
 
-/** The text that the widget in the page's widget box shows. */
-async function getShownWidgetText(page: Page): Promise<string> {
-    return getWidgetText(
-        editablePageFrame(page).frameLocator(".bloom-widgetContainer iframe"),
-    );
+/**
+ * Wait until the widget in the page's widget box shows `text`. Its frame loads the new widget's
+ * document after its src changes, so an early read can find the replaced widget's text.
+ */
+async function expectShownWidgetText(page: Page, text: string): Promise<void> {
+    await expect
+        .poll(
+            () =>
+                getWidgetText(
+                    editablePageFrame(page).frameLocator(
+                        ".bloom-widgetContainer iframe",
+                    ),
+                ),
+            {
+                timeout: 30000,
+                message: `The widget box should show the widget whose text is "${text}".`,
+            },
+        )
+        .toBe(text);
 }
 
 test("replacing a widget with one whose name is over 50 characters, in a book whose title is too, works [Test Case ID 537]", async ({
@@ -123,7 +138,7 @@ test("replacing a widget with one whose name is over 50 characters, in a book wh
                 await getWidgetPageOnPage(page),
                 "Sanity check: the first widget should be in the folder of its shortened name",
             ).toBe(`activities/${kShortWidgetName}/index.html`);
-            expect(await getShownWidgetText(page)).toBe(kFirstText);
+            await expectShownWidgetText(page, kFirstText);
             return {
                 bookId,
                 widgetPageId: widgetPage.id,
@@ -145,7 +160,7 @@ test("replacing a widget with one whose name is over 50 characters, in a book wh
                 ),
             );
             expectInShortenedNameFolder(src);
-            expect(await getShownWidgetText(page)).toBe(kWdgtText);
+            await expectShownWidgetText(page, kWdgtText);
         },
     );
 
@@ -161,7 +176,7 @@ test("replacing a widget with one whose name is over 50 characters, in a book wh
                 ),
             );
             expectInShortenedNameFolder(src);
-            expect(await getShownWidgetText(page)).toBe(kHtmlText);
+            await expectShownWidgetText(page, kHtmlText);
             return src;
         },
     );
