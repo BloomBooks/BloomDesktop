@@ -130,10 +130,15 @@ function expectOnlyChangedFileSent(
     changed: keyof IMediaFiles | undefined,
     what: string,
 ): void {
+    const allowedEveryTime = [
+        htmFile,
+        "meta.json",
+        "thumbnail.png",
+        "thumbnail-70.png",
+        "thumbnail-256.png",
+    ];
     const isAllowedEveryTime = (file: string) =>
-        file === htmFile ||
-        file === "meta.json" ||
-        /^thumbnail(-\d+)?\.png$/.test(file);
+        allowedEveryTime.includes(file);
     expect(
         sent.filter((file) => !isAllowedEveryTime(file)).sort(),
         `${what}, the upload should have sent ${changed ? `only the new ${changed} (${current[changed]})` : "no file"} ` +
