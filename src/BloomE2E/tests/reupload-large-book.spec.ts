@@ -14,8 +14,8 @@
 // it again, and checks:
 // - both uploads finish without "There was a problem uploading your book";
 // - the re-upload sends none of the .mp3 files, and nothing but the new picture and the files that
-//   may change with every upload (the book's .htm, meta.json and the cover thumbnails, as
-//   upload-only-changed-files.spec.ts allows);
+//   change with the new page (the book's .htm and PDF) or may change with every upload (meta.json
+//   and the cover thumbnails, as upload-only-changed-files.spec.ts allows);
 // - the re-uploaded copy on the server holds every recording, so the server did copy the files
 //   that Bloom skipped.
 //
@@ -221,8 +221,11 @@ test.describe("re-uploading a large book to dev.bloomlibrary.org", () => {
             "The re-upload should have sent none of the recordings.",
         ).toEqual([]);
         const htmFile = `${Path.basename(bookFolder)}.htm`;
+        // The book's PDF, which Bloom makes afresh for each upload, holds the new page.
+        const pdfFile = `${Path.basename(bookFolder)}.pdf`;
         const allowedEveryTime = [
             htmFile,
+            pdfFile,
             "meta.json",
             "thumbnail.png",
             "thumbnail-70.png",
@@ -231,7 +234,7 @@ test.describe("re-uploading a large book to dev.bloomlibrary.org", () => {
         expect(
             second.sent.filter((file) => !allowedEveryTime.includes(file)),
             `The re-upload should have sent only the new picture (${picture}) besides ${htmFile}, ` +
-                `meta.json and the thumbnails. It sent: ${second.sent.join(", ")}`,
+                `${pdfFile}, meta.json and the thumbnails. It sent: ${second.sent.join(", ")}`,
         ).toEqual([picture]);
 
         // ---- The re-uploaded copy has every recording, which the server copied ---------------------
