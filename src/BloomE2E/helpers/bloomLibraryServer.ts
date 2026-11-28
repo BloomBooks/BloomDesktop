@@ -49,6 +49,12 @@ export interface IBookOnServer {
     baseUrl: string;
     /** When the record was made, which is when the book was first uploaded (ISO 8601). */
     createdAt: string;
+    /**
+     * The subscription the record names (its brandingProjectName), e.g. "Test", or undefined while
+     * it names none. Uploads do not set it; the harvester does, from the uploaded meta.json, when it
+     * finishes processing an upload (BL-17234).
+     */
+    subscription: string | undefined;
 }
 
 const parseHeaders = {
@@ -68,7 +74,7 @@ async function queryBooksOnDevServer(
 ): Promise<IBookOnServer[]> {
     const url =
         `${DEV_PARSE_SERVER_URL}/classes/books?where=${encodeURIComponent(JSON.stringify(where))}` +
-        `&include=uploader&keys=title,bookInstanceId,tags,uploader,baseUrl,createdAt&limit=1000`;
+        `&include=uploader&keys=title,bookInstanceId,tags,uploader,baseUrl,createdAt,brandingProjectName&limit=1000`;
     const headers = login
         ? { ...parseHeaders, "X-Parse-Session-Token": login.sessionToken }
         : parseHeaders;
@@ -86,6 +92,7 @@ async function queryBooksOnDevServer(
             uploader?: { email?: string };
             baseUrl: string;
             createdAt: string;
+            brandingProjectName?: string;
         }[];
     };
     const bookshelfPrefix = "bookshelf:";
@@ -100,6 +107,7 @@ async function queryBooksOnDevServer(
         uploaderEmail: r.uploader?.email,
         baseUrl: r.baseUrl,
         createdAt: r.createdAt,
+        subscription: r.brandingProjectName || undefined,
     }));
 }
 

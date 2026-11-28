@@ -34,7 +34,6 @@ import {
 import { getUiString } from "../helpers/api";
 import { selectBook } from "../helpers/collection";
 import {
-    getCollectionSettingsOkLabel,
     kEnterpriseSubscriptionCode,
     openCollectionSettings,
     restartFromCollectionSettings,
@@ -142,7 +141,8 @@ async function addTextPage(page: Page, text: string): Promise<void> {
 
 /**
  * The check box in the "same book?" dialog that acknowledges a change of subscription, found by
- * the start of its localized label ('The subscription was "{0}" but is now "{1}"...').
+ * the part of its localized label before the first subscription's name ('The subscription was "'),
+ * so that it is found whichever two subscriptions the label names.
  */
 async function subscriptionChangeBox(
     page: Page,
@@ -153,11 +153,7 @@ async function subscriptionChangeBox(
         "PublishTab.UploadCollisionDialog.ChangeSubscription",
         'The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.',
     );
-    const start = label
-        .replace("{0}", TEST_SUBSCRIPTION)
-        .replace("{1}", DEFAULT_SUBSCRIPTION)
-        .substring(0, 40);
-    return dialog.getByRole("checkbox", { name: start });
+    return dialog.getByRole("checkbox", { name: label.split("{0}")[0] });
 }
 
 /** The Upload button of the "same book?" dialog. */
@@ -213,12 +209,18 @@ test.describe("updating a branded book on dev.bloomlibrary.org", () => {
         await addTextPage(page, FIRST_NEW_PAGE_TEXT);
         await openPublishToWeb(page);
         await acceptAllAgreements(page);
+        let askedSameBook = false;
         await uploadBookForReal(page, undefined, async (dialog) => {
+            askedSameBook = true;
             await expect(
                 await subscriptionChangeBox(page, dialog),
                 "With the subscription unchanged, the dialog should not ask to acknowledge a change.",
             ).toHaveCount(0);
         });
+        expect(
+            askedSameBook,
+            "Uploading the book again should ask whether it is an update of the book on Bloom Library.",
+        ).toBe(true);
 
         expect(
             await readUploadedCopy(),
@@ -236,11 +238,26 @@ test.describe("updating a branded book on dev.bloomlibrary.org", () => {
         await openCollectionSettings(page);
         await showCollectionSettingsPage(page, "Subscription");
         await typeSubscriptionCode(page, "");
-        expect(
-            await getCollectionSettingsOkLabel(page),
-            "Clearing the code changes the branding, which needs a restart.",
-        ).toBe("Restart");
+        // Clearing the code changes the branding, which needs a restart; this fails if OK does not
+        // offer one.
         const reopened = await restartFromCollectionSettings(bloomApp);
+        // The dialog compares the book's subscription with the one on the book's record, which an
+        // upload does not set: only the harvester does, once it has processed an upload (BL-17234).
+        // Until then the dialog sees no subscription on Bloom Library and asks nothing, so wait for
+        // the record to name one, as it would by the time a person makes another change.
+        await expect
+            .poll(
+                async () =>
+                    (await findBooksUploadedBy(login!, BOOK_TITLE))[0]
+                        ?.subscription,
+                {
+                    timeout: 300000,
+                    intervals: [5000],
+                    message:
+                        "The book's record on the sandbox never named the Test subscription; has the sandbox's harvester stopped? (BL-17234)",
+                },
+            )
+            .toBe(TEST_SUBSCRIPTION);
         await selectBook(reopened, bookFolder);
         await openPublishToWeb(reopened);
         await acceptAllAgreements(reopened);
@@ -254,17 +271,27 @@ test.describe("updating a branded book on dev.bloomlibrary.org", () => {
             )
                 collisionInfos.push(await response.json().catch(() => ({})));
         });
+        askedSameBook = false;
         await uploadBookForReal(reopened, undefined, async (dialog) => {
+            askedSameBook = true;
             const acknowledge = await subscriptionChangeBox(reopened, dialog);
             const upload = await dialogUploadButton(reopened, dialog);
-            const info = collisionInfos[collisionInfos.length - 1];
-            expect(
-                {
-                    old: info?.oldSubscriptionDescriptor,
-                    new: info?.newSubscriptionDescriptor,
-                },
-                "Bloom should tell the dialog that the subscription on Bloom Library is Test and the book's is now Default.",
-            ).toEqual({ old: TEST_SUBSCRIPTION, new: DEFAULT_SUBSCRIPTION });
+            // The listener records the answer only once it has parsed it, so wait for it.
+            await expect
+                .poll(
+                    () => {
+                        const info = collisionInfos[collisionInfos.length - 1];
+                        return {
+                            old: info?.oldSubscriptionDescriptor,
+                            new: info?.newSubscriptionDescriptor,
+                        };
+                    },
+                    {
+                        message:
+                            "Bloom should tell the dialog that the subscription on Bloom Library is Test and the book's is now Default.",
+                    },
+                )
+                .toEqual({ old: TEST_SUBSCRIPTION, new: DEFAULT_SUBSCRIPTION });
             await expect(
                 acknowledge,
                 `The dialog should ask to acknowledge that the subscription changes from "${TEST_SUBSCRIPTION}" to "${DEFAULT_SUBSCRIPTION}".`,
@@ -280,6 +307,10 @@ test.describe("updating a branded book on dev.bloomlibrary.org", () => {
                 "Upload should be enabled once the change of subscription is acknowledged.",
             ).toBeEnabled();
         });
+        expect(
+            askedSameBook,
+            "Uploading the book again should ask whether it is an update of the book on Bloom Library.",
+        ).toBe(true);
 
         expect(
             await readUploadedCopy(),
