@@ -87,8 +87,16 @@ export async function getUiString(
     return answer.text;
 }
 
-/** The port of the Bloom that serves `page`, from its address. */
+/**
+ * The port of the Bloom that serves `page`, from its address. A closed page is refused, as any
+ * other use of it would be: a test still holding the shell page that Bloom replaced has lost track
+ * of Bloom, even though the replacement serves on the same port.
+ */
 function bloomPort(page: Page): number {
+    if (page.isClosed())
+        throw new Error(
+            `Cannot call Bloom through a closed page (${page.url()}); use the page that replaced it.`,
+        );
     const url = new URL(page.url());
     if (url.hostname !== "localhost" || !url.port)
         throw new Error(
