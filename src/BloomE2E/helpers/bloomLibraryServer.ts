@@ -47,6 +47,8 @@ export interface IBookOnServer {
      * with the slashes as %2f and spaces as +. Ends with the book folder's name.
      */
     baseUrl: string;
+    /** When the record was made, which is when the book was first uploaded (ISO 8601). */
+    createdAt: string;
 }
 
 const parseHeaders = {
@@ -66,7 +68,7 @@ async function queryBooksOnDevServer(
 ): Promise<IBookOnServer[]> {
     const url =
         `${DEV_PARSE_SERVER_URL}/classes/books?where=${encodeURIComponent(JSON.stringify(where))}` +
-        `&include=uploader&keys=title,bookInstanceId,tags,uploader,baseUrl&limit=1000`;
+        `&include=uploader&keys=title,bookInstanceId,tags,uploader,baseUrl,createdAt&limit=1000`;
     const headers = login
         ? { ...parseHeaders, "X-Parse-Session-Token": login.sessionToken }
         : parseHeaders;
@@ -83,6 +85,7 @@ async function queryBooksOnDevServer(
             tags?: string[];
             uploader?: { email?: string };
             baseUrl: string;
+            createdAt: string;
         }[];
     };
     const bookshelfPrefix = "bookshelf:";
@@ -96,6 +99,7 @@ async function queryBooksOnDevServer(
             .map((tag) => tag.substring(bookshelfPrefix.length)),
         uploaderEmail: r.uploader?.email,
         baseUrl: r.baseUrl,
+        createdAt: r.createdAt,
     }));
 }
 
@@ -138,14 +142,20 @@ export async function countBooksInLanguageOnDevServer(
 }
 
 /**
- * Every book the signed-in account has on the sandbox, whatever a test named them. Cleanup uses
- * this so a run can delete not only the books it just uploaded but any a crashed earlier run left
- * behind, which is safe because the account exists only for these tests.
+ * The books the signed-in account has on the sandbox whose titles start with `titlePrefix`. Cleanup
+ * uses this so a run can delete not only the books it just uploaded but any a crashed earlier run
+ * of the same test left behind.
+ *
+ * Every real-upload test signs in as the same account, and the nightly runs its shards at the same
+ * time, so two such tests can have books on the account at once. Each test therefore gives its
+ * books titles with a prefix of its own and reads and deletes only those: a test that counted or
+ * deleted all the account's books would break whichever other one was running.
  */
 export async function findBooksUploadedBy(
     login: IBloomLibraryLogin,
+    titlePrefix: string,
 ): Promise<IBookOnServer[]> {
-    return queryBooksOnDevServer(
+    const books = await queryBooksOnDevServer(
         {
             uploader: {
                 __type: "Pointer",
@@ -156,6 +166,7 @@ export async function findBooksUploadedBy(
         "the account's books",
         login,
     );
+    return books.filter((book) => book.title.startsWith(titlePrefix));
 }
 
 /**
@@ -240,14 +251,27 @@ export async function getXmatterPackOfUploadedBook(
 }
 
 /**
- * Delete every book the signed-in account has on the sandbox, and return how many. The safety net a
- * real-upload test calls in cleanup, so nothing it uploaded (or a crashed run uploaded before it)
- * is left on dev.bloomlibrary.org.
+ * Delete every book the signed-in account has on the sandbox whose title starts with
+ * `titlePrefix`, and return how many. The safety net a real-upload test calls in cleanup, so
+ * nothing it uploaded (or a crashed run of it uploaded before) is left on dev.bloomlibrary.org.
+ * See findBooksUploadedBy for why it takes a prefix.
+ *
+ * With `olderThanMinutes`, only books first uploaded at least that long ago are deleted: a run
+ * clearing up after crashed runs must not delete the book of another run of the same test that is
+ * going on now (the nightly and a bot's verification run can overlap).
  */
-export async function deleteAllBooksUploadedBy(
+export async function deleteBooksUploadedBy(
     login: IBloomLibraryLogin,
+    titlePrefix: string,
+    olderThanMinutes?: number,
 ): Promise<number> {
-    const books = await findBooksUploadedBy(login);
+    const cutoff =
+        olderThanMinutes === undefined
+            ? Infinity
+            : Date.now() - olderThanMinutes * 60000;
+    const books = (await findBooksUploadedBy(login, titlePrefix)).filter(
+        (book) => Date.parse(book.createdAt) <= cutoff,
+    );
     for (const book of books) await deleteBookFromDevServer(book, login);
     return books.length;
 }
