@@ -142,16 +142,34 @@ test.describe("uploading a sign-language-only book to dev.bloomlibrary.org", () 
             "The sandbox should have the one book this run uploaded.",
         ).toEqual([BOOK_TITLE]);
         const baseUrl = await getLatestUploadBaseUrl(books[0]);
-        // The uploaded page must still play the video: its video's source names the uploaded file.
-        const videoSources = [
-            ...(await fetchUploadedBookHtml(baseUrl)).matchAll(
-                /<video\b[\s\S]*?<source\b[^>]*\bsrc="([^"]+)"/g,
-            ),
-        ].map(([, src]) => decodeURIComponent(src.split("#")[0]));
+        // The uploaded Just Video page must still play the video: it is the one page with a video,
+        // and its video's source names the uploaded file. `page` only parses the HTML.
+        const pagesWithVideo = await page.evaluate(
+            (html) => {
+                const book = new DOMParser().parseFromString(html, "text/html");
+                return Array.from(book.querySelectorAll(".bloom-page"))
+                    .map((bookPage) => ({
+                        pageId: bookPage.id,
+                        sources: Array.from(
+                            bookPage.querySelectorAll("video source"),
+                        ).map((source) =>
+                            decodeURIComponent(
+                                (source.getAttribute("src") ?? "").split(
+                                    "#",
+                                )[0],
+                            ),
+                        ),
+                    }))
+                    .filter((bookPage) => bookPage.sources.length > 0);
+            },
+            await fetchUploadedBookHtml(baseUrl),
+        );
         expect(
-            videoSources,
-            `The uploaded book's video should play ${video}. Its video sources: ${videoSources.join(", ")}`,
-        ).toEqual([`video/${video}`]);
+            pagesWithVideo,
+            `In the uploaded book, only the Just Video page should have a video, and it should play ${video}.`,
+        ).toEqual([
+            { pageId: contentPages[0].id, sources: [`video/${video}`] },
+        ]);
         const features = await getFeaturesOfUploadedBook(baseUrl);
         expect(
             features,
