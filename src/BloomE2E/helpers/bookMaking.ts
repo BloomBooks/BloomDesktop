@@ -750,6 +750,23 @@ export async function addPage(
     await waitForEditTabSettled(page);
 }
 
+/** Add one content page with this template label, as addPage does, and return the new page's id. */
+export async function addPageAndGetId(
+    page: Page,
+    templatePageLabel: string,
+): Promise<string> {
+    const before = new Set((await getContentPages(page)).map((p) => p.id));
+    await addPage(page, templatePageLabel);
+    const added = (await getContentPages(page)).filter(
+        (p) => !before.has(p.id),
+    );
+    expect(
+        added.length,
+        `Adding a "${templatePageLabel}" page should add one page`,
+    ).toBe(1);
+    return added[0].id;
+}
+
 /**
  * The id of the page the Edit tab is showing, or undefined when it is not showing one. A test uses
  * this to check where Bloom took it, e.g. that "Click to fix" on a missing title opened the cover.

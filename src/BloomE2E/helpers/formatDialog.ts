@@ -27,7 +27,12 @@
 // select), and its color buttons open Bloom's color picker dialog, which lands in the page frame.
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
-import { editablePageFrame, goToPage, type IBookPage } from "./bookMaking";
+import {
+    clickInGroup,
+    editablePageFrame,
+    goToPage,
+    type IBookPage,
+} from "./bookMaking";
 import { cssColorToHex, cssPxToPt } from "./cssValues";
 import { realClickAt } from "./realClick";
 import { getZoom, setZoom } from "./workspace";
@@ -501,6 +506,36 @@ export async function zoomUntilFormatGearIsOutOfView(
 // ---------------------------------------------------------------------------------------------
 // The dialog's tabs and controls.
 // ---------------------------------------------------------------------------------------------
+
+/**
+ * Give one language's box of one translation group the font size `points`, as a person does: click
+ * in the box, open the Format dialog from its gear, type the size on the Characters tab, and close
+ * the dialog. The size goes to the box's style, so every box of that style changes with it.
+ */
+export async function setFontSizeOfGroup(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    points: number,
+): Promise<void> {
+    await clickInGroup(page, groupSelector, languageTag);
+    await openFormatDialog(page);
+    await showFormatDialogTab(page, "characters");
+    await chooseFontSize(page, points);
+    await closeFormatDialog(page);
+}
+
+/**
+ * The font size, in points, at which the browser draws the text of the box `box` locates (its
+ * first paragraph's, when it has one). For a box anywhere, such as one in the BloomPUB preview.
+ */
+export async function getFontSizePtOf(box: Locator): Promise<number> {
+    const fontSize = await box.evaluate(
+        (element) =>
+            getComputedStyle(element.querySelector("p") ?? element).fontSize,
+    );
+    return cssPxToPt(fontSize);
+}
 
 /** The Format dialog itself, as a locator in the page frame. */
 function formatDialog(page: Page): Locator {

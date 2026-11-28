@@ -25,9 +25,8 @@ import {
     startRecordingPreviewSounds,
 } from "../helpers/bloomPlayer";
 import {
-    addPage,
+    addPageAndGetId,
     editablePageFrame,
-    getContentPages,
     goToPage,
     makeBookFromTemplate,
     typeInGroup,
@@ -117,19 +116,6 @@ async function fillQuizPage(
         `"${answers[correct]}" should be marked as the correct answer`,
     ).toHaveClass(/\bcorrect-answer\b/);
     await waitForSnapshotStreamIdle(page);
-}
-
-/** Add a page with this label after the page shown, and return its id. */
-async function addPageAndGetId(page: Page, label: string): Promise<string> {
-    const before = new Set((await getContentPages(page)).map((p) => p.id));
-    await addPage(page, label);
-    const added = (await getContentPages(page)).filter(
-        (p) => !before.has(p.id),
-    );
-    expect(added.length, `Adding a "${label}" page should add one page`).toBe(
-        1,
-    );
-    return added[0].id;
 }
 
 /** Make sound files with these names, copies of a sample, and return their paths by kind. */
