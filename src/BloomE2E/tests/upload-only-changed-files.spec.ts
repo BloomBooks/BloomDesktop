@@ -5,11 +5,10 @@
 // The test makes a book with a picture, a narration recording and a video, uploads it to
 // dev.bloomlibrary.org for real, then re-uploads it four times: after a text change, after changing
 // the picture, after replacing the recording, and after replacing the video. Each time it reads which
-// files Bloom sent from the Upload Progress box (see uploadBookForReal) and checks that, of the
-// book's picture, recording and video, only the one that changed went up again, and that the text
-// change sent the book's .htm. Files that change with every upload (meta.json, the thumbnails) are
-// not checked, as the card allows. A book with a video gets no PDF, as the card notes, so there is
-// no PDF to allow for either.
+// files Bloom sent from the Upload Progress box (see uploadBookForReal) and checks that only the
+// file that changed went up again, besides the book's .htm and meta.json, which the card allows,
+// and that the text change sent the .htm. A book with a video gets no PDF, as the card notes, so
+// there is no PDF to allow for.
 //
 // The recording is imported through the Talking Book tool's Import Recording button, which needs a
 // Pro subscription (the collection has an enterprise one) and makes a recording of the whole text
@@ -17,7 +16,9 @@
 //
 // Like bulk-upload-quick-test.spec.ts, it signs in to the sandbox for real as the shared test
 // account, so its book's title has a prefix of its own, and it deletes only books with that prefix
-// (see findBooksUploadedBy). The account's password comes from BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD:
+// (see findBooksUploadedBy). Each run's title is unique, and a run clears away only this test's
+// books that are an hour old, so that two runs at once (the nightly and a bot's verification run)
+// leave each other's book alone. The account's password comes from BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD:
 // without it the test skips locally and fails on CI.
 
 import * as Path from "node:path";
@@ -89,10 +90,12 @@ const FIRST_PICTURE = Path.join(FIXTURES, "images", "bird.png");
 const SECOND_PICTURE = Path.join(FIXTURES, "images", "house-landscape.png");
 const SECOND_VIDEO = Path.join(FIXTURES, "videos", "short-2s.mp4");
 
-// The book's title, which no other real-upload test's books start with: the test deletes the
-// account's books with this prefix, and only those.
+// The book's title starts with a prefix that no other real-upload test's books start with, and
+// ends with a part of this run's own.
 const TITLE_PREFIX = "Upload Only Changed Files";
-const BOOK_TITLE = `${TITLE_PREFIX} Book`;
+const BOOK_TITLE = `${TITLE_PREFIX} ${Date.now().toString(36)}`;
+// A run deletes this test's books that are at least this old, which only a crashed run leaves.
+const STALE_BOOK_MINUTES = 60;
 
 let login: IBloomLibraryLogin | undefined;
 
@@ -114,31 +117,29 @@ async function reupload(page: Page): Promise<string[]> {
 }
 
 /**
- * Check that, of the book's picture, recording and video, exactly `changed` was sent: none when the
- * change was to the text. `previous` are the media files before the change; a replaced picture or
- * video comes in under a new name, and the old one must not have been sent either.
+ * Check that the upload sent exactly the `changed` media file (nothing, when the change was to the
+ * text), besides the files the card allows to go up every time: the book's .htm, which carries any
+ * change, and meta.json. `current` are the media files after the change; a replaced picture or
+ * video comes in under a new name.
  */
-function expectOnlyChangedMediaSent(
+function expectOnlyChangedFileSent(
     sent: string[],
-    previous: IMediaFiles,
+    htmFile: string,
     current: IMediaFiles,
     changed: keyof IMediaFiles | undefined,
     what: string,
 ): void {
-    const media = new Set([
-        ...Object.values(previous),
-        ...Object.values(current),
-    ]);
+    const allowedEveryTime = [htmFile, "meta.json"];
     expect(
-        sent.filter((file) => media.has(file)).sort(),
-        `${what}, the upload should have sent ${changed ? `only the new ${changed} (${current[changed]})` : "none"} of ` +
-            `the book's picture, recording and video. It sent: ${sent.join(", ")}`,
+        sent.filter((file) => !allowedEveryTime.includes(file)).sort(),
+        `${what}, the upload should have sent ${changed ? `only the new ${changed} (${current[changed]})` : "no file"} ` +
+            `besides ${allowedEveryTime.join(" and ")}. It sent: ${sent.join(", ")}`,
     ).toEqual(changed ? [current[changed]] : []);
 }
 
 test.describe("re-uploading a book to dev.bloomlibrary.org", () => {
     test.afterAll(async () => {
-        if (login) await deleteBooksUploadedBy(login, TITLE_PREFIX);
+        if (login) await deleteBooksUploadedBy(login, BOOK_TITLE);
     });
 
     test("a re-upload sends only the picture, recording or video that changed [Test Case ID 219]", async ({
@@ -150,8 +151,8 @@ test.describe("re-uploading a book to dev.bloomlibrary.org", () => {
         test.setTimeout(1200000);
 
         login = await signBloomIntoLibraryForReal(page);
-        // A crashed earlier run's copy would make the first upload an update.
-        await deleteBooksUploadedBy(login, TITLE_PREFIX);
+        // Clear away what crashed earlier runs left, leaving any run going on now alone.
+        await deleteBooksUploadedBy(login, TITLE_PREFIX, STALE_BOOK_MINUTES);
 
         // ---- A book with a picture, a recording and a video ----------------------------------------
         await makeBookFromTemplate(page, "Basic Book");
@@ -230,9 +231,9 @@ test.describe("re-uploading a book to dev.bloomlibrary.org", () => {
             afterTextChange,
             `After a text change, the upload should have sent ${htmFile}. It sent: ${afterTextChange.join(", ")}`,
         ).toContain(htmFile);
-        expectOnlyChangedMediaSent(
+        expectOnlyChangedFileSent(
             afterTextChange,
-            media,
+            htmFile,
             media,
             undefined,
             "After a text change",
@@ -242,12 +243,11 @@ test.describe("re-uploading a book to dev.bloomlibrary.org", () => {
         await switchTab(page, "edit");
         await goToPage(page, picturePage.id);
         await chooseImageFile(page, SECOND_PICTURE);
-        let previous = media;
         media = { ...media, picture: (await getImagePlacement(page)).fileName };
         await goToPage(page, textPage.id);
-        expectOnlyChangedMediaSent(
+        expectOnlyChangedFileSent(
             await reupload(page),
-            previous,
+            htmFile,
             media,
             "picture",
             "After the picture changed",
@@ -269,9 +269,9 @@ test.describe("re-uploading a book to dev.bloomlibrary.org", () => {
         );
         await hideToolbox(page);
         await goToPage(page, picturePage.id);
-        expectOnlyChangedMediaSent(
+        expectOnlyChangedFileSent(
             await reupload(page),
-            media,
+            htmFile,
             media,
             "recording",
             "After the recording changed",
@@ -291,16 +291,15 @@ test.describe("re-uploading a book to dev.bloomlibrary.org", () => {
                 message: `The video box never showed a video other than ${media.video}.`,
             })
             .not.toBe(media.video);
-        previous = media;
         media = {
             ...media,
             video: await getVideoFileName(videoBoxes(page).first()),
         };
         await hideToolbox(page);
         await goToPage(page, textPage.id);
-        expectOnlyChangedMediaSent(
+        expectOnlyChangedFileSent(
             await reupload(page),
-            previous,
+            htmFile,
             media,
             "video",
             "After the video changed",

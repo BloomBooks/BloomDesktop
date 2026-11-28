@@ -353,7 +353,12 @@ export async function uploadBookForReal(
         name: "Same book radio button",
     });
     const uploadLabel = await getUiString(page, "Common.Upload", "Upload");
+    // When Bloom refuses or fails the upload it writes an error line, and no success ever follows.
+    const errorLines = progressLog.locator(
+        '[data-progress-severity="error"], [data-progress-severity="fatal"]',
+    );
     let answered = false;
+    let outcome = "waiting";
     try {
         await expect
             .poll(
@@ -369,17 +374,23 @@ export async function uploadBookForReal(
                             .click();
                         answered = true;
                     }
-                    return doneLink.isVisible();
+                    if (await doneLink.isVisible()) outcome = "done";
+                    else if ((await errorLines.count()) > 0) outcome = "error";
+                    return outcome;
                 },
                 { timeout: timeoutMs, intervals: [1000] },
             )
-            .toBe(true);
+            .not.toBe("waiting");
     } catch {
-        throw new Error(
-            `The upload did not finish within ${Math.round(timeoutMs / 1000)}s. Upload Progress said:\n` +
-                (await progressLog.innerText()),
-        );
+        // The poll timed out; outcome is still "waiting".
     }
+    if (outcome !== "done")
+        throw new Error(
+            (outcome === "error"
+                ? "Bloom reported an error during the upload."
+                : `The upload did not finish within ${Math.round(timeoutMs / 1000)}s.`) +
+                ` Upload Progress said:\n${await progressLog.innerText()}`,
+        );
 
     return (await progressLog.innerText())
         .split(/\r?\n/)
