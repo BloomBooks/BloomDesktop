@@ -327,6 +327,108 @@ export async function typeSubscriptionCode(
 }
 
 /**
+ * The drawn labels that the Subscription page of the Collection Settings dialog, which must be
+ * showing, gives under the Subscription Code box about the code typed there (StatusText in
+ * subscriptionCodeControl.tsx): a message such as "That code has expired.", or for a good code the
+ * "Tier:" and "Expires:" captions.
+ */
+export async function getSubscriptionCodeMessages(
+    page: Page,
+): Promise<string[]> {
+    const box = subscriptionCodeBox(page);
+    await expect(
+        box,
+        "the Collection Settings dialog is not showing its Subscription page",
+    ).toHaveCount(1);
+    return box.evaluate((input) => {
+        // The box's row holds its caption, the box and the Copy and Paste buttons; the messages
+        // are labels in the element that follows that row.
+        let row: Element | null = input.parentElement;
+        while (row && !row.querySelector("button")) row = row.parentElement;
+        const messages = row?.nextElementSibling;
+        if (!messages) return [];
+        return Array.from(messages.querySelectorAll("label"))
+            .filter((label) =>
+                label.checkVisibility({
+                    opacityProperty: true,
+                    visibilityProperty: true,
+                }),
+            )
+            .map((label) =>
+                (label.textContent ?? "").replace(/\s+/g, " ").trim(),
+            );
+    });
+}
+
+/** A box in which Bloom warns that the collection's subscription has expired or soon will. */
+export interface ISubscriptionExpiryNotice {
+    /** "expired" when the box shows the expired icon (a cross), "expiring" for the warning icon. */
+    kind: "expired" | "expiring";
+    /** The box's text, with runs of white space made single spaces. */
+    text: string;
+    /** Where the box's links go. */
+    links: string[];
+}
+
+/**
+ * The drawn boxes inside `scope` in which Bloom warns that a subscription has expired or soon will
+ * (SubscriptionStatus.tsx): the Collections tab shows one above the collection's books, and the
+ * Subscription page of the Collection Settings dialog shows one under the code. Each such box asks
+ * the person to renew by email, which is how this tells them from Bloom's other warning boxes.
+ */
+export async function readSubscriptionExpiryNotices(
+    scope: Locator,
+): Promise<ISubscriptionExpiryNotice[]> {
+    return scope.evaluate((root) => {
+        const notices: {
+            kind: "expired" | "expiring";
+            text: string;
+            links: string[];
+        }[] = [];
+        const icons = root.querySelectorAll(
+            "svg[data-testid='CancelIcon'], svg[data-testid='WarningIcon']",
+        );
+        for (const icon of Array.from(icons)) {
+            // The box is the nearest ancestor of the icon that also holds a renewal email link.
+            let box: Element | null = icon.parentElement;
+            while (
+                box &&
+                box !== root.parentElement &&
+                !box.querySelector("a[href^='mailto:']")
+            ) {
+                box = box.parentElement;
+            }
+            if (!box || box === root.parentElement) continue;
+            if (
+                !(box as HTMLElement).checkVisibility({
+                    opacityProperty: true,
+                    visibilityProperty: true,
+                })
+            )
+                continue;
+            notices.push({
+                kind:
+                    icon.getAttribute("data-testid") === "CancelIcon"
+                        ? "expired"
+                        : "expiring",
+                text: ((box as HTMLElement).innerText ?? "")
+                    .replace(/\s+/g, " ")
+                    .trim(),
+                links: Array.from(box.querySelectorAll("a")).map(
+                    (link) => link.getAttribute("href") ?? "",
+                ),
+            });
+        }
+        return notices;
+    });
+}
+
+/** The Collection Settings dialog, for reading what its showing page shows. */
+export function getCollectionSettingsDialog(page: Page): Locator {
+    return collectionSettingsDialog(page);
+}
+
+/**
  * The subscription code the collection's settings file holds, or undefined when it holds none.
  * Read from the .bloomCollection on disk, which is where a save puts it.
  */
