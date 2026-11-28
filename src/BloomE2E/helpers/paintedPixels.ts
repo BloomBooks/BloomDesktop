@@ -107,6 +107,147 @@ export async function makeSolidColorPng(
     fs.writeFileSync(filePath, Buffer.from(base64, "base64"));
 }
 
+/**
+ * Write a PNG of `width` by `height` pixels to `filePath` that looks to Bloom like a photograph
+ * saved as a PNG: opaque, a smooth gradient of colour with fine grain over it, as a camera's
+ * picture has. Grain is what PNG compresses worst and JPEG best, so the file is several times
+ * larger than a JPEG of the same picture, and Bloom shows and publishes it as a JPEG
+ * (ImageUtils.TryChangeFormatToJpegIfHelpful). Over the gradient, a checkerboard of sharp-edged
+ * squares in the opposite colour (24 pixels square, every other 40-pixel cell) lets a comparison
+ * tell the picture from a crop or shift of it: moving their edges by even a pixel or two changes
+ * far more pixels than a JPEG's error does. The pixels are written exactly (putImageData, with a
+ * fixed sequence of grain), so the file is the same on every machine.
+ */
+export async function makePhotoLikePng(
+    page: Page,
+    filePath: string,
+    width: number,
+    height: number,
+): Promise<void> {
+    const base64 = await page.evaluate(
+        async ({ width, height }) => {
+            const pixels = new ImageData(width, height);
+            let seed = 266;
+            const grain = () => {
+                seed = (Math.imul(seed, 1103515245) + 12345) >>> 0;
+                return (seed / 4294967296 - 0.5) * 16;
+            };
+            for (let y = 0; y < height; y++)
+                for (let x = 0; x < width; x++) {
+                    const gradient = [
+                        90 + (120 * x) / width,
+                        60 + (140 * y) / height,
+                        200 - (120 * (x + y)) / (width + height),
+                    ];
+                    const inSquare =
+                        (Math.floor(x / 40) + Math.floor(y / 40)) % 2 === 0 &&
+                        x % 40 >= 8 &&
+                        x % 40 < 32 &&
+                        y % 40 >= 8 &&
+                        y % 40 < 32;
+                    const i = (y * width + x) * 4;
+                    for (let c = 0; c < 3; c++)
+                        pixels.data[i + c] =
+                            (inSquare ? 255 - gradient[c] : gradient[c]) +
+                            grain();
+                    pixels.data[i + 3] = 255;
+                }
+            const canvas = new OffscreenCanvas(width, height);
+            canvas.getContext("2d")!.putImageData(pixels, 0, 0);
+            const blob = await canvas.convertToBlob({ type: "image/png" });
+            const bytes = new Uint8Array(await blob.arrayBuffer());
+            let binary = "";
+            for (let i = 0; i < bytes.length; i += 0x8000)
+                binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+            return btoa(binary);
+        },
+        { width, height },
+    );
+    fs.mkdirSync(Path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, Buffer.from(base64, "base64"));
+}
+
+/**
+ * How two encoded pictures (PNG or JPEG bytes) compare once decoded: the size of each, and, when
+ * the sizes match:
+ * - `meanColorDifference`: the mean difference of their red, green and blue channels over every
+ *   pixel (0 for the same colours, up to 255);
+ * - `largestBlockColorDifference`: the largest difference, in any channel, between the average
+ *   colours of the same 8x8 block of pixels in the two (0 to 255). A JPEG keeps each block's
+ *   average colour closely, so a high-quality JPEG of a picture differs from it here by about one
+ *   level, while the same picture moved by a pixel, with sharp edges in it, differs by tens;
+ * - `maxOpacityDifference`: the largest difference of opacity at any pixel (0 to 255).
+ */
+export async function compareEncodedPictures(
+    page: Page,
+    first: Buffer,
+    second: Buffer,
+): Promise<{
+    firstSize: { width: number; height: number };
+    secondSize: { width: number; height: number };
+    meanColorDifference: number | undefined;
+    largestBlockColorDifference: number | undefined;
+    maxOpacityDifference: number | undefined;
+}> {
+    return page.evaluate(
+        async ({ first, second }) => {
+            const decode = async (base64: string) => {
+                const binary = atob(base64);
+                const data = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++)
+                    data[i] = binary.charCodeAt(i);
+                const bitmap = await createImageBitmap(new Blob([data]));
+                const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+                const context = canvas.getContext("2d")!;
+                context.drawImage(bitmap, 0, 0);
+                return context.getImageData(0, 0, bitmap.width, bitmap.height);
+            };
+            const a = await decode(first);
+            const b = await decode(second);
+            let meanColorDifference: number | undefined;
+            let largestBlockColorDifference: number | undefined;
+            let maxOpacityDifference: number | undefined;
+            if (a.width === b.width && a.height === b.height) {
+                let total = 0;
+                maxOpacityDifference = 0;
+                for (let i = 0; i < a.data.length; i += 4) {
+                    for (let c = 0; c < 3; c++)
+                        total += Math.abs(a.data[i + c] - b.data[i + c]);
+                    maxOpacityDifference = Math.max(
+                        maxOpacityDifference,
+                        Math.abs(a.data[i + 3] - b.data[i + 3]),
+                    );
+                }
+                meanColorDifference = total / ((a.data.length / 4) * 3);
+                const block = 8;
+                largestBlockColorDifference = 0;
+                for (let top = 0; top + block <= a.height; top += block)
+                    for (let left = 0; left + block <= a.width; left += block)
+                        for (let c = 0; c < 3; c++) {
+                            let sum = 0;
+                            for (let y = top; y < top + block; y++)
+                                for (let x = left; x < left + block; x++) {
+                                    const i = (y * a.width + x) * 4 + c;
+                                    sum += a.data[i] - b.data[i];
+                                }
+                            largestBlockColorDifference = Math.max(
+                                largestBlockColorDifference,
+                                Math.abs(sum) / (block * block),
+                            );
+                        }
+            }
+            return {
+                firstSize: { width: a.width, height: a.height },
+                secondSize: { width: b.width, height: b.height },
+                meanColorDifference,
+                largestBlockColorDifference,
+                maxOpacityDifference,
+            };
+        },
+        { first: first.toString("base64"), second: second.toString("base64") },
+    );
+}
+
 /** The colours of a PNG or JPEG file's pixels at each of `points`. */
 export async function readImageFileColors(
     page: Page,
