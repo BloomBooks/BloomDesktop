@@ -204,18 +204,6 @@ House rules:
   here: 16 failed tests and a full suite run. Worth saying in the fixture's error text, which
   names the file but not how to rebuild it.
 
-## 2026-09-03 — The e2e fixture launches a stale Bloom.exe when output/Debug/x64 is older than AnyCPU
-
-- **Cut:** `findBloomExe` in `src/BloomE2E/fixtures/launchBloom.ts` tries `Debug/x64` before
-  `Debug/AnyCPU` in a fixed order. `dotnet build src/BloomExe/BloomExe.csproj` writes to `AnyCPU`, so
-  a leftover `x64` folder from an earlier build wins, and the suite runs an old exe against the
-  freshly built `output/browser`. It looked like a broken test: a blank Collections tab,
-  `e2e/isCollectionReady` never true, and `BLOOM_AUTOMATION_MONITOR` ignored (the exe predated it).
-  Nothing in the run says which exe was launched; `common/instanceInfo` does.
-- **Idea:** pick the newest `Bloom.exe` among the candidates (or the one matching the newest
-  `output/browser`), and log the chosen path once at launch so a stale exe is visible in the output.
-- **Context:** Test Case ID 358, PR #8289; cost about 20 minutes of misdiagnosis.
-
 ## 2026-09-02 — Two BloomE2E sessions on one machine compete for the same port block
 
 - **Cut:** BloomE2E runs from two worktrees at once (e.g. a developer session plus
@@ -381,45 +369,6 @@ can open a throwaway test collection without touching the developer's settings.
   Only the orphaned session json (no `Exit` block) recorded that the run ended badly. If the Doctor
   is meant to be usable in dev, go.mjs/init.sh need to build and place it and the setting needs a dev default.
 
-## 2026-08-10 — check-csharp-ApplicationExit.sh greps whole files, not the diff
-
-- **Cut:** The pre-commit check greps each *staged file* for `Application.Exit`, so touching a
-  file that already contains a legitimate one blocks the commit even when your diff adds none.
-  Hit it editing `src/WebView2PdfMaker/Program.cs`, whose two calls date from 2023 (BL-11437);
-  WebView2PdfMaker is a separate process and cannot use Bloom's `ProgramExit`. The exemption
-  list only covers `src/BloomExe/ProgramExit.cs` and `src/BloomTests/*`.
-- **Idea:** Grep only added lines (`git diff --cached -U0 | grep '^+'`) so the check flags new
-  violations rather than any file that contains one. Failing that, at least exempt
-  `src/WebView2PdfMaker/*`.
-- **Context:** BL-16684 on Version6.4. Check added 2026-01-31 (8a9d1273b0); nothing had touched
-  that file since, so this had been sitting unsprung. Committed with `--no-verify` after running
-  csharpier / robustfile / xmlclasses by hand.
-
-## 2026-08-10 — Re-pointing a worktree between master and Version6.4 breaks the pre-commit hook
-
-- **Cut:** `.githooks/pre-commit` correctly routes a 6.4 checkout to the husky-4 hook, but that
-  hook dies with `Command "husky-run" not found` when the worktree's `src/BloomBrowserUI/node_modules`
-  was installed by master's pnpm. The dispatcher solves *which* hook runs, not whether its runner
-  is installed, so you get a hard commit failure with no hint that deps are the cause.
-- **Idea:** Have the dispatcher check for the runner and say "run ./init.sh — this branch uses
-  yarn+husky4 and this worktree has the pnpm deps" instead of letting husky's bare error through.
-- **Context:** BL-16684; worktree started on master, moved to Version6.4 because the bug ships in 6.4.
-
-## 2026-07-30 — Visual regression suite reports only the first stale image per case
-- **Cut:** Each case in `src/BloomVisualRegressionTests/index.spec.ts` compares the book preview
-  and then every bloom-player page in sequence, and every comparison throws on failure — so the
-  first stale baseline kills the case and the later comparisons never even capture their images.
-  After BL-16370 the stale previews meant **no** player page was compared for weeks: BL-16638
-  started as 10 baselines, became 22, and would have taken three accept-and-rerun rounds to
-  bottom out (10 previews → 10 player pages → 2 more hidden behind those). Each layer costs a
-  full ~3-minute run to discover, and the nightly reads as "one failure per case" the whole time.
-- **Idea:** Accumulate per-comparison failures for the case (label, pixel count, diff path), let
-  the preview capture and the whole player loop run to completion, then fail once at the end with
-  the full list. Proven to work — the change was made temporarily during BL-16638 to capture all
-  84 images in one run, then reverted. Roughly 20–30 lines, confined to that spec file.
-- **Context:** BL-16638 / PR #8134. Andrew chose "make a papercut entry" over fixing it inline.
-  Loop at `index.spec.ts:426`, assertion at `index.spec.ts:486`.
-
 ## 2026-07-29 — Running C# tests in a fresh worktree needs borrowed artifacts
 
 Diagnosing the ExportEpubTests `visual` accessMode failures needed one epub test run in a
@@ -479,17 +428,3 @@ content-copy steps the tests need.
   holding `Bloom.dll`, so every later build in that terminal fails MSB3027 until you
   `taskkill //PID <testhost> //F` by hand. Killing the task is not enough; the wrapper should reap
   its own test host, or say that an orphan is still holding the tree.
-
-## 2026-07-13 — pnpm-lock.yaml reformats wholesale on any install (format drift)
-- **Cut:** The committed `src/BloomBrowserUI/pnpm-lock.yaml` (on master too) is in an
-  older pnpm serialization style (double-quoted `lockfileVersion`, 4-space indent, and it
-  resolves some deps with a `(supports-color@5.5.0)` peer suffix). But the pinned + active
-  pnpm (11.5.2, per `packageManager`) writes a *different* style (single-quoted, 2-space,
-  no supports-color suffix). So **any** `pnpm install` rewrites the entire lockfile,
-  producing a spurious ~30k-line diff that has nothing to do with your actual change. To
-  bump a single `github:` dependency's commit hash I had to hand-patch the lock (swap the
-  4 hash occurrences + the integrity line) to keep the diff minimal and mergeable.
-- **Idea:** Regenerate/commit the lockfile once with the pinned pnpm so committed state
-  matches `packageManager` output, or document the exact pnpm invocation the team uses so
-  installs are format-stable. Until then, hash bumps need a manual lock edit.
-- **Context:** BL image-chooser integration PR (BloomDesktop #8059); local pnpm 11.5.2.
