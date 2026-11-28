@@ -937,3 +937,104 @@ export function countThumbnailPixelsDifferingInside(
         }
     return count;
 }
+
+/** What the info icon above the Collections tab's preview tells about the selected book. */
+export interface IBookInfoIndicator {
+    /** The book's folder, under "Path on disk". */
+    path: string;
+    /** The book's id (its bookInstanceId), under "Book ID". */
+    id: string;
+    /** The book's theme, under "Theme"; undefined when the tip shows no theme. */
+    theme: string | undefined;
+}
+
+/**
+ * Point at the info icon (a circled i) at the top right of the Collections tab's book pane, which
+ * must be showing a book, and read the tip it opens: the selected book's path on disk, its id and
+ * its theme (BookInfoIndicator.tsx). The tip opens on hover; a click on the icon does nothing more.
+ * The headings of the tip are not localized.
+ *
+ * The pane asks Bloom for these facts again when another book is selected, and shows the last
+ * book's until the answer comes. So this waits until the tip shows `expectedBookId` as its book id,
+ * and fails if it never does. Only text that is drawn counts: a heading or value that is hidden,
+ * transparent or empty is read as missing. Moves the pointer away afterwards, which closes the tip.
+ */
+export async function readBookInfoIndicator(
+    page: Page,
+    expectedBookId: string,
+): Promise<IBookInfoIndicator> {
+    const icon = page
+        .getByTestId(kBookPane)
+        .locator("svg[data-testid='InfoOutlinedIcon']");
+    await expect(
+        icon,
+        "the book pane should show the info icon above the preview",
+    ).toBeVisible({ timeout: 30000 });
+    await icon.hover();
+    const tip = page.getByRole("tooltip").filter({ hasText: "Path on disk" });
+    await expect(
+        tip,
+        "the info icon should open a tip with the book's path on disk",
+    ).toBeVisible({ timeout: 15000 });
+    const readShownSections = () =>
+        tip.locator("p").evaluateAll((paragraphs) => {
+            const options = {
+                opacityProperty: true,
+                visibilityProperty: true,
+                contentVisibilityAuto: true,
+            };
+            const drawn = (element: Element) => {
+                const box = element.getBoundingClientRect();
+                return (
+                    element.checkVisibility(options) &&
+                    box.width > 0 &&
+                    box.height > 0
+                );
+            };
+            return paragraphs
+                .filter((p) => drawn(p))
+                .map((p) => {
+                    const headingElement = p.querySelector("b");
+                    const heading =
+                        headingElement && drawn(headingElement)
+                            ? (headingElement.textContent ?? "").trim()
+                            : "";
+                    // The value is everything in the paragraph after the heading: text, or an
+                    // element (the path is a link) that is itself drawn.
+                    const value = Array.from(p.childNodes)
+                        .filter((node) => node !== headingElement)
+                        .filter(
+                            (node) => !(node instanceof Element) || drawn(node),
+                        )
+                        .map((node) => node.textContent ?? "")
+                        .join("")
+                        .trim();
+                    return { heading, value };
+                });
+        });
+    let sections: { heading: string; value: string }[] = [];
+    const valueUnder = (heading: string) =>
+        sections.find((s) => s.heading === heading)?.value || undefined;
+    await expect
+        .poll(
+            async () => {
+                sections = await readShownSections();
+                return valueUnder("Book ID");
+            },
+            {
+                timeout: 30000,
+                message: "the info tip never showed the selected book's id",
+            },
+        )
+        .toBe(expectedBookId);
+    const path = valueUnder("Path on disk");
+    if (!path)
+        throw new Error(
+            `The info tip showed no path on disk: ${JSON.stringify(sections)}`,
+        );
+    await page.mouse.move(0, 0);
+    await expect(tip, "the info tip should close").toBeHidden({
+        timeout: 15000,
+    });
+    return { path, id: expectedBookId, theme: valueUnder("Theme") };
+}
