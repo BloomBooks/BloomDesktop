@@ -76,6 +76,37 @@ export async function makeBlackSquareOnWhitePng(
     fs.writeFileSync(filePath, Buffer.from(base64, "base64"));
 }
 
+/**
+ * Write a PNG of `width` by `height` pixels to `filePath`, every pixel the opaque `color`. With no
+ * white in it, Bloom shows it as it is (no part made transparent), so it is a picture whose colour
+ * is easy to find again in anything made from it, such as a thumbnail.
+ */
+export async function makeSolidColorPng(
+    page: Page,
+    filePath: string,
+    width: number,
+    height: number,
+    color: IRgba,
+): Promise<void> {
+    const base64 = await page.evaluate(
+        async ({ width, height, color }) => {
+            const canvas = new OffscreenCanvas(width, height);
+            const context = canvas.getContext("2d")!;
+            context.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+            context.fillRect(0, 0, width, height);
+            const blob = await canvas.convertToBlob({ type: "image/png" });
+            const bytes = new Uint8Array(await blob.arrayBuffer());
+            let binary = "";
+            for (let i = 0; i < bytes.length; i += 0x8000)
+                binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+            return btoa(binary);
+        },
+        { width, height, color },
+    );
+    fs.mkdirSync(Path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, Buffer.from(base64, "base64"));
+}
+
 /** The colours of a PNG or JPEG file's pixels at each of `points`. */
 export async function readImageFileColors(
     page: Page,
@@ -205,7 +236,8 @@ export async function readBackgroundColor(element: Locator): Promise<IRgba> {
     });
 }
 
-async function readEncodedImageColors(
+/** The colours of a PNG or JPEG picture's pixels at each of `points`, from its encoded bytes. */
+export async function readEncodedImageColors(
     page: Page,
     bytes: Buffer,
     points: IPicturePoint[],

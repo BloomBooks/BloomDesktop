@@ -55,6 +55,15 @@ export interface IBookOnServer {
      * finishes processing an upload (BL-17234).
      */
     subscription: string | undefined;
+    /**
+     * Where the harvester is with the book, e.g. "New" or "Updated" (waiting), "InProgress", or
+     * "Done", or undefined while the record has none.
+     */
+    harvestState: string | undefined;
+    /** When the harvester last started on the book (ISO 8601), or undefined if it never has. */
+    harvestStartedAt: string | undefined;
+    /** When the record last changed (ISO 8601). */
+    updatedAt: string;
 }
 
 const parseHeaders = {
@@ -74,7 +83,7 @@ async function queryBooksOnDevServer(
 ): Promise<IBookOnServer[]> {
     const url =
         `${DEV_PARSE_SERVER_URL}/classes/books?where=${encodeURIComponent(JSON.stringify(where))}` +
-        `&include=uploader&keys=title,bookInstanceId,tags,uploader,baseUrl,createdAt,brandingProjectName&limit=1000`;
+        `&include=uploader&keys=title,bookInstanceId,tags,uploader,baseUrl,createdAt,brandingProjectName,harvestState,harvestStartedAt,updatedAt&limit=1000`;
     const headers = login
         ? { ...parseHeaders, "X-Parse-Session-Token": login.sessionToken }
         : parseHeaders;
@@ -93,6 +102,9 @@ async function queryBooksOnDevServer(
             baseUrl: string;
             createdAt: string;
             brandingProjectName?: string;
+            harvestState?: string;
+            harvestStartedAt?: { iso: string };
+            updatedAt: string;
         }[];
     };
     const bookshelfPrefix = "bookshelf:";
@@ -108,6 +120,9 @@ async function queryBooksOnDevServer(
         baseUrl: r.baseUrl,
         createdAt: r.createdAt,
         subscription: r.brandingProjectName || undefined,
+        harvestState: r.harvestState || undefined,
+        harvestStartedAt: r.harvestStartedAt?.iso,
+        updatedAt: r.updatedAt,
     }));
 }
 
@@ -306,6 +321,49 @@ export async function getLatestUploadBaseUrl(
             `The latest upload of "${book.title}" (${latest}) holds ${bookFolders.length} book folders: ${bookFolders.join(", ")}`,
         );
     return bucketUrl + encodeURIComponent(bookFolders[0]);
+}
+
+/**
+ * The address of the thumbnail that Bloom Library's pages show for `book`, worked out from its
+ * record the way the website does (BloomLibrary2's Book.getThumbnailUrl, at size 256). Once the
+ * harvester is done with the book, that is the thumbnail the harvester made, in the harvester's
+ * bucket beside the upload's folder (getHarvesterBaseUrlFromBaseUrl). Before that, it is the
+ * thumbnail-256.png that Bloom uploaded, in the folder the record's baseUrl names. Either way the
+ * website adds the record's updatedAt, so that a browser fetches it afresh after a change.
+ */
+export function thumbnailUrlBloomLibraryShows(book: IBookOnServer): string {
+    const version = `?version=${book.updatedAt}`;
+    const harvested =
+        book.harvestState === "Done" &&
+        book.harvestStartedAt !== undefined &&
+        // The website trusts no harvester thumbnail older than this (February 12, 2020, 11:00).
+        new Date(book.harvestStartedAt) >= new Date(2020, 1, 11, 11);
+    if (harvested) {
+        const folder = book.baseUrl.endsWith("%2f")
+            ? book.baseUrl.substring(0, book.baseUrl.length - 3)
+            : book.baseUrl;
+        const lastSlash = folder.lastIndexOf("%2f");
+        if (lastSlash >= 0)
+            return (
+                folder
+                    .substring(0, lastSlash)
+                    .replace(
+                        "BloomLibraryBooks-Sandbox",
+                        "bloomharvest-sandbox",
+                    )
+                    .replace("BloomLibraryBooks", "bloomharvest") +
+                `/thumbnails/thumbnail-256.png${version}`
+            );
+    }
+    return `${book.baseUrl}thumbnail-256.png${version}`;
+}
+
+/** The bytes of a file on the sandbox's S3 buckets, such as a thumbnail. */
+export async function fetchSandboxFile(url: string): Promise<Buffer> {
+    const response = await fetch(url);
+    if (!response.ok)
+        throw new Error(`S3 answered ${response.status} to fetching ${url}`);
+    return Buffer.from(await response.arrayBuffer());
 }
 
 /**
