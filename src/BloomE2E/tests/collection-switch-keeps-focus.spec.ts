@@ -6,7 +6,12 @@
 // The Other Collection dialog offers the collections Bloom opened recently, so the test first
 // visits a second collection. The collection it then chooses in the dialog is the one it started
 // in, which holds a book, so that the test can wait for the Collections tab to finish showing it
-// (the book's preview is the last thing the tab draws) and see that Bloom is still active then.
+// (the book's preview is the last thing the tab draws).
+//
+// Who has the foreground and the keyboard is read from Windows every 50 ms from the click on the
+// collection's card until then (helpers/windowFocus.ts says why not from the page). Once Bloom's
+// new window is active it must stay active to the end, so a window that is active for an instant
+// and then loses the foreground or the keyboard fails, even if it gets them back.
 //
 // Bloom takes the foreground only where it may: not under --dont-disturb, which keeps Bloom out of
 // a developer's way, so this test runs on CI or with BLOOM_E2E_DONT_DISTURB=0.
@@ -22,9 +27,11 @@ import {
 } from "../helpers/collection";
 import { switchTab } from "../helpers/workspace";
 import {
+    describeFocus,
     expectBloomActive,
-    kBloomActive,
-    readBloomFocus,
+    type IFocusSample,
+    isBloomActive,
+    startFocusRecording,
 } from "../helpers/windowFocus";
 
 test.use({
@@ -57,7 +64,6 @@ test("Bloom stays the active application when the user changes collections [Test
         // Sanity check: Bloom is active before the change, so the check after it means
         // that Bloom kept the foreground, not that it never had it.
         await expectBloomActive(
-            bloomApp.page,
             bloomApp.bloomPid,
             "Sanity check: Bloom should be the active application before the user changes " +
                 "collections",
@@ -65,41 +71,52 @@ test("Bloom stays the active application when the user changes collections [Test
         );
     });
 
+    let samples: IFocusSample[] = [];
     await step(
-        "Choose the first collection in the Other Collection dialog",
+        "Choose the first collection in the Other Collection dialog, and wait for it to show",
         async () => {
-            await chooseOtherCollection(bloomApp, firstCollection);
+            const recording = startFocusRecording();
+            try {
+                await chooseOtherCollection(bloomApp, firstCollection);
+                await expectBookInPreview(bloomApp.page, bookTitle);
+            } finally {
+                samples = await recording.stop();
+            }
         },
     );
 
-    await step("See that Bloom is the active application", async () => {
-        const page = bloomApp.page;
-        await expectBloomActive(
-            page,
-            bloomApp.bloomPid,
-            "Bloom's new window should have the foreground and the keyboard after the change " +
-                "of collection",
-        );
-        // From here on, any moment the page loses the keyboard is recorded, so that a window
-        // that is active for an instant and then loses it again (as 5.2 did at startup) fails.
-        await page.evaluate(() => {
-            (window as unknown as { e2eBlurs: number }).e2eBlurs = 0;
-            window.addEventListener("blur", () => {
-                (window as unknown as { e2eBlurs: number }).e2eBlurs++;
-            });
-        });
-        await expectBookInPreview(page, bookTitle);
-        const blurs = await page.evaluate(
-            () => (window as unknown as { e2eBlurs: number }).e2eBlurs,
-        );
-        expect(
-            blurs,
-            "Bloom's window lost the keyboard while the Collections tab finished showing the " +
-                "collection",
-        ).toBe(0);
-        expect(
-            await readBloomFocus(page, bloomApp.bloomPid),
-            "Bloom should still be the active application once the collection is shown",
-        ).toEqual(kBloomActive);
-    });
+    await step(
+        "See that Bloom became and stayed the active application",
+        async () => {
+            const bloomPid = bloomApp.bloomPid;
+            const history = samples
+                .map((s) => describeFocus(s, bloomPid))
+                .join("\n");
+            console.log(
+                `Foreground and keyboard during the change:\n${history}`,
+            );
+            const last = samples[samples.length - 1];
+            expect(
+                isBloomActive(last, bloomPid),
+                `Bloom should be the active application once the collection is shown.\n${history}`,
+            ).toBe(true);
+            const newWindow = last.foregroundWindow;
+            const firstActive = samples.findIndex(
+                (s) =>
+                    s.foregroundWindow === newWindow &&
+                    isBloomActive(s, bloomPid),
+            );
+            const lapses = samples
+                .slice(firstActive)
+                .filter(
+                    (s) =>
+                        s.foregroundWindow !== newWindow ||
+                        !isBloomActive(s, bloomPid),
+                );
+            expect(
+                lapses.map((s) => describeFocus(s, bloomPid)),
+                `Once Bloom's new window was active it should have stayed active.\n${history}`,
+            ).toEqual([]);
+        },
+    );
 });

@@ -165,47 +165,6 @@ public static class Fg { [DllImport("user32.dll")] public static extern IntPtr G
 }
 
 /**
- * The process that owns the window that has the foreground now: its id (0 when no window has the
- * foreground) and its name.
- */
-export async function getForegroundWindowProcess(): Promise<{
-    pid: number;
-    name: string;
-}> {
-    const output = await new Promise<string>((resolve, reject) => {
-        execFile(
-            "powershell",
-            [
-                "-NoProfile",
-                "-NonInteractive",
-                "-Command",
-                `Add-Type @'
-using System; using System.Runtime.InteropServices;
-public static class FgPid {
-  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
-  [DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(IntPtr h, out int p);
-}
-'@
-$p = 0; [FgPid]::GetWindowThreadProcessId([FgPid]::GetForegroundWindow(), [ref]$p) | Out-Null
-$name = ''; if ($p) { $name = (Get-Process -Id $p -ErrorAction SilentlyContinue).ProcessName }
-"$p $name"`,
-            ],
-            { encoding: "utf8", timeout: 60000 },
-            (error, stdout, stderr) =>
-                error
-                    ? reject(new Error(`${error.message}\n${stderr}`))
-                    : resolve(stdout.trim()),
-        );
-    });
-    const match = /^(\d+) ?(.*)$/.exec(output);
-    if (!match)
-        throw new Error(
-            `Reading the foreground window's process printed "${output}", not a process id.`,
-        );
-    return { pid: Number(match[1]), name: match[2] };
-}
-
-/**
  * Wait up to `timeoutMs` for a message box (MessageBox.Show) of the Bloom with process id
  * `bloomPid`, read its message, press its button and wait until it has closed. Returns the message.
  * The box must have one button, as the boxes that report the end of a command do. Fails when no
