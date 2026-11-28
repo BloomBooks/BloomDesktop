@@ -46,29 +46,39 @@ export function isInsideFolder(child: string, parent: string): boolean {
 /** The names of the .htm files directly in `bookFolder`. A book folder has one: the book itself. */
 export function listBookHtmlFiles(bookFolder: string): string[] {
     return fs
-        .readdirSync(bookFolder)
-        .filter((name) => Path.extname(name).toLowerCase() === ".htm");
+        .readdirSync(bookFolder, { withFileTypes: true })
+        .filter(
+            (entry) =>
+                entry.isFile() &&
+                Path.extname(entry.name).toLowerCase() === ".htm",
+        )
+        .map((entry) => entry.name);
 }
 
 /**
  * The folders directly under `collectionDir` that hold the book with this id, by each folder's
- * meta.json. A folder with no meta.json, or one Bloom is in the middle of writing, is not counted.
+ * meta.json. A folder whose meta.json could not be read (none, or one Bloom is in the middle of
+ * writing) is not counted; it is listed in `unreadable` with the reason, so that a wait that
+ * fails can say so.
  */
 function findBookFoldersWithId(
     collectionDir: string,
     bookId: string,
-): string[] {
-    return fs
-        .readdirSync(collectionDir, { withFileTypes: true })
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => Path.join(collectionDir, entry.name))
-        .filter((folder) => {
-            try {
-                return readBookId(folder) === bookId;
-            } catch {
-                return false;
-            }
-        });
+): { folders: string[]; unreadable: string[] } {
+    const folders: string[] = [];
+    const unreadable: string[] = [];
+    for (const entry of fs.readdirSync(collectionDir, {
+        withFileTypes: true,
+    })) {
+        if (!entry.isDirectory()) continue;
+        const folder = Path.join(collectionDir, entry.name);
+        try {
+            if (readBookId(folder) === bookId) folders.push(folder);
+        } catch (error) {
+            unreadable.push(`${entry.name}: ${(error as Error).message}`);
+        }
+    }
+    return { folders, unreadable };
 }
 
 /**
@@ -83,15 +93,19 @@ export async function waitForBookFolderRenamed(
     oldFolder: string,
     timeoutMs = 30000,
 ): Promise<string> {
-    let folders: string[] = [];
+    let found: { folders: string[]; unreadable: string[] } = {
+        folders: [],
+        unreadable: [],
+    };
     try {
         await expect
             .poll(
                 () => {
-                    folders = findBookFoldersWithId(collectionDir, bookId);
+                    found = findBookFoldersWithId(collectionDir, bookId);
                     return (
-                        folders.length === 1 &&
-                        Path.resolve(folders[0]) !== Path.resolve(oldFolder)
+                        found.folders.length === 1 &&
+                        Path.resolve(found.folders[0]) !==
+                            Path.resolve(oldFolder)
                     );
                 },
                 { timeout: timeoutMs },
@@ -101,9 +115,10 @@ export async function waitForBookFolderRenamed(
         // The message is built after the wait fails, so that it can name what was found.
         throw new Error(
             `Bloom never renamed the folder of book ${bookId} from ${oldFolder}. ` +
-                `The folders holding that book are: [${folders.join(", ")}]. ` +
+                `The folders holding that book are: [${found.folders.join(", ")}]. ` +
+                `Folders whose meta.json could not be read: [${found.unreadable.join("; ")}]. ` +
                 `The collection holds: [${fs.readdirSync(collectionDir).join(", ")}].`,
         );
     }
-    return folders[0];
+    return found.folders[0];
 }

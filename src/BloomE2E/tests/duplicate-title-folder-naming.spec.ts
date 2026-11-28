@@ -39,9 +39,9 @@ async function makeBookWithTitle(
     // Bloom's placeholder name for an untitled book is translated, so check only that it is not
     // already the title's (otherwise the rename below would prove nothing).
     expect(
-        Path.basename(untitledFolder).startsWith(title),
+        Path.basename(untitledFolder),
         "test setup: a book with no title yet is not in a folder named for the title",
-    ).toBe(false);
+    ).not.toMatch(new RegExp(`^${title}`));
     const id = readBookId(untitledFolder);
     const pages = await getPages(page);
     expect(
@@ -106,7 +106,9 @@ test("a second book with the same title gets a folder and file named with part o
         "the first book is still in the folder named for the title alone",
     ).toBe(first.id);
     expect(
-        fs.existsSync(bookHtmlPath(first.folder)),
+        fs
+            .statSync(bookHtmlPath(first.folder), { throwIfNoEntry: false })
+            ?.isFile(),
         "the first book's file is still there under its own name",
     ).toBe(true);
 });
