@@ -2,16 +2,7 @@
 // instead of a Windows MessageBox. Its page is one of Bloom's browser's pages, so CDP reads it.
 
 import { expect, type Page } from "@playwright/test";
-import { closeReactDialogFromNode } from "./problemDialogs";
-
-/** Every page of Bloom's browser but DevTools. */
-function bloomPages(page: Page): Page[] {
-    const browser = page.context().browser();
-    const pages = browser
-        ? browser.contexts().flatMap((c) => c.pages())
-        : page.context().pages();
-    return pages.filter((p) => !p.url().startsWith("devtools://"));
-}
+import { bloomPages, closeReactDialogFromNode } from "./problemDialogs";
 
 /** The text of every Bloom message box showing in any page of Bloom's browser. */
 async function readBloomMessageBoxes(page: Page): Promise<string[]> {

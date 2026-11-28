@@ -294,8 +294,8 @@ test("books with the fake fatal titles show the fatal report dialog, and Bloom q
 // book button then asks Bloom for the editable collection's name just after the click. The fatal
 // dialog shows while the tab switch holds Bloom's main API lock, and it needs the browser's few
 // connections to Bloom for its message. This makes the slow machine's order happen every time: the
-// book buttons' questions are held until the click is on its way, then let through to Bloom
-// untouched.
+// book buttons' questions are held until the dialog asks Bloom for its message (by then the tab
+// switch holds the lock), then let through to Bloom untouched, ahead of the dialog's question.
 test("a fake fatal title's dialog gets its message while the Collections tab's book buttons are still asking Bloom about the collection [Test Case ID 52]", async ({
     bloomApp,
     problemDialogWatcher,
@@ -308,19 +308,30 @@ test("a fake fatal title's dialog gets its message while the Collections tab's b
     await typeBookTitle(page, title);
 
     const bookButtonsAsk = /\/collections\/getCurrentEditableCollectionName/;
+    // The report dialog's question for its message. The dialog is a page of its own, so it is
+    // routed on the browser context rather than on Bloom's shell page.
+    const dialogAsks = /\/problemReport\/reportHeadingHtml/;
     const held: Route[] = [];
-    const letThrough = async () => {
-        await page.unroute(bookButtonsAsk).catch(() => undefined);
-        await Promise.all(
-            held
-                .splice(0)
-                .map((route) => route.continue().catch(() => undefined)),
+    let holding = true;
+    // Continue the held requests before unrouting: unroute sends a pending request on by itself,
+    // and a continue after it would fail as already handled.
+    const letThrough = async (): Promise<number> => {
+        holding = false;
+        const sent = await Promise.allSettled(
+            held.splice(0).map((route) => route.continue()),
         );
+        await page.unroute(bookButtonsAsk).catch(() => undefined);
+        return sent.filter((s) => s.status === "fulfilled").length;
     };
-    await page.route(bookButtonsAsk, (route) => {
-        held.push(route);
+    await page.route(bookButtonsAsk, (route) =>
+        holding ? held.push(route) : route.continue(),
+    );
+    let sentBeforeTheDialogAsked = 0;
+    await page.context().route(dialogAsks, async (route) => {
+        sentBeforeTheDialogAsked += await letThrough();
+        await route.continue();
     });
-    // The browser has six connections to Bloom.
+    // The browser has six connections to Bloom, and the tab switch holds one of them.
     const kMoreThanTheConnections = 6;
     try {
         await switchTab(page, "collection");
@@ -330,15 +341,10 @@ test("a fake fatal title's dialog gets its message while the Collections tab's b
                 message: `The Collections tab's book buttons should ask Bloom for the editable collection's name, at least ${kMoreThanTheConnections} times`,
             })
             .toBeGreaterThanOrEqual(kMoreThanTheConnections);
-        const tabSwitchAsked = page.waitForRequest(/\/workspace\/selectTab/);
         const shown = await doThroughOneProblemDialog(
             page,
             problemDialogWatcher,
-            async () => {
-                await clickTab(page, "edit");
-                await tabSwitchAsked;
-                await letThrough();
-            },
+            () => clickTab(page, "edit"),
             bloomApp.bloomPid,
         );
         expectDialog(titles, title, shown, {
@@ -347,7 +353,15 @@ test("a fake fatal title's dialog gets its message while the Collections tab's b
             message: kFakeException,
             buttons: [kSubmit, kQuit],
         });
+        expect(
+            sentBeforeTheDialogAsked,
+            "the book buttons' questions should have been sent on to Bloom before the dialog asked for its message",
+        ).toBeGreaterThanOrEqual(kMoreThanTheConnections);
     } finally {
+        await page
+            .context()
+            .unroute(dialogAsks)
+            .catch(() => undefined);
         await letThrough();
     }
 });
