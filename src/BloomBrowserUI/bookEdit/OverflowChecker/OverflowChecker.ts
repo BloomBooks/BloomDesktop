@@ -89,6 +89,10 @@ export default class OverflowChecker {
             // BL-2892 There's no guarantee that the paste target isn't inside one of the editablePageElements
             // If we allow an embedded paste target (e.g. <p>) to get tested for overflow, it will overflow artificially.
             const editable = $(e.target).closest($editablePageElements)[0];
+            if (e.currentTarget !== editable) {
+                // An outer element of the list; the handler of the box nearest the target checks it.
+                return;
+            }
             // Give the browser time to get the pasted text into the DOM first, before testing for overflow
             // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
             //        At first I was concerned that this might slow typing, but it doesn't seem to.
@@ -117,7 +121,12 @@ export default class OverflowChecker {
                     )
                 )).qtip("reposition");
             }, 100); // 100 milliseconds
-            e.stopPropagation();
+            // A keyup goes on to the document, where the niceScroll scroll bar of a box whose text
+            // does not fit listens for it: from a keydown with Ctrl held, such as Ctrl+End, that
+            // scroll bar ignores the mouse wheel until a keyup without Ctrl reaches the document.
+            if (e.type === "paste") {
+                e.stopPropagation();
+            }
         });
 
         // Add another handler so that when the user resizes an origami pane, we check the overflow again
