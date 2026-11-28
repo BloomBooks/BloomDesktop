@@ -944,20 +944,30 @@ async function replayOpeningClick(): Promise<void> {
     // cursor placed before then. The page is already showing during that wait, so if the user
     // clicks or types in the meantime, they have moved on and the old click must not take the
     // focus back. A click in another frame (the toolbox, the top bar, the page list) never reaches
-    // this document, but it takes the focus from this window, which blur reports.
+    // this document, but it takes the focus from this window, which blur reports. Text can come
+    // with no key press at all (Keyman, voice typing, an input method), so the text itself, as
+    // beforeinput or the start of a composition, counts too.
     if (editable) {
         let userActedMeanwhile = false;
         const noteUserAction = (event: Event) => {
             if (event.isTrusted) userActedMeanwhile = true;
         };
-        document.addEventListener("pointerdown", noteUserAction, true);
-        document.addEventListener("keydown", noteUserAction, true);
+        const documentEvents = [
+            "pointerdown",
+            "keydown",
+            "beforeinput",
+            "compositionstart",
+        ];
+        documentEvents.forEach((name) =>
+            document.addEventListener(name, noteUserAction, true),
+        );
         window.addEventListener("blur", noteUserAction);
         try {
             await whenCkEditorIsReady(editable);
         } finally {
-            document.removeEventListener("pointerdown", noteUserAction, true);
-            document.removeEventListener("keydown", noteUserAction, true);
+            documentEvents.forEach((name) =>
+                document.removeEventListener(name, noteUserAction, true),
+            );
             window.removeEventListener("blur", noteUserAction);
         }
         if (userActedMeanwhile) return;
