@@ -277,6 +277,20 @@ export async function getSubscriptionOfUploadedBook(
 }
 
 /**
+ * The features the uploaded copy of a book claims, such as "video" or "signLanguage:ase": the
+ * `features` of the meta.json Bloom uploaded with it (BookInfo.Features), which Bloom works out
+ * afresh for each upload from the book and the choices on the Web screen.
+ */
+export async function getFeaturesOfUploadedBook(
+    baseUrl: string,
+): Promise<string[]> {
+    const meta = JSON.parse(
+        await fetchUploadedBookFile(baseUrl, "meta.json", "meta.json"),
+    ) as { features?: string[] };
+    return meta.features ?? [];
+}
+
+/**
  * Where the latest upload of `book` put its files, as a baseUrl in the form Bloom writes it. Each
  * upload goes to a new folder, `<bucket>/<record id>/<upload time>/<book folder>/`, and the record's
  * own baseUrl can point at an older upload's folder once the harvester has written a stale record
