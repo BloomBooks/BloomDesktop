@@ -1,6 +1,7 @@
 // Whether Bloom is the active application, as a person sees it: its window has the foreground (a
 // coloured title bar, and the first click goes to a control rather than to activating the window)
-// and the keyboard is somewhere inside that window (tooltips show, keys reach it).
+// and the keyboard is in a WebView inside that window, where Bloom's pages are (tooltips show,
+// keys reach the page).
 //
 // Both are read from Windows, not from the page: Playwright turns on Chromium's focus emulation
 // when it attaches, so document.hasFocus() answers true even while another application has the
@@ -10,6 +11,8 @@
 // (SetWinEventHook: EVENT_SYSTEM_FOREGROUND, EVENT_OBJECT_FOCUS), so a recording misses no lapse,
 // however brief. The keyboard may be on the WinForms control that hosts a WebView2 or on the
 // WebView2's own window, which lives in another process; either way it is inside Bloom's window.
+// Windows sends no event when a window's keyboard focus is cleared to no window at all, so such a
+// gap shows only if it lasts until the recording's final reading.
 
 import { spawn, type ChildProcess } from "node:child_process";
 import * as fs from "node:fs";
@@ -31,6 +34,11 @@ export interface IFocusSample {
     focusClass: string;
     /** The window that has the keyboard is the foreground window or one of its descendants. */
     focusInForegroundWindow: boolean;
+    /**
+     * The window that has the keyboard is a WebView2's own window, or the control that hosts one
+     * (Windows reports the keyboard on either), rather than some other control.
+     */
+    focusInWebView: boolean;
 }
 
 // C# that reads the state (Snapshot) or records each change of it until a file appears (Record).
@@ -53,6 +61,8 @@ public static class BloomFocus {
   [DllImport("user32.dll")] static extern bool GetGUIThreadInfo(int thread, ref GUITHREADINFO info);
   [DllImport("user32.dll")] static extern IntPtr GetAncestor(IntPtr h, uint flags);
   [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetClassName(IntPtr h, StringBuilder s, int n);
+  delegate bool EnumProc(IntPtr h, IntPtr l);
+  [DllImport("user32.dll")] static extern bool EnumChildWindows(IntPtr parent, EnumProc proc, IntPtr l);
   [DllImport("user32.dll")] static extern IntPtr SetWinEventHook(uint min, uint max, IntPtr module, WinEventProc proc, uint pid, uint thread, uint flags);
   [DllImport("user32.dll")] static extern bool UnhookWinEvent(IntPtr hook);
   [DllImport("user32.dll")] static extern int GetMessage(out MSG msg, IntPtr h, uint min, uint max);
@@ -71,17 +81,27 @@ public static class BloomFocus {
     return n;
   }
   static string Esc(string s) { return s.Replace("\\\\", "\\\\\\\\").Replace("\\"", "\\\\\\""); }
+  static string ClassOf(IntPtr h) { var s = new StringBuilder(256); GetClassName(h, s, 256); return s.ToString(); }
+  // A WebView2's own windows are "Chrome_" windows; the control that hosts one is their parent.
+  static bool IsWebView(IntPtr h) {
+    if (ClassOf(h).StartsWith("Chrome_")) return true;
+    bool found = false;
+    EnumChildWindows(h, (c, l) => { if (ClassOf(c).StartsWith("Chrome_")) { found = true; return false; } return true; }, IntPtr.Zero);
+    return found;
+  }
   static void Emit(bool always) {
     int pid = 0; if (_fg != IntPtr.Zero) GetWindowThreadProcessId(_fg, out pid);
-    var cls = new StringBuilder(256); if (_focus != IntPtr.Zero) GetClassName(_focus, cls, 256);
+    string cls = _focus == IntPtr.Zero ? "" : ClassOf(_focus);
     IntPtr root = _focus == IntPtr.Zero ? IntPtr.Zero : GetAncestor(_focus, GA_ROOT);
     bool inFg = _fg != IntPtr.Zero && root == _fg;
-    string key = pid + "|" + _fg + "|" + cls + "|" + inFg;
+    bool inWebView = _focus != IntPtr.Zero && IsWebView(_focus);
+    string key = pid + "|" + _fg + "|" + _focus + "|" + inFg + "|" + inWebView;
     if (!always && key == _last) return;
     _last = key;
     Console.Out.WriteLine("{\\"ms\\":" + _clock.ElapsedMilliseconds + ",\\"foregroundPid\\":" + pid +
       ",\\"foregroundProcess\\":\\"" + Esc(Name(pid)) + "\\",\\"foregroundWindow\\":\\"" + _fg.ToInt64() +
-      "\\",\\"focusClass\\":\\"" + Esc(cls.ToString()) + "\\",\\"focusInForegroundWindow\\":" + (inFg ? "true" : "false") + "}");
+      "\\",\\"focusClass\\":\\"" + Esc(cls) + "\\",\\"focusInForegroundWindow\\":" + (inFg ? "true" : "false") +
+      ",\\"focusInWebView\\":" + (inWebView ? "true" : "false") + "}");
     Console.Out.Flush();
   }
   static void ReadNow() {
@@ -194,10 +214,14 @@ export async function readFocus(): Promise<IFocusSample> {
 
 /**
  * True when the sample shows the Bloom with process id `bloomPid` active: its window has the
- * foreground and the keyboard is inside that window.
+ * foreground and the keyboard is in a WebView inside that window, where Bloom's pages are.
  */
 export function isBloomActive(sample: IFocusSample, bloomPid: number): boolean {
-    return sample.foregroundPid === bloomPid && sample.focusInForegroundWindow;
+    return (
+        sample.foregroundPid === bloomPid &&
+        sample.focusInForegroundWindow &&
+        sample.focusInWebView
+    );
 }
 
 /** A sample in words, for failure messages. */
@@ -210,7 +234,7 @@ export function describeFocus(sample: IFocusSample, bloomPid: number): string {
     const where = sample.focusInForegroundWindow ? "inside" : "outside";
     let keyboard = "no window";
     if (sample.focusClass)
-        keyboard = `a ${sample.focusClass} window ${where} it`;
+        keyboard = `a ${sample.focusClass} window ${where} it (${sample.focusInWebView ? "" : "not "}a WebView)`;
     return `at ${sample.ms} ms the foreground window ${sample.foregroundWindow} was ${owner}'s, and ${keyboard} had the keyboard`;
 }
 
