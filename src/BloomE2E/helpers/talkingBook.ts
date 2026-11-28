@@ -771,18 +771,40 @@ export interface IAdjustTimingsRegion {
 }
 
 /**
- * The sections the open Adjust Timings dialog shows over the waveform, in order. The dialog draws
- * only the sections scrolled into view (wavesurfer's regions plugin), so this scrolls the waveform
- * from end to end, collecting each section as it appears, and scrolls back to the start.
+ * The sections the open Adjust Timings dialog shows over the waveform, in order, once it shows
+ * `expectedCount` of them. The dialog draws only the sections scrolled into view (wavesurfer's
+ * regions plugin), and each region follows the scroll only once the plugin has set it up, so a scan
+ * made too early misses some; this scans again until one scan finds `expectedCount` sections.
  */
 export async function readAdjustTimingsRegions(
     dialog: Locator,
+    expectedCount: number,
 ): Promise<IAdjustTimingsRegion[]> {
-    return dialog.locator("#waveform").evaluate(async (waveform) => {
-        // The regions plugin starts following the scroll for each region in a zero-delay timer
-        // of its own, queued when the dialog drew the regions (virtualAppend). A zero-delay timer
-        // queued now runs after all of those, so once it has run, every region follows the scroll.
-        await new Promise((resolve) => setTimeout(resolve, 0));
+    let regions: IAdjustTimingsRegion[] = [];
+    await expect
+        .poll(
+            async () => {
+                regions = await scanAdjustTimingsRegions(dialog);
+                return regions.length;
+            },
+            {
+                message: `The Adjust Timings dialog never showed ${expectedCount} sections over its waveform.`,
+                timeout: 30000,
+            },
+        )
+        .toBe(expectedCount);
+    return regions;
+}
+
+/**
+ * One scan of the sections the open Adjust Timings dialog shows over the waveform, in order: it
+ * scrolls the waveform from end to end, collecting each section as it appears, and scrolls back to
+ * the start.
+ */
+async function scanAdjustTimingsRegions(
+    dialog: Locator,
+): Promise<IAdjustTimingsRegion[]> {
+    return dialog.locator("#waveform").evaluate((waveform) => {
         const root = (waveform.firstElementChild as HTMLElement | null)
             ?.shadowRoot;
         const scroller = root?.querySelector<HTMLElement>('[part~="scroll"]');
@@ -826,6 +848,10 @@ export async function readAdjustTimingsRegions(
  * Put the cursor in one language's box of the first group `groupSelector` picks, just before the
  * first place its text (as shown, markers and all) reads `textAfter`, by clicking in the box and
  * moving there with the arrow keys, as a person would.
+ *
+ * An arrow key does not always move the cursor by one character: where a line wraps at a space,
+ * the browser collapses the space, and one press can step over it. So after the presses the
+ * caret's place is read back, and the cursor is moved on or back until it stands where it should.
  */
 export async function putCursorBefore(
     page: Page,
@@ -842,6 +868,35 @@ export async function putCursorBefore(
         );
     await page.keyboard.press("Control+Home");
     for (let i = 0; i < offset; i++) await page.keyboard.press("ArrowRight");
+
+    /** The caret's place, and where it should be, as offsets in the box's textContent. */
+    const caretAndTarget = () =>
+        box.evaluate((e, wanted) => {
+            const selection = e.ownerDocument.getSelection();
+            if (!selection || !selection.focusNode) return undefined;
+            const before = e.ownerDocument.createRange();
+            before.setStart(e, 0);
+            before.setEnd(selection.focusNode, selection.focusOffset);
+            return {
+                caret: before.toString().length,
+                target: (e.textContent ?? "").indexOf(wanted),
+            };
+        }, textAfter);
+    for (let tries = 0; ; tries++) {
+        const place = await caretAndTarget();
+        if (!place || place.target < 0)
+            throw new Error(
+                `Could not read where the cursor is in the "${languageTag}" box of "${groupSelector}".`,
+            );
+        if (place.caret === place.target) break;
+        if (tries >= 5)
+            throw new Error(
+                `The arrow keys did not bring the cursor before "${textAfter}" in the "${languageTag}" box of "${groupSelector}": it stands at ${place.caret}, not ${place.target}, of "${text}".`,
+            );
+        await page.keyboard.press(
+            place.caret < place.target ? "ArrowRight" : "ArrowLeft",
+        );
+    }
     return box;
 }
 

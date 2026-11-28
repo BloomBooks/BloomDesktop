@@ -167,7 +167,13 @@ test("segment markers added after timing split the recording at them and at its 
             await clickInGroup(page, kGroup, "en");
             const dialog = await openAdjustTimingsDialog(page);
             await rerunPauseBasedTimingGuesses(page, dialog);
-            return { dialog, regions: await readAdjustTimingsRegions(dialog) };
+            return {
+                dialog,
+                regions: await readAdjustTimingsRegions(
+                    dialog,
+                    kSegments.length,
+                ),
+            };
         },
     );
     if (!shown) throw new Error("The Adjust Timings dialog was not opened.");
