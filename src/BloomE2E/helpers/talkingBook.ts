@@ -693,6 +693,24 @@ export async function acceptProposedTimings(page: Page): Promise<void> {
         ".bloom-editable.bloom-postAudioSplit",
     );
     const splitBefore = await splitBoxes.count();
+    const dialog = await openAdjustTimingsDialog(page);
+    await clickOkInAdjustTimings(dialog);
+    await expect(
+        splitBoxes,
+        "OK in Adjust Timings did not mark the text box as split into timed segments.",
+    ).toHaveCount(splitBefore + 1, { timeout: 30000 });
+}
+
+/**
+ * Press the Talking Book tool's Adjust Timings... button for the text box the tool is on, and wait
+ * until the dialog has loaded the box's recording and shows a region over its waveform for each
+ * segment: only then are the times it would save its own rather than a first guess from the
+ * lengths of the segments' text. Returns the dialog, which is drawn in the shell page.
+ *
+ * The box must hold a whole-text-box recording. The button is found by its picture, since it has
+ * no id and its label is localized.
+ */
+export async function openAdjustTimingsDialog(page: Page): Promise<Locator> {
     const button = toolboxFrame(page).locator(
         'button:has(img[src*="adjustTimings.svg"])',
     );
@@ -703,22 +721,116 @@ export async function acceptProposedTimings(page: Page): Promise<void> {
     // The button itself ignores the pointer (pointer-events: none); its picture takes the click.
     await button.locator("img").click();
 
-    // The dialog is drawn in the shell page. It shows one region over the recording's waveform
-    // for each segment once it has loaded the recording, and only then are the times it would
-    // save its own rather than a first guess from the lengths of the segments' text.
-    const dialog = page
-        .getByRole("dialog")
-        .filter({ has: page.locator("#waveform") });
+    const dialog = adjustTimingsDialog(page);
     await expect(
         dialog.locator("#waveform .playButton").first(),
         "The Adjust Timings dialog never showed the recording's segments.",
     ).toBeVisible({ timeout: 60000 });
+    return dialog;
+}
+
+/**
+ * In the open Adjust Timings dialog, choose More > Re-run pause-based timing guesses, which splits
+ * the text box again at its sentence ends and segment markers, guesses each segment's end from the
+ * lengths of their text, and moves each guess to the quietest moment of the recording nearby.
+ * Waits until the dialog has drawn the regions of the new split over the waveform, which it does
+ * only after it has made those moves (AdjustTimingsControl's decode handler). The dialog draws only
+ * the regions scrolled into view, so the wait is for the first of them, not for all.
+ */
+export async function rerunPauseBasedTimingGuesses(
+    page: Page,
+    dialog: Locator,
+): Promise<void> {
+    // The regions are drawn afresh for the new split; mark the ones there now, so the wait below
+    // cannot be satisfied by them.
+    const playButtons = dialog.locator("#waveform .playButton");
+    await playButtons.evaluateAll((buttons) =>
+        buttons.forEach((b) => b.setAttribute("data-e2e-before-rerun", "")),
+    );
+
+    await dialog.locator("#timingsMenuAnchor").click();
+    const rerun = await getUiString(
+        page,
+        "EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun",
+        "Re-run pause-based timing guesses",
+    );
+    await page.getByRole("menuitem").filter({ hasText: rerun }).click();
+    await expect(
+        playButtons.and(page.locator(":not([data-e2e-before-rerun])")).first(),
+        "After Re-run pause-based timing guesses, the Adjust Timings dialog never showed the new segments.",
+    ).toBeVisible({ timeout: 60000 });
+}
+
+/** Press OK in the open Adjust Timings dialog, which saves its times on the text box, and wait for it to close. */
+export async function clickOkInAdjustTimings(dialog: Locator): Promise<void> {
     await dialog.getByTestId("dialog-ok").click();
     await expect(dialog).toBeHidden({ timeout: 30000 });
+}
+
+/** The Adjust Timings dialog, drawn in the shell page. */
+function adjustTimingsDialog(page: Page): Locator {
+    return page.getByRole("dialog").filter({ has: page.locator("#waveform") });
+}
+
+/**
+ * Press the Talking Book tool's Advanced > Insert Segment Marker button, which puts a "|" where the
+ * cursor is in the page. The caller puts the cursor there first.
+ */
+export async function clickInsertSegmentMarker(page: Page): Promise<void> {
+    await openAdvancedSection(page);
+    const button = toolboxFrame(page).locator("#insert-segment-marker-button");
     await expect(
-        splitBoxes,
-        "OK in Adjust Timings did not mark the text box as split into timed segments.",
-    ).toHaveCount(splitBefore + 1, { timeout: 30000 });
+        button,
+        "Insert Segment Marker is disabled; it needs the cursor in a text box.",
+    ).toBeEnabled({ timeout: 30000 });
+    await button.click();
+}
+
+/** A stretch of a recording, in seconds from its start. */
+export interface ITimeSpan {
+    start: number;
+    end: number;
+}
+
+/**
+ * The pauses in the recording `mp3Path`: each stretch of at least `minSeconds` in which no sample
+ * is louder than a hundredth of the loudest one. Decoded by the browser Bloom runs, which is the
+ * decoder the Adjust Timings dialog reads the recording with. Also returns the recording's length.
+ */
+export async function findPausesInRecording(
+    page: Page,
+    mp3Path: string,
+    minSeconds: number,
+): Promise<{ duration: number; pauses: ITimeSpan[] }> {
+    const base64 = fs.readFileSync(Path.resolve(mp3Path)).toString("base64");
+    return page.evaluate(
+        async ({ base64, minSeconds }) => {
+            const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+            const context = new OfflineAudioContext(1, 44100, 44100);
+            const audio = await context.decodeAudioData(bytes.buffer);
+            const samples = audio.getChannelData(0);
+            let loudest = 0;
+            for (const s of samples) loudest = Math.max(loudest, Math.abs(s));
+            const quiet = loudest / 100;
+            const pauses: { start: number; end: number }[] = [];
+            let runStart = -1;
+            for (let i = 0; i <= samples.length; i++) {
+                const isQuiet =
+                    i < samples.length && Math.abs(samples[i]) <= quiet;
+                if (isQuiet && runStart < 0) runStart = i;
+                if (!isQuiet && runStart >= 0) {
+                    if ((i - runStart) / audio.sampleRate >= minSeconds)
+                        pauses.push({
+                            start: runStart / audio.sampleRate,
+                            end: i / audio.sampleRate,
+                        });
+                    runStart = -1;
+                }
+            }
+            return { duration: audio.duration, pauses };
+        },
+        { base64, minSeconds },
+    );
 }
 
 /**
