@@ -10,9 +10,9 @@
 // Book tool's Import Recording, the one way Bloom takes a whole-text-box recording without one.
 // The recording is made of sound with a pause after each part of the text, so that where the
 // pauses are is known. What the person confirms in the dialog is that its sections follow both the
-// markers and the pauses; the test reads the same sections from what OK saves on the box (its
-// segments, and data-audiorecordingendtimes, the end time of each), and checks that each section
-// ends inside a pause.
+// markers and the pauses; the test reads the sections the dialog shows over the waveform, checks
+// their text and that each ends inside a pause, then presses OK and checks that the box keeps the
+// same sections and times (its segments, and data-audiorecordingendtimes).
 //
 // The case notes that reopening Adjust Timings ought to show the new segments without the re-run
 // (BL-15678); the test does not check what the dialog shows before the re-run.
@@ -22,7 +22,6 @@ import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
     clickInGroup,
-    editablePageFrame,
     getContentPages,
     goToPage,
     makeBookFromTemplate,
@@ -32,15 +31,18 @@ import {
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
     acceptProposedTimings,
-    clickInsertSegmentMarker,
     clickOkInAdjustTimings,
     findPausesInRecording,
     importNarration,
+    insertSegmentMarkerBefore,
     openAdjustTimingsDialog,
     openToolboxWithTalkingBook,
+    readAdjustTimingsRegions,
+    readSegmentTimings,
     rerunPauseBasedTimingGuesses,
     sampleNarrationFile,
     silentMp3Frames,
+    typeSegmentMarkerBefore,
 } from "../helpers/talkingBook";
 
 test.use({
@@ -136,78 +138,99 @@ test("segment markers added after timing split the recording at them and at its 
         },
     );
 
-    const box = editablePageFrame(page)
-        .locator(`${kGroup} .bloom-editable[lang="en"]`)
-        .first();
-
     await step("Type a segment marker in the first sentence", async () => {
-        await clickInGroup(page, kGroup, "en");
-        await page.keyboard.press("Control+Home");
-        const offset = kFirstSentence.indexOf(kTypedMarkerBefore);
-        for (let i = 0; i < offset; i++)
-            await page.keyboard.press("ArrowRight");
-        await page.keyboard.type("|");
-        await expect(box).toContainText(`in |${kTypedMarkerBefore}`, {
-            timeout: 15000,
-            useInnerText: true,
-        });
+        await typeSegmentMarkerBefore(page, kGroup, "en", kTypedMarkerBefore);
     });
 
     await step(
         "Put a segment marker in the second sentence with Advanced > Insert Segment Marker",
         async () => {
-            await clickInGroup(page, kGroup, "en");
-            await page.keyboard.press("Control+End");
-            for (let i = 0; i < kButtonMarkerBefore.length; i++)
-                await page.keyboard.press("ArrowLeft");
-            await clickInsertSegmentMarker(page);
-            await expect(box).toContainText(`on |${kButtonMarkerBefore}`, {
-                timeout: 15000,
-                useInnerText: true,
-            });
+            await insertSegmentMarkerBefore(
+                page,
+                kGroup,
+                "en",
+                kButtonMarkerBefore,
+            );
         },
     );
 
-    await step(
-        "Open Adjust Timings again, re-run the pause-based timing guesses and press OK",
+    /** Where `seconds` falls among the pauses, for failure messages. */
+    const describePauses = () =>
+        `the pauses of the ${duration.toFixed(2)} s recording are ` +
+        pauses
+            .map((p) => `${p.start.toFixed(2)}-${p.end.toFixed(2)} s`)
+            .join(", ");
+
+    const shown = await step(
+        "Open Adjust Timings again and re-run the pause-based timing guesses",
         async () => {
             await clickInGroup(page, kGroup, "en");
             const dialog = await openAdjustTimingsDialog(page);
             await rerunPauseBasedTimingGuesses(page, dialog);
-            await clickOkInAdjustTimings(dialog);
+            return { dialog, regions: await readAdjustTimingsRegions(dialog) };
         },
     );
+    if (!shown) throw new Error("The Adjust Timings dialog was not opened.");
+
+    const shownEnds = await step(
+        "Verify in the dialog: the sections are split at both the segment markers and the pauses",
+        async () => {
+            const { regions } = shown;
+            expect(
+                regions.map((r) => readable(r.text)),
+                "The dialog should show the sections split at the typed marker, the sentence end and the inserted marker.",
+            ).toEqual(kSegments);
+            const ends = regions.map((r) => r.end * duration);
+            pauses.forEach((pause, i) => {
+                expect(
+                    ends[i] >= pause.start && ends[i] <= pause.end,
+                    `In the dialog, section ${i + 1} ("${kSegments[i]}") should end in pause ${i + 1}; it ends at ${ends[i].toFixed(2)} s, and ${describePauses()}.`,
+                ).toBe(true);
+                expect(
+                    regions[i + 1].start,
+                    `In the dialog, section ${i + 2} should start where section ${i + 1} ends.`,
+                ).toBeCloseTo(regions[i].end, 3);
+            });
+            return ends;
+        },
+    );
+    if (!shownEnds) throw new Error("The dialog's sections were not read.");
 
     await step(
-        "Verify: the sections are split at both the segment markers and the pauses",
+        "Press OK: the box keeps the sections and the times the dialog showed",
         async () => {
-            const saved = await box.evaluate((element) => ({
-                segments: Array.from(
-                    element.querySelectorAll(".bloom-highlightSegment"),
-                ).map((s) => s.textContent ?? ""),
-                endTimes:
-                    element.getAttribute("data-audiorecordingendtimes") ?? "",
-            }));
+            await clickOkInAdjustTimings(shown.dialog);
+            const saved = await readSegmentTimings(page, kGroup, "en");
             expect(
                 saved.segments.map(readable),
-                "The sections should be split at the typed marker, the sentence end and the inserted marker.",
+                "OK should keep the box split at the typed marker, the sentence end and the inserted marker.",
             ).toEqual(kSegments);
             const endTimes = saved.endTimes.split(" ").map(Number);
             expect(
                 endTimes.length,
                 `There should be an end time for each section; data-audiorecordingendtimes is "${saved.endTimes}".`,
             ).toBe(kSegments.length);
-            // Every section but the last ends inside a pause of its own, in order.
+            endTimes.forEach((end, i) => {
+                expect(
+                    Number.isFinite(end) && end > (endTimes[i - 1] ?? 0),
+                    `Each section should end, as a number of seconds, after the one before it; data-audiorecordingendtimes is "${saved.endTimes}".`,
+                ).toBe(true);
+            });
             pauses.forEach((pause, i) => {
                 expect(
-                    endTimes[i],
-                    `Section ${i + 1} ("${kSegments[i]}") should end in the pause from ${pause.start.toFixed(2)} s to ${pause.end.toFixed(2)} s of the ${duration.toFixed(2)} s recording; the end times are ${saved.endTimes}.`,
-                ).toBeGreaterThanOrEqual(pause.start);
+                    endTimes[i] >= pause.start && endTimes[i] <= pause.end,
+                    `Section ${i + 1} ("${kSegments[i]}") should end in pause ${i + 1}; data-audiorecordingendtimes is "${saved.endTimes}", and ${describePauses()}.`,
+                ).toBe(true);
                 expect(
                     endTimes[i],
-                    `Section ${i + 1} ("${kSegments[i]}") should end in the pause from ${pause.start.toFixed(2)} s to ${pause.end.toFixed(2)} s of the ${duration.toFixed(2)} s recording; the end times are ${saved.endTimes}.`,
-                ).toBeLessThanOrEqual(pause.end);
+                    `OK should save the end of section ${i + 1} that the dialog showed.`,
+                ).toBeCloseTo(shownEnds[i], 1);
             });
+            const last = endTimes[endTimes.length - 1];
+            expect(
+                last >= pauses[pauses.length - 1].end && last <= duration + 0.1,
+                `The last section should end at the end of the recording, after the last pause; data-audiorecordingendtimes is "${saved.endTimes}", and ${describePauses()}.`,
+            ).toBe(true);
         },
     );
 });

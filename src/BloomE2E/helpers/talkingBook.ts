@@ -761,6 +761,157 @@ export async function rerunPauseBasedTimingGuesses(
     ).toBeVisible({ timeout: 60000 });
 }
 
+/** One section the Adjust Timings dialog shows over the recording's waveform. */
+export interface IAdjustTimingsRegion {
+    /** The section's text, as the dialog labels it. */
+    text: string;
+    /** Where the section starts and ends, as fractions (0 to 1) of the recording's length. */
+    start: number;
+    end: number;
+}
+
+/**
+ * The sections the open Adjust Timings dialog shows over the waveform, in order. The dialog draws
+ * only the sections scrolled into view (wavesurfer's regions plugin), so this scrolls the waveform
+ * from end to end, collecting each section as it appears, and scrolls back to the start.
+ */
+export async function readAdjustTimingsRegions(
+    dialog: Locator,
+): Promise<IAdjustTimingsRegion[]> {
+    return dialog.locator("#waveform").evaluate(async (waveform) => {
+        const root = (waveform.firstElementChild as HTMLElement | null)
+            ?.shadowRoot;
+        const scroller = root?.querySelector<HTMLElement>('[part~="scroll"]');
+        if (!root || !scroller)
+            throw new Error(
+                "The Adjust Timings dialog's waveform has no scrolling area to read its sections from.",
+            );
+        const found = new Map<string, IAdjustTimingsRegion>();
+        const frame = () =>
+            new Promise((resolve) => requestAnimationFrame(resolve));
+        const collect = () => {
+            root.querySelectorAll<HTMLElement>('[part~="region"]').forEach(
+                (region) => {
+                    const id = region.getAttribute("part") ?? "";
+                    const content = region.querySelector(
+                        '[part~="region-content"]',
+                    );
+                    found.set(id, {
+                        text: content?.textContent ?? "",
+                        start: parseFloat(region.style.left) / 100,
+                        end: 1 - parseFloat(region.style.right) / 100,
+                    });
+                },
+            );
+        };
+        const step = Math.max(1, Math.floor(scroller.clientWidth / 2));
+        for (let x = 0; ; x += step) {
+            scroller.scrollLeft = x;
+            scroller.dispatchEvent(new Event("scroll"));
+            await frame();
+            await frame();
+            collect();
+            if (x >= scroller.scrollWidth - scroller.clientWidth) break;
+        }
+        scroller.scrollLeft = 0;
+        scroller.dispatchEvent(new Event("scroll"));
+        return Array.from(found.values()).sort((a, b) => a.start - b.start);
+    });
+}
+
+/**
+ * Put the cursor in one language's box of the first group `groupSelector` picks, just before the
+ * first place its text (as shown, markers and all) reads `textAfter`, by clicking in the box and
+ * moving there with the arrow keys, as a person would.
+ */
+export async function putCursorBefore(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    textAfter: string,
+): Promise<Locator> {
+    const box = await clickInGroup(page, groupSelector, languageTag);
+    const text = await box.evaluate((e) => (e as HTMLElement).innerText);
+    const offset = text.indexOf(textAfter);
+    if (offset < 0)
+        throw new Error(
+            `The "${languageTag}" box of "${groupSelector}" does not read "${textAfter}" anywhere; it reads "${text}".`,
+        );
+    await page.keyboard.press("Control+Home");
+    for (let i = 0; i < offset; i++) await page.keyboard.press("ArrowRight");
+    return box;
+}
+
+/**
+ * Type a segment marker ("|") on the keyboard in one language's box of the first group
+ * `groupSelector` picks, just before where its text reads `textAfter`, and wait until the box
+ * shows it there.
+ */
+export async function typeSegmentMarkerBefore(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    textAfter: string,
+): Promise<void> {
+    const box = await putCursorBefore(
+        page,
+        groupSelector,
+        languageTag,
+        textAfter,
+    );
+    await page.keyboard.type("|");
+    await expect(
+        box,
+        `Typing "|" did not put a segment marker before "${textAfter}".`,
+    ).toContainText(`|${textAfter}`, { timeout: 15000, useInnerText: true });
+}
+
+/**
+ * Put a segment marker ("|") in one language's box of the first group `groupSelector` picks, just
+ * before where its text reads `textAfter`, with the Talking Book tool's Advanced > Insert Segment
+ * Marker button, and wait until the box shows it there.
+ */
+export async function insertSegmentMarkerBefore(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    textAfter: string,
+): Promise<void> {
+    const box = await putCursorBefore(
+        page,
+        groupSelector,
+        languageTag,
+        textAfter,
+    );
+    await clickInsertSegmentMarker(page);
+    await expect(
+        box,
+        `Insert Segment Marker did not put a segment marker before "${textAfter}".`,
+    ).toContainText(`|${textAfter}`, { timeout: 15000, useInnerText: true });
+}
+
+/**
+ * How one language's box of the first group `groupSelector` picks is split for playback: the text
+ * of each of its segments (bloom-highlightSegment), and its data-audiorecordingendtimes as written
+ * ("" when it has none).
+ */
+export async function readSegmentTimings(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<{ segments: string[]; endTimes: string }> {
+    return editablePageFrame(page)
+        .locator(groupSelector)
+        .first()
+        .locator(`.bloom-editable[lang="${languageTag}"]`)
+        .evaluate((element) => ({
+            segments: Array.from(
+                element.querySelectorAll(".bloom-highlightSegment"),
+            ).map((s) => s.textContent ?? ""),
+            endTimes: element.getAttribute("data-audiorecordingendtimes") ?? "",
+        }));
+}
+
 /** Press OK in the open Adjust Timings dialog, which saves its times on the text box, and wait for it to close. */
 export async function clickOkInAdjustTimings(dialog: Locator): Promise<void> {
     await dialog.getByTestId("dialog-ok").click();
