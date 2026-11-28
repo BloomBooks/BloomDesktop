@@ -4,6 +4,8 @@
 // CanvasToolControls.tsx), and its Background Color picker then offers no transparency: no alpha
 // slider and no transparent swatch. An element whose background was fully transparent becomes a
 // Caption with the white-to-calico gradient, since fully transparent made opaque would be black.
+// The test checks that gradient in the element's data-bubble only, not in the saved drawing: the
+// saved drawing loses the link from the caption's shape to its gradient (BL-17215).
 //
 // The test reads what Bloom saved after each change: the element's data-bubble, which holds its
 // type and background, and the drawing ComicalJS saved for the page (svg.comical-generated), which
@@ -12,21 +14,18 @@
 //
 // Automates "Bubble Transparency Behavior" (Test Case ID 323).
 
-import { type Frame, type Page } from "@playwright/test";
+import { type Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import { getUiString } from "../helpers/api";
 import {
-    addPage,
-    getContentPages,
     getPages,
     goToPage,
     makeBookFromTemplate,
     waitForSnapshotStreamIdle,
 } from "../helpers/bookMaking";
 import {
-    dragPaletteItemOntoCanvas,
+    addCanvasPageWithElement,
     selectCanvasElement,
-    type PaletteItem,
 } from "../helpers/canvasElements";
 import {
     chooseCanvasElementType,
@@ -40,8 +39,10 @@ import {
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
     closeColorPickerWith,
-    colorPicker,
     clickAlphaSliderMiddle,
+    getPaletteSwatchOpacities,
+    hasAlphaSlider,
+    hexBox,
     hexToRgba,
     parseCssRgba,
     readColorPicker,
@@ -61,8 +62,16 @@ test.use({
 
 /** The red of Bloom's text color palette (bloomPalette.ts), typed in, since the background palette has no red. */
 const kRed = "#ff1616";
-/** How far an opacity may be from the one expected, for rounding where colors are converted. */
-const kOpacityTolerance = 0.01;
+/**
+ * How far an opacity may be from the one expected, for rounding where colors are converted. It is
+ * small enough that a nearly opaque background, such as 0.996, does not pass as opaque.
+ */
+const kOpacityTolerance = 0.002;
+
+/** Opacities to three decimals, enough to tell 0.996 from 1. */
+function round3(n: number): number {
+    return Math.round(n * 1000) / 1000;
+}
 
 /**
  * A saved background color as "#rrggbb at <alpha>", whether Bloom saved it as hex or as rgba(), so
@@ -74,7 +83,7 @@ function describeColor(color: string): string {
     if (value.startsWith("rgb")) alpha = parseCssRgba(value).a;
     else if (value.startsWith("#")) alpha = hexToRgba(value).a;
     else return value;
-    return `${cssColorToHex(value)} at ${Math.round(alpha * 100) / 100}`;
+    return `${cssColorToHex(value)} at ${round3(alpha)}`;
 }
 
 /** Whether a described color is `hex` at `opacity`, within kOpacityTolerance. */
@@ -87,29 +96,12 @@ function isColorAt(described: string, hex: string, opacity: number): boolean {
     );
 }
 
-/** Add a Canvas page, go to it, and drag the palette item `item` onto it; returns the page and element. */
-async function addElementOnCanvasPage(
-    page: Page,
-    item: PaletteItem,
-): Promise<{ pageId: string; index: number }> {
-    const before = (await getContentPages(page)).map((p) => p.id);
-    await addPage(page, "Canvas");
-    const added = (await getContentPages(page)).find(
-        (p) => !before.includes(p.id),
-    );
-    if (!added) throw new Error("Adding a Canvas page added no content page.");
-    await goToPage(page, added.id);
-    const index = await dragPaletteItemOntoCanvas(page, item);
-    await selectCanvasElement(page, index);
-    return { pageId: added.id, index };
-}
-
 /** What the saved book says about one canvas element and the page's drawing. */
 interface ISavedElement {
     style: string | undefined;
     /** The element's background colors, as describeColor gives them. */
     backgroundColors: string[];
-    /** How opaque each red shape of the page's drawing is drawn, rounded to two decimals. */
+    /** How opaque each red shape of the page's drawing is drawn, rounded to three decimals. */
     redShapeOpacities: number[];
 }
 
@@ -145,7 +137,7 @@ async function expectSaved(
                     return false;
                 }
             })
-            .map((s) => Math.round(s.fillOpacity * 100) / 100);
+            .map((s) => round3(s.fillOpacity));
         return {
             style: spec?.style,
             backgroundColors: (spec?.backgroundColors ?? []).map(describeColor),
@@ -210,13 +202,6 @@ async function changeType(page: Page, type: CanvasElementType): Promise<void> {
     expect(await getCanvasElementTypeShown(page)).toBe(type);
 }
 
-/** Whether the open color picker offers an alpha slider. */
-async function hasAlphaSlider(frame: Frame): Promise<boolean> {
-    return (
-        (await colorPicker(frame).locator(".alpha-slider-track").count()) > 0
-    );
-}
-
 test("A half-transparent bubble keeps its transparency through type changes until it becomes a Caption [Test Case ID 323]", async ({
     page,
     step,
@@ -229,7 +214,10 @@ test("A half-transparent bubble keeps its transparency through type changes unti
         let index = -1;
 
         await step("Drag a Speech bubble onto a Canvas page", async () => {
-            ({ pageId, index } = await addElementOnCanvasPage(page, "speech"));
+            ({ pageId, index } = await addCanvasPageWithElement(
+                page,
+                "speech",
+            ));
             expect(
                 await getCanvasElementTypeShown(page),
                 "A new speech bubble should show the Element Type Speech.",
@@ -238,6 +226,10 @@ test("A half-transparent bubble keeps its transparency through type changes unti
             expect(
                 await hasAlphaSlider(frame),
                 "A speech bubble's Background Color picker should offer an alpha slider.",
+            ).toBe(true);
+            expect(
+                (await getPaletteSwatchOpacities(frame)).some((o) => o < 1),
+                "A speech bubble's Background Color palette should offer a transparent swatch.",
             ).toBe(true);
             await closeColorPickerWith(frame, "Cancel");
         });
@@ -253,7 +245,7 @@ test("A half-transparent bubble keeps its transparency through type changes unti
                     await openCanvasElementBackgroundColorPicker(page);
                 await typeInHexBox(frame, kRed);
                 await expect(
-                    colorPicker(frame).locator('input[type="text"]'),
+                    hexBox(frame),
                     `The color picker's hex box did not take ${kRed}.`,
                 ).toHaveValue(new RegExp(`^${kRed}(ff)?$`, "i"));
                 await clickAlphaSliderMiddle(frame);
@@ -355,8 +347,14 @@ test("A half-transparent bubble keeps its transparency through type changes unti
                     await hasAlphaSlider(frame),
                     "A caption's Background Color picker should have no alpha slider.",
                 ).toBe(false);
+                expect(
+                    (await getPaletteSwatchOpacities(frame)).filter(
+                        (o) => o < 1,
+                    ),
+                    "A caption's Background Color palette should offer only opaque swatches.",
+                ).toEqual([]);
                 await expect(
-                    colorPicker(frame).locator('input[type="text"]'),
+                    hexBox(frame),
                     "A caption's Background Color picker should show its opaque red, with no alpha.",
                 ).toHaveValue(new RegExp(`^${kRed}(ff)?$`, "i"));
                 await closeColorPickerWith(frame, "Cancel");
@@ -403,7 +401,7 @@ test("A fully transparent Just Text becomes a Caption with the white-to-calico b
         let index = -1;
 
         await step("Drag a Text Block onto a Canvas page", async () => {
-            ({ pageId, index } = await addElementOnCanvasPage(page, "none"));
+            ({ pageId, index } = await addCanvasPageWithElement(page, "none"));
             await expectSaved(
                 page,
                 bookFolder,

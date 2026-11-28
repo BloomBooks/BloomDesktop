@@ -13,7 +13,13 @@
 // attempts is a product problem, and retries: 0 is the point of this suite).
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
-import { editablePageFrame, waitForBloomToHaveTyping } from "./bookMaking";
+import {
+    addPage,
+    editablePageFrame,
+    getContentPages,
+    goToPage,
+    waitForBloomToHaveTyping,
+} from "./bookMaking";
 import { type IRect } from "./geometry";
 import { realClick, realClickAt } from "./realClick";
 import { waitForScrollBarOf } from "./textBoxScrollBars";
@@ -319,6 +325,26 @@ export async function dragPaletteItemOntoCanvas(
         })
         .toBe(countBefore + 1);
     return countBefore;
+}
+
+/**
+ * Add a Canvas page to the book being edited, go to it, drag the palette item `item` onto its
+ * canvas and select the new element. Returns the new page's id and the element's index.
+ */
+export async function addCanvasPageWithElement(
+    page: Page,
+    item: PaletteItem,
+): Promise<{ pageId: string; index: number }> {
+    const before = (await getContentPages(page)).map((p) => p.id);
+    await addPage(page, "Canvas");
+    const added = (await getContentPages(page)).find(
+        (p) => !before.includes(p.id),
+    );
+    if (!added) throw new Error("Adding a Canvas page added no content page.");
+    await goToPage(page, added.id);
+    const index = await dragPaletteItemOntoCanvas(page, item);
+    await selectCanvasElement(page, index);
+    return { pageId: added.id, index };
 }
 
 /**

@@ -151,6 +151,43 @@ export async function clickPaletteSwatch(
     await swatches.nth(index).click();
 }
 
+/** Whether the open color picker shows its alpha slider, which it leaves out where transparency is not offered. */
+export async function hasAlphaSlider(frame: Frame): Promise<boolean> {
+    return (
+        (await colorPicker(frame).locator(".alpha-slider-track").count()) > 0
+    );
+}
+
+/**
+ * How opaque each swatch of the open color picker's palette is, from 0 (the transparent swatch) to
+ * 1, in palette order. A gradient swatch counts as 1: the palette's gradients are all opaque.
+ */
+export async function getPaletteSwatchOpacities(
+    frame: Frame,
+): Promise<number[]> {
+    const swatches = colorPicker(frame).locator(
+        ".swatch-section .color-swatch > div:last-child",
+    );
+    await swatches.first().waitFor({ state: "visible", timeout: 15000 });
+    const backgrounds = await swatches.evaluateAll((elements) =>
+        elements.map((e) => {
+            const style = getComputedStyle(e);
+            return {
+                color: style.backgroundColor,
+                image: style.backgroundImage,
+            };
+        }),
+    );
+    return backgrounds.map((b) =>
+        b.image !== "none" ? 1 : parseCssRgba(b.color).a,
+    );
+}
+
+/** The open color picker's hex box. */
+export function hexBox(frame: Frame): Locator {
+    return colorPicker(frame).locator('input[type="text"]');
+}
+
 /** Click a point of a control, given in percent of its width and height. */
 async function clickAtPercent(
     control: Locator,
