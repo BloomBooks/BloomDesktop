@@ -13,7 +13,10 @@ import * as Path from "node:path";
 import { apiGet, apiPost } from "./api";
 import { bookHtmlPath } from "./bookHtml";
 import {
+    addPage,
     editablePageFrame,
+    getContentPages,
+    goToPage,
     makeBookFromTemplate,
     waitForEditablePage,
     waitForEditTabSettled,
@@ -491,4 +494,36 @@ export async function waitForLevelToBeRecordedInTheBook(
  */
 export async function makeBookLeveled(page: Page) {
     await apiPost(page, "toolbox/leveled", "true", "application/json");
+}
+
+/**
+ * Make a new leveled Basic Book with one "Just Text" page, and leave the Leveled Reader expanded on
+ * that page, ready for text to be pasted, once Bloom has saved the book with its level and reloaded
+ * the page for it (text pasted before that reload would be lost). Returns the book's folder.
+ */
+export async function makeLeveledBookWithTextPage(page: Page): Promise<string> {
+    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
+    await addPage(page, "Just Text");
+    const [textPage] = await getContentPages(page);
+    // Before enableToolForBook, which goes back into the book, so the page comes up with the book
+    // already leveled (see makeBookLeveled).
+    await makeBookLeveled(page);
+    await enableToolForBook(page, bookFolder, "leveledReader");
+    await goToPage(page, textPage.id);
+    await expandReaderTool(page, "leveledReader");
+    await waitForReaderToolToRestore(page, "leveledReader", bookFolder);
+    await waitForLevelToBeRecordedInTheBook(page, bookFolder);
+    return bookFolder;
+}
+
+/** The figures that the Leveled Reader's panel shows for the page and the book. */
+export type LeveledReaderStat =
+    | "words-this-page"
+    | "sentences-this-page"
+    | "words-in-book"
+    | "average-words-per-sentence";
+
+/** One of the figures in the Leveled Reader's panel, to read or wait on with `expect`. */
+export function leveledReaderStat(page: Page, stat: LeveledReaderStat) {
+    return toolboxFrame(page).getByTestId(`leveled-reader-${stat}`);
 }

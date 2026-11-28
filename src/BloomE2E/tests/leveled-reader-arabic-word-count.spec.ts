@@ -12,20 +12,11 @@
 // be more; were a vowel mark taken as a break between words, there would be more than seven words.
 
 import { expect, test } from "../fixtures/bloomTest";
+import { pasteTextInGroup } from "../helpers/bookMaking";
 import {
-    addPage,
-    getContentPages,
-    goToPage,
-    makeBookFromTemplate,
-    pasteTextInGroup,
-} from "../helpers/bookMaking";
-import {
-    expandReaderTool,
-    makeBookLeveled,
-    waitForLevelToBeRecordedInTheBook,
-    waitForReaderToolToRestore,
+    leveledReaderStat,
+    makeLeveledBookWithTextPage,
 } from "../helpers/readerTools";
-import { enableToolForBook, toolboxFrame } from "../helpers/toolbox";
 
 test.use({
     collectionSpec: {
@@ -47,39 +38,27 @@ const ARABIC_SAMPLE =
 test("the Leveled Reader counts 7 words, 2.3 per sentence, in the Arabic sample (Test Case ID 461)", async ({
     page,
 }) => {
-    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
-    await addPage(page, "Just Text");
-    const [textPage] = await getContentPages(page);
-    // Before enableToolForBook, which goes back into the book, so the page comes up with the book
-    // already leveled (see makeBookLeveled).
-    await makeBookLeveled(page);
-    await enableToolForBook(page, bookFolder, "leveledReader");
-    await goToPage(page, textPage.id);
-    await expandReaderTool(page, "leveledReader");
-    await waitForReaderToolToRestore(page, "leveledReader", bookFolder);
-    // Pasting while Bloom reloads the page for the level would be lost.
-    await waitForLevelToBeRecordedInTheBook(page, bookFolder);
+    await makeLeveledBookWithTextPage(page);
 
     await pasteTextInGroup(page, GROUP, LANG, ARABIC_SAMPLE);
 
-    const toolbox = toolboxFrame(page);
     // The page's count is updated after the paste by the tool's markup pass, so wait for it.
     await expect(
-        toolbox.getByTestId("leveled-reader-words-this-page"),
+        leveledReaderStat(page, "words-this-page"),
         "The Leveled Reader should count 7 words on the page of Arabic text.",
     ).toHaveText("7", { timeout: 15000 });
     await expect(
-        toolbox.getByTestId("leveled-reader-sentences-this-page"),
+        leveledReaderStat(page, "sentences-this-page"),
         "The Leveled Reader should count 3 sentences on the page: one ending in the Arabic full " +
             "stop, one in the Arabic question mark, and one in a full stop.",
     ).toHaveText("3");
     // The only page with text, so the book's figures are the page's.
     await expect(
-        toolbox.getByTestId("leveled-reader-words-in-book"),
+        leveledReaderStat(page, "words-in-book"),
         "The Leveled Reader should count 7 words in the book.",
     ).toHaveText("7");
     await expect(
-        toolbox.getByTestId("leveled-reader-average-words-per-sentence"),
+        leveledReaderStat(page, "average-words-per-sentence"),
         "The Leveled Reader should report an average of 2.3 words per sentence (7 in 3).",
     ).toHaveText("2.3");
 });

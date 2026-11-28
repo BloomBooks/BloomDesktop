@@ -151,6 +151,50 @@ export async function clickPaletteSwatch(
     await swatches.nth(index).click();
 }
 
+/** Whether the open color picker shows its alpha slider, which it leaves out where transparency is not offered. */
+export async function hasAlphaSlider(frame: Frame): Promise<boolean> {
+    return (
+        (await colorPicker(frame).locator(".alpha-slider-track").count()) > 0
+    );
+}
+
+/**
+ * How opaque each swatch of the open color picker's palette is, from 0 (the transparent swatch) to
+ * 1, in palette order. A gradient swatch is as opaque as its least opaque stop.
+ */
+export async function getPaletteSwatchOpacities(
+    frame: Frame,
+): Promise<number[]> {
+    const swatches = colorPicker(frame).locator(
+        ".swatch-section .color-swatch > div:last-child",
+    );
+    await swatches.first().waitFor({ state: "visible", timeout: 15000 });
+    const backgrounds = await swatches.evaluateAll((elements) =>
+        elements.map((e) => {
+            const style = getComputedStyle(e);
+            return {
+                color: style.backgroundColor,
+                image: style.backgroundImage,
+            };
+        }),
+    );
+    return backgrounds.map((b) => {
+        if (b.image === "none") return parseCssRgba(b.color).a;
+        // The browser reports a gradient's stops as rgb() or rgba() colors.
+        const stops = b.image.match(/rgba?\([^)]*\)/g);
+        if (!stops)
+            throw new Error(
+                `A palette swatch has a background image with no colors this helper reads: ${b.image}`,
+            );
+        return Math.min(...stops.map((stop) => parseCssRgba(stop).a));
+    });
+}
+
+/** The open color picker's hex box. */
+export function hexBox(frame: Frame): Locator {
+    return colorPicker(frame).locator('input[type="text"]');
+}
+
 /** Click a point of a control, given in percent of its width and height. */
 async function clickAtPercent(
     control: Locator,

@@ -474,6 +474,7 @@ export const LeveledReaderStats: FunctionComponent<{
                     l10nKeySuffix="TotalInBook"
                     maxNum={model.maxSentencesPerBook()} // this function seems to always return 0, even if all of the level maximums in the leveled reader setup are checked and given values
                     actualNum={props.bookStats["actualSentenceCount"]}
+                    actualTestId="leveled-reader-sentences-in-book"
                 >
                     total in book
                 </StatsRow>

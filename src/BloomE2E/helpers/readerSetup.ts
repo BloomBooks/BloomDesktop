@@ -20,7 +20,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Page } from "@playwright/test";
 import { apiGetJson, apiPost, getUiString } from "./api";
-import { waitForEditablePage } from "./bookMaking";
+import { makeBookFromTemplate, waitForEditablePage } from "./bookMaking";
 import { expandTool, toolboxFrame } from "./toolbox";
 import { switchTab } from "./workspace";
 
@@ -80,6 +80,27 @@ export interface IReaderSettings {
     /** 1 when stages are defined by allowed-word lists rather than by letters. */
     useAllowedWords?: number;
     stages: IReaderStage[];
+    /** The Leveled Reader's levels. */
+    levels?: IReaderLevel[];
+}
+
+/**
+ * One level as the collection's reader settings file stores it. Each maximum is 0 when the level
+ * sets none, which is what the setup dialog saves for a maximum whose check box is off.
+ */
+export interface IReaderLevel {
+    name: string;
+    thingsToRemember: string[];
+    maxGlyphsPerWord: number;
+    maxAverageGlyphsPerWord: number;
+    maxWordsPerSentence: number;
+    maxAverageWordsPerSentence: number;
+    maxWordsPerPage: number;
+    maxAverageWordsPerPage: number;
+    maxWordsPerBook: number;
+    maxUniqueWordsPerBook: number;
+    maxSentencesPerPage: number;
+    maxAverageSentencesPerPage: number;
 }
 
 /**
@@ -656,6 +677,20 @@ export async function useKnownReaderStages(page: Page): Promise<void> {
 }
 
 /**
+ * Make a new Basic Book with the Decodable Reader tool turned on and the book marked decodable,
+ * give the collection the known stages of useKnownReaderStages, and return the book's folder.
+ * This is SETUP, not a path under test.
+ */
+export async function makeDecodableBookWithKnownStages(
+    page: Page,
+): Promise<string> {
+    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
+    await enableDecodableReaderTool(page);
+    await useKnownReaderStages(page);
+    return bookFolder;
+}
+
+/**
  * Replace a setup-dialog text box's contents. The boxes are React-controlled and also commit on
  * blur, so this clears, types, and then blurs, rather than setting the value behind React's
  * back.
@@ -732,4 +767,177 @@ export async function openLeveledReaderSetupTab(
  */
 export async function clickLeveledSetupHelp(page: Page): Promise<void> {
     await page.locator(".ui-dialog-buttonpane button.left-button").click();
+}
+
+/**
+ * Press the legacy Leveled Reader setup dialog's OK button, and wait until the dialog is gone.
+ * jQuery UI puts the buttons in a pane outside the dialog's frame, and none carries an id or a
+ * class of its own, so OK is found by its label in the UI language (Common.OK). The dialog
+ * closes before Bloom has finished saving; read the settings with expect.poll afterwards.
+ */
+export async function acceptLeveledReaderSetup(page: Page): Promise<void> {
+    const label = await getUiString(page, "Common.OK", "OK");
+    await page
+        .locator(".ui-dialog-buttonpane")
+        .getByRole("button", { name: label, exact: true })
+        .click();
+    await page
+        .locator(LEGACY_SETUP_DIALOG)
+        .waitFor({ state: "detached", timeout: 30000 });
+}
+
+/**
+ * The maximums the Reader Levels tab offers for a level, by the name its check box and text box
+ * share: the check box's id is "use-" and the text box's "max-" followed by this name, and each
+ * cell of the level list that shows the maximum has it as a class.
+ */
+export type LevelMaximum =
+    | "glyphs-per-word"
+    | "average-glyphs-per-word"
+    | "words-per-sentence"
+    | "average-words-per-sentence"
+    | "words-per-page"
+    | "average-words-per-page"
+    | "words-per-book"
+    | "unique-words-per-book"
+    | "sentences-per-page"
+    | "average-sentences-per-page";
+
+export const LEVEL_MAXIMUMS: LevelMaximum[] = [
+    "glyphs-per-word",
+    "average-glyphs-per-word",
+    "words-per-sentence",
+    "average-words-per-sentence",
+    "words-per-page",
+    "average-words-per-page",
+    "words-per-book",
+    "unique-words-per-book",
+    "sentences-per-page",
+    "average-sentences-per-page",
+];
+
+/**
+ * Turn one maximum of the selected level on with this value, or off (null), in the Reader Levels
+ * tab of the legacy Leveled Reader setup dialog, as a person does. Turning one on ticks its check
+ * box and types the number; turning one off only unticks the box, leaving any number in it
+ * (deleteLevelMaximumNumber deletes the number first, as some people do).
+ * The keys are pressed rather than the value filled in, because the dialog copies a typed number
+ * into the level list on keyup, and saves from the list.
+ */
+export async function setLevelMaximum(
+    page: Page,
+    maximum: LevelMaximum,
+    value: number | null,
+): Promise<void> {
+    const frame = page.frameLocator(LEGACY_SETUP_DIALOG);
+    const checkBox = frame.locator(`#use-${maximum}`);
+    const textBox = frame.locator(`#max-${maximum}`);
+    if (value === null) {
+        await checkBox.uncheck();
+        await expect(
+            textBox,
+            `Unticking "${maximum}" did not disable its box.`,
+        ).toBeDisabled();
+        return;
+    }
+    await checkBox.check();
+    await expect(
+        textBox,
+        `Ticking "${maximum}" did not enable its box.`,
+    ).toBeEnabled();
+    await textBox.click();
+    await textBox.press("Control+A");
+    await textBox.press("Backspace");
+    await textBox.pressSequentially(value.toString());
+    await expect(
+        textBox,
+        `The "${maximum}" box did not take the number typed into it.`,
+    ).toHaveValue(value.toString());
+}
+
+/**
+ * Delete the number in one ticked maximum's text box with the keyboard, leaving the box ticked, in
+ * the Reader Levels tab of the legacy Leveled Reader setup dialog.
+ */
+export async function deleteLevelMaximumNumber(
+    page: Page,
+    maximum: LevelMaximum,
+): Promise<void> {
+    const textBox = page
+        .frameLocator(LEGACY_SETUP_DIALOG)
+        .locator(`#max-${maximum}`);
+    await textBox.click();
+    await textBox.press("Control+A");
+    await textBox.press("Backspace");
+    await expect(
+        textBox,
+        `Deleting the number of "${maximum}" left text in its box.`,
+    ).toHaveValue("");
+}
+
+/** What the Reader Levels tab shows for one maximum of the selected level. */
+export interface IShownLevelMaximum {
+    checked: boolean;
+    enabled: boolean;
+    value: string;
+}
+
+/**
+ * Every maximum the Reader Levels tab shows for the selected level, as its check box and text
+ * box show it.
+ */
+export async function getShownLevelMaximums(
+    page: Page,
+): Promise<Record<LevelMaximum, IShownLevelMaximum>> {
+    const frame = page.frameLocator(LEGACY_SETUP_DIALOG);
+    const shown = {} as Record<LevelMaximum, IShownLevelMaximum>;
+    for (const maximum of LEVEL_MAXIMUMS) {
+        const textBox = frame.locator(`#max-${maximum}`);
+        shown[maximum] = {
+            checked: await frame.locator(`#use-${maximum}`).isChecked(),
+            enabled: await textBox.isEnabled(),
+            value: await textBox.inputValue(),
+        };
+    }
+    return shown;
+}
+
+/**
+ * Every maximum the level list down the left of the Reader Levels tab shows for one level (the
+ * first is 0): the number its cell shows, or "" for none. (A main cell shows "-" for none, and a
+ * cell in parentheses beside it shows nothing.)
+ */
+export async function getLevelListMaximums(
+    page: Page,
+    levelIndex: number,
+): Promise<Record<LevelMaximum, string>> {
+    const row = page
+        .frameLocator(LEGACY_SETUP_DIALOG)
+        .locator("#levels-table tbody tr")
+        .nth(levelIndex);
+    const shown = {} as Record<LevelMaximum, string>;
+    for (const maximum of LEVEL_MAXIMUMS) {
+        const text = (
+            (await row.locator(`span.${maximum}`).textContent()) ?? ""
+        ).trim();
+        shown[maximum] = text === "-" ? "" : text;
+    }
+    return shown;
+}
+
+/**
+ * Open the legacy Leveled Reader setup dialog on its Reader Levels tab, and wait until the tab has
+ * selected the first level, which it does a moment after it shows. Until then the check boxes and
+ * text boxes do not show that level's maximums.
+ */
+export async function openLeveledReaderLevels(page: Page): Promise<void> {
+    await openLeveledReaderSetup(page);
+    await openLeveledReaderSetupTab(page, "readerLevels");
+    await expect(
+        page
+            .frameLocator(LEGACY_SETUP_DIALOG)
+            .locator("#levels-table tbody tr")
+            .first(),
+        "The Reader Levels tab never selected its first level.",
+    ).toHaveClass(/\bselected\b/, { timeout: 30000 });
 }
