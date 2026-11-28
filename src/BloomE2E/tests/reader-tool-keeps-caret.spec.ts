@@ -26,6 +26,7 @@ import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
     clickInGroup,
+    getCaretOffset,
     getContentPages,
     goToPage,
     makeBookFromTemplate,
@@ -52,23 +53,6 @@ async function waitForWordsOnPage(page: Page, count: number, why: string) {
         toolboxFrame(page).getByTestId("leveled-reader-words-this-page"),
         `The Leveled Reader never counted ${count} words on the page ${why}.`,
     ).toHaveText(String(count), { timeout: 15000 });
-}
-
-/** How many characters of the box's text come before the caret; -1 if the caret is not in it. */
-async function getCaretOffset(box: Locator): Promise<number> {
-    return box.evaluate((element) => {
-        const selection = element.ownerDocument.getSelection();
-        if (
-            !selection ||
-            selection.rangeCount === 0 ||
-            !element.contains(selection.focusNode)
-        )
-            return -1;
-        const range = element.ownerDocument.createRange();
-        range.selectNodeContents(element);
-        range.setEnd(selection.focusNode!, selection.focusOffset);
-        return range.toString().length;
-    });
 }
 
 /**
