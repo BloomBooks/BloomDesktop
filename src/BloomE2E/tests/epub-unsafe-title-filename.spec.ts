@@ -210,23 +210,28 @@ test("An ePUB of a book with an unsafe title gets a safe file name and keeps the
             ).toBe(true);
             // Bloom answers the save request before Save As opens, and writes the file after it
             // closes. A zip's central directory is the last thing written, so the file is whole
-            // once readZip can read it.
+            // once readZip can read it. The last read's error is kept, so that a timeout says
+            // whether the file never came or never became a whole zip.
+            let lastReadError = "";
             await expect
                 .poll(
                     () => {
                         try {
                             entries = readZip(fs.readFileSync(savedPath));
                             return true;
-                        } catch {
+                        } catch (error) {
+                            lastReadError = String(error);
                             return false;
                         }
                     },
-                    {
-                        timeout: 120000,
-                        message: `Bloom should have saved a whole zip to ${savedPath}`,
-                    },
+                    { timeout: 120000 },
                 )
-                .toBe(true);
+                .toBe(true)
+                .catch(() => {
+                    throw new Error(
+                        `Bloom should have saved a whole zip to ${savedPath}. The last read failed: ${lastReadError}`,
+                    );
+                });
             await closePublishProgressDialog(page, "ePUB");
         },
     );
