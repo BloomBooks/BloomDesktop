@@ -308,6 +308,63 @@ export async function getLatestUploadBaseUrl(
     return bucketUrl + encodeURIComponent(bookFolders[0]);
 }
 
+/** Undo the five XML escapes S3 uses in a listing. */
+function unescapeXml(text: string): string {
+    return text
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&amp;/g, "&");
+}
+
+/**
+ * Every file an upload wrote, as paths inside its book folder (e.g. "audio/x.mp3"), read by listing
+ * the sandbox's public bucket. `baseUrl` is the upload's folder in the form Bloom writes it, such as
+ * getLatestUploadBaseUrl returns. S3 lists at most 1000 keys per answer, so this follows the
+ * continuation tokens until the listing is complete.
+ */
+export async function listUploadedBookFiles(
+    baseUrl: string,
+): Promise<string[]> {
+    const match = /^(https:\/\/s3\.amazonaws\.com\/[^/]+\/)(.+)$/.exec(
+        decodeBaseUrl(baseUrl),
+    );
+    if (!match) throw new Error(`The baseUrl is not on S3: ${baseUrl}`);
+    const [, bucketUrl, folder] = match;
+    const prefix = folder.endsWith("/") ? folder : `${folder}/`;
+    const files: string[] = [];
+    let continuationToken: string | undefined;
+    do {
+        const url =
+            `${bucketUrl}?list-type=2&prefix=${encodeURIComponent(prefix)}` +
+            (continuationToken
+                ? `&continuation-token=${encodeURIComponent(continuationToken)}`
+                : "");
+        const response = await fetch(url);
+        if (!response.ok)
+            throw new Error(`S3 answered ${response.status} to listing ${url}`);
+        const listing = await response.text();
+        for (const [, key] of listing.matchAll(/<Key>([^<]+)<\/Key>/g))
+            files.push(unescapeXml(key).substring(prefix.length));
+        continuationToken = /<IsTruncated>true<\/IsTruncated>/.test(listing)
+            ? unescapeXml(
+                  /<NextContinuationToken>([^<]+)<\/NextContinuationToken>/.exec(
+                      listing,
+                  )?.[1] ?? "",
+              ) || undefined
+            : undefined;
+        if (
+            /<IsTruncated>true<\/IsTruncated>/.test(listing) &&
+            !continuationToken
+        )
+            throw new Error(
+                `S3's listing of ${url} is truncated but gives no continuation token.`,
+            );
+    } while (continuationToken);
+    return files;
+}
+
 /**
  * The front/back matter pack the uploaded copy of a book carries (see xmatterPackInBookHtml): how
  * a test sees that an upload sent the book with the collection's current pack.
