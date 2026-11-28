@@ -39,7 +39,7 @@ import {
     goToPage,
     makeBookFromTemplate,
     typeInGroup,
-    waitForEditablePage,
+    waitForEditTabSettled,
 } from "../helpers/bookMaking";
 import { selectBook } from "../helpers/collection";
 import { setCopyrightHolder } from "../helpers/copyrightAndLicense";
@@ -202,7 +202,7 @@ test.describe("re-uploading a large book to dev.bloomlibrary.org", () => {
         // Bloom drops a page add made before the Edit tab finishes loading (AUTOMATION-DEBT.md, "The
         // Edit tab silently drops a jump to a page while it is loading"), and this is the first
         // visit to Edit since the restart, with a page of 1100 sentences to load.
-        await waitForEditablePage(page, 180000);
+        await waitForEditTabSettled(page, 180000);
         const contentPagesBefore = (await getContentPages(page)).map(
             (p) => p.id,
         );
