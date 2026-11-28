@@ -93,9 +93,12 @@ test("sorting by frequency orders a stage's words by how often the sample texts 
 
     await test.step("type words into the book, which must not count", async () => {
         await addPage(page, "Just Text");
-        const [textPage] = await getContentPages(page);
+        await addPage(page, "Just Text");
+        const [textPage, nextPage] = await getContentPages(page);
         await goToPage(page, textPage.id);
         await typeInGroup(page, ".bloom-translationGroup", "en", kBookText);
+        // Leaving the page saves it, so that the text is in the book, not only in the editor.
+        await goToPage(page, nextPage.id);
     });
 
     await test.step("put two sample texts in the folder and type a word on the Sample Words tab", async () => {
