@@ -169,10 +169,14 @@ export async function makePhotoLikePng(
 
 /**
  * How two encoded pictures (PNG or JPEG bytes) compare once decoded: the size of each, and, when
- * the sizes match, the mean difference of their red, green and blue channels over every pixel (0
- * for the same colours, up to 255) and the largest difference of opacity at any pixel (0 to 255).
- * A picture re-encoded as a high-quality JPEG differs from its source by a few levels of colour; a
- * different picture by tens.
+ * the sizes match:
+ * - `meanColorDifference`: the mean difference of their red, green and blue channels over every
+ *   pixel (0 for the same colours, up to 255);
+ * - `largestBlockColorDifference`: the largest difference, in any channel, between the average
+ *   colours of the same 8x8 block of pixels in the two (0 to 255). A JPEG keeps each block's
+ *   average colour closely, so a high-quality JPEG of a picture differs from it here by about one
+ *   level, while the same picture moved by a pixel, with sharp edges in it, differs by tens;
+ * - `maxOpacityDifference`: the largest difference of opacity at any pixel (0 to 255).
  */
 export async function compareEncodedPictures(
     page: Page,
@@ -182,6 +186,7 @@ export async function compareEncodedPictures(
     firstSize: { width: number; height: number };
     secondSize: { width: number; height: number };
     meanColorDifference: number | undefined;
+    largestBlockColorDifference: number | undefined;
     maxOpacityDifference: number | undefined;
 }> {
     return page.evaluate(
@@ -200,6 +205,7 @@ export async function compareEncodedPictures(
             const a = await decode(first);
             const b = await decode(second);
             let meanColorDifference: number | undefined;
+            let largestBlockColorDifference: number | undefined;
             let maxOpacityDifference: number | undefined;
             if (a.width === b.width && a.height === b.height) {
                 let total = 0;
@@ -213,11 +219,28 @@ export async function compareEncodedPictures(
                     );
                 }
                 meanColorDifference = total / ((a.data.length / 4) * 3);
+                const block = 8;
+                largestBlockColorDifference = 0;
+                for (let top = 0; top + block <= a.height; top += block)
+                    for (let left = 0; left + block <= a.width; left += block)
+                        for (let c = 0; c < 3; c++) {
+                            let sum = 0;
+                            for (let y = top; y < top + block; y++)
+                                for (let x = left; x < left + block; x++) {
+                                    const i = (y * a.width + x) * 4 + c;
+                                    sum += a.data[i] - b.data[i];
+                                }
+                            largestBlockColorDifference = Math.max(
+                                largestBlockColorDifference,
+                                Math.abs(sum) / (block * block),
+                            );
+                        }
             }
             return {
                 firstSize: { width: a.width, height: a.height },
                 secondSize: { width: b.width, height: b.height },
                 meanColorDifference,
+                largestBlockColorDifference,
                 maxOpacityDifference,
             };
         },

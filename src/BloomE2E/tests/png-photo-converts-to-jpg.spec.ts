@@ -46,11 +46,11 @@ const BOOK_TITLE = "TC266 PNG Photo";
 // Small enough that Bloom shrinks it nowhere, so each JPEG made of it has its size in pixels.
 const PHOTO_SIZE = { width: 640, height: 480 };
 
-// A JPEG of the photo at Bloom's quality (92) differs from it by about three and a half levels a
-// channel. The photo's sharp-edged squares make anything else differ by more: a crop of 2 pixels
-// at the left and 1 at the top, scaled back to the photo's size, by about 6; a crop of 12 and 9
-// pixels by about 14; a different picture by tens.
-const MAX_MEAN_COLOR_DIFFERENCE = 5;
+// How far the average colour of any 8x8 block of a JPEG of the photo may be from the PNG's. At
+// Bloom's quality (92) it is about one level. The photo's sharp-edged squares make anything else
+// differ by far more: cropped by one pixel at the left or the top and scaled back to the photo's
+// size, by about 18; a different picture by tens.
+const MAX_BLOCK_COLOR_DIFFERENCE = 4;
 
 const PNG_SIGNATURE = "89504e470d0a1a0a";
 const JPEG_SIGNATURE = "ffd8ff";
@@ -79,9 +79,10 @@ async function expectJpegOfPhoto(
         `${what} should have the photo's size in pixels`,
     ).toEqual(comparison.secondSize);
     expect(
-        comparison.meanColorDifference!,
-        `${what} should show the photo: its colours should differ from the PNG's by no more than a JPEG's error`,
-    ).toBeLessThanOrEqual(MAX_MEAN_COLOR_DIFFERENCE);
+        comparison.largestBlockColorDifference!,
+        `${what} should show the photo, not moved or cropped: the average colour of each 8x8 ` +
+            `block should differ from the PNG's by no more than a JPEG's error`,
+    ).toBeLessThanOrEqual(MAX_BLOCK_COLOR_DIFFERENCE);
     expect(
         comparison.maxOpacityDifference,
         `${what} should be opaque everywhere, as the photo is`,
