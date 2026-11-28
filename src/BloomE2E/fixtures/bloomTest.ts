@@ -42,6 +42,7 @@ import {
     type StepFunction,
 } from "../helpers/caption";
 import { applyRequestedViewport } from "./viewport";
+import { apiGet } from "../helpers/api";
 
 /** What every launched Bloom gives a test, whichever mode it started in. */
 interface IBloomAppBase {
@@ -326,11 +327,8 @@ async function findShellPage(
                 .catch(() => false);
             if (!hasTopBar) continue;
             if (!markerOnlyMatch) markerOnlyMatch = page;
-            const drivenUrl = await page
-                .evaluate(async (endpoint) => {
-                    const response = await fetch(`/bloom/api/${endpoint}`);
-                    return response.ok ? await response.text() : "";
-                }, SHELL_URL_ENDPOINT)
+            const drivenUrl = await apiGet(page, SHELL_URL_ENDPOINT)
+                .then((answer) => answer.body)
                 .catch(() => "");
             if (!drivenUrl) continue;
             hookEverAnswered = true;

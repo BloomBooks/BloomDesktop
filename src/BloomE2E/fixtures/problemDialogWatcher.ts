@@ -20,6 +20,7 @@
 // test until its timeout, and the failure would say "timed out" instead of naming the exception.
 
 import type { Browser, Page } from "@playwright/test";
+import { apiPost } from "../helpers/api";
 
 /** One problem Bloom reported while a test was running. */
 export interface IBloomProblem {
@@ -122,19 +123,9 @@ async function gatherProblemDetail(
 
 /**
  * Close the dialog the same way its own Close button does. This does NOT submit the report.
- * The API call goes through the page so the Host header is "localhost" (see helpers/api.ts).
  */
 async function closeProblemDialog(page: Page): Promise<void> {
-    const status = await page.evaluate(async () => {
-        const response = await fetch("/bloom/api/common/closeReactDialog", {
-            method: "POST",
-        });
-        return response.status;
-    });
-    if (status >= 400)
-        throw new Error(
-            `Could not close Bloom's problem dialog: common/closeReactDialog returned ${status}.`,
-        );
+    await apiPost(page, "common/closeReactDialog", undefined, undefined, 30000);
 }
 
 /**
