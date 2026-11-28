@@ -1,6 +1,6 @@
 // The Edit tab's toolbox, and the Talking Book tool inside it: opening them, reading the sentences
 // the tool marks, reading the colors the tool highlights the current segment with, and getting
-// narration onto a page.
+// narration onto a page and playing it back with the tool's Check button.
 //
 // While the tool is open it highlights the segment that the next recording would go into. In the
 // Edit tab that highlight is a CSS ::highlight() pseudo-element that the tool registers in the page
@@ -791,4 +791,156 @@ export async function waitForNarrationSentencesToCover(
             },
         )
         .toBe(text);
+}
+
+/** One narration the toolbox's player played to its end. */
+export interface INarrationPlay {
+    /** The base name of the file it played, which is the id of the text it narrates. */
+    file: string;
+    /** The length of the audio, in seconds. */
+    duration: number;
+}
+
+/**
+ * Press the tool's Check button, which plays the narration of the current segment or text box,
+ * and wait until playback is over. Returns every narration the player played to its end meanwhile.
+ *
+ * Waits first for Check to be enabled: the tool enables it only once Bloom has answered that the
+ * current segment has a recording, so a click made before then does nothing.
+ */
+export async function playCurrentNarration(
+    page: Page,
+): Promise<INarrationPlay[]> {
+    const button = checkButton(page);
+    await expect(
+        button,
+        "The Talking Book tool's Check button never became enabled, so the current segment has no recording that Bloom knows of.",
+    ).toBeEnabled({ timeout: 30000 });
+
+    await recordPlays(page);
+    await button.locator("img").click();
+
+    // Over means at least one narration played to its end, and the button is back to Check: it
+    // shows a play picture again, not the pause picture it shows while anything is playing. Read
+    // the plays only then, so that one still playing is not missed. The poll returns what it saw,
+    // so that a failure shows whether nothing played to its end or the button did not come back.
+    await expect
+        .poll(
+            async () => {
+                const plays = await getPlays(page);
+                const checkPictures = await button
+                    .locator("img")
+                    .evaluateAll((imgs) =>
+                        imgs.map((img) => img.getAttribute("src") ?? ""),
+                    );
+                return {
+                    over:
+                        plays.length > 0 &&
+                        checkPictures.length === 1 &&
+                        /\/play_(enabled|expected)\.svg$/.test(
+                            checkPictures[0],
+                        ),
+                    playedToTheEnd: plays,
+                    checkPictures,
+                };
+            },
+            {
+                timeout: 60000,
+                message:
+                    "Check never finished playing a narration: either none played to its end (playedToTheEnd), or the button did not go back to one Check button showing a play picture (checkPictures).",
+            },
+        )
+        .toMatchObject({ over: true });
+    return await getPlays(page);
+}
+
+/**
+ * The length, in seconds, of the audio in an mp3 file, as the toolbox's browser decodes it. For
+ * telling apart which of several files a narration play came from.
+ */
+export async function measureMp3Duration(
+    page: Page,
+    mp3Path: string,
+): Promise<number> {
+    const base64 = fs.readFileSync(Path.resolve(mp3Path)).toString("base64");
+    return await toolboxFrame(page).evaluate(async (data) => {
+        const audio = new Audio(`data:audio/mpeg;base64,${data}`);
+        await new Promise<void>((resolve, reject) => {
+            audio.addEventListener("loadedmetadata", () => resolve());
+            audio.addEventListener("error", () =>
+                reject(new Error("The browser could not read the mp3.")),
+            );
+        });
+        return audio.duration;
+    }, base64);
+}
+
+/**
+ * The tool's Check button. It has no id and its label is localized, so it is found by its picture,
+ * which changes with its state (play_enabled, play_expected, and pause_yellow while playing). The
+ * button itself ignores the pointer; its picture takes the click.
+ */
+function checkButton(page: Page): Locator {
+    return toolboxFrame(page).locator(
+        ["play_enabled.svg", "play_expected.svg", "pause_yellow.svg"]
+            .map((p) => `button:has(img[src$="/${p}"])`)
+            .join(", "),
+    );
+}
+
+/**
+ * Have the player note every narration it plays to its end, so that getPlays can read them back.
+ * Starts the notes afresh. The player may be in any frame, so every frame listens.
+ */
+async function recordPlays(page: Page): Promise<void> {
+    for (const frame of page.frames()) {
+        await frame.evaluate(() => {
+            interface IWindowWithPlays {
+                e2eEndedPlays?: { url: string; duration: number }[];
+                e2eListeningForPlays?: boolean;
+            }
+            const w = window as unknown as IWindowWithPlays;
+            w.e2eEndedPlays = [];
+            if (w.e2eListeningForPlays) return;
+            w.e2eListeningForPlays = true;
+            // "ended" does not bubble, so listen while it is on its way down to the player.
+            document.addEventListener(
+                "ended",
+                (event) => {
+                    const media = event.target as HTMLMediaElement;
+                    w.e2eEndedPlays?.push({
+                        url: media.currentSrc || media.src,
+                        duration: media.duration,
+                    });
+                },
+                true,
+            );
+        });
+    }
+}
+
+/** The narrations that recordPlays noted as played to their end. */
+async function getPlays(page: Page): Promise<INarrationPlay[]> {
+    const plays: INarrationPlay[] = [];
+    for (const frame of page.frames()) {
+        const inFrame = await frame.evaluate(
+            () =>
+                (
+                    window as unknown as {
+                        e2eEndedPlays?: { url: string; duration: number }[];
+                    }
+                ).e2eEndedPlays ?? [],
+        );
+        for (const { url, duration } of inFrame) {
+            // The tool plays a narration through Bloom's audio/wavFile API, which names the file
+            // in its `id` parameter.
+            const parsed = new URL(url);
+            const path = decodeURIComponent(
+                parsed.searchParams.get("id") ?? parsed.pathname,
+            );
+            const file = path.split(/[\/]/).pop() ?? path;
+            plays.push({ file: file.replace(/\.[^.]*$/, ""), duration });
+        }
+    }
+    return plays;
 }
