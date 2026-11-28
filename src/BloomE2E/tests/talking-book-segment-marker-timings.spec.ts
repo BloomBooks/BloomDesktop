@@ -191,6 +191,10 @@ test("segment markers added after timing split the recording at them and at its 
                     `In the dialog, section ${i + 2} should start where section ${i + 1} ends.`,
                 ).toBeCloseTo(regions[i].end, 3);
             });
+            expect(
+                regions[regions.length - 1].end,
+                "In the dialog, the last section should run to the end of the recording.",
+            ).toBeCloseTo(1, 3);
             return ends;
         },
     );
@@ -226,10 +230,12 @@ test("segment markers added after timing split the recording at them and at its 
                     `OK should save the end of section ${i + 1} that the dialog showed.`,
                 ).toBeCloseTo(shownEnds[i], 1);
             });
+            // The decoder Bloom saves the length from and the one this test measured with can
+            // differ by a few hundredths of a second.
             const last = endTimes[endTimes.length - 1];
             expect(
-                last >= pauses[pauses.length - 1].end && last <= duration + 0.1,
-                `The last section should end at the end of the recording, after the last pause; data-audiorecordingendtimes is "${saved.endTimes}", and ${describePauses()}.`,
+                Math.abs(last - duration) <= 0.1,
+                `The last section should end at the end of the ${duration.toFixed(2)} s recording; data-audiorecordingendtimes is "${saved.endTimes}".`,
             ).toBe(true);
         },
     );

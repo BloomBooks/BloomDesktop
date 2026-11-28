@@ -778,7 +778,7 @@ export interface IAdjustTimingsRegion {
 export async function readAdjustTimingsRegions(
     dialog: Locator,
 ): Promise<IAdjustTimingsRegion[]> {
-    return dialog.locator("#waveform").evaluate(async (waveform) => {
+    return dialog.locator("#waveform").evaluate((waveform) => {
         const root = (waveform.firstElementChild as HTMLElement | null)
             ?.shadowRoot;
         const scroller = root?.querySelector<HTMLElement>('[part~="scroll"]');
@@ -787,8 +787,6 @@ export async function readAdjustTimingsRegions(
                 "The Adjust Timings dialog's waveform has no scrolling area to read its sections from.",
             );
         const found = new Map<string, IAdjustTimingsRegion>();
-        const frame = () =>
-            new Promise((resolve) => requestAnimationFrame(resolve));
         const collect = () => {
             root.querySelectorAll<HTMLElement>('[part~="region"]').forEach(
                 (region) => {
@@ -804,12 +802,13 @@ export async function readAdjustTimingsRegions(
                 },
             );
         };
+        // The regions plugin adds and removes the regions' elements inside wavesurfer's own
+        // handler of the scroll event, so each dispatch below has updated them by the time it
+        // returns.
         const step = Math.max(1, Math.floor(scroller.clientWidth / 2));
         for (let x = 0; ; x += step) {
             scroller.scrollLeft = x;
             scroller.dispatchEvent(new Event("scroll"));
-            await frame();
-            await frame();
             collect();
             if (x >= scroller.scrollWidth - scroller.clientWidth) break;
         }
