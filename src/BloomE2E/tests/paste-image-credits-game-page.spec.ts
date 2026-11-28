@@ -12,11 +12,13 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
+import { editablePageFrame } from "../helpers/bookMaking";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import { makeBookWithGamePage } from "../helpers/games";
 import {
     getOriginalContributions,
     goToTitlePage,
+    originalContributionsBox,
     pasteImageCredits,
 } from "../helpers/titlePage";
 
@@ -59,6 +61,42 @@ test("Paste Image Credits credits a game page's pictures once, without the Pixab
         },
     );
 
+    // Bloom credits the pictures that the pages show (ImageApi.GetWhichImagesAreUsedOnWhichPages
+    // reads the book's markup), so the game page must show the GIFs, and the button pictures on
+    // its buttons, for the check below to test how Bloom treats them.
+    const shownOnGamePage = await editablePageFrame(page)
+        .locator(".bloom-page")
+        .first()
+        .evaluate((pageElement) => {
+            const fileOf = (img: Element) =>
+                decodeURIComponent(
+                    (img.getAttribute("src") ?? "").split("?")[0],
+                );
+            const all = Array.from(pageElement.querySelectorAll("img"));
+            return {
+                onButtons: all
+                    .filter((img) =>
+                        img.closest(
+                            "button.game-button, button.page-turn-button",
+                        ),
+                    )
+                    .map(fileOf),
+                elsewhere: all
+                    .filter((img) => !img.closest("button"))
+                    .map(fileOf),
+            };
+        });
+    expect(
+        GAME_BUTTON_PICTURES.filter(
+            (name) => !shownOnGamePage.onButtons.includes(name),
+        ),
+        "Sanity check: the game page should show each button picture on a game or page-turn button.",
+    ).toEqual([]);
+    expect(
+        GAME_GIFS.filter((name) => !shownOnGamePage.elsewhere.includes(name)),
+        "Sanity check: the game page should show both GIFs.",
+    ).toEqual([]);
+
     // Bloom skips a picture whose file is not in the book folder, so without these files the
     // credits would come out empty however Bloom treated the game's pictures.
     const missingFiles = [...GAME_GIFS, ...GAME_BUTTON_PICTURES].filter(
@@ -70,6 +108,7 @@ test("Paste Image Credits credits a game page's pictures once, without the Pixab
     ).toEqual([]);
 
     let credits: string[] = [];
+    let creditsMarkup = "";
     await step(
         'Go to the title page and click "Paste Image Credits"',
         async () => {
@@ -80,6 +119,7 @@ test("Paste Image Credits credits a game page's pictures once, without the Pixab
             ).toEqual([]);
             await pasteImageCredits(page);
             credits = await getOriginalContributions(page);
+            creditsMarkup = await originalContributionsBox(page).innerHTML();
         },
     );
 
@@ -102,6 +142,11 @@ test("Paste Image Credits credits a game page's pictures once, without the Pixab
                 credit,
                 "The Pixabay license should be shown without its URL.",
             ).not.toMatch(/pixabay\.com|https?:/i);
+            // Nor hidden behind a link: the box's markup must not hold it either.
+            expect(
+                creditsMarkup,
+                "The pasted credits should hold no link to Pixabay.",
+            ).not.toMatch(/<a\b|href=|pixabay\.com|https?:/i);
         },
     );
 });

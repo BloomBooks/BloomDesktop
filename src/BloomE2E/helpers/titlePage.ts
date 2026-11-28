@@ -33,8 +33,9 @@ export async function goToTitlePage(page: Page): Promise<void> {
 }
 
 /**
- * The contributions box on the title page, in the language the page shows it in. Exported for
- * pictures (saveScreenshotIfAsked); tests read it through getOriginalContributions.
+ * The contributions box on the title page, in the language the page shows it in. Tests read its
+ * text through getOriginalContributions, and its markup from here when they must check what the
+ * text hides, such as a link.
  */
 export function originalContributionsBox(page: Page): Locator {
     return editablePageFrame(page)
