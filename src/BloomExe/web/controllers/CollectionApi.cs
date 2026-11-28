@@ -430,12 +430,16 @@ namespace Bloom.web.controllers
                 false,
                 false
             );
+            // Every book button on the Collections tab asks for this as it is drawn. It only reads a
+            // folder name, so it does not wait for the main API lock: a dozen of these waiting would
+            // hold every browser connection that a dialog shown under that lock needs for its content.
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "getCurrentEditableCollectionName",
                 request =>
                 {
                     request.ReplyWithText(_collectionModel.CurrentEditableCollection.Name);
                 },
+                false,
                 false
             );
         }

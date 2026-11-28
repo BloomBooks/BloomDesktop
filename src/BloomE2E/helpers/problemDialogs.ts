@@ -4,7 +4,7 @@ import * as http from "node:http";
 import { clickBookTile } from "./collection";
 
 /** Every page of Bloom's browser but DevTools, which is where a problem dialog may show. */
-function bloomPages(page: Page): Page[] {
+export function bloomPages(page: Page): Page[] {
     const browser = page.context().browser();
     const pages = browser
         ? browser.contexts().flatMap((c) => c.pages())
