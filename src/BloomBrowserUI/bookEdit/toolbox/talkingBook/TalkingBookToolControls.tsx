@@ -426,6 +426,7 @@ export const TalkingBookToolControls: FunctionComponent<{
                     activeImgFile="/bloom/bookEdit/toolbox/talkingBook/listen_active.svg"
                     l10nKey="EditTab.Toolbox.TalkingBookTool.Listen"
                     l10nText="Listen to the whole page"
+                    data-testid="talking-book-listen"
                     onClick={() => {
                         props.audioRecorder.listenAsync();
                     }}

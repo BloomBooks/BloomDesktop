@@ -227,6 +227,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                         )
                     }
                     l10nKey="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder"
+                    data-testid="show-playback-order-switch"
                     highlightWhenChecked={true}
                 />
             </BloomTooltip>
