@@ -132,6 +132,21 @@ namespace BloomTests.MiscUI
         }
 
         [Test]
+        public void SaveAs_ArmedWithPathWithoutDrive_Throws()
+        {
+            Program.ParseStartupPortArguments(new[] { "--e2e" }, out _);
+            var path = @"\Exports\book.pdf";
+            Assert.That(Path.IsPathRooted(path), Is.True, "Sanity check: rooted, but not full.");
+            E2eDialogAnswer.SetNextPathToChoose(path);
+            Assert.Throws<ArgumentException>(() =>
+                MiscUtils.GetOutputFilePathOutsideCollectionFolder(
+                    Path.Combine(Path.GetTempPath(), "suggested.pdf"),
+                    "PDF|*.pdf"
+                )
+            );
+        }
+
+        [Test]
         public void SaveAs_ArmedWithFileThatExists_Throws()
         {
             Program.ParseStartupPortArguments(new[] { "--e2e" }, out _);

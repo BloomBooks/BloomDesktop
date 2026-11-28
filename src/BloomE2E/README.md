@@ -175,7 +175,8 @@ real bug in the code under test; read the message and fix it rather than working
   under test keeps its user settings, and what it has saved there.
 - `helpers/api.ts` — `apiGet`, `apiPost`, `apiGetJson`. These run `fetch` inside the page with a
   relative URL, which is not a style choice: Bloom's server rejects a `127.0.0.1` Host header, and
-  the CDP endpoint does not answer on `localhost`. The file explains it.
+  the CDP endpoint does not answer on `localhost`. `apiPostFromNode` posts from Node instead, for a
+  request sent while a modal dialog holds Bloom's UI thread. The file explains both.
 - `helpers/realClick.ts` — `realClick`, `realClickAt`, `realRightClick`. Book tiles, Settings, and PREVIEW ignore a
   synthetic `element.click()`. Never hand-roll `Input.dispatchMouseEvent` in a test; add the
   gesture here.

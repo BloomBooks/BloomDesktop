@@ -9,11 +9,11 @@
 
 import { execFile } from "node:child_process";
 import type { Page } from "@playwright/test";
-import { apiPost } from "./api";
+import { apiPostFromNode } from "./api";
 
-// PowerShell run before readAndCloseMessageBox's script: UI Automation with the Win32 client-side proxies, the foreground
-// helpers, and FindDialogs, which lists the Bloom's #32770 dialogs, whether UI Automation shows them
-// at the top level or inside the Bloom window that owns them.
+// PowerShell run before readAndCloseMessageBox's script: UI Automation with the Win32 client-side
+// proxies, the foreground helpers, and FindDialogs, which lists the Bloom's #32770 dialogs, whether
+// UI Automation shows them at the top level or inside the Bloom window that owns them.
 const kPrelude = `
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, UIAutomationClientsideProviders
@@ -215,19 +215,19 @@ ${kPauseBetweenScans}
 
 /**
  * Tell Bloom the path the NEXT native file, folder or Save As dialog should return, instead of
- * opening a dialog no test can dismiss. One shot: it answers a single chooser and then goes back to opening the real
- * one. Available only because Bloom is running with --e2e.
+ * opening a dialog no test can dismiss. One shot: it answers a single dialog and then goes back
+ * to opening the real one. Available only because Bloom is running with --e2e. `page` is any of
+ * Bloom's pages, for the port.
+ *
+ * It is sent from Node (apiPostFromNode), because a test may arm the next dialog while a modal
+ * message box holds Bloom's UI thread.
  */
-export async function armFileChooser(
-    page: Page,
-    filePath: string,
-): Promise<void> {
+export function armFileChooser(page: Page, filePath: string): Promise<void> {
     // Bloom unescapes a text/plain body as it would a URL (RequestInfo.UnescapeString), which
     // turns "+" into a space and "%41" into "A". So the path goes escaped, and arrives as it is.
-    await apiPost(
+    return apiPostFromNode(
         page,
         "e2e/nextFileToChoose",
         encodeURIComponent(filePath),
-        "text/plain",
     );
 }

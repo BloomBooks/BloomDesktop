@@ -19,10 +19,11 @@ async function readBloomMessageBoxes(page: Page): Promise<string[]> {
     for (const candidate of bloomPages(page)) {
         try {
             const message = await candidate.evaluate(() => {
-                // A message box's page (a temp file, ReactControl.cs) runs messageBoxBundle. Its
-                // window is the dialog's frame, so the page is the dialog: its message above
-                // its buttons.
-                if (!document.querySelector('script[src*="messageBoxBundle"]'))
+                // A message box's page (a temp file, ReactControl.cs) runs messageBoxBundle, which
+                // its title names, whether Bloom serves the built bundle or loads it from a Vite
+                // dev server. Its window is the dialog's frame, so the page is the dialog: its
+                // message above its buttons.
+                if (!document.title.includes("messageBoxBundle"))
                     return undefined;
                 const buttons = new Set(
                     Array.from(document.body.querySelectorAll("button")).map(

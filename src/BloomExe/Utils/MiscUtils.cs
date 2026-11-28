@@ -512,7 +512,7 @@ namespace Bloom.Utils
         /// <returns>The armed path.</returns>
         private static string CheckSavePathArmedForE2eTests(string path, string filter)
         {
-            if (!Path.IsPathRooted(path))
+            if (!Path.IsPathFullyQualified(path))
                 throw new ArgumentException(
                     $"The e2e test armed the Save As dialog with {path}, which is not a full path."
                 );

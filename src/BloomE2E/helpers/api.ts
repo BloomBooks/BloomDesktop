@@ -11,10 +11,13 @@
 //
 // Issuing the request from inside the page satisfies both: the page's own origin is
 // http://localhost:<httpPort>, so the Host header is right, while the Node-to-CDP link stays IPv4.
+// The exception is apiPostFromNode, for a request sent while a modal dialog holds Bloom's UI
+// thread: it uses node:http with the host "localhost", which sets the Host header Bloom wants.
 //
 // Per the UI-vs-API policy in README.md, use these for setup, navigation, and assertions. The
 // behavior a test measures is always driven through the real UI.
 
+import * as http from "node:http";
 import { expect, type Page, type Request, type Route } from "@playwright/test";
 
 /** The response of a Bloom API call: its HTTP status and its body as text. */
@@ -52,6 +55,56 @@ export async function apiPost(
 export async function apiGetJson<T>(page: Page, endpoint: string): Promise<T> {
     const response = await apiGet(page, endpoint);
     return JSON.parse(response.body) as T;
+}
+
+/**
+ * POST to a Bloom API endpoint from Node rather than through a page, and ignore the answer's
+ * body. For a request sent while a modal dialog holds Bloom's UI thread: every page of Bloom's
+ * browser shares one small pool of connections to Bloom's server, and requests waiting on that
+ * thread can fill the pool, so a request sent from a page may never leave the browser. `page` is
+ * any of Bloom's pages, for the port. `body`, when given, goes as text/plain. Rejects when Bloom answers with an error
+ * status or does not answer in 30 s.
+ */
+export function apiPostFromNode(
+    page: Page,
+    endpoint: string,
+    body?: string,
+): Promise<void> {
+    const port = Number(new URL(page.url()).port);
+    const bytes = Buffer.from(body ?? "", "utf8");
+    const headers: Record<string, string | number> = {
+        "Content-Length": bytes.length,
+    };
+    if (body !== undefined) headers["Content-Type"] = "text/plain";
+    return new Promise((resolve, reject) => {
+        const req = http.request(
+            {
+                host: "localhost",
+                port,
+                path: `/bloom/api/${endpoint}`,
+                method: "POST",
+                headers,
+                timeout: 30000,
+            },
+            (res) => {
+                res.resume();
+                res.on("end", () =>
+                    res.statusCode && res.statusCode < 400
+                        ? resolve()
+                        : reject(
+                              new Error(
+                                  `${endpoint} answered ${res.statusCode}`,
+                              ),
+                          ),
+                );
+            },
+        );
+        req.on("timeout", () =>
+            req.destroy(new Error(`${endpoint} got no answer`)),
+        );
+        req.on("error", reject);
+        req.end(bytes);
+    });
 }
 
 /**
