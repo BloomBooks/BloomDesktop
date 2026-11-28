@@ -20,7 +20,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Page } from "@playwright/test";
 import { apiGetJson, apiPost, getUiString } from "./api";
-import { waitForEditablePage } from "./bookMaking";
+import { makeBookFromTemplate, waitForEditablePage } from "./bookMaking";
 import { expandTool, toolboxFrame } from "./toolbox";
 import { switchTab } from "./workspace";
 
@@ -653,6 +653,20 @@ export async function useKnownReaderStages(page: Page): Promise<void> {
             { name: "4", letters: "l s", sightWords: "his they I" },
         ];
     });
+}
+
+/**
+ * Make a new Basic Book with the Decodable Reader tool turned on and the book marked decodable,
+ * give the collection the known stages of useKnownReaderStages, and return the book's folder.
+ * This is SETUP, not a path under test.
+ */
+export async function makeDecodableBookWithKnownStages(
+    page: Page,
+): Promise<string> {
+    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
+    await enableDecodableReaderTool(page);
+    await useKnownReaderStages(page);
+    return bookFolder;
 }
 
 /**

@@ -7,11 +7,9 @@
 // where the conversion's real bugs have been. (BL-16607)
 
 import { expect, test } from "../fixtures/bloomTest";
-import { makeBookFromTemplate } from "../helpers/bookMaking";
 import {
     cancelReaderSetup,
     changeSavedReaderSettings,
-    enableDecodableReaderTool,
     getMatchingWords,
     getSampleTextFiles,
     isShowingNoSampleTextsMessage,
@@ -21,7 +19,7 @@ import {
     getSavedReaderSettings,
     setSampleTexts,
     setTypedSampleWords,
-    useKnownReaderStages,
+    makeDecodableBookWithKnownStages,
 } from "../helpers/readerSetup";
 
 test.use({
@@ -31,9 +29,7 @@ test.use({
 test("builds a book with the Decodable Reader tool turned on, and known stages", async ({
     page,
 }) => {
-    await makeBookFromTemplate(page, "Basic Book");
-    await enableDecodableReaderTool(page);
-    await useKnownReaderStages(page);
+    await makeDecodableBookWithKnownStages(page);
 });
 
 // The old dialog listed files it could not read, with a reason. The React conversion dropped

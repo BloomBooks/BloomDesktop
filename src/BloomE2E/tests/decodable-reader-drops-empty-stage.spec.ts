@@ -7,15 +7,13 @@
 // the collection's settings file, and back out again on reopen. (BL-16607)
 
 import { expect, test } from "../fixtures/bloomTest";
-import { makeBookFromTemplate } from "../helpers/bookMaking";
 import {
     acceptReaderSetup,
     addStage,
-    enableDecodableReaderTool,
     getSavedReaderSettings,
     getStageCount,
     openDecodableStagesSetup,
-    useKnownReaderStages,
+    makeDecodableBookWithKnownStages,
 } from "../helpers/readerSetup";
 
 // One test per file, deliberately. Saving the reader settings leaves a second workspace-root
@@ -28,9 +26,7 @@ test.use({ collectionSpec: { name: "reader-empty-stage", languages: ["en"] } });
 test("builds a book with the Decodable Reader tool turned on, and known stages", async ({
     page,
 }) => {
-    await makeBookFromTemplate(page, "Basic Book");
-    await enableDecodableReaderTool(page);
-    await useKnownReaderStages(page);
+    await makeDecodableBookWithKnownStages(page);
 });
 
 // The dialog always offers a stage to type into, so it is easy to leave an empty one behind. The
