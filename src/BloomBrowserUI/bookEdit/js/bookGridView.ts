@@ -11,7 +11,7 @@
 // (see getPagesToShow()), and of those a page is rendered only while it is on or near the screen;
 // the rest are empty boxes of the right size.
 
-import $ from "jquery";
+import bloomQtipUtils from "./bloomQtipUtils";
 import { get, post } from "../../utils/bloomApi";
 import {
     getWorkspaceBundleExports,
@@ -276,19 +276,7 @@ function removeBookGridView(): void {
     }
     // The page is back at the top left.
     window.scrollTo(0, 0);
-    repositionBubbles();
-}
-
-// Bloom's hint and source bubbles are qTip popups, placed where their box was when they were
-// shown. Whenever the grid moves the page they must move with it, or they are left behind, and
-// hold the document open so it scrolls to empty space. Move them in one step: by default qTip
-// slides a visible bubble to its new place, which trails behind the page.
-function repositionBubbles(): void {
-    (
-        $("[data-hasqtip]") as unknown as {
-            qtip(command: string, event: undefined, effect: boolean): void;
-        }
-    ).qtip("reposition", undefined, false);
+    bloomQtipUtils.repositionBubbles();
 }
 
 // The element that zooms the page being edited, and with it the grid.
@@ -569,7 +557,9 @@ function layoutGrid(
     gridLayer.style.width = `${grid.spreadsPerRow * (grid.spreadWidth + kSpreadGap)}px`;
     gridLayer.style.height = `${lowestY + pageHeight + edgeMargin + spaceBelowGrid}px`;
     keepEditedPageInPlace();
-    repositionBubbles();
+    // The bubbles must move with the page, or they are left behind, and hold the document open so it
+    // scrolls to empty space.
+    bloomQtipUtils.repositionBubbles();
 }
 
 // The scaling container's zoom, as its transform (see setZoom() in workspaceRoot.ts).

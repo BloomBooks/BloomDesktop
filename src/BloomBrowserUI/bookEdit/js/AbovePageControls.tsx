@@ -7,6 +7,7 @@ import {
     DragActivityTabControl,
     kIdForDragActivityTabControl,
 } from "../toolbox/games/DragActivityTabControl";
+import bloomQtipUtils from "./bloomQtipUtils";
 import { CogIcon } from "./CogIcon";
 import { tryGetWorkspaceBundleExports } from "./workspaceFrames";
 
@@ -162,6 +163,9 @@ function makeControlsBar(container: HTMLElement): void {
     // it.
     document.documentElement.style.scrollPaddingTop = barHeight;
     document.body.appendChild(container);
+    // The bar covers the space above the page, and is drawn over the bubbles whatever their z-index, so
+    // a bubble on a text box near the top of the page must not reach up there.
+    bloomQtipUtils.keepBubblesInsideZoomContainer();
 }
 
 const AbovePageControls: React.FunctionComponent<IAbovePageControlsState> = (
