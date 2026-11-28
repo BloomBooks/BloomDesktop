@@ -282,8 +282,9 @@ do {
     $suggested = $found.value.Current.Value
     SetName $found $env:BLOOM_E2E_FILE
     PressAndWaitForClose $found.save { [bool](FindSaveAs) }
+    # As JSON, so that the output's trimming keeps any space at the end of the name.
     'saved'
-    $suggested
+    @{ suggested = $suggested } | ConvertTo-Json -Compress
     exit 0
   }
 ${kPauseBetweenScans}
@@ -306,7 +307,8 @@ if ($dialogs.Count) {
         timeoutMs,
     );
     const [first, ...rest] = output.split(/\r?\n/);
-    if (first === "saved") return rest.join("\n");
+    if (first === "saved")
+        return (JSON.parse(rest.join("\n")) as { suggested: string }).suggested;
     if (output === "none")
         throw new Error(
             `Bloom (process ${bloomPid}) showed no Save As dialog within ${timeoutMs} ms.`,

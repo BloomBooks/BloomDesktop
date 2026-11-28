@@ -23,11 +23,16 @@ import {
     makeBookFromTemplate,
     typeInGroup,
 } from "../helpers/bookMaking";
-import { readZip } from "../helpers/bulkBloomPub";
+import { readZip, type IArchiveEntry } from "../helpers/bulkBloomPub";
 import { findBookFolderById, readBookId } from "../helpers/collection";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
-import { getEpubPackageDublinCore } from "../helpers/epubPublish";
+import {
+    getEpubPackageDublinCore,
+    getEpubPackageSpineHrefs,
+    getEpubXhtmlText,
+} from "../helpers/epubPublish";
 import { chooseImageFile, getImagePlacement } from "../helpers/images";
+import { setUiStateViaApi } from "../helpers/uiLanguage";
 import {
     answerSaveAsDialog,
     getForegroundWindow,
@@ -81,7 +86,6 @@ function expectedSafeName(title: string): string {
 }
 
 test("An ePUB of a book with an unsafe title gets a safe file name and keeps the title [Test Case ID 394]", async ({
-    page,
     bloomApp,
     step,
 }, testInfo) => {
@@ -92,6 +96,10 @@ test("An ePUB of a book with an unsafe title gets a safe file name and keeps the
     );
     test.setTimeout(400000);
 
+    // selectPublishDestination finds the ePUB tab by its English label.
+    await setUiStateViaApi(bloomApp, "en", false);
+    // Changing the UI language can replace the shell page.
+    const page = bloomApp.page;
     const collectionDir = bloomApp.collectionDir;
     let bookId = "";
     let pictureFileName = "";
@@ -170,6 +178,7 @@ test("An ePUB of a book with an unsafe title gets a safe file name and keeps the
     const saveFolder = testInfo.outputPath("saved-epub");
     fs.mkdirSync(saveFolder, { recursive: true });
     const savedPath = Path.join(saveFolder, `${bookFolderName}.epub`);
+    let entries: IArchiveEntry[] = [];
 
     await step(
         "Save the ePUB: Bloom suggests the folder's name, and saves it under that name",
@@ -199,26 +208,32 @@ test("An ePUB of a book with an unsafe title gets a safe file name and keeps the
                 (await answered).ok(),
                 "Bloom should have finished saving the ePUB.",
             ).toBe(true);
+            // Bloom answers the save request before Save As opens, and writes the file after it
+            // closes. A zip's central directory is the last thing written, so the file is whole
+            // once readZip can read it.
             await expect
                 .poll(
-                    () =>
-                        fs.existsSync(savedPath)
-                            ? fs.statSync(savedPath).size
-                            : 0,
+                    () => {
+                        try {
+                            entries = readZip(fs.readFileSync(savedPath));
+                            return true;
+                        } catch {
+                            return false;
+                        }
+                    },
                     {
                         timeout: 120000,
-                        message: `Bloom should have saved the ePUB to ${savedPath}`,
+                        message: `Bloom should have saved a whole zip to ${savedPath}`,
                     },
                 )
-                .toBeGreaterThan(0);
+                .toBe(true);
             await closePublishProgressDialog(page, "ePUB");
         },
     );
 
     await step(
-        "The saved ePUB is a whole ePUB package with the full title and the cover picture",
+        "The saved ePUB is a whole ePUB package with the full title, its pages and the cover picture",
         async () => {
-            const entries = readZip(fs.readFileSync(savedPath));
             expect(
                 entries[0]?.name,
                 "An ePUB's first file should be its mimetype.",
@@ -253,6 +268,32 @@ test("An ePUB of a book with an unsafe title gets a safe file name and keeps the
                 "The ePUB's title should be the book's whole title, unsafe characters and all.",
             ).toEqual([kShownTitle]);
             const packageFolder = Path.posix.dirname(packagePath!);
+            const inPackage = (href: string) =>
+                packageFolder === "." ? href : `${packageFolder}/${href}`;
+
+            // Every page in the reading order is in the file, and the first, the cover, shows
+            // the title.
+            const spine = await getEpubPackageSpineHrefs(
+                page,
+                packageEntry!.content.toString("utf8"),
+            );
+            expect(
+                spine.length,
+                "The ePUB's reading order should list its pages.",
+            ).toBeGreaterThan(0);
+            for (const href of spine)
+                expect(
+                    entries.some((entry) => entry.name === inPackage(href)),
+                    `The ePUB should hold ${inPackage(href)}, a page of its reading order.`,
+                ).toBe(true);
+            const cover = entries.find(
+                (entry) => entry.name === inPackage(spine[0]),
+            )!;
+            expect(
+                await getEpubXhtmlText(page, cover.content.toString("utf8")),
+                "The ePUB's first page should show the title.",
+            ).toContain(kShownTitle);
+
             const pictureEntries = entries.filter(
                 (entry) =>
                     Path.posix.basename(entry.name) === pictureFileName &&
