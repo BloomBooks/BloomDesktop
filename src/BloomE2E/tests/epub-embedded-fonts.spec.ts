@@ -317,24 +317,33 @@ async function pickEmbeddableFont(
         !!font.variants?.includes("regular");
     /**
      * fonts/metadata, once Bloom has read past the font at `index` in `names`; undefined when Bloom
-     * lists no font at or after it within a minute, which leaves no metadata for any of them.
+     * lists no font at or after it within a minute, which leaves no metadata for any of them. A
+     * failing fonts/metadata request is thrown, not taken for "no metadata".
      */
     const metadataReadPast = async (
         index: number,
     ): Promise<IFontMetadata[] | undefined> => {
         let fonts: IFontMetadata[] = [];
+        let requestError: unknown;
         const readPast = () =>
             fonts.some((font) => names.indexOf(font.name) >= index);
         await expect
             .poll(
                 async () => {
-                    fonts = await getFontsMetadata(page);
+                    try {
+                        fonts = await getFontsMetadata(page);
+                    } catch (error) {
+                        requestError = error;
+                        return true; // ends the poll; the error is thrown below
+                    }
                     return readPast();
                 },
                 { timeout: 60000 },
             )
             .toBe(true)
+            // Only the poll's own timeout gets here, since a request error ends the poll.
             .catch(() => undefined);
+        if (requestError) throw requestError;
         return readPast() ? fonts : undefined;
     };
 
