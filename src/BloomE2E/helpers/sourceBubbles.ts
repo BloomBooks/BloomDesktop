@@ -495,34 +495,59 @@ export async function clickOutsidePage(page: Page): Promise<void> {
  * Move the mouse over the Edit tab without pressing a button, and check that the source bubbles
  * stay as they were all the while. The pointer stops on each translation group, picture and
  * source bubble of the page, at a spot of it that nothing else covers, and checks that the
- * element is then under the pointer (`:hover`); an element covered all over cannot be hovered and
- * is passed by. Then it goes to the frame's corners and out to the left and right sides of the
- * window, beyond the page frame. At every stop, once the page has drawn whatever the move caused,
- * the bubbles must be in the states they were in before the first move; otherwise this fails with
- * `message`, the stop, and the states there.
+ * element is then under the pointer (`:hover`). An element that lies beyond the edge of the page
+ * frame, as a source bubble can when the window is small, is first scrolled into view, the way a
+ * person would scroll to it. An element with a size that the pointer still cannot reach fails the
+ * check, and so does a page with no translation group that has a size, since the pointer then
+ * never moves over a text box. Then it goes to the frame's corners and out to the left and right
+ * sides of the window, beyond the page frame. At every stop, once the page has drawn whatever the
+ * move caused, the bubbles must be in the states they were in before the first move; otherwise
+ * this fails with `message`, the stop, and the states there.
  */
 export async function expectMouseMovesLeaveSourceBubbles(
     page: Page,
     message: string,
 ): Promise<void> {
     const kTargets = ".bloom-translationGroup, .bloom-canvas, .qtip";
-    const origin = await pageFrameOrigin(page);
     const frame = editablePageFrame(page);
     const before = await getSourceBubbleStates(page);
-    const { targets, unreachable } = await frame.evaluate((selector) => {
-        const width = document.documentElement.clientWidth;
-        const height = document.documentElement.clientHeight;
-        const reached: {
-            x: number;
-            y: number;
-            index: number;
-            over: string;
-        }[] = [];
-        const missed: string[] = [];
-        Array.from(document.querySelectorAll(selector)).forEach(
-            (element, index) => {
-                const rect = element.getBoundingClientRect();
-                if (rect.width === 0 || rect.height === 0) return;
+    const check = async (over: string) => {
+        await waitForClickToSettle(frame);
+        const now = await getSourceBubbleStates(page);
+        expect(
+            now,
+            `${message} With the pointer over ${over}, the groups' bubbles went from ` +
+                `[${before.join(", ")}] to [${now.join(", ")}].`,
+        ).toEqual(before);
+    };
+
+    const count = await frame.evaluate(
+        (selector) => document.querySelectorAll(selector).length,
+        kTargets,
+    );
+    let groupsHovered = 0;
+    for (let index = 0; index < count; index++) {
+        const target = await frame.evaluate(
+            ({ selector, index }) => {
+                const element = document.querySelectorAll(selector)[index];
+                if (!element) return { sized: false as const };
+                const width = document.documentElement.clientWidth;
+                const height = document.documentElement.clientHeight;
+                let rect = element.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0)
+                    return { sized: false as const };
+                if (
+                    rect.left < 0 ||
+                    rect.top < 0 ||
+                    rect.right > width ||
+                    rect.bottom > height
+                ) {
+                    element.scrollIntoView({
+                        block: "nearest",
+                        inline: "nearest",
+                    });
+                    rect = element.getBoundingClientRect();
+                }
                 const over = `${element.className.toString().split(" ")[0]} ${index + 1}`;
                 // The picture's own spots are the ones where no text, canvas element holding
                 // text, or source bubble lies over it, which the picture contains as well.
@@ -562,17 +587,48 @@ export async function expectMouseMovesLeaveSourceBubbles(
                         point.y < height &&
                         hits(document.elementFromPoint(point.x, point.y)),
                 );
-                if (spot) reached.push({ ...spot, index, over });
-                else missed.push(over);
+                return {
+                    sized: true as const,
+                    spot,
+                    over,
+                    isGroup: element.matches(".bloom-translationGroup"),
+                };
             },
+            { selector: kTargets, index },
         );
-        return { targets: reached, unreachable: missed };
-    }, kTargets);
-    if (unreachable.length)
+        if (!target.sized) continue;
+        if (!target.spot)
+            throw new Error(
+                `${message} The pointer cannot reach ${target.over} of the page, so the test ` +
+                    `cannot show that moving over it changes nothing.`,
+            );
+        // Scrolling the element into view may have moved the page frame too.
+        const origin = await pageFrameOrigin(page);
+        await page.mouse.move(
+            origin.x + target.spot.x,
+            origin.y + target.spot.y,
+            { steps: 5 },
+        );
+        expect(
+            await frame.evaluate(
+                ({ selector, index }) =>
+                    document
+                        .querySelectorAll(selector)
+                        [index].matches(":hover"),
+                { selector: kTargets, index },
+            ),
+            `The pointer did not reach ${target.over}.`,
+        ).toBe(true);
+        await check(target.over);
+        if (target.isGroup) groupsHovered++;
+    }
+    if (groupsHovered === 0)
         throw new Error(
-            `${message} The pointer cannot reach ${unreachable.join(", ")} of the page, so the ` +
-                `test cannot show that moving over them changes nothing.`,
+            `${message} No text box of the page has a size on screen, so the pointer cannot ` +
+                `move over one.`,
         );
+
+    const origin = await pageFrameOrigin(page);
     const corners = await frame.evaluate(() => [
         { x: 5, y: 5 },
         {
@@ -597,32 +653,6 @@ export async function expectMouseMovesLeaveSourceBubbles(
         throw new Error(
             "The page frame reaches the side of the window, so the pointer cannot go beyond it there.",
         );
-
-    const check = async (over: string) => {
-        await waitForClickToSettle(frame);
-        const now = await getSourceBubbleStates(page);
-        expect(
-            now,
-            `${message} With the pointer over ${over}, the groups' bubbles went from ` +
-                `[${before.join(", ")}] to [${now.join(", ")}].`,
-        ).toEqual(before);
-    };
-    for (const target of targets) {
-        await page.mouse.move(origin.x + target.x, origin.y + target.y, {
-            steps: 5,
-        });
-        expect(
-            await frame.evaluate(
-                ({ selector, index }) =>
-                    document
-                        .querySelectorAll(selector)
-                        [index].matches(":hover"),
-                { selector: kTargets, index: target.index },
-            ),
-            `The pointer did not reach ${target.over}.`,
-        ).toBe(true);
-        await check(target.over);
-    }
     for (const corner of corners) {
         await page.mouse.move(origin.x + corner.x, origin.y + corner.y, {
             steps: 5,
