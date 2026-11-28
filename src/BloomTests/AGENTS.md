@@ -29,6 +29,12 @@ multiple terminals can build/test at once. See `Directory.Build.props` for how i
   test host is killed part way through still prints a passing summary of however many tests got to
   run. The wrapper catches that and says `*** TEST RUN ABORTED ***`, and exits non-zero, as it
   does for ordinary failures. The text it looks for lives in `build/test-abort-markers.txt`.
+- For `test`, the wrapper first brings the appearance themes, appearance migrations, templates
+  and branding in `output/browser` up to date with `src/content`
+  (`src/content/scripts/copyContentForCSharpTests.mjs`, about a second). The tests read those
+  files, so they always see the current checkout's copies, even in a worktree that was moved to
+  another branch. The rest of `output/browser` (compiled LESS, the Vite bundles) still comes only
+  from a front-end build.
 - **Tests retire their BloomServers, they do not dispose them.** A fixture that made a server
   listen calls `RetiredTestServers.Retire(server)`; the listener is closed a few fixtures later,
   once whatever it was serving has certainly finished. Disposing on the spot is what used to kill

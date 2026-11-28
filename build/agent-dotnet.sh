@@ -59,6 +59,18 @@ if [ "${1:-}" != "test" ]; then
         -p:OutDir="$SCRATCH/bin/"
 fi
 
+# The tests read appearance themes, appearance migrations, templates and branding from
+# output/browser, which only a front-end build fills. A worktree moved to another branch
+# (say from master to a VersionX.Y branch) keeps the old branch's copies there, and the
+# tests would then run against that branch's themes. So bring those files up to date from
+# src/content before every test run. The script is safe while other test runs and a running
+# Bloom read output/browser, and needs only node; its header says how.
+if ! node "$REPO_ROOT/src/content/scripts/copyContentForCSharpTests.mjs"; then
+    echo ""
+    echo "[agent-dotnet] *** TEST RUN NOT STARTED: copying this checkout's content files into output/browser failed (see above). ***"
+    exit 1
+fi
+
 # ---------------------------------------------------------------------------
 # Judging a test run
 #
