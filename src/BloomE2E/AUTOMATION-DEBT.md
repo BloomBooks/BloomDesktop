@@ -152,6 +152,17 @@ Still open on this entry: video capture is untouched, and it needs a camera, not
 cannot be automated at all, which is why `helpers/talkingBook.ts` has `addNarration` (put the mp3
 where a recording would have gone) alongside the Import Recording path.
 
+seen again 2026-11-25 (Test Case ID 595, `publish-sign-language-epub.spec.ts`): Publish > ePUB's
+Save... asks for the file in a plain `SaveFileDialog`
+(`MiscUtils.GetOutputFilePathOutsideCollectionFolder`, which the PDF, BloomPUB and other save
+commands use too), and `e2e/nextFileToChoose` does not answer it. `helpers/epub.ts` (`saveEpub`)
+answers it over UI Automation instead, by the common dialog's control ids (1001 for the file
+name, 1 for Save), which needs the Win32 client-side proxies registered first. Windows activates
+the dialog whatever `--dont-disturb` says, so that test skips on a developer's machine and runs on
+CI or with `BLOOM_E2E_DONT_DISTURB=0`. Fix direction: let `nextFileToChoose` (or a twin) answer
+`GetOutputFilePathOutsideCollectionFolder`, so every save command is drivable with no native
+window.
+
 ## A Playwright worker occasionally dies at startup, before any test runs
 
 Seen three times on 2026-09-04, while building `publish-talking-book-languages.spec.ts`: a run
