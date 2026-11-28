@@ -112,8 +112,11 @@ export async function makeSolidColorPng(
  * saved as a PNG: opaque, a smooth gradient of colour with fine grain over it, as a camera's
  * picture has. Grain is what PNG compresses worst and JPEG best, so the file is several times
  * larger than a JPEG of the same picture, and Bloom shows and publishes it as a JPEG
- * (ImageUtils.TryChangeFormatToJpegIfHelpful). The pixels are written exactly
- * (putImageData, with a fixed sequence of grain), so the file is the same on every machine.
+ * (ImageUtils.TryChangeFormatToJpegIfHelpful). Over the gradient, a checkerboard of sharp-edged
+ * squares in the opposite colour (24 pixels square, every other 40-pixel cell) lets a comparison
+ * tell the picture from a crop or shift of it: moving their edges by even a pixel or two changes
+ * far more pixels than a JPEG's error does. The pixels are written exactly (putImageData, with a
+ * fixed sequence of grain), so the file is the same on every machine.
  */
 export async function makePhotoLikePng(
     page: Page,
@@ -131,11 +134,22 @@ export async function makePhotoLikePng(
             };
             for (let y = 0; y < height; y++)
                 for (let x = 0; x < width; x++) {
+                    const gradient = [
+                        90 + (120 * x) / width,
+                        60 + (140 * y) / height,
+                        200 - (120 * (x + y)) / (width + height),
+                    ];
+                    const inSquare =
+                        (Math.floor(x / 40) + Math.floor(y / 40)) % 2 === 0 &&
+                        x % 40 >= 8 &&
+                        x % 40 < 32 &&
+                        y % 40 >= 8 &&
+                        y % 40 < 32;
                     const i = (y * width + x) * 4;
-                    pixels.data[i] = 90 + (120 * x) / width + grain();
-                    pixels.data[i + 1] = 60 + (140 * y) / height + grain();
-                    pixels.data[i + 2] =
-                        200 - (120 * (x + y)) / (width + height) + grain();
+                    for (let c = 0; c < 3; c++)
+                        pixels.data[i + c] =
+                            (inSquare ? 255 - gradient[c] : gradient[c]) +
+                            grain();
                     pixels.data[i + 3] = 255;
                 }
             const canvas = new OffscreenCanvas(width, height);
@@ -156,8 +170,9 @@ export async function makePhotoLikePng(
 /**
  * How two encoded pictures (PNG or JPEG bytes) compare once decoded: the size of each, and, when
  * the sizes match, the mean difference of their red, green and blue channels over every pixel (0
- * for the same pixels, up to 255). A picture re-encoded as a high-quality JPEG differs from its
- * source by a few levels; a different picture by tens.
+ * for the same colours, up to 255) and the largest difference of opacity at any pixel (0 to 255).
+ * A picture re-encoded as a high-quality JPEG differs from its source by a few levels of colour; a
+ * different picture by tens.
  */
 export async function compareEncodedPictures(
     page: Page,
@@ -166,7 +181,8 @@ export async function compareEncodedPictures(
 ): Promise<{
     firstSize: { width: number; height: number };
     secondSize: { width: number; height: number };
-    meanChannelDifference: number | undefined;
+    meanColorDifference: number | undefined;
+    maxOpacityDifference: number | undefined;
 }> {
     return page.evaluate(
         async ({ first, second }) => {
@@ -183,18 +199,26 @@ export async function compareEncodedPictures(
             };
             const a = await decode(first);
             const b = await decode(second);
-            let meanChannelDifference: number | undefined;
+            let meanColorDifference: number | undefined;
+            let maxOpacityDifference: number | undefined;
             if (a.width === b.width && a.height === b.height) {
                 let total = 0;
-                for (let i = 0; i < a.data.length; i += 4)
+                maxOpacityDifference = 0;
+                for (let i = 0; i < a.data.length; i += 4) {
                     for (let c = 0; c < 3; c++)
                         total += Math.abs(a.data[i + c] - b.data[i + c]);
-                meanChannelDifference = total / ((a.data.length / 4) * 3);
+                    maxOpacityDifference = Math.max(
+                        maxOpacityDifference,
+                        Math.abs(a.data[i + 3] - b.data[i + 3]),
+                    );
+                }
+                meanColorDifference = total / ((a.data.length / 4) * 3);
             }
             return {
                 firstSize: { width: a.width, height: a.height },
                 secondSize: { width: b.width, height: b.height },
-                meanChannelDifference,
+                meanColorDifference,
+                maxOpacityDifference,
             };
         },
         { first: first.toString("base64"), second: second.toString("base64") },

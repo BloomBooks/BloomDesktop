@@ -46,9 +46,11 @@ const BOOK_TITLE = "TC266 PNG Photo";
 // Small enough that Bloom shrinks it nowhere, so each JPEG made of it has its size in pixels.
 const PHOTO_SIZE = { width: 640, height: 480 };
 
-// A JPEG of the photo at Bloom's quality (92) differs from it by about two levels a channel; a
-// different picture, or the picture shifted or scaled, by tens.
-const MAX_MEAN_CHANNEL_DIFFERENCE = 5;
+// A JPEG of the photo at Bloom's quality (92) differs from it by about three and a half levels a
+// channel. The photo's sharp-edged squares make anything else differ by more: a crop of 2 pixels
+// at the left and 1 at the top, scaled back to the photo's size, by about 6; a crop of 12 and 9
+// pixels by about 14; a different picture by tens.
+const MAX_MEAN_COLOR_DIFFERENCE = 5;
 
 const PNG_SIGNATURE = "89504e470d0a1a0a";
 const JPEG_SIGNATURE = "ffd8ff";
@@ -77,9 +79,13 @@ async function expectJpegOfPhoto(
         `${what} should have the photo's size in pixels`,
     ).toEqual(comparison.secondSize);
     expect(
-        comparison.meanChannelDifference!,
-        `${what} should show the photo: its pixels should differ from the PNG's by no more than a JPEG's error`,
-    ).toBeLessThanOrEqual(MAX_MEAN_CHANNEL_DIFFERENCE);
+        comparison.meanColorDifference!,
+        `${what} should show the photo: its colours should differ from the PNG's by no more than a JPEG's error`,
+    ).toBeLessThanOrEqual(MAX_MEAN_COLOR_DIFFERENCE);
+    expect(
+        comparison.maxOpacityDifference,
+        `${what} should be opaque everywhere, as the photo is`,
+    ).toBe(0);
 }
 
 test("a photograph saved as a PNG stays a PNG in the book, and is shown and published as a JPEG [Test Case ID 266]", async ({
@@ -154,8 +160,12 @@ test("a photograph saved as a PNG stays a PNG in the book, and is shown and publ
                 `${match} in the book's folder should have the photo's size in pixels`,
             ).toEqual(comparison.secondSize);
             expect(
-                comparison.meanChannelDifference,
-                `${match} in the book's folder should have exactly the pixels of the PNG chosen`,
+                comparison.meanColorDifference,
+                `${match} in the book's folder should have exactly the colours of the PNG chosen`,
+            ).toBe(0);
+            expect(
+                comparison.maxOpacityDifference,
+                `${match} in the book's folder should have exactly the opacity of the PNG chosen`,
             ).toBe(0);
         },
     );
