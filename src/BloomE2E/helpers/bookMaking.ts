@@ -253,7 +253,8 @@ export async function makeBookFromBookInCollectionWithItsMenu(
 async function makeBookFromSelectedBook(
     page: Page,
     sourceName: string,
-    askBloom: () => Promise<void> = () => postMakeFromSelectedBook(page),
+    askBloom: () => Promise<unknown> = () =>
+        apiPost(page, "app/makeFromSelectedBook"),
 ): Promise<string> {
     const before = await listEditableBooks(page);
     await askBloom();
@@ -278,23 +279,6 @@ async function makeBookFromSelectedBook(
         .toBe(true);
     await waitForEditablePage(page);
     return made!.folderPath;
-}
-
-/** Ask Bloom's API to make a book from the selected book, as the Make a book buttons do. */
-async function postMakeFromSelectedBook(page: Page): Promise<void> {
-    // Bloom answers this and then reloads the shell document into the Edit tab, and under load
-    // that reload can abort our fetch before the reply arrives. The request itself got through
-    // - the poll in makeBookFromSelectedBook is what confirms the book really appeared - and a
-    // retry would make a second book, so tolerate exactly the two lost-reply errors a reload
-    // produces.
-    await apiPost(page, "app/makeFromSelectedBook").catch((error) => {
-        if (
-            !/Failed to fetch|Execution context was destroyed/i.test(
-                String(error),
-            )
-        )
-            throw error;
-    });
 }
 
 /**

@@ -135,14 +135,16 @@ export async function withBloomOfflineForReports(
 /**
  * The zip path in the failure message, read by turning the message's template (in the UI's
  * language, {0} the zip path and {1} the email address, in whatever order the translation puts
- * them) into a pattern; undefined while the dialog shows anything else.
+ * them) into a pattern; undefined while the dialog shows anything else. The dialog can show the
+ * message for a moment before it has the path, with nothing where {0} goes, so the path must
+ * start with something other than a space.
  */
 function zipPathIn(message: string, template: string): string | undefined {
     const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const pattern = template
         .split(/(\{[01]\})/)
         .map((piece) => {
-            if (piece === "{0}") return "\\s*(.+?)\\s*";
+            if (piece === "{0}") return "\\s*(\\S.*?)\\s*";
             if (piece === "{1}") return `\\s*${escape(kIssuesEmail)}\\s*`;
             return escape(piece.replace(/\s+/g, " ").trim()).replace(
                 / /g,

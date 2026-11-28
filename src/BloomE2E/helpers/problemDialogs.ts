@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import type { IProblemDialogWatcher } from "../fixtures/problemDialogWatcher";
-import { apiPost } from "./api";
+import { closeReactDialog, isDroppedConnection } from "./api";
 import { clickBookTile } from "./collection";
 
 /** Every page of Bloom's browser but DevTools, which is where a problem dialog may show. */
@@ -179,16 +179,6 @@ export async function readProblemDialogsShown(
 }
 
 /**
- * Close the React dialog (ReactDialog.cs) showing now, such as a problem dialog or a Bloom message
- * box, the way its own Close button does, with common/closeReactDialog, which never submits a
- * report. `page` is any of Bloom's pages, for the port. Fails when Bloom has not answered in 30
- * seconds.
- */
-export async function closeReactDialog(page: Page): Promise<void> {
-    await apiPost(page, "common/closeReactDialog", undefined, undefined, 30000);
-}
-
-/**
  * Close the Report a Problem dialog that waitForReportDialogPage found, and wait until it is gone:
  * its page closed, or the page no longer holds the dialog. A failure to look in a page that is
  * still open fails at once rather than passing for a closed dialog.
@@ -298,12 +288,7 @@ export async function doThroughOneProblemDialog(
             // connection is all that may go wrong with the close. Any other failure (an error
             // status, no Bloom listening) means the close did not happen.
             await closeReactDialog(page).catch((error: unknown) => {
-                const code = (error as NodeJS.ErrnoException).code;
-                if (
-                    code !== "ECONNRESET" &&
-                    !/socket hang up/i.test(String(error))
-                )
-                    throw error;
+                if (!isDroppedConnection(error)) throw error;
             });
             await expect
                 .poll(() => isProcessRunning(bloomQuitsWithPid), {

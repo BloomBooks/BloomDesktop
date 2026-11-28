@@ -39,21 +39,27 @@ export async function apiGet(
 /**
  * POST to a Bloom API endpoint. `body` is sent as-is; pass a JSON string and set contentType to
  * "application/json" for the endpoints that expect JSON, or a bare string for those that read the
- * raw body. Throws when Bloom answers with an error status, or, when `timeoutMs` is given, when
- * Bloom has not answered within it.
+ * raw body. Throws when Bloom answers with an error status.
  */
 export async function apiPost(
     page: Page,
     endpoint: string,
     body?: string,
     contentType?: string,
-    timeoutMs?: number,
 ): Promise<IApiResponse> {
-    return request(page, endpoint, {
+    return request(page, endpoint, { method: "POST", body, contentType });
+}
+
+/**
+ * Close the React dialog (ReactDialog.cs) showing now, such as a problem dialog or a Bloom message
+ * box, the way its own Close button does, with common/closeReactDialog, which never submits a
+ * report. `page` is any of Bloom's pages, for the port. Fails when Bloom has not answered in 30
+ * seconds.
+ */
+export async function closeReactDialog(page: Page): Promise<void> {
+    await request(page, "common/closeReactDialog", {
         method: "POST",
-        body,
-        contentType,
-        timeoutMs,
+        timeoutMs: 30000,
     });
 }
 
@@ -81,45 +87,14 @@ export async function getUiString(
     return answer.text;
 }
 
-// The port of the Bloom that served each page, once seen. A page that Bloom is reloading can show
-// about:blank for a moment, and a page that Bloom replaced is still the same Bloom's.
-const bloomPorts = new WeakMap<Page, number>();
-
-function localhostPort(url: string): number | undefined {
-    try {
-        const parsed = new URL(url);
-        if (parsed.hostname !== "localhost" || !parsed.port) return undefined;
-        return Number(parsed.port);
-    } catch {
-        return undefined;
-    }
-}
-
-/**
- * The port of the Bloom that serves `page`: from its address, or, while it has none of
- * Bloom's (a reload in progress), the one it last had, or that of another page in the same
- * browser context that Bloom serves.
- */
+/** The port of the Bloom that serves `page`, from its address. */
 function bloomPort(page: Page): number {
-    const own = localhostPort(page.url());
-    if (own !== undefined) {
-        bloomPorts.set(page, own);
-        return own;
-    }
-    const remembered = bloomPorts.get(page);
-    if (remembered !== undefined) return remembered;
-    const ports = new Set(
-        page
-            .context()
-            .pages()
-            .map((other) => localhostPort(other.url()))
-            .filter((port): port is number => port !== undefined),
-    );
-    if (ports.size === 1) return [...ports][0];
-    throw new Error(
-        `Cannot tell which Bloom to call: ${page.url()} is not a page that Bloom serves, and ` +
-            `the other pages of its browser come from ${ports.size} Bloom ports.`,
-    );
+    const url = new URL(page.url());
+    if (url.hostname !== "localhost" || !url.port)
+        throw new Error(
+            `Cannot tell which Bloom to call: ${page.url()} is not a page that Bloom serves.`,
+        );
+    return Number(url.port);
 }
 
 // The pages whose Bloom has been seen to answer app/runningE2eTests with "true".
@@ -157,40 +132,10 @@ async function request(
     },
 ): Promise<IApiResponse> {
     if (endpoint.startsWith("e2e/")) await requireE2eBloom(page);
-    // A GET that finds nobody listening is tried again for a while: Bloom may be restarting its
-    // server. Nothing else is repeated: a POST that Bloom may have carried out must not be sent twice.
-    const deadline = Date.now() + 15000;
-    for (;;) {
-        try {
-            return await attemptRequest(page, endpoint, options);
-        } catch (error) {
-            if (
-                options.method !== "GET" ||
-                !(error instanceof NoAnswerError) ||
-                Date.now() > deadline
-            )
-                throw error;
-            await new Promise((resolve) => setTimeout(resolve, 250));
-        }
-    }
-}
-
-class NoAnswerError extends Error {}
-
-async function attemptRequest(
-    page: Page,
-    endpoint: string,
-    options: {
-        method: string;
-        body?: string;
-        contentType?: string;
-        timeoutMs?: number;
-    },
-): Promise<IApiResponse> {
     const url = `http://localhost:${bloomPort(page)}/bloom/api/${endpoint}`;
-    let response: Response;
+    let result: IApiResponse;
     try {
-        response = await fetch(url, {
+        const response = await fetch(url, {
             method: options.method,
             headers: options.contentType
                 ? { "Content-Type": options.contentType }
@@ -201,19 +146,35 @@ async function attemptRequest(
                     ? undefined
                     : AbortSignal.timeout(options.timeoutMs),
         });
+        result = { status: response.status, body: await response.text() };
     } catch (error) {
         throw new NoAnswerError(
             `Bloom's ${options.method} /bloom/api/${endpoint} got no answer: ${String(error)}`,
             { cause: error },
         );
     }
-    const result = { status: response.status, body: await response.text() };
     if (result.status >= 400)
         throw new Error(
             `Bloom's ${options.method} /bloom/api/${endpoint} returned ${result.status}. ` +
                 `Body: ${result.body.slice(0, 500)}`,
         );
     return result;
+}
+
+class NoAnswerError extends Error {}
+
+/**
+ * Whether `error`, thrown by apiGet or apiPost, says that Bloom closed the connection before it
+ * had answered in full, as a Bloom that quits while answering does. A refused connection (no
+ * Bloom listening) or a timeout is not that.
+ */
+export function isDroppedConnection(error: unknown): boolean {
+    if (!(error instanceof NoAnswerError)) return false;
+    for (let cause = error.cause; cause; cause = (cause as Error).cause) {
+        const code = (cause as NodeJS.ErrnoException).code;
+        if (code === "ECONNRESET" || code === "UND_ERR_SOCKET") return true;
+    }
+    return false;
 }
 
 /** Some of Bloom's answers to its own front end, held back until `release` is called. */
