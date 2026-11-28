@@ -2,25 +2,29 @@
 // frequency" button shows them. Automates the manual test "Sample Word Frequency Calculation"
 // (Test Case ID 445).
 //
-// The counts come from the files in the Sample Texts folder, not from the book. The panel lists a stage's words and its sight words together; sorted by
-// frequency, the most frequent come first, and words that occur equally often are in alphabetical
-// order.
+// The counts come from the files in the Sample Texts folder, not from the book. The panel lists a
+// stage's words and its sight words together; sorted by frequency, the most frequent come first,
+// and words that occur equally often are in alphabetical order.
 //
 // One test, because it saves the setup dialog: a save costs the next test in the same file its
 // shell document ("Saving the reader settings costs the next test in the file its shell document"
 // in AUTOMATION-DEBT.md).
 
 import { expect, test } from "../fixtures/bloomTest";
-import { makeBookFromTemplate } from "../helpers/bookMaking";
+import {
+    addPage,
+    getContentPages,
+    goToPage,
+    typeInGroup,
+} from "../helpers/bookMaking";
 import {
     acceptReaderSetup,
-    enableDecodableReaderTool,
     getSavedReaderSettings,
+    makeDecodableBookWithKnownStages,
     openDecodableStagesSetup,
     openReaderSetupTab,
     setSampleTexts,
     setTypedSampleWords,
-    useKnownReaderStages,
 } from "../helpers/readerSetup";
 import {
     clickDecodableSortButton,
@@ -34,25 +38,34 @@ test.use({
 
 /**
  * Two sample texts. At stage 1 (a, e, r, with the sight words the, of, and, to) the words that need
- * nothing else are rare (five times, once capitalized and twice with punctuation after it), rear
- * (three times), ear and era (twice each) and are (once). The sight word "the" is there four times,
- * and the other sight words not at all. "dog" is the most frequent word of all, but needs d, o and
- * g, so stage 1 must not list it.
+ * nothing else are rare (five times: once capitalized, twice with punctuation after it, and in both
+ * files), area (four times), ear and era (twice each) and are (once). The sight word "the" is there
+ * three times, and the other sight words not at all. "dog" is the most frequent word of all, but
+ * needs d, o and g, so stage 1 must not list it.
+ *
+ * Every count matters to the order: had Bloom missed any one "rare", or counted only one of the
+ * files, rare would no longer come before area.
  */
 const kSampleTexts = {
-    "first story.txt": "Rare rear ear. the rare, era the dog dog dog!",
+    "first story.txt": "Rare area ear. the rare, era the dog dog dog!",
     "second story.txt":
-        "rare. rear rear ear! era rare the the are rare dog dog dog",
+        "rare. area area ear! era rare the are area rare dog dog dog",
 };
 
 /** Typed on the Sample Words tab: decodable at stage 1, and in no sample text. */
 const kTypedWord = "err";
 
-/** The stage 1 words with how often each occurs, most frequent first. */
+/**
+ * Typed into the book itself. Were the book's words counted, ear and era would come first; they
+ * must not be, since the frequencies are those of the sample texts.
+ */
+const kBookText = "ear era ear era ear era ear era ear era ear era";
+
+/** The stage 1 words with how often the sample texts use each, most frequent first. */
 const kExpectedByFrequency = [
     "rare", // 5
-    "the", // 4, a sight word
-    "rear", // 3
+    "area", // 4
+    "the", // 3, a sight word
     "ear", // 2
     "era", // 2
     "are", // 1
@@ -66,9 +79,7 @@ test("sorting by frequency orders a stage's words by how often the sample texts 
     page,
     bloomApp,
 }) => {
-    await makeBookFromTemplate(page, "Basic Book");
-    await enableDecodableReaderTool(page);
-    await useKnownReaderStages(page);
+    await makeDecodableBookWithKnownStages(page);
     const saved = await getSavedReaderSettings(page);
     // sanity check: the words above are chosen around the first stage's letters and sight words.
     // useKnownReaderStages sets them; if it changes, this is what to update.
@@ -79,6 +90,13 @@ test("sorting by frequency orders a stage's words by how often the sample texts 
         "the",
         "to",
     ]);
+
+    await test.step("type words into the book, which must not count", async () => {
+        await addPage(page, "Just Text");
+        const [textPage] = await getContentPages(page);
+        await goToPage(page, textPage.id);
+        await typeInGroup(page, ".bloom-translationGroup", "en", kBookText);
+    });
 
     await test.step("put two sample texts in the folder and type a word on the Sample Words tab", async () => {
         setSampleTexts(bloomApp.collectionDir, kSampleTexts);
@@ -109,8 +127,9 @@ test("sorting by frequency orders a stage's words by how often the sample texts 
                 timeout: 15000,
                 message:
                     "Sorted by frequency, the words should come most frequent first, counting " +
-                    "every sample text, a capitalized word and one with punctuation after it as " +
-                    "the same word, with words of equal frequency in alphabetical order.",
+                    "every sample text but not the book, and a capitalized word and one with " +
+                    "punctuation after it as the same word, with words of equal frequency in " +
+                    "alphabetical order.",
             })
             .toEqual(kExpectedByFrequency);
     });

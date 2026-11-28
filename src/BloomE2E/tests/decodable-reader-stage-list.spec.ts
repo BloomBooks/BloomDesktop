@@ -8,16 +8,14 @@
 // document"). What reaches disk is covered by the other specs. (BL-16607)
 
 import { expect, test } from "../fixtures/bloomTest";
-import { makeBookFromTemplate } from "../helpers/bookMaking";
 import {
     cancelReaderSetup,
     dragStage,
-    enableDecodableReaderTool,
     getStageRowTexts,
     openDecodableStagesSetup,
     removeSelectedStage,
     selectStage,
-    useKnownReaderStages,
+    makeDecodableBookWithKnownStages,
 } from "../helpers/readerSetup";
 
 test.use({ collectionSpec: { name: "reader-stage-list", languages: ["en"] } });
@@ -25,9 +23,7 @@ test.use({ collectionSpec: { name: "reader-stage-list", languages: ["en"] } });
 test("builds a book with the Decodable Reader tool turned on, and known stages", async ({
     page,
 }) => {
-    await makeBookFromTemplate(page, "Basic Book");
-    await enableDecodableReaderTool(page);
-    await useKnownReaderStages(page);
+    await makeDecodableBookWithKnownStages(page);
 });
 
 test("removing the selected stage takes that stage out of the list", async ({
