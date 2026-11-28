@@ -10,6 +10,8 @@
 // show no words or sentences of its own, and the book's figures, 15 words in 3 sentences (5.0 per
 // sentence), must be the same seen from each page.
 //
+// The book's sentence total has a data-testid (leveled-reader-sentences-in-book) for this test.
+//
 // The case's note links BL-10445, which the team will not fix: on the Arithmetic template's pages
 // the tool counts only the top row of boxes, because there the text box is not a direct child of
 // its translation group. That page is not a page of "0, 1, 2+ text blocks" in the sense this case
@@ -89,6 +91,9 @@ test("the Leveled Reader's figures are right on pages with 0, 1 and 2 text boxes
         "leveled-reader-sentences-this-page",
     );
     const wordsInBook = toolbox.getByTestId("leveled-reader-words-in-book");
+    const sentencesInBook = toolbox.getByTestId(
+        "leveled-reader-sentences-in-book",
+    );
     const averagePerSentence = toolbox.getByTestId(
         "leveled-reader-average-words-per-sentence",
     );
@@ -99,6 +104,10 @@ test("the Leveled Reader's figures are right on pages with 0, 1 and 2 text boxes
             wordsInBook,
             `Seen from the ${pageName}, the book should have 15 words (7 + 3 + 5).`,
         ).toHaveText("15", { timeout: 15000 });
+        await expect(
+            sentencesInBook,
+            `Seen from the ${pageName}, the book should have 3 sentences (1 + 1 + 1).`,
+        ).toHaveText("3");
         await expect(
             averagePerSentence,
             `Seen from the ${pageName}, the book should average 5.0 words per sentence (15 in 3).`,
