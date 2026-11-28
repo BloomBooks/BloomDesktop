@@ -455,7 +455,11 @@ export async function getLinesShownOf(box: Locator): Promise<ITextBoxLines> {
         const lineHeight =
             parseFloat(getComputedStyle(e.querySelector("p") ?? e).lineHeight) *
             scale;
-        const tops = new Set<number>();
+        // Each line by its middle. A text range's rectangles are the font's content area, which
+        // is not the line box: it may start above or below the line box's top, by however much
+        // the font's height differs from the line height. But the browser centres it on the line
+        // box, so the two share a middle.
+        const middles = new Set<number>();
         const walker = e.ownerDocument.createTreeWalker(
             e,
             NodeFilter.SHOW_TEXT,
@@ -465,7 +469,7 @@ export async function getLinesShownOf(box: Locator): Promise<ITextBoxLines> {
             if (!n.textContent?.trim()) continue;
             range.selectNodeContents(n);
             for (const r of Array.from(range.getClientRects()))
-                tops.add(Math.round(r.top));
+                middles.add(Math.round(r.top + r.height / 2));
         }
         // The bottom of what shows: the box's own, and that of each element around it, up to its
         // page, that does not let what overflows it show.
@@ -483,9 +487,9 @@ export async function getLinesShownOf(box: Locator): Promise<ITextBoxLines> {
             if (a.classList.contains("bloom-page")) break;
         }
         return {
-            lines: tops.size,
-            linesShown: Array.from(tops).filter(
-                (top) => top + lineHeight <= shownBottom + 1,
+            lines: middles.size,
+            linesShown: Array.from(middles).filter(
+                (middle) => middle + lineHeight / 2 <= shownBottom + 1,
             ).length,
         };
     });
