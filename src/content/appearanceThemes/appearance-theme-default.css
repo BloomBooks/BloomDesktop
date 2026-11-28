@@ -47,6 +47,11 @@
     /* left: value in .numberedPage.side-left:after to display the page number */
     --pageNumber-left-margin: auto;
     --pageNumber-extra-height: 0mm;
+    /* How much more room a page size's margin needs below the text to fit the page number.
+     * Only page sizes whose margin is too small for it set this. It is the page size's need;
+     * --pageNumber-extra-height is how much of it a theme spends as page padding, and a theme
+     * that sets that to 0 has to make the room some other way (as Edge to Edge does). */
+    --pageNumber-room-below-text: 0mm;
 
     /* Theme-adjustable insets used by explicit Left/Right page-number positioning.
      * With full bleed these keep the number as far from the cut line as the text (see
@@ -188,6 +193,12 @@
 }
 .Cm13Landscape {
     --standard-page-margin: 5mm;
+}
+.numberedPage.Cm13Landscape {
+    /* A 5mm margin has no room for the page number below the text, so numbered pages
+     * reserve this much more there, which makes the room the same as A6 has (BL-17132). */
+    --pageNumber-room-below-text: 5mm;
+    --pageNumber-extra-height: var(--pageNumber-room-below-text);
 }
 .bloom-page[class*="Ebook"],
 .bloom-page[class*="Device"] {
