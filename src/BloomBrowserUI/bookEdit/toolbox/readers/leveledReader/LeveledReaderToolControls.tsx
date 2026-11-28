@@ -16,6 +16,7 @@ import { Div, Span } from "../../../../react_components/l10nComponents";
 import { useMountEffect } from "../../../../utils/useMountEffect";
 import { Link } from "../../../../react_components/link";
 import { ContentCopySharp, ReportProblemOutlined } from "@mui/icons-material";
+import { ShrinkTextToFit } from "../../../../react_components/ShrinkTextToFit";
 
 // Colors used to flag a measure as within/over the current level's limit.
 const kWithinLevelColor = "lightgreen";
@@ -33,40 +34,62 @@ const kColumnHeaderCss = css`
     align-self: end;
 `;
 
+// The Max or Actual column header. min-width: 0 lets the grid narrow its column below
+// the header's width when the panel is tight (see LeveledReaderStats); then the header
+// wraps at its spaces, shrinks, and as a last resort breaks mid-word (Russian
+// "Максимальный" needs that) rather than being clipped or running into the next
+// column. overflow: hidden is only a backstop for a single character too wide for its
+// column.
+const ShrinkingColumnHeader: FunctionComponent<{
+    l10nKey: string;
+    paddingRightPx: number;
+    children: string;
+}> = (props) => {
+    return (
+        <ShrinkTextToFit
+            minFontSizePx={8}
+            breakWordsAtMinimum={true}
+            css={css`
+                ${kColumnHeaderCss};
+                min-width: 0;
+                overflow: hidden;
+                padding-right: ${props.paddingRightPx}px;
+                text-align: right;
+            `}
+        >
+            <Span l10nKey={props.l10nKey}>{props.children}</Span>
+        </ShrinkTextToFit>
+    );
+};
+
 const MaxActualRow: FunctionComponent = () => {
     return (
         <>
+            {/* Unlike Max and Actual, this header doesn't shrink: it keeps the
+                first column at least as wide as its longest word, so that the
+                first column isn't the one squeezed. */}
             <Div
                 l10nKey="EditTab.Toolbox.LeveledReaderTool.Measure"
                 css={css`
                     ${kColumnHeaderCss};
                     grid-column: 1;
+                    padding-right: 8px;
                 `}
             >
                 Measure
             </Div>
-            <Div
+            <ShrinkingColumnHeader
                 l10nKey="EditTab.Toolbox.LeveledReaderTool.Max"
-                css={css`
-                    ${kColumnHeaderCss};
-                    max-width: 40px;
-                    padding-right: 6px;
-                    text-align: right;
-                `}
+                paddingRightPx={6}
             >
                 Max
-            </Div>
-            <Div
+            </ShrinkingColumnHeader>
+            <ShrinkingColumnHeader
                 l10nKey="EditTab.Toolbox.LeveledReaderTool.Actual"
-                css={css`
-                    ${kColumnHeaderCss};
-                    max-width: 40px;
-                    padding-right: 3px;
-                    text-align: right;
-                `}
+                paddingRightPx={3}
             >
                 Actual
-            </Div>
+            </ShrinkingColumnHeader>
         </>
     );
 };
@@ -93,8 +116,9 @@ const StatsRow: FunctionComponent<{
         <>
             <Div
                 l10nKey={`EditTab.Toolbox.LeveledReaderTool.${props.l10nKeySuffix}`}
+                // No min-width: a label wraps to fit the first column (see
+                // LeveledReaderStats).
                 css={css`
-                    min-width: 83px;
                     padding-right: 8px;
                     align-self: center;
                     // Capitalize the first letter of each label (e.g. "Per
@@ -167,11 +191,13 @@ const StatsGrid: FunctionComponent<{
     return (
         <div
             css={css`
-                display: inline-grid;
+                // Each section uses the columns of the grid that holds all the
+                // sections (see LeveledReaderStats), so they line up from one
+                // section to the next.
+                grid-column: 1 / -1;
+                display: grid;
+                grid-template-columns: subgrid;
                 row-gap: 4px;
-                grid-template-columns:
-                    minmax(83px, auto) minmax(min-content, auto)
-                    minmax(min-content, auto);
                 margin-bottom: 25px;
             `}
         >
@@ -358,6 +384,19 @@ export const LeveledReaderStats: FunctionComponent<{
         <div
             css={css`
                 margin-top: 20px;
+                // One set of columns for every section's rows (each StatsGrid is
+                // a subgrid of this one), sized from all of them together.
+                display: grid;
+                // Max and Actual are auto rather than minmax(min-content, auto):
+                // a min-content minimum would hold them at their headers' full
+                // width, where auto respects the headers' min-width: 0 and lets
+                // them shrink (see ShrinkingColumnHeader). The first column is 1fr
+                // (that is, minmax(auto, 1fr)) so that it only gets what is left
+                // once they are as wide as their headers: its labels can wrap,
+                // while a header that doesn't fit has to shrink. Its auto minimum
+                // is the longest word of its labels and of the Measure header, so
+                // none of them spills into the Max column.
+                grid-template-columns: 1fr auto auto;
             `}
         >
             <StatsGrid

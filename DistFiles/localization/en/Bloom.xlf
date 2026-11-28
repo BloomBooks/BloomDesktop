@@ -2722,6 +2722,7 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true">
         <source xml:lang="en">Actual</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Actual</note>
+        <note>Column header in the Leveled Reader tool's statistics table, beside the "Max" column. It heads the numbers this book (or page) really has, e.g. how many words are on the page, to compare with the level's limits. It means "the real value", not "current" or "up to date". Displayed in all-caps. The column is very narrow, so please keep this as short as you can; an abbreviation is fine.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Average" sil:dynamic="true">
         <source xml:lang="en">avg per sentence</source>
@@ -2772,6 +2773,7 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
         <source xml:lang="en">Max</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Max</note>
+        <note>Column header in the Leveled Reader tool's statistics table, short for "maximum": it heads the largest value the current level allows for each statistic, e.g. words per page. Displayed in all-caps. The column is very narrow, so please keep this as short as you can; an abbreviation is fine, as in English.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.MaxInBook" sil:dynamic="true">
         <source xml:lang="en">max in book</source>
