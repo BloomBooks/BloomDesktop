@@ -40,6 +40,7 @@ import {
     type IPicturePoint,
     type IRgba,
 } from "../helpers/paintedPixels";
+import { setUiStateViaApi } from "../helpers/uiLanguage";
 
 test.use({
     collectionSpec: { name: "bmp-converts-to-png", languages: ["en"] },
@@ -110,10 +111,14 @@ function writeBlackSquareOnWhiteBmp(filePath: string, size: number): void {
 }
 
 test("a black-and-white line drawing saved as a BMP goes into the book as a PNG, and shows the page's colour through its white [Test Case ID 262]", async ({
-    page,
+    bloomApp,
     step,
 }, testInfo) => {
     test.setTimeout(300000);
+    // The Image Chooser's helpers find its buttons by their English labels, and a fresh Bloom
+    // takes the operating system's UI language.
+    await setUiStateViaApi(bloomApp, "en", false);
+    const page = bloomApp.page;
 
     const bmpPath = testInfo.outputPath("tc262 line drawing.bmp");
     writeBlackSquareOnWhiteBmp(bmpPath, PICTURE_SIZE);
