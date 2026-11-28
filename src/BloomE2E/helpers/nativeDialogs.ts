@@ -1,7 +1,8 @@
 // Answer the plain Windows dialogs that some of Bloom's commands still show: a message box
 // (MessageBox.Show) and the common Save As dialog (SaveFileDialog). They are native windows, out of
 // CDP's reach, so this goes through Windows UI Automation, which reads and presses their controls
-// with no pointer, keystroke or focus change.
+// with no pointer or focus change. The Save As dialog's file name is typed by posting characters to
+// its box, which needs neither the foreground nor the focus.
 //
 // Both are found by the ids that Windows gives every such dialog's controls, so that nothing
 // depends on the words of Bloom's UI language: 65535 for a message box's text, 1001 for the edit
@@ -39,6 +40,8 @@ public static class Fg {
   [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
   [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
   [DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(IntPtr h, out int p);
+  [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)] public static extern bool PostMessage(IntPtr h, uint msg, IntPtr w, IntPtr l);
+  public const uint WM_CHAR = 0x0102;
 }
 '@
 function ForegroundPid { $p = 0; [Fg]::GetWindowThreadProcessId([Fg]::GetForegroundWindow(), [ref]$p) | Out-Null; $p }
@@ -213,10 +216,11 @@ ${kPauseBetweenScans}
 }
 
 /**
- * Wait up to `timeoutMs` for the Save As dialog of the Bloom with process id `bloomPid`, type
- * `filePath` into its "File name:" box, press Save, and wait until it has closed. `filePath` must
- * not exist yet, so that no "replace it?" box comes up, and must be outside the collection folder,
- * which Bloom refuses. `foregroundBefore` is as for readAndCloseMessageBox.
+ * Wait up to `timeoutMs` for the Save As dialog of the Bloom with process id `bloomPid` to show
+ * its suggested file name, type `filePath` into its "File name:" box in its place, press Save, and
+ * wait until it has closed. `filePath` must not exist yet, so that no "replace it?" box comes up,
+ * and must be outside the collection folder, which Bloom refuses. `foregroundBefore` is as for
+ * readAndCloseMessageBox.
  */
 export async function answerSaveAsDialog(
     bloomPid: number,
@@ -234,17 +238,47 @@ $isEdit = New-Object System.Windows.Automation.PropertyCondition($A::ControlType
 function FindSaveAs {
   foreach ($d in (FindDialogs)) {
     # The "File name:" ComboBox holds an Edit of the same id; only the Edit takes a value.
-    $name = $d.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.AndCondition((ById '1001'), $isEdit)))
+    $edit = $d.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.AndCondition((ById '1001'), $isEdit)))
     $save = $d.FindFirst($Scope::Children, (ById '1'))
-    if ($name -and $save) { return @{ dialog = $d; name = $name; save = $save } }
+    if ($edit -and $save) { return @{ edit = $edit; value = $edit.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern); save = $save } }
   }
   return $null
 }
+# Type $text into the "File name:" box of $found, and wait until it holds it. The dialog keeps a
+# name of its own, which follows what is typed in the box but not text that UI Automation puts
+# there (SetValue): on some machines Save then saves under the name that the dialog suggested, in
+# the folder that it opened in. So the box is emptied and the text posted to it a character at a
+# time, as a keyboard delivers it. It is typed again if the box comes to hold anything but the
+# start of $text, once it has stopped changing: until then, characters posted earlier may still be
+# on their way, and would land among the new ones.
+function SetName($found, $text) {
+  $hwnd = [IntPtr][long]$found.edit.Current.NativeWindowHandle
+  function TypeText {
+    $found.value.SetValue('')
+    foreach ($c in $text.ToCharArray()) {
+      if (-not [Fg]::PostMessage($hwnd, [Fg]::WM_CHAR, [IntPtr][int]$c, [IntPtr]1)) {
+        throw ('Windows refused a character posted to the "File name:" box (error ' + [Runtime.InteropServices.Marshal]::GetLastWin32Error() + ').')
+      }
+    }
+  }
+  TypeText
+  $before = $null
+  do {
+    $now = $found.value.Current.Value
+    if ($now -eq $text) { return }
+    if ($now -eq $before -and -not $text.StartsWith($now, [StringComparison]::Ordinal)) { TypeText; $now = $null }
+    $before = $now
+${kPauseBetweenScans}
+  } while ((Get-Date) -lt $deadline)
+  throw ('The "File name:" box did not take ' + $text + '; it holds ' + $found.value.Current.Value)
+}
 do {
-  # The dialog shows before its controls do, so a dialog without them yet is waited on too.
+  # The dialog shows before its controls do, and its "File name:" box shows before the dialog puts
+  # its suggested name in it (Bloom always gives one), which would replace a path typed earlier. So
+  # the dialog is waited on until its box holds a name.
   $found = FindSaveAs
-  if ($found) {
-    $found.name.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($env:BLOOM_E2E_FILE)
+  if ($found -and $found.value.Current.Value) {
+    SetName $found $env:BLOOM_E2E_FILE
     PressAndWaitForClose $found.save { [bool](FindSaveAs) }
     'saved'
     exit 0
