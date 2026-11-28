@@ -141,6 +141,22 @@ export async function clickBookTile(page: Page, bookId: string): Promise<void> {
 }
 
 /**
+ * Double-click a book's tile on the Collections tab, which must be showing, with a real double
+ * press of the mouse at the tile's centre, as a person does to open the book in the Edit tab.
+ * Returns once the double-click is sent; the caller waits for what it should do.
+ */
+export async function doubleClickBookTile(
+    page: Page,
+    bookId: string,
+): Promise<void> {
+    await waitForCollectionReady(page);
+    const tile = page
+        .locator(`${kBookTiles}[data-book-id="${bookId}"]`)
+        .locator(".bookButton");
+    await tile.dblclick({ timeout: 15000 });
+}
+
+/**
  * The ids of the books whose tiles on the Collections tab, which must be showing, show the
  * triangle that opens the book's menu.
  */
