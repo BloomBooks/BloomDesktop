@@ -45,12 +45,26 @@ const kMostUnitsInName = 50;
 const kLoneSurrogate =
     /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
 
+// What Bloom reports when it sends an event to a web socket that has closed
+// (BloomWebSocketServer.ReportConnectionError). Only a build on the Developer channel reports it,
+// and the suite always runs a build from output/, which is on that channel; on any other channel
+// Bloom only logs it. Bloom sends some events to every open socket, such as the one it sends when
+// the book is renamed, and the socket of a page that the test has just left is probably closing at
+// that moment. It happens whatever the title, so it is not what this test checks.
+const kClosedSocketProblem = "web socket is not available when trying to send";
+
 test("a pasted title in a script made of surrogate pairs names the book's files, and Bloom carries on [Test Case ID 667]", async ({
     page,
     bloomApp,
     step,
 }) => {
     test.setTimeout(300000);
+
+    /** The problems that Bloom reported since the last call, less kClosedSocketProblem. */
+    const takeProblemsButClosedSocket = () =>
+        bloomApp
+            .takeNonFatalProblems()
+            .filter((problem) => problem !== kClosedSocketProblem);
 
     expect(
         [...kTitle].some((letter) => letter.length === 2),
@@ -146,7 +160,7 @@ test("a pasted title in a script made of surrogate pairs names the book's files,
     });
 
     expect(
-        bloomApp.takeNonFatalProblems(),
+        takeProblemsButClosedSocket(),
         "Bloom reported a problem while the book took the title's name",
     ).toEqual([]);
 
@@ -166,7 +180,7 @@ test("a pasted title in a script made of surrogate pairs names the book's files,
     );
 
     expect(
-        bloomApp.takeNonFatalProblems(),
+        takeProblemsButClosedSocket(),
         "Bloom reported a problem when it started on the book and opened it",
     ).toEqual([]);
 });
