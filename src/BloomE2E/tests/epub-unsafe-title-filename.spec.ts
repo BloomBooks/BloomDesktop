@@ -130,34 +130,33 @@ test("An ePUB of a book with an unsafe title gets a safe file name and keeps the
     );
 
     let bookFolderName = "";
-    await step("Open Publish > ePUB and wait for its preview", async () => {
-        // Leaving the Edit tab saves the book, and Bloom renames its folder after the new title.
-        await selectPublishDestination(page, "ePUB");
-        await expect
-            .poll(
-                () => Path.basename(findBookFolderById(collectionDir, bookId)),
-                {
-                    timeout: 60000,
-                    message:
-                        "Bloom should have renamed the book's folder after its new title.",
-                },
-            )
-            .toMatch(/^Unsafe/);
-        bookFolderName = Path.basename(
-            findBookFolderById(collectionDir, bookId),
-        );
-        await expect(
-            page.getByTestId("PublishTab.Save"),
-            "The ePUB screen's Save button should be enabled once the ePUB is made.",
-        ).toBeEnabled({ timeout: 180000 });
-    });
-
-    // Under --e2e Bloom reports a problem with NonFatalProblem only on stderr; making the ePUB of
-    // this book reported one in BL-9040.
-    expect(
-        bloomApp.takeNonFatalProblems(),
-        "Bloom should have made the ePUB without reporting a problem.",
-    ).toEqual([]);
+    await step(
+        "Open Publish > ePUB and wait until it allows saving",
+        async () => {
+            // Leaving the Edit tab saves the book, and Bloom renames its folder after the new title.
+            await selectPublishDestination(page, "ePUB");
+            await expect
+                .poll(
+                    () =>
+                        Path.basename(
+                            findBookFolderById(collectionDir, bookId),
+                        ),
+                    {
+                        timeout: 60000,
+                        message:
+                            "Bloom should have renamed the book's folder after its new title.",
+                    },
+                )
+                .toMatch(/^Unsafe/);
+            bookFolderName = Path.basename(
+                findBookFolderById(collectionDir, bookId),
+            );
+            await expect(
+                page.getByTestId("PublishTab.Save"),
+                "The ePUB screen's Save button should be enabled.",
+            ).toBeEnabled({ timeout: 180000 });
+        },
+    );
 
     await step("The book's folder name is the title made safe", async () => {
         for (const c of kWindowsInvalid + kBloomUnsafe)
@@ -235,6 +234,14 @@ test("An ePUB of a book with an unsafe title gets a safe file name and keeps the
             await closePublishProgressDialog(page, "ePUB");
         },
     );
+
+    // Under --e2e Bloom reports a problem with NonFatalProblem only on stderr; making the ePUB of
+    // this book reported one in BL-9040. Checked once the ePUB is saved, since Bloom may make it
+    // only when Save is pressed.
+    expect(
+        bloomApp.takeNonFatalProblems(),
+        "Bloom should have made and saved the ePUB without reporting a problem.",
+    ).toEqual([]);
 
     await step(
         "The saved ePUB is a whole ePUB package with the full title, its pages and the cover picture",
