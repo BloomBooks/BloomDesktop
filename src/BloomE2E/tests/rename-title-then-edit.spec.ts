@@ -14,6 +14,7 @@
 import type { Page } from "@playwright/test";
 import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
+import { resetViewportSize, setViewportSize } from "../fixtures/viewport";
 import { addPageFromDialog, openAddPageDialog } from "../helpers/addPageDialog";
 import {
     findBookFolder,
@@ -87,6 +88,26 @@ async function thumbnailPlace(
     );
 }
 
+/** True when the page list is longer than its visible area, so that it can scroll. */
+async function pageListCanScroll(page: Page): Promise<boolean> {
+    return pageListFrame(page).evaluate(() => {
+        const list = document.getElementById("pageGridWrapper");
+        if (!list) throw new Error("The page list has no #pageGridWrapper.");
+        return list.scrollHeight > list.clientHeight + 1;
+    });
+}
+
+// The page area of the nightly CI runner, where this book's page list is too long to show at once.
+const kShortPageArea = { width: 1008, height: 681 };
+
+// Set when the test shrank the page area, so that it is put back for whatever runs next.
+let shrankPageArea = false;
+
+test.afterEach(async ({ page }) => {
+    if (shrankPageArea) await resetViewportSize(page);
+    shrankPageArea = false;
+});
+
 /** Page `n` of the book, as the case counts them: its nth content page, after the front matter. */
 async function pageNumbered(page: Page, n: number): Promise<IBookPage> {
     const contentPages = await getContentPages(page);
@@ -151,6 +172,14 @@ test("after the title is renamed, clicking pages and adding a recorded video pag
                 (await getContentPages(page)).length,
                 "sanity check: the shell should have at least 12 content pages",
             ).toBeGreaterThanOrEqual(12);
+            // A jump to the top of the page list can only be seen in a list that scrolls. In a
+            // tall window every thumbnail of this book fits, so make the page area as short as the
+            // nightly runner's, as a person would by making the window smaller.
+            await waitForEditTabSettled(page);
+            if (!(await pageListCanScroll(page))) {
+                await setViewportSize(page, kShortPageArea);
+                shrankPageArea = true;
+            }
             await typeInGroup(page, ".bookTitle", "en", kNewTitle);
             return folder;
         },
