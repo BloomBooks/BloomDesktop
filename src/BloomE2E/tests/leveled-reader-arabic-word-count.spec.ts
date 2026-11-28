@@ -8,8 +8,8 @@
 // expects. One sentence ends with the Arabic full stop (U+06D4), one with the Arabic question mark
 // (U+061F) and one with a plain full stop; the words carry harakat, and one is followed by an
 // Arabic comma (U+060C). Were either Arabic sentence mark not taken as the end of a sentence, the
-// page would have fewer sentences and a higher average; were a vowel mark or the comma taken as a
-// break, there would be more than seven words.
+// page would have fewer sentences and a higher average; were the comma taken as one, there would
+// be more; were a vowel mark taken as a break between words, there would be more than seven words.
 
 import { expect, test } from "../fixtures/bloomTest";
 import {
