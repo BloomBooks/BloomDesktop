@@ -46,11 +46,17 @@ const BOOK_TITLE = "TC266 PNG Photo";
 // Small enough that Bloom shrinks it nowhere, so each JPEG made of it has its size in pixels.
 const PHOTO_SIZE = { width: 640, height: 480 };
 
-// How far the average colour of any 8x8 block of a JPEG of the photo may be from the PNG's. At
-// Bloom's quality (92) it is about one level. The photo's sharp-edged squares make anything else
-// differ by far more: cropped by one pixel at the left or the top and scaled back to the photo's
-// size, by about 18; a different picture by tens.
+// A JPEG of the photo must pass two comparisons with the PNG, since each misses what the other
+// catches. At Bloom's quality (92):
+// - The average colour of each 8x8 block differs by about one level. The photo's sharp-edged
+//   squares cross block boundaries when it moves, so the photo cropped by one pixel at the left
+//   or the top and scaled back to its size differs here by about 18, though its mean difference
+//   (below) is under 5.
+// - The mean difference over every pixel is about three and a half levels. A picture whose grain
+//   was changed, brighter and darker pixels that cancel out within each block, differs here by
+//   more, though its blocks match.
 const MAX_BLOCK_COLOR_DIFFERENCE = 4;
+const MAX_MEAN_COLOR_DIFFERENCE = 5;
 
 const PNG_SIGNATURE = "89504e470d0a1a0a";
 const JPEG_SIGNATURE = "ffd8ff";
@@ -83,6 +89,11 @@ async function expectJpegOfPhoto(
         `${what} should show the photo, not moved or cropped: the average colour of each 8x8 ` +
             `block should differ from the PNG's by no more than a JPEG's error`,
     ).toBeLessThanOrEqual(MAX_BLOCK_COLOR_DIFFERENCE);
+    expect(
+        comparison.meanColorDifference!,
+        `${what} should show the photo's own grain: its pixels should differ from the PNG's ` +
+            `by no more than a JPEG's error`,
+    ).toBeLessThanOrEqual(MAX_MEAN_COLOR_DIFFERENCE);
     expect(
         comparison.maxOpacityDifference,
         `${what} should be opaque everywhere, as the photo is`,
