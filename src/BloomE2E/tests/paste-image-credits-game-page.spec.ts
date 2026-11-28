@@ -12,7 +12,7 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
-import { editablePageFrame } from "../helpers/bookMaking";
+import { readSavedPagePictures } from "../helpers/bookHtml";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import { makeBookWithGamePage } from "../helpers/games";
 import {
@@ -51,61 +51,16 @@ test("Paste Image Credits credits a game page's pictures once, without the Pixab
     test.setTimeout(300000);
 
     let bookFolder = "";
+    let gamePageId = "";
     await step(
         'Create a book and add a "Drag Images to Targets" game page',
         async () => {
-            ({ bookFolder } = await makeBookWithGamePage(
+            ({ bookFolder, gamePageId } = await makeBookWithGamePage(
                 page,
                 "Drag Images to Targets",
             ));
         },
     );
-
-    // Bloom credits the pictures that the pages show (ImageApi.GetWhichImagesAreUsedOnWhichPages
-    // reads the book's markup), so the game page must show the GIFs, and the button pictures on
-    // its buttons, for the check below to test how Bloom treats them.
-    const shownOnGamePage = await editablePageFrame(page)
-        .locator(".bloom-page")
-        .first()
-        .evaluate((pageElement) => {
-            const fileOf = (img: Element) =>
-                decodeURIComponent(
-                    (img.getAttribute("src") ?? "").split("?")[0],
-                );
-            const all = Array.from(pageElement.querySelectorAll("img"));
-            return {
-                onButtons: all
-                    .filter((img) =>
-                        img.closest(
-                            "button.game-button, button.page-turn-button",
-                        ),
-                    )
-                    .map(fileOf),
-                elsewhere: all
-                    .filter((img) => !img.closest("button"))
-                    .map(fileOf),
-            };
-        });
-    expect(
-        GAME_BUTTON_PICTURES.filter(
-            (name) => !shownOnGamePage.onButtons.includes(name),
-        ),
-        "Sanity check: the game page should show each button picture on a game or page-turn button.",
-    ).toEqual([]);
-    expect(
-        GAME_GIFS.filter((name) => !shownOnGamePage.elsewhere.includes(name)),
-        "Sanity check: the game page should show both GIFs.",
-    ).toEqual([]);
-
-    // Bloom skips a picture whose file is not in the book folder, so without these files the
-    // credits would come out empty however Bloom treated the game's pictures.
-    const missingFiles = [...GAME_GIFS, ...GAME_BUTTON_PICTURES].filter(
-        (name) => !fs.existsSync(Path.join(bookFolder, name)),
-    );
-    expect(
-        missingFiles,
-        "Sanity check: the game page should have brought its pictures into the book folder.",
-    ).toEqual([]);
 
     let credits: string[] = [];
     let creditsMarkup = "";
@@ -122,6 +77,33 @@ test("Paste Image Credits credits a game page's pictures once, without the Pixab
             creditsMarkup = await originalContributionsBox(page).innerHTML();
         },
     );
+
+    // Bloom credits the pictures that the book's pages show, as the book holds them
+    // (ImageApi.GetWhichImagesAreUsedOnWhichPages reads the book's markup), and skips a picture
+    // whose file is not in the book folder. So the saved game page must show the GIFs, and the
+    // button pictures on its buttons, with their files in the folder, for the check below to test
+    // how Bloom treats them. Leaving the game page for the title page saved it.
+    const savedGamePage = await readSavedPagePictures(
+        page,
+        bookFolder,
+        gamePageId,
+    );
+    expect(
+        GAME_BUTTON_PICTURES.filter(
+            (name) => !savedGamePage.onButtons.includes(name),
+        ),
+        "Sanity check: the saved game page should show each button picture on a game or page-turn button.",
+    ).toEqual([]);
+    expect(
+        GAME_GIFS.filter((name) => !savedGamePage.elsewhere.includes(name)),
+        "Sanity check: the saved game page should show both GIFs.",
+    ).toEqual([]);
+    expect(
+        [...GAME_GIFS, ...GAME_BUTTON_PICTURES].filter(
+            (name) => !fs.existsSync(Path.join(bookFolder, name)),
+        ),
+        "Sanity check: the game page should have brought its pictures into the book folder.",
+    ).toEqual([]);
 
     await step(
         "Check that the only credit is the game pictures', without the Pixabay link",
