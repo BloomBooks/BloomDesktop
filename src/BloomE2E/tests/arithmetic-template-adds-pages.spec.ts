@@ -30,7 +30,7 @@ import {
     arithmeticProblems,
     expectBloomFindsNoOverflowOnPage,
     getArithmeticLayoutShown,
-    getProblemsPastMargins,
+    getProblemPartsPastMargins,
     getEquationBoxText,
     kArithmeticHeadingGroup,
     problemEquationBoxes,
@@ -303,8 +303,8 @@ test("a book made from the Arithmetic Template offers its pages first, and each 
                     `the "${templatePage.label}" page, with its heading, equations and pictures in,`,
                 );
                 expect(
-                    await getProblemsPastMargins(page),
-                    `every problem on the "${templatePage.label}" page should lie inside the page's margins`,
+                    await getProblemPartsPastMargins(page),
+                    `every part of every problem on the "${templatePage.label}" page should lie inside the page's margins`,
                 ).toEqual([]);
             },
         );

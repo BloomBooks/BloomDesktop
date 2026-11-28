@@ -197,31 +197,75 @@ export async function expectBloomFindsNoOverflowOnPage(
 }
 
 /**
- * The problems of the page being edited that do not lie wholly inside the page's margins, by
- * their number on the page (1 for the first). Bloom's own overflow check measures only text boxes
- * it watches, which leaves out the problems' rows of pictures and equations.
+ * The parts of the problems of the page being edited that do not lie wholly inside the page's
+ * margins, each named as "problem <n> <part>" (n is 1 for the first problem on the page). Bloom's
+ * own overflow check measures only text boxes it watches, which leaves out the problems' rows of
+ * pictures and equations. Each part is measured on its own, not only the problem around it: the
+ * equation row gives its boxes, its equals sign and its answer box minimum or fixed widths, and
+ * moves the row and the answer box out of their places with `position: relative`, so a part can
+ * stick out past a margin while the problem's own box still fits.
  */
-export async function getProblemsPastMargins(page: Page): Promise<number[]> {
+export async function getProblemPartsPastMargins(
+    page: Page,
+): Promise<string[]> {
     return editablePageFrame(page)
         .locator(".bloom-page .marginBox")
         .evaluate((marginBox) => {
             const margin = marginBox.getBoundingClientRect();
             const kTolerance = 1;
-            return Array.from(
+            const pastMargins = (element: Element) => {
+                const r = element.getBoundingClientRect();
+                return (
+                    r.top < margin.top - kTolerance ||
+                    r.bottom > margin.bottom + kTolerance ||
+                    r.left < margin.left - kTolerance ||
+                    r.right > margin.right + kTolerance
+                );
+            };
+            const problems = Array.from(
                 marginBox.querySelectorAll(".problemSet .problem"),
-            )
-                .map((problem, index) => ({
-                    r: problem.getBoundingClientRect(),
-                    number: index + 1,
-                }))
-                .filter(
-                    ({ r }) =>
-                        r.top < margin.top - kTolerance ||
-                        r.bottom > margin.bottom + kTolerance ||
-                        r.left < margin.left - kTolerance ||
-                        r.right > margin.right + kTolerance,
-                )
-                .map(({ number }) => number);
+            );
+            if (problems.length === 0)
+                throw new Error("The page being edited has no problems.");
+            const result: string[] = [];
+            problems.forEach((problem, index) => {
+                const parts: [string, Element | null][] = [
+                    ["itself", problem],
+                    ["picture row", problem.querySelector(".imageRow")],
+                    ...Array.from(
+                        problem.querySelectorAll(".imageRow > .bloom-canvas"),
+                    ).map((box, i): [string, Element] => [
+                        `picture box ${i + 1}`,
+                        box,
+                    ]),
+                    ["equation row", problem.querySelector(".numberRow")],
+                    ...Array.from(
+                        problem.querySelectorAll(
+                            ".numberRow > .bloom-editable",
+                        ),
+                    ).map((box, i): [string, Element] => [
+                        `equation box ${i + 1}`,
+                        box,
+                    ]),
+                    [
+                        "equals sign",
+                        problem.querySelector(".numberRow > .equals"),
+                    ],
+                    [
+                        "answer box",
+                        problem.querySelector(".numberRow > .fillInBox"),
+                    ],
+                ];
+                for (const [name, element] of parts) {
+                    if (!element)
+                        throw new Error(
+                            `Problem ${index + 1} on the page has no ${name}.`,
+                        );
+                    if (pastMargins(element))
+                        result.push(`problem ${index + 1} ${name}`);
+                }
+            });
+            return result;
         });
 }
 
