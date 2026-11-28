@@ -8,8 +8,9 @@
 // in, which holds a book, so that the test can wait for the Collections tab to finish showing it
 // (the book's preview is the last thing the tab draws).
 //
-// Who has the foreground and the keyboard is read from Windows every 50 ms from the click on the
-// collection's card until then (helpers/windowFocus.ts says why not from the page). Once Bloom's
+// Who has the foreground and the keyboard is recorded from Windows, every change of either, from
+// the click on the collection's card until then (helpers/windowFocus.ts says why not from the
+// page). Once Bloom's
 // new window is active it must stay active to the end, so a window that is active for an instant
 // and then loses the foreground or the keyboard fails, even if it gets them back.
 //
@@ -75,12 +76,19 @@ test("Bloom stays the active application when the user changes collections [Test
     await step(
         "Choose the first collection in the Other Collection dialog, and wait for it to show",
         async () => {
-            const recording = startFocusRecording();
+            const recording = await startFocusRecording();
             try {
                 await chooseOtherCollection(bloomApp, firstCollection);
                 await expectBookInPreview(bloomApp.page, bookTitle);
             } finally {
                 samples = await recording.stop();
+                // Printed here, so that it is there to read even when a step above failed.
+                console.log(
+                    "Foreground and keyboard during the change:\n" +
+                        samples
+                            .map((s) => describeFocus(s, bloomApp.bloomPid))
+                            .join("\n"),
+                );
             }
         },
     );
@@ -92,9 +100,6 @@ test("Bloom stays the active application when the user changes collections [Test
             const history = samples
                 .map((s) => describeFocus(s, bloomPid))
                 .join("\n");
-            console.log(
-                `Foreground and keyboard during the change:\n${history}`,
-            );
             const last = samples[samples.length - 1];
             expect(
                 isBloomActive(last, bloomPid),
