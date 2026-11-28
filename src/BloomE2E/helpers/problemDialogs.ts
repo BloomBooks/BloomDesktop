@@ -220,6 +220,38 @@ export function closeReactDialogFromNode(page: Page): Promise<void> {
     });
 }
 
+/**
+ * Close the Report a Problem dialog that waitForReportDialogPage found, and wait until it is gone:
+ * its page closed, or the page no longer holds the dialog. A failure to look in a page that is
+ * still open fails at once rather than passing for a closed dialog.
+ */
+export async function closeReportDialog(
+    page: Page,
+    dialogPage: Page,
+): Promise<void> {
+    await closeReactDialogFromNode(page);
+    await expect
+        .poll(
+            async () => {
+                if (dialogPage.isClosed()) return true;
+                const count = await dialogPage
+                    .locator(".problem-dialog")
+                    .count()
+                    .catch((error: unknown) => {
+                        // The page closing while we looked is the dialog going away.
+                        if (dialogPage.isClosed()) return 0;
+                        throw error;
+                    });
+                return count === 0;
+            },
+            {
+                timeout: 30000,
+                message: "the Report a Problem dialog should close",
+            },
+        )
+        .toBe(true);
+}
+
 /** Whether a process with this id is still running. */
 function isProcessRunning(pid: number): boolean {
     try {
