@@ -12,7 +12,7 @@
 // a notice's Report and extra buttons ("The fake notices' Report and extra buttons are not
 // pressed" in AUTOMATION-DEBT.md).
 
-import type { Page } from "@playwright/test";
+import type { Page, Route } from "@playwright/test";
 import type { IProblemDialogWatcher } from "../fixtures/problemDialogWatcher";
 import { expect, test, type IBloomApp } from "../fixtures/bloomTest";
 import { getUiString } from "../helpers/api";
@@ -131,6 +131,17 @@ function expectDialog(
     });
 }
 
+/** Give the book being edited a title, on its cover. */
+async function typeBookTitle(page: Page, title: string): Promise<void> {
+    await waitForEditablePage(page);
+    // At the nightly's window size the cover title can lie under the suite's caption.
+    await editablePageFrame(page)
+        .locator(".bookTitle")
+        .first()
+        .evaluate((e) => e.scrollIntoView({ block: "center" }));
+    await typeInGroup(page, ".bookTitle", "en", title);
+}
+
 /**
  * Give the book being edited a title, on its cover, and show it in the Edit tab again from the
  * Collections tab, the way a person opens a book: Bloom raises a fake problem as the Edit tab shows
@@ -144,13 +155,7 @@ async function openBookTitled(
     title: string,
     bloomQuitsWithPid?: number,
 ): Promise<IProblemDialogShown> {
-    await waitForEditablePage(page);
-    // At the nightly's window size the cover title can lie under the suite's caption.
-    await editablePageFrame(page)
-        .locator(".bookTitle")
-        .first()
-        .evaluate((e) => e.scrollIntoView({ block: "center" }));
-    await typeInGroup(page, ".bookTitle", "en", title);
+    await typeBookTitle(page, title);
     await switchTab(page, "collection");
     const shown = await doThroughOneProblemDialog(
         page,
@@ -282,5 +287,67 @@ test("books with the fake fatal titles show the fatal report dialog, and Bloom q
             });
             await bloomApp.restart();
         });
+    }
+});
+
+// A slow machine can still be drawing the Collections tab when the Edit tab is clicked, and each
+// book button then asks Bloom for the editable collection's name just after the click. The fatal
+// dialog shows while the tab switch holds Bloom's main API lock, and it needs the browser's few
+// connections to Bloom for its message. This makes the slow machine's order happen every time: the
+// book buttons' questions are held until the click is on its way, then let through to Bloom
+// untouched.
+test("a fake fatal title's dialog gets its message while the Collections tab's book buttons are still asking Bloom about the collection [Test Case ID 52]", async ({
+    bloomApp,
+    problemDialogWatcher,
+}) => {
+    test.setTimeout(180000);
+    const titles = await pinEnglishAndReadDialogTitles(bloomApp);
+    const page = bloomApp.page;
+    await makeBook(page);
+    const title = "Error ReportFatalException";
+    await typeBookTitle(page, title);
+
+    const bookButtonsAsk = /\/collections\/getCurrentEditableCollectionName/;
+    const held: Route[] = [];
+    const letThrough = async () => {
+        await page.unroute(bookButtonsAsk).catch(() => undefined);
+        await Promise.all(
+            held
+                .splice(0)
+                .map((route) => route.continue().catch(() => undefined)),
+        );
+    };
+    await page.route(bookButtonsAsk, (route) => {
+        held.push(route);
+    });
+    // The browser has six connections to Bloom.
+    const kMoreThanTheConnections = 6;
+    try {
+        await switchTab(page, "collection");
+        await expect
+            .poll(() => held.length, {
+                timeout: 30000,
+                message: `The Collections tab's book buttons should ask Bloom for the editable collection's name, at least ${kMoreThanTheConnections} times`,
+            })
+            .toBeGreaterThanOrEqual(kMoreThanTheConnections);
+        const tabSwitchAsked = page.waitForRequest(/\/workspace\/selectTab/);
+        const shown = await doThroughOneProblemDialog(
+            page,
+            problemDialogWatcher,
+            async () => {
+                await clickTab(page, "edit");
+                await tabSwitchAsked;
+                await letThrough();
+            },
+            bloomApp.bloomPid,
+        );
+        expectDialog(titles, title, shown, {
+            kind: "report",
+            level: "fatal",
+            message: kFakeException,
+            buttons: [kSubmit, kQuit],
+        });
+    } finally {
+        await letThrough();
     }
 });
