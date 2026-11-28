@@ -162,10 +162,24 @@ async function readThumbnailBubble(
             for (const shape of shapes) {
                 const style = getComputedStyle(shape);
                 const box = boxOf(shape.getBoundingClientRect());
+                // Opacity multiplies down the tree, so a shape is only as opaque as the product
+                // of its own opacity and that of every element around it in the thumbnail (the
+                // SVG, its group, the canvas). display: none on any of them hides it too.
+                let opacity = 1;
+                let displayed = true;
+                for (
+                    let e: Element | null = shape;
+                    e && e !== item.parentElement;
+                    e = e.parentElement
+                ) {
+                    const s = getComputedStyle(e);
+                    opacity *= parseFloat(s.opacity);
+                    if (s.display === "none") displayed = false;
+                }
                 const shown =
-                    parseFloat(style.opacity) > 0 &&
-                    style.visibility !== "hidden" &&
-                    style.display !== "none" &&
+                    displayed &&
+                    opacity > 0 &&
+                    style.visibility === "visible" &&
                     box.right - box.left > 0 &&
                     box.bottom - box.top > 0;
                 const fill = channels(style.fill);
@@ -173,15 +187,14 @@ async function readThumbnailBubble(
                 const filledLight =
                     shown &&
                     !!fill &&
-                    fill.alpha *
-                        parseFloat(style.fillOpacity) *
-                        parseFloat(style.opacity) >=
+                    fill.alpha * parseFloat(style.fillOpacity) * opacity >=
                         0.9 &&
                     fill.light >= 200;
                 const strokedDark =
                     shown &&
                     !!stroke &&
-                    stroke.alpha * parseFloat(style.strokeOpacity) > 0 &&
+                    stroke.alpha * parseFloat(style.strokeOpacity) * opacity >
+                        0 &&
                     parseFloat(style.strokeWidth) > 0 &&
                     stroke.light <= 100;
                 // A shape that reaches well past the bubble, such as one under the whole
@@ -306,6 +319,12 @@ test("comic page thumbnails show each speech bubble's background and outline aro
         "Before any bubble goes on, the comic pages' thumbnails hold no bubble drawing",
         async () => {
             for (const id of [made.firstId, made.secondId]) {
+                // A thumbnail starts as a blank placeholder and gets the page's HTML a moment
+                // later (PageThumbnail.tsx); the comic page's picture canvas shows it has.
+                await expect(
+                    pageThumbnail(page, id).locator(".bloom-canvas"),
+                    "test setup: a comic page's thumbnail never got the page's content",
+                ).not.toHaveCount(0, { timeout: 30000 });
                 await expect(
                     pageThumbnail(page, id).locator(
                         "svg.comical-generated path",
