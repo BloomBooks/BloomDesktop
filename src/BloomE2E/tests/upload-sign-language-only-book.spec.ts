@@ -5,8 +5,8 @@
 // The test makes a book from the Sign Language template in a collection with a sign language, gives
 // it one "Just Video" page with a video in it and no other content page, and uploads it to
 // dev.bloomlibrary.org for real. It checks that the Web screen offers Upload Book, that the upload
-// finishes and sends the video, and that the sandbox then has the book, uploaded as a sign language
-// book in the collection's sign language. The book has a title, as every uploaded book must
+// finishes and sends the video, and that the sandbox then has the book, with its page's video
+// pointing at the uploaded file, uploaded as a sign language book in the collection's sign language. The book has a title, as every uploaded book must
 // (BloomLibraryPublishModel.IsTitleOKToPublish); "no text" in the case means no text on its pages.
 //
 // Like the other real-upload tests, it signs in to the sandbox as the shared test account, so its
@@ -40,6 +40,7 @@ import {
 } from "../helpers/bloomLibraryAccount";
 import {
     deleteBooksUploadedBy,
+    fetchUploadedBookHtml,
     findBooksUploadedBy,
     getFeaturesOfUploadedBook,
     getLatestUploadBaseUrl,
@@ -140,9 +141,18 @@ test.describe("uploading a sign-language-only book to dev.bloomlibrary.org", () 
             books.map((book) => book.title),
             "The sandbox should have the one book this run uploaded.",
         ).toEqual([BOOK_TITLE]);
-        const features = await getFeaturesOfUploadedBook(
-            await getLatestUploadBaseUrl(books[0]),
-        );
+        const baseUrl = await getLatestUploadBaseUrl(books[0]);
+        // The uploaded page must still play the video: its video's source names the uploaded file.
+        const videoSources = [
+            ...(await fetchUploadedBookHtml(baseUrl)).matchAll(
+                /<video\b[\s\S]*?<source\b[^>]*\bsrc="([^"]+)"/g,
+            ),
+        ].map(([, src]) => decodeURIComponent(src.split("#")[0]));
+        expect(
+            videoSources,
+            `The uploaded book's video should play ${video}. Its video sources: ${videoSources.join(", ")}`,
+        ).toEqual([`video/${video}`]);
+        const features = await getFeaturesOfUploadedBook(baseUrl);
         expect(
             features,
             `The uploaded book should be marked as a sign language book in ${kSignLanguage}. Its features: ${features.join(", ")}`,
