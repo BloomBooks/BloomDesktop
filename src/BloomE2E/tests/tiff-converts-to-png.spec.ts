@@ -132,7 +132,8 @@ async function writeLineDrawingPng(
 
 /**
  * How many pixels of the picture in the PNG file at `filePath` differ from `black`: a black pixel
- * of the drawing must be dark and opaque in the file, and a white one light or transparent. The
+ * of the drawing must be dark and fully opaque in the file, and a white one light and fully
+ * opaque, or fully transparent. The
  * file is decoded by the browser in `page`.
  */
 async function pixelsDifferingFromDrawing(
@@ -156,8 +157,11 @@ async function pixelsDifferingFromDrawing(
             let differing = 0;
             black.forEach((isBlack, i) => {
                 const [r, g, b, a] = data.subarray(i * 4, i * 4 + 4);
-                const dark = a > 128 && r + g + b < 3 * 64;
-                const light = a < 128 || r + g + b > 3 * 192;
+                // A 1-bit drawing has no partial transparency to keep, so a pixel counts only
+                // when it is fully opaque, or fully transparent for white.
+                const opaque = a === 255;
+                const dark = opaque && r + g + b < 3 * 64;
+                const light = a === 0 || (opaque && r + g + b > 3 * 192);
                 if (isBlack ? !dark : !light) differing++;
             });
             return differing;
