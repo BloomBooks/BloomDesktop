@@ -14,6 +14,7 @@ import {
 } from "../helpers/bookMaking";
 import {
     doubleClickBookTile,
+    expectBookTileSelected,
     findBookFolderById,
     getSelectedBookId,
     listEditableBooks,
@@ -104,6 +105,7 @@ test("a double-click on a book's tile opens it in the Edit tab, selected or not 
             (await getTabs(page)).tabStates.edit,
             "Sanity check: the Edit tab is no longer the one showing",
         ).not.toBe("active");
+        await expectBookTileSelected(page, firstBook);
         await doubleClickBookTile(page, firstBook);
         await expectBookOpenInEdit(
             page,
@@ -117,6 +119,8 @@ test("a double-click on a book's tile opens it in the Edit tab, selected or not 
         "Go back and double-click the other book, now not selected",
         async () => {
             await switchTab(page, "collection");
+            // The first book is the one selected, so this one is not.
+            await expectBookTileSelected(page, firstBook);
             await doubleClickBookTile(page, secondBook);
             await expectBookOpenInEdit(
                 page,

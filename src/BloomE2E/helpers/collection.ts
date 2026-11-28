@@ -141,6 +141,29 @@ export async function clickBookTile(page: Page, bookId: string): Promise<void> {
 }
 
 /**
+ * Wait until the Collections tab, which must be showing, has book `bookId` selected: Bloom reports
+ * it selected and its tile is drawn as the selected one.
+ */
+export async function expectBookTileSelected(
+    page: Page,
+    bookId: string,
+): Promise<void> {
+    await waitForCollectionReady(page);
+    await expect
+        .poll(() => getSelectedBookId(page), {
+            timeout: 30000,
+            message: `Bloom does not report book ${bookId} selected.`,
+        })
+        .toBe(bookId);
+    await expect(
+        page
+            .locator(`${kBookTiles}[data-book-id="${bookId}"]`)
+            .locator(".bookButton"),
+        `the tile of book ${bookId} should be drawn as the selected one`,
+    ).toHaveClass(/\bselected\b/, { timeout: 15000 });
+}
+
+/**
  * Double-click a book's tile on the Collections tab, which must be showing, with a real double
  * press of the mouse at the tile's centre, as a person does to open the book in the Edit tab.
  * Returns once the double-click is sent; the caller waits for what it should do.
