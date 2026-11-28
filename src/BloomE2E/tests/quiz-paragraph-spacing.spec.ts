@@ -35,6 +35,10 @@ import {
     getPdfPreviewPageDrawing,
     type IPdfTextRun,
 } from "../helpers/pdfPrint";
+import {
+    getCurrentUiLanguageTag,
+    setUiStateViaApi,
+} from "../helpers/uiLanguage";
 
 test.use({
     collectionSpec: {
@@ -148,6 +152,9 @@ test("quiz answers are spaced the same in the PDF as in the Edit tab [Test Case 
     step,
 }) => {
     test.setTimeout(300000);
+    // The PDF & Print screen and its modes are found by their English labels.
+    if ((await getCurrentUiLanguageTag(bloomApp.page)) !== "en")
+        await setUiStateViaApi(bloomApp, "en", false);
     const page = bloomApp.page;
 
     await step("Make a book with a filled quiz page", async () => {
@@ -177,7 +184,8 @@ test("quiz answers are spaced the same in the PDF as in the Edit tab [Test Case 
         const edit = editTops.map((tops) => tops.map((t) => t * paperHeight));
 
         const drawings = [];
-        for (let i = 0; i < (await getPdfPreviewPageCount(page)); i++)
+        const pageCount = await getPdfPreviewPageCount(page);
+        for (let i = 0; i < pageCount; i++)
             drawings.push(await getPdfPreviewPageDrawing(page, i));
         const quizPages = drawings.filter((drawing) =>
             squeeze(drawing.texts.map((run) => run.text).join("")).includes(
