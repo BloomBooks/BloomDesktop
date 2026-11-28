@@ -10,6 +10,7 @@ import {
     type Locator,
     type Page,
 } from "@playwright/test";
+import { getUiString } from "./api";
 import { editablePageFrame } from "./bookMaking";
 import {
     clickCanvasElementMenuItem,
@@ -79,11 +80,16 @@ export async function launchAiImageEditorWithoutOpenRouterKey(
  * Close the welcome that offers to connect the editor to OpenRouter, the way a person who only
  * wants to look around does, and wait until it has gone. The editor puts it up once its state has
  * loaded, which can be after its book pictures show. The welcome has no test id, so its button is
- * found by its English label.
+ * found by its label in Bloom's UI language.
  */
 export async function declineOpenRouterWelcome(page: Page): Promise<void> {
+    const label = await getUiString(
+        page,
+        "AiImageEditor.Welcome.JustLookAround",
+        "I just want to look around",
+    );
     const button = aiImageEditorFrame(page).getByRole("button", {
-        name: "I just want to look around",
+        name: label,
     });
     await expect(
         button,
