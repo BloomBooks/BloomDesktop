@@ -41,10 +41,11 @@ const CANVAS_TOOL_CONTROLS = "#canvasToolControls";
  * The canvas that owns the Canvas tool; see canvas(). A Canvas page's canvas carries
  * data-tool-id="canvas"; a cover given a custom layout has instead one canvas of its own, straight
  * inside its margin box, without that attribute (convertXmatterPageToCustom in
- * customXmatterPage.tsx).
+ * customXmatterPage.tsx). A comic page (the Digital and Paper Comic Book templates) is made for
+ * bubbles on its picture, so its picture's canvas is one too.
  */
 const CANVAS_SELECTOR =
-    '.bloom-canvas[data-tool-id="canvas"], .bloom-page.bloom-customLayout .marginBox > .bloom-canvas';
+    '.bloom-canvas[data-tool-id="canvas"], .bloom-page.bloom-customLayout .marginBox > .bloom-canvas, .bloom-page.comic .bloom-canvas';
 
 /** Where in the page frame the canvas element's floating toolbar and menu live. */
 const TOOLBAR = "#canvas-element-context-controls";
@@ -96,8 +97,9 @@ export async function openCanvasTool(page: Page): Promise<Frame> {
 
 /**
  * The canvas of the page being edited: the area canvas elements sit on. This is the canvas that
- * owns the Canvas tool (a Canvas page's, or a custom cover's; see CANVAS_SELECTOR); a picture box
- * on an ordinary page is also a bloom-canvas, but not one a person can drop palette items on.
+ * owns the Canvas tool (a Canvas page's, a custom cover's or a comic page's; see CANVAS_SELECTOR);
+ * a picture box on an ordinary page is also a bloom-canvas, but not one a person can drop palette
+ * items on.
  */
 export function canvas(page: Page): Locator {
     return editablePageFrame(page).locator(CANVAS_SELECTOR).first();
