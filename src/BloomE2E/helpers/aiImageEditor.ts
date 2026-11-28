@@ -37,25 +37,18 @@ export async function openAiImageEditorFromPicture(page: Page): Promise<void> {
     // The menu leaves "Edit with AI..." out until Bloom has answered whether the AI Image Editing
     // feature is on, and it asks only once the menu's page has loaded, so a menu opened soon
     // after a new book shows can lack the command for a moment.
-    let command: { id: string; enabled: boolean } | undefined;
     await expect
         .poll(
-            async () => {
-                command = (await getCanvasElementMenuItems(page)).find(
+            async () =>
+                (await getCanvasElementMenuItems(page)).find(
                     (item) => item.id === kEditWithAiCommand,
-                );
-                return command !== undefined;
-            },
+                )?.enabled,
             {
                 timeout: 30000,
-                message: `The picture's menu has no "Edit with AI..." command (${kEditWithAiCommand}).`,
+                message: `The picture's menu has no enabled "Edit with AI..." command (${kEditWithAiCommand}).`,
             },
         )
         .toBe(true);
-    expect(
-        command?.enabled,
-        'The picture\'s "Edit with AI..." command is not enabled.',
-    ).toBe(true);
     await clickCanvasElementMenuItem(page, kEditWithAiCommand);
     await aiImageEditorFrame(page)
         .getByTestId("thumbnail-strip-bookImages")
@@ -83,23 +76,15 @@ export async function launchAiImageEditorWithoutOpenRouterKey(
 }
 
 /**
- * The button of the welcome the editor puts up as it opens for a user with no OpenRouter
- * connection, which closes it without connecting. The welcome has no test id, so its button is
- * found by its English label.
- */
-function justLookAroundButton(page: Page): Locator {
-    return aiImageEditorFrame(page).getByRole("button", {
-        name: "I just want to look around",
-    });
-}
-
-/**
  * Close the welcome that offers to connect the editor to OpenRouter, the way a person who only
  * wants to look around does, and wait until it has gone. The editor puts it up once its state has
- * loaded, which can be after its book pictures show.
+ * loaded, which can be after its book pictures show. The welcome has no test id, so its button is
+ * found by its English label.
  */
 export async function declineOpenRouterWelcome(page: Page): Promise<void> {
-    const button = justLookAroundButton(page);
+    const button = aiImageEditorFrame(page).getByRole("button", {
+        name: "I just want to look around",
+    });
     await expect(
         button,
         "The AI image editor did not offer to connect to OpenRouter, though it had no key.",
