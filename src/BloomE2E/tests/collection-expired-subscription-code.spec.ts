@@ -6,6 +6,7 @@
 
 import { expect, test } from "../fixtures/bloomTest";
 import {
+    collectionsTabCollectionsPane,
     getCollectionSettingsDialog,
     getCollectionSettingsOkLabel,
     getFeatureStatus,
@@ -105,7 +106,10 @@ test("an expired subscription code says it has expired, in Settings and on the C
             ).toBe(false);
             await expect
                 .poll(
-                    () => readSubscriptionExpiryNotices(page.locator("body")),
+                    () =>
+                        readSubscriptionExpiryNotices(
+                            collectionsTabCollectionsPane(page),
+                        ),
                     {
                         message:
                             "the Collections tab should say the subscription expired, naming it, and how to renew it",

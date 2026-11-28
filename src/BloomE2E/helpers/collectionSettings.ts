@@ -340,14 +340,14 @@ export async function getSubscriptionCodeMessages(
         box,
         "the Collection Settings dialog is not showing its Subscription page",
     ).toHaveCount(1);
-    return box.evaluate((input) => {
+    const messages = await box.evaluate((input) => {
         // The box's row holds its caption, the box and the Copy and Paste buttons; the messages
-        // are labels in the element that follows that row.
+        // are labels in the element that follows that row, which is there even when it is empty.
         let row: Element | null = input.parentElement;
         while (row && !row.querySelector("button")) row = row.parentElement;
-        const messages = row?.nextElementSibling;
-        if (!messages) return [];
-        return Array.from(messages.querySelectorAll("label"))
+        const container = row?.nextElementSibling;
+        if (!container) return undefined;
+        return Array.from(container.querySelectorAll("label"))
             .filter((label) =>
                 label.checkVisibility({
                     opacityProperty: true,
@@ -358,6 +358,11 @@ export async function getSubscriptionCodeMessages(
                 (label.textContent ?? "").replace(/\s+/g, " ").trim(),
             );
     });
+    if (messages === undefined)
+        throw new Error(
+            "could not find where the Subscription page shows its messages about the code: no element follows the row of the Subscription Code box",
+        );
+    return messages;
 }
 
 /** A box in which Bloom warns that the collection's subscription has expired or soon will. */
@@ -385,10 +390,24 @@ export async function readSubscriptionExpiryNotices(
             text: string;
             links: string[];
         }[] = [];
+        const drawn = (element: Element) => {
+            const rect = element.getBoundingClientRect();
+            return (
+                element.checkVisibility({
+                    opacityProperty: true,
+                    visibilityProperty: true,
+                }) &&
+                rect.width > 0 &&
+                rect.height > 0
+            );
+        };
         const icons = root.querySelectorAll(
             "svg[data-testid='CancelIcon'], svg[data-testid='WarningIcon']",
         );
         for (const icon of Array.from(icons)) {
+            // A box counts only with its icon drawn, since the icon is what tells expired from
+            // expiring.
+            if (!drawn(icon)) continue;
             // The box is the nearest ancestor of the icon that also holds a renewal email link.
             let box: Element | null = icon.parentElement;
             while (
@@ -399,13 +418,7 @@ export async function readSubscriptionExpiryNotices(
                 box = box.parentElement;
             }
             if (!box || box === root.parentElement) continue;
-            if (
-                !(box as HTMLElement).checkVisibility({
-                    opacityProperty: true,
-                    visibilityProperty: true,
-                })
-            )
-                continue;
+            if (!drawn(box)) continue;
             notices.push({
                 kind:
                     icon.getAttribute("data-testid") === "CancelIcon"
@@ -421,6 +434,14 @@ export async function readSubscriptionExpiryNotices(
         }
         return notices;
     });
+}
+
+/**
+ * The left part of the Collections tab, which lists the collections and their books, with the
+ * collection's subscription status above them.
+ */
+export function collectionsTabCollectionsPane(page: Page): Locator {
+    return page.getByTestId("collections-tab-collections-pane");
 }
 
 /** The Collection Settings dialog, for reading what its showing page shows. */
