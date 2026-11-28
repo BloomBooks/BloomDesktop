@@ -1,7 +1,8 @@
-// Read and close the plain WinForms "Bloom Problem" box, which Bloom shows when it reports a problem
-// before its own server is up (so the React problem dialog that problemDialogWatcher handles cannot
-// be shown). It is a native window, out of CDP's reach, so this goes through Windows UI Automation,
-// which reads and presses its controls with no pointer, keystroke or focus change.
+// Read and close a plain WinForms message box that Bloom shows before its own server is up: the
+// "Bloom Problem" box it reports a problem in (so the React problem dialog that problemDialogWatcher
+// handles cannot be shown), or a MessageBox about what it was asked to open. Such a box is a native
+// window, out of CDP's reach, so this goes through Windows UI Automation, which reads and presses
+// its controls with no pointer, keystroke or focus change.
 
 import { execFile, execFileSync } from "node:child_process";
 
@@ -17,7 +18,27 @@ function FindBlooms {
   }
 }`;
 
-/** What a "Bloom Problem" box said, and which Bloom showed it. */
+// PowerShell that registers the client-side UI Automation proxies for plain Win32 controls. A
+// MessageBox is one: without them its OK button and its text are inert panes, with no name a
+// button would have and no pattern to press it with. The managed UIA client does not load these
+// proxies when hosted in PowerShell, and this exact shape is the one that registers them; see
+// .claude/skills/run-bloom/winformsUia.ps1, which does the same.
+const kRegisterWin32Proxies = `
+Add-Type -ReferencedAssemblies UIAutomationClient, UIAutomationTypes, UIAutomationClientsideProviders -TypeDefinition @"
+using System.Windows.Automation;
+public static class BloomUiaProxies {
+  public static string Register() {
+    try {
+      ClientSettings.RegisterClientSideProviders(UIAutomationClientsideProviders.UIAutomationClientSideProviders.ClientSideProviderDescriptionTable);
+      return "registered";
+    } catch (System.Exception e) { return "failed: " + e.Message; }
+  }
+}
+"@
+$proxyState = [BloomUiaProxies]::Register()
+if ($proxyState -ne 'registered') { throw "Could not register the Win32 UI Automation proxies: $proxyState" }`;
+
+/** What a message box said, and which Bloom showed it. */
 export interface IBloomProblemBox {
     /** The process that showed the box. */
     pid: number;
@@ -36,31 +57,55 @@ export interface IBloomProblemBox {
  * often one that Bloom started itself (to finish a collection rename, say), which the test never
  * spawned; and so that a Bloom the developer has open is never touched.
  */
-export async function readAndCloseBloomProblemBox(
+export function readAndCloseBloomProblemBox(
     commandLineParts: string[],
+    timeoutMs: number,
+): Promise<IBloomProblemBox | undefined> {
+    return readAndCloseBloomMessageBox(
+        commandLineParts,
+        "Bloom Problem",
+        timeoutMs,
+    );
+}
+
+/**
+ * Like readAndCloseBloomProblemBox, for a message box whose title is `title`. A MessageBox that
+ * Bloom shows with no caption has the empty string as its title.
+ */
+export async function readAndCloseBloomMessageBox(
+    commandLineParts: string[],
+    title: string,
     timeoutMs: number,
 ): Promise<IBloomProblemBox | undefined> {
     const script = `
 $ErrorActionPreference = 'Stop'
-Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
+# Node reads stdout as UTF-8; PowerShell otherwise writes it in the console's code page, which
+# garbles the text of a box in any language but English.
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, UIAutomationClientsideProviders
+${kRegisterWin32Proxies}
 $A = [System.Windows.Automation.AutomationElement]
 $Scope = [System.Windows.Automation.TreeScope]
 $CT = [System.Windows.Automation.ControlType]
 ${kFindBloomsByCommandLine}
+# Windows drops an environment variable set to "", so an empty title arrives as $null.
+$wanted = [string]$env:BLOOM_E2E_WINDOW_TITLE
 $deadline = (Get-Date).AddMilliseconds([int]$env:BLOOM_E2E_TIMEOUT_MS)
 do {
   foreach ($proc in (FindBlooms)) {
     $byPid = New-Object System.Windows.Automation.PropertyCondition($A::ProcessIdProperty, [int]$proc.ProcessId)
     foreach ($window in $A::RootElement.FindAll($Scope::Children, $byPid)) {
-      if ($window.Current.Name -ne 'Bloom Problem') { continue }
+      if ($window.Current.Name -ne $wanted) { continue }
       # Read before OK is pressed: the box is gone once it has been.
       $title = $window.Current.Name
       $texts = @()
-      $ok = $null
+      $buttons = @()
       foreach ($el in $window.FindAll($Scope::Descendants, [System.Windows.Automation.Condition]::TrueCondition)) {
         $type = $el.Current.ControlType
         if ($type -eq $CT::Button) {
-          if ($el.Current.Name -eq 'OK') { $ok = $el }
+          # The window's own Close (and Minimize, Maximize) buttons sit in its title bar.
+          $parent = [System.Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($el)
+          if (-not ($parent -and $parent.Current.ControlType -eq $CT::TitleBar)) { $buttons += $el }
           continue
         }
         $value = $null
@@ -68,7 +113,14 @@ do {
         if ($el.TryGetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern, [ref]$pattern)) { $value = $pattern.Current.Value }
         if ($value) { $texts += $value } elseif (($type -eq $CT::Text) -and $el.Current.Name) { $texts += $el.Current.Name }
       }
-      if (-not $ok) { throw "The Bloom Problem box of process $($proc.ProcessId) has no OK button." }
+      # Found by what it is, not by its label, which is in Windows' language. A box with one
+      # button has no other to press (a MessageBox with only OK gives it the control id IDCANCEL,
+      # so that Esc closes it). Among several, OK is a MessageBox's button with the control id IDOK
+      # (1), which the Win32 proxies give as its AutomationId, or the "Bloom Problem" form's
+      # _acceptButton, whose control name WinForms gives as its AutomationId.
+      $ok = $null
+      if ($buttons.Count -eq 1) { $ok = $buttons[0] } else { $ok = @($buttons | Where-Object { $_.Current.AutomationId -in @('1', '_acceptButton') })[0] }
+      if (-not $ok) { throw "The '$wanted' box of process $($proc.ProcessId) has no OK button among its $($buttons.Count) buttons: $(($buttons | ForEach-Object { $_.Current.Name + ' (' + $_.Current.AutomationId + ')' }) -join ', ')" }
       $ok.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
       @{ pid = [int]$proc.ProcessId; title = $title; texts = @($texts) } | ConvertTo-Json -Compress
       exit 0
@@ -91,6 +143,7 @@ do {
                     ...process.env,
                     BLOOM_E2E_COMMAND_LINE_PARTS: commandLineParts.join("\n"),
                     BLOOM_E2E_TIMEOUT_MS: String(timeoutMs),
+                    BLOOM_E2E_WINDOW_TITLE: title,
                 },
                 timeout: timeoutMs + 30000,
             },

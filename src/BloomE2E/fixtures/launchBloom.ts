@@ -546,7 +546,7 @@ const PROBE_TIMEOUT_MS = 30000;
  * the same thing, and gets a window. A setting that names a monitor is left alone, because that
  * window IS visible.
  */
-function environmentForBloom(): NodeJS.ProcessEnv {
+export function environmentForBloom(): NodeJS.ProcessEnv {
     // Every Bloom a test launches talks to the sandbox, dev.bloomlibrary.org, never to
     // bloomlibrary.org: a test signs in there with a test account and uploads for real. A Debug
     // Bloom uses the sandbox anyway; a Release Bloom, which is what CI builds, uses bloomlibrary.org
