@@ -23,8 +23,9 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Locator, type Page } from "@playwright/test";
-import { apiPost, getUiString } from "./api";
+import { getUiString } from "./api";
 import { clickInGroup, editablePageFrame } from "./bookMaking";
+import { armFileChooser } from "./nativeDialogs";
 import { cssColorToHex } from "./cssValues";
 
 /** The mp3 the suite uses when a test just needs SOME narration. Relative to src/BloomE2E. */
@@ -510,25 +511,6 @@ function narrationFilesIn(audioFolder: string): string[] {
     return fs
         .readdirSync(audioFolder)
         .filter((name) => name.toLowerCase().endsWith(".mp3"));
-}
-
-/**
- * Tell Bloom the path the NEXT native file chooser should return, instead of opening a dialog no
- * test can dismiss. One shot: it answers a single chooser and then goes back to opening the real
- * one. Available only because Bloom is running with --e2e.
- */
-export async function armFileChooser(
-    page: Page,
-    filePath: string,
-): Promise<void> {
-    // Bloom unescapes a text/plain body as it would a URL (RequestInfo.UnescapeString), which
-    // turns "+" into a space and "%41" into "A". So the path goes escaped, and arrives as it is.
-    await apiPost(
-        page,
-        "e2e/nextFileToChoose",
-        encodeURIComponent(filePath),
-        "text/plain",
-    );
 }
 
 /**

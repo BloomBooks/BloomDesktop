@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 import type { IProblemDialogWatcher } from "../fixtures/problemDialogWatcher";
-import * as http from "node:http";
 import { clickBookTile } from "./collection";
+import { apiPostFromNode } from "./api";
 
 /** Every page of Bloom's browser but DevTools, which is where a problem dialog may show. */
 function bloomPages(page: Page): Page[] {
@@ -181,43 +181,11 @@ export async function readProblemDialogsShown(
 /**
  * Close the React dialog (ReactDialog.cs) showing now, such as a problem dialog or a Bloom message
  * box, the way its own Close button does, with common/closeReactDialog, which never submits a
- * report. `page` is any of Bloom's pages, for the port. The request goes from Node rather than
- * through a page (helpers/api.ts): every page of Bloom's browser shares one small pool of
- * connections to Bloom's server, and while the modal dialog holds Bloom's UI thread, requests
- * waiting on that thread can fill the pool, so a close sent from a page may never leave the
- * browser. Bloom accepts the request because its Host is localhost.
+ * report. `page` is any of Bloom's pages, for the port. The request goes from Node
+ * (apiPostFromNode), because the modal dialog holds Bloom's UI thread.
  */
 export function closeReactDialogFromNode(page: Page): Promise<void> {
-    const port = Number(new URL(page.url()).port);
-    return new Promise((resolve, reject) => {
-        const req = http.request(
-            {
-                host: "localhost",
-                port,
-                path: "/bloom/api/common/closeReactDialog",
-                method: "POST",
-                headers: { "Content-Length": 0 },
-                timeout: 30000,
-            },
-            (res) => {
-                res.resume();
-                res.on("end", () =>
-                    res.statusCode && res.statusCode < 400
-                        ? resolve()
-                        : reject(
-                              new Error(
-                                  `common/closeReactDialog answered ${res.statusCode}`,
-                              ),
-                          ),
-                );
-            },
-        );
-        req.on("timeout", () =>
-            req.destroy(new Error("common/closeReactDialog got no answer")),
-        );
-        req.on("error", reject);
-        req.end();
-    });
+    return apiPostFromNode(page, "common/closeReactDialog");
 }
 
 /**

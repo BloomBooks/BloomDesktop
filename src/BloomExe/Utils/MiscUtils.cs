@@ -434,34 +434,22 @@ namespace Bloom.Utils
             var repeat = false;
             do
             {
-                using (var dlg = new System.Windows.Forms.SaveFileDialog())
-                {
-                    dlg.AddExtension = true;
-                    dlg.DefaultExt = defaultExtension;
-                    dlg.FileName = initialFilename;
-                    dlg.Filter = filter;
-                    // True so the dialog does not leave the process's current working directory
-                    // wherever the user browsed; see the comment in BloomOpenFileDialog's
-                    // constructor (BL-16577). Where the dialog opens is controlled by
-                    // InitialDirectory below, not by this.
-                    dlg.RestoreDirectory = true;
-                    dlg.OverwritePrompt = true;
-                    dlg.InitialDirectory = initialFolder;
-                    dlg.FileOk += (sender, args) =>
-                    {
-                        // Truly enforce the filter. See BL-12929 and BL-13552.
-                        if (
-                            !MiscUI.BloomOpenFileDialog.DoubleCheckFileFilter(
-                                dlg.Filter,
-                                dlg.FileName
-                            )
-                        )
-                            args.Cancel = true;
-                    };
-                    if (DialogResult.Cancel == dlg.ShowDialog())
-                        return null;
-                    destFileName = dlg.FileName;
-                }
+                if (
+                    MiscUI.E2eDialogAnswer.TryTakeNextPathToChoose(
+                        out var armedPath,
+                        initialFilename
+                    )
+                )
+                    destFileName = CheckSavePathArmedForE2eTests(armedPath, filter);
+                else
+                    destFileName = ShowSaveAsDialog(
+                        initialFolder,
+                        initialFilename,
+                        defaultExtension,
+                        filter
+                    );
+                if (destFileName == null)
+                    return null;
                 string collectionFolder;
                 repeat = IsFolderInsideBloomCollection(
                     Path.GetDirectoryName(destFileName),
@@ -480,6 +468,73 @@ namespace Bloom.Utils
                 }
             } while (repeat);
             return destFileName;
+        }
+
+        /// <summary>
+        /// Show Windows' Save As dialog, opening in initialFolder and suggesting initialFilename.
+        /// </summary>
+        /// <returns>The path chosen, or null if canceled.</returns>
+        private static string ShowSaveAsDialog(
+            string initialFolder,
+            string initialFilename,
+            string defaultExtension,
+            string filter
+        )
+        {
+            using (var dlg = new System.Windows.Forms.SaveFileDialog())
+            {
+                dlg.AddExtension = true;
+                dlg.DefaultExt = defaultExtension;
+                dlg.FileName = initialFilename;
+                dlg.Filter = filter;
+                // True so the dialog does not leave the process's current working directory
+                // wherever the user browsed; see the comment in BloomOpenFileDialog's
+                // constructor (BL-16577). Where the dialog opens is controlled by
+                // InitialDirectory below, not by this.
+                dlg.RestoreDirectory = true;
+                dlg.OverwritePrompt = true;
+                dlg.InitialDirectory = initialFolder;
+                dlg.FileOk += (sender, args) =>
+                {
+                    // Truly enforce the filter. See BL-12929 and BL-13552.
+                    if (!MiscUI.BloomOpenFileDialog.DoubleCheckFileFilter(dlg.Filter, dlg.FileName))
+                        args.Cancel = true;
+                };
+                if (DialogResult.Cancel == dlg.ShowDialog())
+                    return null;
+                return dlg.FileName;
+            }
+        }
+
+        /// <summary>
+        /// Under --e2e, GetOutputFilePathOutsideCollectionFolder answers with the path that a test
+        /// armed through e2e/nextFileToChoose instead of showing the Save As dialog, which no test
+        /// can answer reliably (BL-17232). The checks that the real dialog makes are made here too,
+        /// and fail loudly, because a test that arms a path the dialog would not have returned has
+        /// a bug that must not pass as a saved file. Whether the path is inside the collection is
+        /// left to the caller, as it is for a path a person picked.
+        /// </summary>
+        /// <returns>The armed path.</returns>
+        private static string CheckSavePathArmedForE2eTests(string path, string filter)
+        {
+            if (!Path.IsPathFullyQualified(path))
+                throw new ArgumentException(
+                    $"The e2e test armed the Save As dialog with {path}, which is not a full path."
+                );
+            if (!MiscUI.BloomOpenFileDialog.DoubleCheckFileFilter(filter, path))
+                throw new ArgumentException(
+                    $"The e2e test armed the Save As dialog with {path}, which its filter ({filter}) would not have allowed."
+                );
+            if (!Directory.Exists(Path.GetDirectoryName(path)))
+                throw new DirectoryNotFoundException(
+                    $"The e2e test armed the Save As dialog with {path}, whose folder does not exist."
+                );
+            // The real dialog would ask whether to replace it (OverwritePrompt).
+            if (RobustFile.Exists(path))
+                throw new IOException(
+                    $"The e2e test armed the Save As dialog with {path}, which exists already."
+                );
+            return path;
         }
 
         /// <summary>

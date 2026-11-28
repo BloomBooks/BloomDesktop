@@ -27,7 +27,7 @@ import {
 } from "./canvasElements";
 import type { IViewRect } from "./pageView";
 import { realClick, waitForClickToSettle } from "./realClick";
-import { armFileChooser } from "./talkingBook";
+import { armFileChooser } from "./nativeDialogs";
 import { expandToolByHeader, toolboxFrame } from "./toolbox";
 export type GameTab = "Start" | "Correct" | "Wrong" | "Play";
 export const kGameTabs: GameTab[] = ["Start", "Correct", "Wrong", "Play"];

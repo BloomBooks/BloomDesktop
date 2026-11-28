@@ -34,8 +34,8 @@ import {
     waitForSnapshotStreamIdle,
 } from "../helpers/bookMaking";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
+import { armFileChooser } from "../helpers/nativeDialogs";
 import {
-    armFileChooser,
     importNarration,
     openToolboxWithTalkingBook,
     sampleNarrationFile,

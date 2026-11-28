@@ -12,7 +12,7 @@ import {
 } from "./collectionSettings";
 import type { IBloomApp } from "../fixtures/bloomTest";
 import { realClick } from "./realClick";
-import { armFileChooser } from "./talkingBook";
+import { armFileChooser } from "./nativeDialogs";
 
 /**
  * Give Bloom a registered user with an email. Creating a Team Collection and checking a book out

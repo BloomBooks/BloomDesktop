@@ -4,7 +4,7 @@
 // its pages through utils/bloomClipboard.ts, and both use an in-memory clipboard that a test
 // fills and reads through the e2e/clipboard hook (E2eTestingApi). So a test that copies or
 // pastes leaves the developer's clipboard alone, and two e2e runs on one machine cannot see each
-// other's copies. This is the clipboard's counterpart of armFileChooser in helpers/talkingBook.ts.
+// other's copies. This is the clipboard's counterpart of armFileChooser in helpers/nativeDialogs.ts.
 //
 // The one part Bloom cannot redirect is the browser's own paste: a real Ctrl+V makes WebView2
 // read the Windows clipboard before any of Bloom's code runs. So pasteFromClipboard does not

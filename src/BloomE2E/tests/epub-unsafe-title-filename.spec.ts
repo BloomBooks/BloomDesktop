@@ -16,7 +16,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "../fixtures/bloomTest";
-import { launchWithDontDisturb } from "../fixtures/launchBloom";
+import { apiGet } from "../helpers/api";
 import {
     getPages,
     goToPage,
@@ -33,10 +33,7 @@ import {
 } from "../helpers/epubPublish";
 import { chooseImageFile, getImagePlacement } from "../helpers/images";
 import { setUiStateViaApi } from "../helpers/uiLanguage";
-import {
-    answerSaveAsDialog,
-    getForegroundWindow,
-} from "../helpers/nativeDialogs";
+import { armFileChooser } from "../helpers/nativeDialogs";
 import {
     closePublishProgressDialog,
     selectPublishDestination,
@@ -89,11 +86,6 @@ test("An ePUB of a book with an unsafe title gets a safe file name and keeps the
     bloomApp,
     step,
 }, testInfo) => {
-    test.skip(
-        launchWithDontDisturb(),
-        "Save As takes the foreground, so this runs only where Bloom may take the foreground: on " +
-            "CI, or with BLOOM_E2E_DONT_DISTURB=0.",
-    );
     test.setTimeout(400000);
 
     // selectPublishDestination finds the ePUB tab by its English label.
@@ -182,7 +174,6 @@ test("An ePUB of a book with an unsafe title gets a safe file name and keeps the
     await step(
         "Save the ePUB: Bloom suggests the folder's name, and saves it under that name",
         async () => {
-            const foregroundBefore = await getForegroundWindow();
             const answered = page.waitForResponse(
                 (response) =>
                     response.request().method() === "POST" &&
@@ -191,24 +182,27 @@ test("An ePUB of a book with an unsafe title gets a safe file name and keeps the
                     ),
                 { timeout: 300000 },
             );
+            await armFileChooser(page, savedPath);
             await page.getByTestId("PublishTab.Save").click();
-            const suggested = await answerSaveAsDialog(
-                bloomApp.bloomPid,
-                savedPath,
-                60000,
-                foregroundBefore,
-            );
-            // Windows leaves ".epub" out of the box where Explorer hides known extensions.
-            expect(
-                [bookFolderName, `${bookFolderName}.epub`],
-                `Save As should suggest the book's folder name; it suggested "${suggested}".`,
-            ).toContain(suggested);
             expect(
                 (await answered).ok(),
                 "Bloom should have finished saving the ePUB.",
             ).toBe(true);
-            // Bloom answers the save request before Save As opens, and writes the file after it
-            // closes. A zip's central directory is the last thing written, so the file is whole
+            // The dialog never shows; Bloom keeps the name that it would have suggested once it
+            // reaches Save As, which is after it answers the save request.
+            await expect
+                .poll(
+                    async () =>
+                        (await apiGet(page, "e2e/lastSuggestedFileName")).body,
+                    {
+                        timeout: 60000,
+                        message:
+                            "Save As should suggest the book's folder name.",
+                    },
+                )
+                .toBe(`${bookFolderName}.epub`);
+            // Bloom answers the save request before it asks where to save, and writes the file
+            // after. A zip's central directory is the last thing written, so the file is whole
             // once readZip can read it. The last read's error is kept, so that a timeout says
             // whether the file never came or never became a whole zip.
             let lastReadError = "";
