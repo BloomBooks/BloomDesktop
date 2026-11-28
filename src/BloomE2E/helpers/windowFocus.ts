@@ -84,9 +84,9 @@ public static class BloomFocus {
   static string ClassOf(IntPtr h) { var s = new StringBuilder(256); GetClassName(h, s, 256); return s.ToString(); }
   // A WebView2's own windows are "Chrome_" windows; the control that hosts one is their parent.
   static bool IsWebView(IntPtr h) {
-    if (ClassOf(h).StartsWith("Chrome_")) return true;
+    if (ClassOf(h).StartsWith("Chrome_", StringComparison.Ordinal)) return true;
     bool found = false;
-    EnumChildWindows(h, (c, l) => { if (ClassOf(c).StartsWith("Chrome_")) { found = true; return false; } return true; }, IntPtr.Zero);
+    EnumChildWindows(h, (c, l) => { if (ClassOf(c).StartsWith("Chrome_", StringComparison.Ordinal)) { found = true; return false; } return true; }, IntPtr.Zero);
     return found;
   }
   static void Emit(bool always) {
