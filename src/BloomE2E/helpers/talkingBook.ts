@@ -693,6 +693,24 @@ export async function acceptProposedTimings(page: Page): Promise<void> {
         ".bloom-editable.bloom-postAudioSplit",
     );
     const splitBefore = await splitBoxes.count();
+    const dialog = await openAdjustTimingsDialog(page);
+    await clickOkInAdjustTimings(dialog);
+    await expect(
+        splitBoxes,
+        "OK in Adjust Timings did not mark the text box as split into timed segments.",
+    ).toHaveCount(splitBefore + 1, { timeout: 30000 });
+}
+
+/**
+ * Press the Talking Book tool's Adjust Timings... button for the text box the tool is on, and wait
+ * until the dialog has loaded the box's recording and shows a region over its waveform for each
+ * segment: only then are the times it would save its own rather than a first guess from the
+ * lengths of the segments' text. Returns the dialog, which is drawn in the shell page.
+ *
+ * The box must hold a whole-text-box recording. The button is found by its picture, since it has
+ * no id and its label is localized.
+ */
+export async function openAdjustTimingsDialog(page: Page): Promise<Locator> {
     const button = toolboxFrame(page).locator(
         'button:has(img[src*="adjustTimings.svg"])',
     );
@@ -703,22 +721,326 @@ export async function acceptProposedTimings(page: Page): Promise<void> {
     // The button itself ignores the pointer (pointer-events: none); its picture takes the click.
     await button.locator("img").click();
 
-    // The dialog is drawn in the shell page. It shows one region over the recording's waveform
-    // for each segment once it has loaded the recording, and only then are the times it would
-    // save its own rather than a first guess from the lengths of the segments' text.
-    const dialog = page
-        .getByRole("dialog")
-        .filter({ has: page.locator("#waveform") });
+    const dialog = adjustTimingsDialog(page);
     await expect(
         dialog.locator("#waveform .playButton").first(),
         "The Adjust Timings dialog never showed the recording's segments.",
     ).toBeVisible({ timeout: 60000 });
+    return dialog;
+}
+
+/**
+ * In the open Adjust Timings dialog, choose More > Re-run pause-based timing guesses, which splits
+ * the text box again at its sentence ends and segment markers, guesses each segment's end from the
+ * lengths of their text, and moves each guess to the quietest moment of the recording nearby.
+ * Waits until the dialog has drawn the regions of the new split over the waveform, which it does
+ * only after it has made those moves (AdjustTimingsControl's decode handler). The dialog draws only
+ * the regions scrolled into view, so the wait is for the first of them, not for all.
+ */
+export async function rerunPauseBasedTimingGuesses(
+    page: Page,
+    dialog: Locator,
+): Promise<void> {
+    // The regions are drawn afresh for the new split; mark the ones there now, so the wait below
+    // cannot be satisfied by them.
+    const playButtons = dialog.locator("#waveform .playButton");
+    await playButtons.evaluateAll((buttons) =>
+        buttons.forEach((b) => b.setAttribute("data-e2e-before-rerun", "")),
+    );
+
+    await dialog.locator("#timingsMenuAnchor").click();
+    const rerun = await getUiString(
+        page,
+        "EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun",
+        "Re-run pause-based timing guesses",
+    );
+    await page.getByRole("menuitem").filter({ hasText: rerun }).click();
+    await expect(
+        playButtons.and(page.locator(":not([data-e2e-before-rerun])")).first(),
+        "After Re-run pause-based timing guesses, the Adjust Timings dialog never showed the new segments.",
+    ).toBeVisible({ timeout: 60000 });
+}
+
+/** One section the Adjust Timings dialog shows over the recording's waveform. */
+export interface IAdjustTimingsRegion {
+    /** The section's text, as the dialog labels it. */
+    text: string;
+    /** Where the section starts and ends, as fractions (0 to 1) of the recording's length. */
+    start: number;
+    end: number;
+}
+
+/**
+ * The sections the open Adjust Timings dialog shows over the waveform, in order, once it shows
+ * `expectedCount` of them. The dialog draws only the sections scrolled into view (wavesurfer's
+ * regions plugin), and each region follows the scroll only once the plugin has set it up, so a scan
+ * made too early misses some; this scans again until one scan finds `expectedCount` sections.
+ */
+export async function readAdjustTimingsRegions(
+    dialog: Locator,
+    expectedCount: number,
+): Promise<IAdjustTimingsRegion[]> {
+    let regions: IAdjustTimingsRegion[] = [];
+    await expect
+        .poll(
+            // The sections' labels, so that a failure shows where the split went wrong.
+            async () => {
+                regions = await scanAdjustTimingsRegions(dialog);
+                return regions.map((r) => r.text);
+            },
+            {
+                message: `The Adjust Timings dialog never showed ${expectedCount} sections over its waveform.`,
+                timeout: 30000,
+            },
+        )
+        .toHaveLength(expectedCount);
+    return regions;
+}
+
+/**
+ * One scan of the sections the open Adjust Timings dialog shows over the waveform, in order: it
+ * scrolls the waveform from end to end, collecting each section as it appears, and scrolls back to
+ * the start.
+ */
+async function scanAdjustTimingsRegions(
+    dialog: Locator,
+): Promise<IAdjustTimingsRegion[]> {
+    return dialog.locator("#waveform").evaluate((waveform) => {
+        const root = (waveform.firstElementChild as HTMLElement | null)
+            ?.shadowRoot;
+        const scroller = root?.querySelector<HTMLElement>('[part~="scroll"]');
+        if (!root || !scroller)
+            throw new Error(
+                "The Adjust Timings dialog's waveform has no scrolling area to read its sections from.",
+            );
+        const found = new Map<string, IAdjustTimingsRegion>();
+        const collect = () => {
+            root.querySelectorAll<HTMLElement>('[part~="region"]').forEach(
+                (region) => {
+                    const id = region.getAttribute("part") ?? "";
+                    const content = region.querySelector(
+                        '[part~="region-content"]',
+                    );
+                    found.set(id, {
+                        text: content?.textContent ?? "",
+                        start: parseFloat(region.style.left) / 100,
+                        end: 1 - parseFloat(region.style.right) / 100,
+                    });
+                },
+            );
+        };
+        // The regions plugin adds and removes the regions' elements inside wavesurfer's own
+        // handler of the scroll event, so each dispatch below has updated them by the time it
+        // returns.
+        const step = Math.max(1, Math.floor(scroller.clientWidth / 2));
+        for (let x = 0; ; x += step) {
+            scroller.scrollLeft = x;
+            scroller.dispatchEvent(new Event("scroll"));
+            collect();
+            if (x >= scroller.scrollWidth - scroller.clientWidth) break;
+        }
+        scroller.scrollLeft = 0;
+        scroller.dispatchEvent(new Event("scroll"));
+        return Array.from(found.values()).sort((a, b) => a.start - b.start);
+    });
+}
+
+/**
+ * Put the cursor in one language's box of the first group `groupSelector` picks, just before the
+ * first place its text (as shown, markers and all) reads `textAfter`, by clicking in the box and
+ * moving there with the arrow keys, as a person would.
+ *
+ * An arrow key does not always move the cursor by one character: where a line wraps at a space,
+ * the browser collapses the space, and one press can step over it. So after the presses the
+ * caret's place is read back, and the cursor is moved on or back until it stands where it should.
+ */
+export async function putCursorBefore(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    textAfter: string,
+): Promise<Locator> {
+    const box = await clickInGroup(page, groupSelector, languageTag);
+    const text = await box.evaluate((e) => (e as HTMLElement).innerText);
+    const offset = text.indexOf(textAfter);
+    if (offset < 0)
+        throw new Error(
+            `The "${languageTag}" box of "${groupSelector}" does not read "${textAfter}" anywhere; it reads "${text}".`,
+        );
+    await page.keyboard.press("Control+Home");
+    for (let i = 0; i < offset; i++) await page.keyboard.press("ArrowRight");
+
+    /** The caret's place, and where it should be, as offsets in the box's textContent. */
+    const caretAndTarget = () =>
+        box.evaluate((e, wanted) => {
+            const selection = e.ownerDocument.getSelection();
+            if (!selection || !selection.focusNode) return undefined;
+            const before = e.ownerDocument.createRange();
+            before.setStart(e, 0);
+            before.setEnd(selection.focusNode, selection.focusOffset);
+            return {
+                caret: before.toString().length,
+                target: (e.textContent ?? "").indexOf(wanted),
+            };
+        }, textAfter);
+    for (let tries = 0; ; tries++) {
+        const place = await caretAndTarget();
+        if (!place || place.target < 0)
+            throw new Error(
+                `Could not read where the cursor is in the "${languageTag}" box of "${groupSelector}".`,
+            );
+        if (place.caret === place.target) break;
+        if (tries >= 5)
+            throw new Error(
+                `The arrow keys did not bring the cursor before "${textAfter}" in the "${languageTag}" box of "${groupSelector}": it stands at ${place.caret}, not ${place.target}, of "${text}".`,
+            );
+        await page.keyboard.press(
+            place.caret < place.target ? "ArrowRight" : "ArrowLeft",
+        );
+    }
+    return box;
+}
+
+/**
+ * Type a segment marker ("|") on the keyboard in one language's box of the first group
+ * `groupSelector` picks, just before where its text reads `textAfter`, and wait until the box
+ * shows it there.
+ */
+export async function typeSegmentMarkerBefore(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    textAfter: string,
+): Promise<void> {
+    const box = await putCursorBefore(
+        page,
+        groupSelector,
+        languageTag,
+        textAfter,
+    );
+    await page.keyboard.type("|");
+    await expect(
+        box,
+        `Typing "|" did not put a segment marker before "${textAfter}".`,
+    ).toContainText(`|${textAfter}`, { timeout: 15000, useInnerText: true });
+}
+
+/**
+ * Put a segment marker ("|") in one language's box of the first group `groupSelector` picks, just
+ * before where its text reads `textAfter`, with the Talking Book tool's Advanced > Insert Segment
+ * Marker button, and wait until the box shows it there.
+ */
+export async function insertSegmentMarkerBefore(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    textAfter: string,
+): Promise<void> {
+    const box = await putCursorBefore(
+        page,
+        groupSelector,
+        languageTag,
+        textAfter,
+    );
+    await clickInsertSegmentMarker(page);
+    await expect(
+        box,
+        `Insert Segment Marker did not put a segment marker before "${textAfter}".`,
+    ).toContainText(`|${textAfter}`, { timeout: 15000, useInnerText: true });
+}
+
+/**
+ * How one language's box of the first group `groupSelector` picks is split for playback: the text
+ * of each of its segments (bloom-highlightSegment), and its data-audiorecordingendtimes as written
+ * ("" when it has none).
+ */
+export async function readSegmentTimings(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<{ segments: string[]; endTimes: string }> {
+    return editablePageFrame(page)
+        .locator(groupSelector)
+        .first()
+        .locator(`.bloom-editable[lang="${languageTag}"]`)
+        .evaluate((element) => ({
+            segments: Array.from(
+                element.querySelectorAll(".bloom-highlightSegment"),
+            ).map((s) => s.textContent ?? ""),
+            endTimes: element.getAttribute("data-audiorecordingendtimes") ?? "",
+        }));
+}
+
+/** Press OK in the open Adjust Timings dialog, which saves its times on the text box, and wait for it to close. */
+export async function clickOkInAdjustTimings(dialog: Locator): Promise<void> {
     await dialog.getByTestId("dialog-ok").click();
     await expect(dialog).toBeHidden({ timeout: 30000 });
+}
+
+/** The Adjust Timings dialog, drawn in the shell page. */
+function adjustTimingsDialog(page: Page): Locator {
+    return page.getByRole("dialog").filter({ has: page.locator("#waveform") });
+}
+
+/**
+ * Press the Talking Book tool's Advanced > Insert Segment Marker button, which puts a "|" where the
+ * cursor is in the page. The caller puts the cursor there first.
+ */
+export async function clickInsertSegmentMarker(page: Page): Promise<void> {
+    await openAdvancedSection(page);
+    const button = toolboxFrame(page).locator("#insert-segment-marker-button");
     await expect(
-        splitBoxes,
-        "OK in Adjust Timings did not mark the text box as split into timed segments.",
-    ).toHaveCount(splitBefore + 1, { timeout: 30000 });
+        button,
+        "Insert Segment Marker is disabled; it needs the cursor in a text box.",
+    ).toBeEnabled({ timeout: 30000 });
+    await button.click();
+}
+
+/** A stretch of a recording, in seconds from its start. */
+export interface ITimeSpan {
+    start: number;
+    end: number;
+}
+
+/**
+ * The pauses in the recording `mp3Path`: each stretch of at least `minSeconds` in which no sample
+ * is louder than a hundredth of the loudest one. Decoded by the browser Bloom runs, which is the
+ * decoder the Adjust Timings dialog reads the recording with. Also returns the recording's length.
+ */
+export async function findPausesInRecording(
+    page: Page,
+    mp3Path: string,
+    minSeconds: number,
+): Promise<{ duration: number; pauses: ITimeSpan[] }> {
+    const base64 = fs.readFileSync(Path.resolve(mp3Path)).toString("base64");
+    return page.evaluate(
+        async ({ base64, minSeconds }) => {
+            const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+            const context = new OfflineAudioContext(1, 44100, 44100);
+            const audio = await context.decodeAudioData(bytes.buffer);
+            const samples = audio.getChannelData(0);
+            let loudest = 0;
+            for (const s of samples) loudest = Math.max(loudest, Math.abs(s));
+            const quiet = loudest / 100;
+            const pauses: { start: number; end: number }[] = [];
+            let runStart = -1;
+            for (let i = 0; i <= samples.length; i++) {
+                const isQuiet =
+                    i < samples.length && Math.abs(samples[i]) <= quiet;
+                if (isQuiet && runStart < 0) runStart = i;
+                if (!isQuiet && runStart >= 0) {
+                    if ((i - runStart) / audio.sampleRate >= minSeconds)
+                        pauses.push({
+                            start: runStart / audio.sampleRate,
+                            end: i / audio.sampleRate,
+                        });
+                    runStart = -1;
+                }
+            }
+            return { duration: audio.duration, pauses };
+        },
+        { base64, minSeconds },
+    );
 }
 
 /**
