@@ -28,7 +28,7 @@ import {
 } from "../helpers/bookMaking";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import { pageListFrame } from "../helpers/pageList";
-import { selectPage } from "../helpers/pageThumbnails";
+import { selectPage, waitForPageCount } from "../helpers/pageThumbnails";
 import { recordVideo, videoBoxes } from "../helpers/videos";
 
 test.use({
@@ -175,7 +175,10 @@ test("after the title is renamed, clicking pages and adding a recorded video pag
             // A jump to the top of the page list can only be seen in a list that scrolls. In a
             // tall window every thumbnail of this book fits, so make the page area as short as the
             // nightly runner's, as a person would by making the window smaller.
+            // The page list loads its thumbnails on its own, after the Edit tab settles, so wait
+            // for every page's thumbnail before asking whether the list scrolls.
             await waitForEditTabSettled(page);
+            await waitForPageCount(page, (await getPages(page)).length);
             if (!(await pageListCanScroll(page))) {
                 await setViewportSize(page, kShortPageArea);
                 shrankPageArea = true;
