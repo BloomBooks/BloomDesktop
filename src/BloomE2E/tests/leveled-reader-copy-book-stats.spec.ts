@@ -23,6 +23,7 @@ import {
     leveledReaderStat,
     makeLeveledBookWithTextPage,
     setReaderPhase,
+    waitForLevelToBeRecordedInTheBook,
 } from "../helpers/readerTools";
 import { toolboxFrame } from "../helpers/toolbox";
 
@@ -70,6 +71,9 @@ test("COPY BOOK STATS puts the book's leveled reader statistics on the clipboard
         "test setup: a new leveled book should start at level 1",
     ).toBe(1);
     await setReaderPhase(page, "leveledReader", LEVEL);
+    // In a leveled book, Bloom saves the new level on the book's body and reloads the page
+    // (EditingModel.EnsureLevelAttrCorrect); text pasted before that reload would be lost.
+    await waitForLevelToBeRecordedInTheBook(page, bookFolder);
     await pasteTextInGroup(page, GROUP, LANG, FIRST_PAGE_TEXT);
 
     const [firstPage] = await getContentPages(page);
