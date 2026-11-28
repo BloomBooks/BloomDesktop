@@ -93,7 +93,6 @@ test("the Leveled Reader's book figures drop the words of a removed page (Test C
         remaining.map((p) => p.id),
         "Only the first page of text should be left in the book.",
     ).toEqual([firstPage.id]);
-
     await expect(
         wordsInBook,
         "After the second page was removed, the Leveled Reader should count only the first " +
@@ -103,5 +102,22 @@ test("the Leveled Reader's book figures drop the words of a removed page (Test C
         averagePerSentence,
         "After the second page was removed, the book should average 7.0 words per sentence " +
             "(its one sentence of 7 words).",
+    ).toHaveText("7.0");
+
+    // Bloom shows another page in place of the removed one (not always the first page of text).
+    // Go to the remaining page of text: the page's own count must be its 7 words, not the 5 of
+    // the removed page, and the book's figures must stay as they are.
+    await goToPage(page, firstPage.id);
+    await expect(
+        wordsThisPage,
+        "On the remaining page of text, the Leveled Reader should count its 7 words.",
+    ).toHaveText("7", { timeout: 15000 });
+    await expect(
+        wordsInBook,
+        "On the remaining page of text, the book should still have 7 words.",
+    ).toHaveText("7");
+    await expect(
+        averagePerSentence,
+        "On the remaining page of text, the book should still average 7.0 words per sentence.",
     ).toHaveText("7.0");
 });
