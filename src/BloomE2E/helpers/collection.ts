@@ -937,3 +937,60 @@ export function countThumbnailPixelsDifferingInside(
         }
     return count;
 }
+
+/** What the info icon above the Collections tab's preview tells about the selected book. */
+export interface IBookInfoIndicator {
+    /** The book's folder, under "Path on disk". */
+    path: string;
+    /** The book's id (its bookInstanceId), under "Book ID". */
+    id: string;
+    /** The book's theme, under "Theme"; undefined when the tip shows no theme. */
+    theme: string | undefined;
+}
+
+/**
+ * Click the info icon (a circled i) at the top right of the Collections tab's book pane, which must
+ * be showing a book, and read the tip it opens: the selected book's path on disk, its id and its
+ * theme (BookInfoIndicator.tsx). The headings of the tip are not localized. Moves the pointer away
+ * afterwards, which closes the tip.
+ */
+export async function readBookInfoIndicator(
+    page: Page,
+): Promise<IBookInfoIndicator> {
+    const icon = page
+        .getByTestId(kBookPane)
+        .locator("svg[data-testid='InfoOutlinedIcon']");
+    await expect(
+        icon,
+        "the book pane should show the info icon above the preview",
+    ).toBeVisible({ timeout: 30000 });
+    await icon.hover();
+    await icon.click();
+    const tip = page.getByRole("tooltip").filter({ hasText: "Path on disk" });
+    await expect(
+        tip,
+        "the info icon should open a tip with the book's path on disk",
+    ).toBeVisible({ timeout: 15000 });
+    const sections = await tip.locator("p").evaluateAll((paragraphs) =>
+        paragraphs.map((p) => {
+            const heading = p.querySelector("b")?.textContent?.trim() ?? "";
+            const value = (p.textContent ?? "")
+                .slice((p.querySelector("b")?.textContent ?? "").length)
+                .trim();
+            return { heading, value };
+        }),
+    );
+    const valueUnder = (heading: string) =>
+        sections.find((s) => s.heading === heading)?.value;
+    const path = valueUnder("Path on disk");
+    const id = valueUnder("Book ID");
+    if (!path || !id)
+        throw new Error(
+            `The info tip did not show both a path and a book id: ${JSON.stringify(sections)}`,
+        );
+    await page.mouse.move(0, 0);
+    await expect(tip, "the info tip should close").toBeHidden({
+        timeout: 15000,
+    });
+    return { path, id, theme: valueUnder("Theme") };
+}
