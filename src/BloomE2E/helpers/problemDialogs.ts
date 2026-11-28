@@ -238,6 +238,11 @@ function isProcessRunning(pid: number): boolean {
  * request, so the action is started but not awaited until the dialog has gone. The problem dialog
  * watcher is paused meanwhile, since the test raises this dialog on purpose.
  *
+ * The action must not call Bloom's API from a page (helpers/api.ts) once it has raised the dialog,
+ * as switchTab's waitForActiveTab does: such a call waits for the dialog and holds one of the
+ * connections that the dialog needs to get its message (see closeReactDialogFromNode). Use
+ * clickTab, and wait for the tab once the dialog has closed.
+ *
  * `bloomQuitsWithPid` is the process id of a Bloom that is expected to quit once the dialog is
  * closed, as it does after a fatal problem; this then waits for that process to end, and the
  * action may fail, since its Bloom is gone.

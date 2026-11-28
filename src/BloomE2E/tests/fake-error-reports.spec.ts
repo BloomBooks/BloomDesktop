@@ -28,7 +28,7 @@ import {
     type IProblemDialogShown,
 } from "../helpers/problemDialogs";
 import { setUiStateViaApi } from "../helpers/uiLanguage";
-import { switchTab } from "../helpers/workspace";
+import { clickTab, switchTab, waitForActiveTab } from "../helpers/workspace";
 
 test.use({
     collectionSpec: { name: "fake-error-reports", languages: ["en"] },
@@ -155,10 +155,13 @@ async function openBookTitled(
     const shown = await doThroughOneProblemDialog(
         page,
         problemDialogWatcher,
-        () => switchTab(page, "edit"),
+        () => clickTab(page, "edit"),
         bloomQuitsWithPid,
     );
-    if (!bloomQuitsWithPid) await waitForEditablePage(page);
+    if (!bloomQuitsWithPid) {
+        await waitForActiveTab(page, "edit");
+        await waitForEditablePage(page);
+    }
     return shown;
 }
 
