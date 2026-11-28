@@ -429,3 +429,68 @@ export async function waitForVerticalAlignment(
         )
         .toBe(alignment);
 }
+
+/** How many lines a text box's text runs to, and how many of them a reader can see. */
+export interface ITextBoxLines {
+    /** The lines the box's text is laid out on. */
+    lines: number;
+    /**
+     * The lines whose whole line box shows: inside the box, and inside every element around it,
+     * up to its page, that cuts off what overflows it.
+     */
+    linesShown: number;
+}
+
+/**
+ * Count the lines of the text box `box` locates, and how many of them show whole. Counted in lines
+ * rather than pixels, because the glyphs of a last line stand a few pixels below its line box,
+ * which scrollHeight and a range around the text count as overflow though nothing is out of sight.
+ * For a box anywhere, such as one in the BloomPUB preview, which draws it scaled.
+ */
+export async function getLinesShownOf(box: Locator): Promise<ITextBoxLines> {
+    return box.evaluate((element) => {
+        const e = element as HTMLElement;
+        // Lines are compared on screen, so the line height is scaled as the box is drawn.
+        const scale = e.getBoundingClientRect().height / e.offsetHeight;
+        const lineHeight =
+            parseFloat(getComputedStyle(e.querySelector("p") ?? e).lineHeight) *
+            scale;
+        // Each line by its middle. A text range's rectangles are the font's content area, which
+        // is not the line box: it may start above or below the line box's top, by however much
+        // the font's height differs from the line height. But the browser centres it on the line
+        // box, so the two share a middle.
+        const middles = new Set<number>();
+        const walker = e.ownerDocument.createTreeWalker(
+            e,
+            NodeFilter.SHOW_TEXT,
+        );
+        const range = e.ownerDocument.createRange();
+        for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+            if (!n.textContent?.trim()) continue;
+            range.selectNodeContents(n);
+            for (const r of Array.from(range.getClientRects()))
+                middles.add(Math.round(r.top + r.height / 2));
+        }
+        // The bottom of what shows: the box's own, and that of each element around it, up to its
+        // page, that does not let what overflows it show.
+        let shownBottom = e.getBoundingClientRect().bottom;
+        for (
+            let a: HTMLElement | null = e.parentElement;
+            a;
+            a = a.parentElement
+        ) {
+            if (getComputedStyle(a).overflowY !== "visible")
+                shownBottom = Math.min(
+                    shownBottom,
+                    a.getBoundingClientRect().bottom,
+                );
+            if (a.classList.contains("bloom-page")) break;
+        }
+        return {
+            lines: middles.size,
+            linesShown: Array.from(middles).filter(
+                (middle) => middle + lineHeight / 2 <= shownBottom + 1,
+            ).length,
+        };
+    });
+}
