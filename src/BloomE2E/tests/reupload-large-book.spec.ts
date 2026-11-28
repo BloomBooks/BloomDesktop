@@ -249,19 +249,42 @@ test.describe("re-uploading a large book to dev.bloomlibrary.org", () => {
         const latestBaseUrl = await getLatestUploadBaseUrl(onServer);
         const uploadedFiles = await listUploadedBookFiles(latestBaseUrl);
         // The uploaded book's pages are the new ones: the picture page and every recorded sentence.
-        const uploadedHtml = await fetchUploadedBookHtml(latestBaseUrl);
+        // Parsed in Bloom's page, as helpers/bookHtml.ts reads a saved book: the pictures' sources,
+        // and the ids of the narrated sentences (marked .audio-sentence, as Bloom plays them).
+        const uploaded = await page.evaluate(
+            (source) => {
+                const document = new DOMParser().parseFromString(
+                    source,
+                    "text/html",
+                );
+                const pages = [...document.querySelectorAll("div.bloom-page")];
+                return {
+                    imageSources: pages.flatMap((pageDiv) =>
+                        [...pageDiv.querySelectorAll("img")].map(
+                            (img) => img.getAttribute("src") ?? "",
+                        ),
+                    ),
+                    audioSentenceIds: pages.flatMap((pageDiv) =>
+                        [...pageDiv.querySelectorAll(".audio-sentence")].map(
+                            (span) => span.id,
+                        ),
+                    ),
+                };
+            },
+            await fetchUploadedBookHtml(latestBaseUrl),
+        );
         expect(
-            uploadedHtml,
+            uploaded.imageSources,
             `The re-uploaded ${htmFile} should show the new picture (${picture}).`,
-        ).toContain(`src="${picture}"`);
+        ).toContain(picture);
         expect(
             recordings.filter(
                 (file) =>
-                    !uploadedHtml.includes(
-                        `id="${file.replace(/\.mp3$/, "")}"`,
+                    !uploaded.audioSentenceIds.includes(
+                        file.replace(/\.mp3$/, ""),
                     ),
             ),
-            `The re-uploaded ${htmFile} should still hold all ${recordings.length} recorded sentences.`,
+            `The re-uploaded ${htmFile} should still hold all ${recordings.length} narrated sentences.`,
         ).toEqual([]);
         expect(
             recordings.filter(
