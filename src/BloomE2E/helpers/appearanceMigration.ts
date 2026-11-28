@@ -347,11 +347,17 @@ export async function waitForBookLaidOut(
                 // A read made while the frame is navigating can fail; expect.poll does not retry
                 // a callback that throws, so such a read counts as "not that book yet". It gives
                 // no address at all: the error's text quotes the frame's selector, which holds
-                // the very book id this waits for.
+                // the very book id this waits for. Each read waits at most 10 s for the frame, so
+                // when the frame never appears a read fails, and its error is quoted, before the
+                // poll times out.
                 () =>
                     frame
                         .locator("body")
-                        .evaluate((body) => body.ownerDocument.location.href)
+                        .evaluate(
+                            (body) => body.ownerDocument.location.href,
+                            undefined,
+                            { timeout: 10000 },
+                        )
                         .then((href) => {
                             lastReadError = undefined;
                             return href;
